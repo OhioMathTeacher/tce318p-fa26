@@ -15,6 +15,10 @@
  h1{font-size:34px;line-height:1.15;margin:0 0 14px;}
  h1 .sub{color:var(--muted);font-weight:400;}
  .lede{font-size:18px;color:#374151;margin:0;}
+ .frame{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:22px 0 6px;}
+ .frame img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:12px;display:block;box-shadow:0 2px 12px rgba(0,0,0,.10);}
+ .framecap{font-size:13px;color:var(--muted);margin:0;text-align:center;}
+ @media(max-width:640px){.frame{grid-template-columns:repeat(2,1fr);gap:8px;}}
  .manifesto{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px 26px;margin:26px 0;}
  .manifesto p{margin:0 0 12px;} .manifesto p:last-child{margin-bottom:0;}
  .manifesto .pull{font-size:16px;} .manifesto b{color:var(--ink);}
@@ -47,7 +51,14 @@
 <header>
  <p class="kicker">Metacognitive math puzzles</p>
  <h1>Watch your own thinking.<br><span class="sub">Three puzzles that record how you solve — then hand the reasoning back to you.</span></h1>
- <p class="lede">Play a puzzle, then <b>replay and annotate your own solve</b> and download a <i>"here's how I actually thought about it"</i> report. The point isn't the answer — it's seeing the mind that got there.</p>
+ <p class="lede">Play a puzzle, <b>replay your own solve</b>, and study the reasoning that got you there.</p>
+ <div class="frame">
+  <img src="img/learners-solo.jpg" alt="A child building a robotics kit" loading="lazy">
+  <img src="img/learners-team.jpg" alt="Students collaborating on a STEM project" loading="lazy">
+  <img src="img/builders-code.jpg" alt="Developers reviewing code together" loading="lazy">
+  <img src="img/builders-team.jpg" alt="A software team building together" loading="lazy">
+ </div>
+ <p class="framecap">From learners making sense of ideas to the builders who make the tools.</p>
 </header>
 
 <div class="manifesto">
