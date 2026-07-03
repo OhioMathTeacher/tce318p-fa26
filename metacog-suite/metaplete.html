@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metaplete — TCE 318P prototype</title>
+<!--
+  ============================================================================
+  METAPLETE  ·  Sumplete + "watch your own thinking" playback
+  ============================================================================
+  Sibling of Metadoku. It reuses the SAME metacognition core verbatim — the
+  entire "METACOG CORE" script section below is copy-identical to metadoku.html.
+  Only the PURE ENGINE (Sumplete generation) and the GAME MODULE (Sumplete
+  board/render/win-check) are new. That's the payoff of the refactor: to make a
+  sibling you keep the CORE and rewrite the GAME against its ~5-fn interface.
+
+  Sumplete: delete cells (✕) so the remaining cells in each row & column sum to
+  that line's target. A cell has three states — blank (undecided, counts as
+  kept) → ● keep (a recorded "this one stays") → ✕ delete (removed from the
+  sum). Only ✕ changes the sums; ● is the solver's own certainty note, and a
+  cell that flips ●↔✕ is a hypothesis being tested and revised — exactly the
+  reasoning the playback + report surface.
+  ============================================================================
+-->
+<style>
+ /* ---- shared house style (copy-identical across the suite) ---- */
+ body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:720px;margin:24px auto;padding:0 16px;color:#1f2937;}
+ h1{font-size:20px;margin:0 0 2px;} .sub{color:#6b7280;font-size:13px;margin-bottom:18px;}
+ .panel{border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin-bottom:16px;background:#fff;}
+ .panel h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:#94a3b8;margin:0 0 12px;font-weight:700;}
+ .row{display:flex;flex-wrap:wrap;gap:14px;align-items:center;font-size:14px;}
+ .row label{display:flex;align-items:center;gap:5px;}
+ select,button,input{font:inherit;}
+ button{cursor:pointer;border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:7px 13px;}
+ button:hover{background:#f1f5f9;}
+ #new,#genreport{background:#2563eb;color:#fff;border-color:#2563eb;}
+ .grid{display:grid;grid-template-columns:repeat(var(--n),56px);grid-template-rows:repeat(var(--n),56px);border:3px solid #111;width:max-content;margin:0 auto;}
+ .padlabel{font-size:12px;color:#6b7280;margin:12px 0 4px;text-align:center;}
+ #timer{font-variant-numeric:tabular-nums;font-size:14px;color:#6b7280;text-align:center;margin-bottom:6px;display:none;}
+ #msg{margin:12px 0 0;padding:10px 12px;background:#eff6ff;border-left:3px solid #2563eb;border-radius:4px;font-size:14px;min-height:20px;}
+ #replayWrap{margin-top:14px;}
+ #replay{width:100%;} #replayLabel{font-size:13px;color:#374151;margin-top:4px;}
+ .noterow{display:flex;gap:8px;margin:8px 0;}
+ #noteInput{flex:1;padding:6px 9px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;resize:vertical;min-height:40px;}
+ #report{font-size:14px;} #report ul{padding-left:18px;} #report li{margin:5px 0;}
+ .note{font-size:12px;color:#9ca3af;margin-top:6px;}
+ #reportOverlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-start;justify-content:center;overflow:auto;z-index:1000;padding:24px;}
+ .report-panel{background:#fff;max-width:720px;width:100%;border-radius:12px;box-shadow:0 12px 44px rgba(0,0,0,.35);}
+ .report-bar{position:sticky;top:0;background:#fff;border-bottom:1px solid #e5e7eb;padding:12px 16px;display:flex;gap:8px;align-items:center;border-radius:12px 12px 0 0;}
+ .report-bar .report-tip{color:#9ca3af;font-size:12px;} .report-close{margin-left:auto;}
+ #reportDoc{padding:6px 20px 28px;line-height:1.55;} #reportDoc:focus{outline:none;}
+ #reportDoc h1{font-size:22px;margin:14px 0 2px;} #reportDoc .rmeta{color:#6b7280;font-size:14px;}
+ #reportDoc h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;margin-top:20px;}
+ #reportDoc ul,#reportDoc ol{padding-left:20px;} #reportDoc li{margin:3px 0;} #reportDoc .note{color:#2563eb;font-style:italic;margin:2px 0 8px;}
+ @media print{ body.report-open > *:not(#reportOverlay){display:none!important;} body.report-open #reportOverlay{position:static;background:none;padding:0;display:block!important;overflow:visible;} body.report-open .report-panel{box-shadow:none;max-width:none;} body.report-open .report-bar{display:none!important;} }
+
+ /* ---- game-specific: Sumplete board ---- */
+ #grid{text-align:center;}
+ .splayout{display:inline-grid;grid-template-areas:"nums rowt" "colt corner";align-items:start;justify-content:center;}
+ .snums{grid-area:nums;display:grid;grid-template-columns:repeat(var(--n),56px);grid-template-rows:repeat(var(--n),56px);outline:3px solid #111;}  /* outline (not border) keeps targets aligned */
+ .srowt{grid-area:rowt;display:grid;grid-template-rows:repeat(var(--n),56px);margin-left:10px;}
+ .scolt{grid-area:colt;display:grid;grid-template-columns:repeat(var(--n),56px);margin-top:10px;}
+ .scell{border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;font-size:22px;user-select:none;box-sizing:border-box;}
+ .snum{cursor:pointer;transition:background .1s;}
+ .snum:hover{background:#f1f5f9;}
+ .snum.keep{background:#dcfce7;box-shadow:inset 0 0 0 2px #16a34a;font-weight:600;}
+ .snum.del{color:#dc2626;text-decoration:line-through;opacity:.55;background:#fef2f2;}
+ .snum.focus{outline:3px solid #2563eb;outline-offset:-3px;z-index:1;}
+ .starget{display:flex;align-items:center;justify-content:center;font-weight:700;color:#2563eb;font-size:18px;}
+ .srowt .starget{width:42px;} .scolt .starget{height:42px;}
+ .starget.ok{color:#16a34a;}
+ .scorner{grid-area:corner;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-weight:700;font-size:22px;margin-left:10px;margin-top:10px;}
+ .kbadge{color:#16a34a;font-weight:600;} .dbadge{color:#dc2626;font-weight:600;}
+</style>
+</head>
+<body>
+<h1>Metaplete <span style="font-weight:400;color:#9ca3af;">· delete-to-the-target puzzle with playback</span></h1>
+<div class="sub">Delete cells (✕) so the remaining numbers in each row &amp; column reach that line's target — by <b>sum</b> or, in Product mode, by <b>product</b> (multiply the survivors). Blank counts as kept; mark ● to record "this one stays." Then <b>replay your own solve</b> and name your thinking.</div>
+
+<div class="panel">
+ <h2>1 · Set up the game</h2>
+ <div class="row">
+  <label>Board size:
+   <select id="size"><option value="3">3×3</option><option value="4" selected>4×4</option><option value="5">5×5</option></select></label>
+  <label>Target:
+   <select id="opmode"><option value="sum" selected>Sum (+)</option><option value="product">Product (×)</option></select></label>
+  <label><input type="checkbox" id="hints" checked>Allow hints</label>
+  <label><input type="checkbox" id="showTimer">Show timer</label>
+  <button id="new">New puzzle</button>
+ </div>
+</div>
+
+<div class="panel">
+ <h2>2 · Game board</h2>
+ <div id="timer"></div>
+ <div class="padlabel">Click a cell to cycle: blank → <span class="kbadge">● keep</span> → <span class="dbadge">✕ delete</span>. (Arrow keys move · Enter/Space cycles · ⌘/Ctrl-Z undo.) Row/column targets turn green when hit.</div>
+ <div id="grid"></div>
+ <div style="text-align:center;margin-top:8px;"><button id="hint">Hint</button></div>
+ <div id="msg"></div>
+</div>
+
+<div class="panel">
+ <h2>3 · Gameplay analysis</h2>
+ <div class="row">
+  <button id="review">Review my thinking &#9656;</button>
+  <button id="check">Check solution</button>
+  <button id="reveal">Reveal one</button>
+ </div>
+ <div id="replayWrap" style="display:none;">
+  <input type="range" id="replay" min="0" value="0" step="1">
+  <div id="replayLabel"></div>
+  <div class="noterow"><textarea id="noteInput" rows="2" placeholder="Annotate this moment: what were you thinking here?"></textarea><button id="addNote">Attach note</button></div>
+  <div id="report"></div>
+ </div>
+ <div class="row" style="margin-top:14px;">
+  <button id="genreport">View thinking-analysis report</button>
+ </div>
+</div>
+<div class="note">A move-playback &amp; reflection take on the <b>delete-to-hit-the-target</b> number puzzle (a Kakuro/Hitori cousin) — <a href="https://www.digitaltrends.com/gaming/sumplete-chatgpt-ai-game-design-ethics/" target="_blank" rel="noopener">popularized in 2023 when Daniel Tait &amp; ChatGPT shipped "Sumplete."</a></div>
+<div id="reportOverlay">
+ <div class="report-panel">
+  <div class="report-bar">
+   <button id="rptDownload">&#10515; Download (.md)</button>
+   <button id="rptPrint">Save as PDF</button>
+   <span class="report-tip">Editable &mdash; click in and revise.</span>
+   <button id="rptClose" class="report-close">Close &#10005;</button>
+  </div>
+  <div id="reportDoc" contenteditable="true"></div>
+ </div>
+</div>
+<script>
+/* ============================================================================
+   PURE ENGINE — SUMPLETE (game-specific, node-testable, no DOM)
+   ----------------------------------------------------------------------------
+   A puzzle = an n×n number grid + a hidden keep/delete "solution mask". Row and
+   column targets are the sums of the KEPT numbers. Any mask that reproduces
+   every target is a valid solution — puzzles are not forced unique (consistent
+   with the suite's "how do you know you have them all?" stance); we hand back
+   one generating mask for hints/reveal.
+   ============================================================================ */
+function makeGrid(n,fill){ return Array.from({length:n},()=>Array.from({length:n},fill)); }
+function agg(vals,mode){ return mode==='product'?vals.reduce((a,b)=>a*b,1):vals.reduce((a,b)=>a+b,0); }
+function lineTotals(nums,mask,n,mode){   // sum or product of the KEPT cells, per row/col
+  const rows=[],cols=[];
+  for(let r=0;r<n;r++){const v=[];for(let c=0;c<n;c++)if(mask[r][c])v.push(nums[r][c]);rows.push(agg(v,mode));}
+  for(let c=0;c<n;c++){const v=[];for(let r=0;r<n;r++)if(mask[r][c])v.push(nums[r][c]);cols.push(agg(v,mode));}
+  return {rows,cols};
+}
+function noEmptyLines(mask,n){   // at least one ✕ overall AND no fully-deleted row/col
+  if(!mask.some(row=>row.some(k=>!k)))return false;
+  for(let r=0;r<n;r++)if(mask[r].every(k=>!k))return false;
+  for(let c=0;c<n;c++){let all=true;for(let r=0;r<n;r++)if(mask[r][c]){all=false;break;}if(all)return false;}
+  return true;
+}
+function pick(bag){ return bag[Math.floor(Math.random()*bag.length)]; }
+function generateSumplete(n){
+  const nums=makeGrid(n,()=>1+Math.floor(Math.random()*9));
+  let mask; do{ mask=makeGrid(n,()=>Math.random()<0.6); }while(!noEmptyLines(mask,n));
+  const {rows,cols}=lineTotals(nums,mask,n,'sum');
+  return {nums,mask,rowTargets:rows,colTargets:cols};
+}
+// Product mode: KEPT cells get SMALL factors (so products stay modest — a 10, a 24),
+// while DELETED cells (the distractors to remove) can be big. Board size is the
+// difficulty dial, not the digit range. A kept 1 is a "stays but doesn't change it" cell.
+function generateMultiplete(n){
+  // Every row/col product is forced into a BAND [MIN, CAP] — the floor is what
+  // keeps it from being trivial (my first cut only capped the max, so tiny
+  // products like 6 or 24 slipped through and it became pure elimination). Mid
+  // factors kept, big distractors deleted; board size stays the difficulty dial.
+  const keepBag=[3,4,4,5,6,6], delBag=[2,3,4,5,6,7,8,9], MIN=15, CAP=220;
+  const miss=(rows,cols)=>{ const lo=Math.min(...rows,...cols), hi=Math.max(...rows,...cols); return Math.max(0,MIN-lo)+Math.max(0,hi-CAP); };
+  let best=null, bestMiss=Infinity;
+  for(let t=0;t<600;t++){
+    let mask; do{ mask=makeGrid(n,()=>Math.random()<0.5); }while(!noEmptyLines(mask,n));
+    const nums=makeGrid(n,()=>0);
+    for(let r=0;r<n;r++)for(let c=0;c<n;c++)nums[r][c]=mask[r][c]?pick(keepBag):pick(delBag);
+    const {rows,cols}=lineTotals(nums,mask,n,'product');
+    const m=miss(rows,cols);
+    if(m===0)return {nums,mask,rowTargets:rows,colTargets:cols};
+    if(m<bestMiss){ bestMiss=m; best={nums,mask,rowTargets:rows,colTargets:cols}; }
+  }
+  return best;   // best-effort fallback: the attempt closest to the [MIN,CAP] band
+}
+// Is `state` (n×n of 0 blank / 1 keep / 2 delete) a winning solution? Only ✕ removes a cell.
+function solutionOK(nums,state,rowTargets,colTargets,n,mode){
+  const kept=makeGrid(n,()=>true);
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(state[r][c]===2)kept[r][c]=false;
+  const {rows,cols}=lineTotals(nums,kept,n,mode||'sum');
+  return rows.every((s,r)=>s===rowTargets[r])&&cols.every((s,c)=>s===colTargets[c]);
+}
+if(typeof module!=='undefined'&&module.exports)module.exports={generateSumplete,generateMultiplete,lineTotals,solutionOK};
+
+if(typeof document!=='undefined'){
+const $=id=>document.getElementById(id);
+const esc=x=>String(x).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+/* ============================================================================
+   1) METACOG CORE  —  COPY-IDENTICAL TO metadoku.html. DO NOT EDIT PER-GAME.
+   ----------------------------------------------------------------------------
+   Logs every time-stamped move, replays the solve, lets the learner annotate
+   moments, and emits the thinking-analysis report. Game-agnostic: it reaches
+   the game only through this interface (implemented in the GAME MODULE):
+
+     game.board · game.emptyBoard() · game.applyMove(board,m) ·
+     game.render(readonly,b) · game.focus(r,c) · game.locLabel(r,c) ·
+     game.describeMove(m) · game.header() · game.observations(moves,notes) ·
+     game.msg(text)
+
+   A "move" is {r,c,val,prev,t, undo?,redo?,hint?}; the core stamps t + flags,
+   the game supplies r,c,val,prev. Undo/redo are recorded as real moves —
+   backtracking is thinking and must survive into the playback.
+   ============================================================================ */
+const Metacog = {
+  game:null,
+  moves:[], notes:{}, undoStack:[], redoStack:[], startT:0, replayIndex:0,
+
+  init(game){ this.game=game; },
+
+  reset(){
+    this.moves=[]; this.notes={}; this.undoStack=[]; this.redoStack=[];
+    this.replayIndex=0; this.startT=0; this.started=false;   // clock starts on the FIRST move, not at puzzle creation
+    $('report').innerHTML=''; $('replayWrap').style.display='none';
+    if(!this._timerInt)this._timerInt=setInterval(()=>this.updateTimer(),1000);
+    this.updateTimer();
+  },
+
+  now(){ return this.started?Date.now()-this.startT:0; },
+
+  // Optional live elapsed-time display (OFF by default). Time is ALWAYS logged
+  // per move regardless — this only controls a clock during play. The real
+  // payoff is retrospective: pauses read as reasoning in the report.
+  updateTimer(){
+    const el=$('timer'); if(!el)return;
+    const on=$('showTimer')&&$('showTimer').checked;
+    el.style.display=on?'block':'none'; if(!on)return;
+    const s=Math.floor(this.now()/1000);
+    el.textContent=`⏱ ${String(s/60|0).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+  },
+
+  record(m, flags){ if(!this.started){this.started=true;this.startT=Date.now();} this.moves.push(Object.assign({t:this.now()}, m, flags||{})); },
+
+  commit(m, flags){
+    this.game.applyMove(this.game.board, m);
+    this.record(m, flags);
+    this.undoStack.push({r:m.r,c:m.c,val:m.val,prev:m.prev});
+    this.redoStack=[];
+  },
+
+  undo(){
+    if(!this.undoStack.length){ this.game.msg('Nothing to undo.'); return; }
+    const op=this.undoStack.pop();
+    this.game.applyMove(this.game.board,{r:op.r,c:op.c,val:op.prev});
+    this.record({r:op.r,c:op.c,val:op.prev,prev:op.val},{undo:true});
+    this.redoStack.push(op);
+    this.game.focus(op.r,op.c); this.game.render();
+    this.game.msg(`Undid ${this.game.locLabel(op.r,op.c)} (back to ${op.prev||'empty'}). Backtracking is thinking — it stays in your playback.`);
+  },
+  redo(){
+    if(!this.redoStack.length){ this.game.msg('Nothing to redo.'); return; }
+    const op=this.redoStack.pop();
+    this.game.applyMove(this.game.board,{r:op.r,c:op.c,val:op.val});
+    this.record({r:op.r,c:op.c,val:op.val,prev:op.prev},{redo:true});
+    this.undoStack.push(op);
+    this.game.focus(op.r,op.c); this.game.render();
+  },
+
+  boardAt(k){
+    const b=this.game.emptyBoard();
+    for(let i=0;i<k;i++)this.game.applyMove(b,this.moves[i]);
+    return b;
+  },
+
+  review(){
+    if(!this.moves.length){ this.game.msg('No moves recorded yet.'); return; }
+    $('replayWrap').style.display='block';
+    const sl=$('replay'); sl.max=this.moves.length; sl.value=this.moves.length;
+    this.replayTo(this.moves.length);
+    $('report').innerHTML=this.strategyReport();
+  },
+
+  replayTo(k){
+    this.replayIndex=k;
+    this.game.render(true, this.boardAt(k));
+    if($('noteInput'))$('noteInput').value=this.notes[k]||'';
+    if(k===0){ $('replayLabel').textContent='start'; return; }
+    const m=this.moves[k-1];
+    const tag=m.undo?'UNDO — ':m.redo?'REDO — ':m.hint?'HINT — ':'';
+    $('replayLabel').textContent=`move ${k}/${this.moves.length}: ${tag}${this.game.describeMove(m)}  (t=${(m.t/1000).toFixed(1)}s)${this.notes[k]?'  📝':''}`;
+  },
+
+  addNote(){
+    if(this.replayIndex<1){ this.game.msg('Move the replay slider to a moment first, then attach a note.'); return; }
+    const t=$('noteInput').value.trim();
+    if(t)this.notes[this.replayIndex]=t; else delete this.notes[this.replayIndex];
+    this.replayTo(this.replayIndex);
+    this.game.msg(t?`Note attached at move ${this.replayIndex}.`:`Note cleared at move ${this.replayIndex}.`);
+  },
+
+  strategyReport(){
+    const moves=this.moves;
+    const sets=moves.filter(m=>m.val&&!m.undo&&!m.redo), erases=moves.filter(m=>!m.val);
+    const undos=moves.filter(m=>m.undo).length;
+    const total=(moves[moves.length-1].t/1000).toFixed(1);
+    const touch={}; moves.forEach(m=>{const k=m.r+','+m.c; touch[k]=(touch[k]||0)+1;});
+    const revisits=Object.entries(touch).filter(([,c])=>c>1).sort((a,b)=>b[1]-a[1]);
+    const pauses=[]; for(let i=1;i<moves.length;i++)pauses.push(moves[i].t-moves[i-1].t);
+    const longest=pauses.length?Math.max(...pauses)/1000:0;
+    const li=[];
+    li.push(`You made <b>${moves.length}</b> moves over <b>${total}s</b> (${sets.length} entries, ${erases.length} clears, ${undos} undos).`);
+    (this.game.observations(moves,this.notes)||[]).forEach(x=>li.push(x));
+    if(revisits.length)li.push(`You reconsidered <b>${revisits[0][0].split(',').map(x=>+x+1).join('C').replace(/^/,'R')}</b> most (${revisits[0][1]}×) — that spot carried real reasoning weight.`);
+    else li.push(`You never revisited a spot — one commitment each. That's a confident, deductive style.`);
+    li.push(`Longest pause: <b>${longest.toFixed(1)}s</b> — a moment of reasoning, not guessing.`);
+    if(undos)li.push(`You undid <b>${undos}</b> time${undos>1?'s':''} — visible second-guessing, which is data, not failure.`);
+    li.push(`<i>Now switch lenses — from your own solve to your future classroom: what is the value of this gameplay analysis for student learning? (Write your paragraph in the reflection space below.)</i>`);
+    return '<ul>'+li.map(x=>`<li>${x}</li>`).join('')+'</ul>';
+  },
+
+  viewReport(){
+    if(!this.moves.length){ this.game.msg('Play a bit first — nothing to analyze yet.'); return; }
+    const stat=this.strategyReport();
+    let tl='';
+    this.moves.forEach((m,i)=>{
+      const k=i+1;
+      const tag=m.undo?'undo ':m.redo?'redo ':m.hint?'hint ':'';
+      tl+=`<li>t=${(m.t/1000).toFixed(1)}s — ${tag}${this.game.describeMove(m)}`;
+      if(this.notes[k])tl+=`<div class="note">📝 ${esc(this.notes[k])}</div>`;
+      tl+='</li>';
+    });
+    $('reportDoc').innerHTML=`<h1>Thinking analysis</h1><div class="rmeta">${this.game.header()}</div>`
+      +`<h2>Auto-observations</h2>${stat}`
+      +`<h2>Move-by-move (with my notes)</h2><ol>${tl}</ol>`
+      +`<h2>My reflection</h2>`
+      +`<p><b>Name your strategy.</b> ‹write a sentence or two: what was your strategy, really?›</p>`
+      +`<p><b>Why this matters for student learning.</b> ‹a paragraph: what is the value of this gameplay analysis for the students you'll teach?›</p>`;
+    document.body.classList.add('report-open'); $('reportOverlay').style.display='flex';
+    this.game.msg('Report open — edit freely, then Download (.md) or Save as PDF.');
+  },
+  closeReport(){ $('reportOverlay').style.display='none'; document.body.classList.remove('report-open'); },
+  downloadReport(){
+    const t=$('reportDoc').innerText;
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([t],{type:'text/markdown'}));
+    a.download='thinking-analysis.md'; a.click();
+  },
+};
+
+/* ============================================================================
+   2) GAME MODULE  —  SUMPLETE (Metaplete).  THE ONLY PART REWRITTEN FROM METADOKU.
+   ----------------------------------------------------------------------------
+   The board is an n×n grid of STATES: 0 = blank/undecided (kept), 1 = ● keep,
+   2 = ✕ delete. The numbers themselves live in `this.nums` (fixed per puzzle),
+   so a move only ever changes a cell's state — which is exactly what the core's
+   applyMove/boardAt replay machinery expects. A click cycles 0→1→2→0.
+   ============================================================================ */
+const BLANK=0, KEEP=1, DEL=2;
+const Game = {
+  // --- live game state ---
+  n:0, nums:null, mask:null, rowTargets:null, colTargets:null,
+  board:null, selected:null, hintsUsed:0,
+
+  // --- interface the core needs ---
+  emptyBoard(){ return Array.from({length:this.n},()=>Array(this.n).fill(BLANK)); },
+  applyMove(b,m){ b[m.r][m.c]=m.val; },
+  focus(r,c){ this.selected=[r,c]; },
+  locLabel(r,c){ return `R${r+1}C${c+1}`; },
+  describeMove(m){
+    const name=m.val===KEEP?'kept (●)':m.val===DEL?'deleted (✕)':'blank';
+    return m.val?`marked ${this.locLabel(m.r,m.c)} ${name}`:`cleared ${this.locLabel(m.r,m.c)} (blank)`;
+  },
+  header(){ return `${this.n}×${this.n} Sumplete · ${this.mode==='product'?'products (×)':'sums (+)'} · Metaplete (TCE 318P)`; },
+  msg(t){ $('msg').textContent=t; },
+
+  observations(moves){
+    const li=[];
+    const keeps=moves.filter(m=>m.val===KEEP&&!m.undo&&!m.redo).length;
+    const dels=moves.filter(m=>m.val===DEL&&!m.undo&&!m.redo).length;
+    const first=moves[0];
+    const fname=first.val===KEEP?'keep ●':first.val===DEL?'delete ✕':'blank';
+    li.push(`You committed <b>${keeps}</b> keep${keeps===1?'':'s'} and <b>${dels}</b> delete${dels===1?'':'s'} — marking a cell "must stay" is as much a decision as removing one.`);
+    li.push(`Your first move: <b>${this.locLabel(first.r,first.c)}</b> → <b>${fname}</b>${first.val===DEL?' — you led by eliminating.':first.val===KEEP?' — you led from certainty.':'.'}`);
+    const seen={}; moves.forEach(m=>{const k=m.r+','+m.c;(seen[k]=seen[k]||new Set()).add(m.val);});
+    const flips=Object.values(seen).filter(s=>s.has(KEEP)&&s.has(DEL)).length;
+    if(flips)li.push(`You reversed a keep↔delete on <b>${flips}</b> cell${flips===1?'':'s'} — hypothesis-testing made visible: you tried a claim about a cell, then revised it.`);
+    else li.push(`You never flipped a cell between keep and delete — once decided, it stayed.`);
+    return li;
+  },
+
+  // --- Sumplete-specific gameplay ---
+  lineAgg(v){ return this.mode==='product'?v.reduce((a,b)=>a*b,1):v.reduce((a,b)=>a+b,0); },
+  rowVal(b,r){ const v=[]; for(let c=0;c<this.n;c++)if(b[r][c]!==DEL)v.push(this.nums[r][c]); return this.lineAgg(v); },
+  colVal(b,c){ const v=[]; for(let r=0;r<this.n;r++)if(b[r][c]!==DEL)v.push(this.nums[r][c]); return this.lineAgg(v); },
+  readControls(){ this.n=+$('size').value; this.mode=$('opmode').value; },
+  newGame(){
+    this.readControls();
+    const p=this.mode==='product'?generateMultiplete(this.n):generateSumplete(this.n);
+    this.nums=p.nums; this.mask=p.mask; this.rowTargets=p.rowTargets; this.colTargets=p.colTargets;
+    this.board=this.emptyBoard();
+    this.selected=null; this.hintsUsed=0;
+    Metacog.reset();
+    this.updateHintBtn(); this.render();
+    this.msg(this.mode==='product'
+      ? 'Delete cells (✕) so every row and column MULTIPLIES to its target. Blank = kept; mark ● to record "this one stays."'
+      : 'Delete cells (✕) so every row and column ADDS to its target. Blank = kept; mark ● to record "this one stays."');
+  },
+  render(readonly,showBoard){
+    const b=showBoard||this.board, n=this.n;
+    // number block (bordered) + row targets (right, outside) + col targets (below, outside)
+    let nums=`<div class="snums" style="--n:${n}">`;
+    for(let r=0;r<n;r++)for(let c=0;c<n;c++){
+      const st=b[r][c];
+      const cls='scell snum'+(st===KEEP?' keep':st===DEL?' del':'')
+        +(!readonly&&this.selected&&this.selected[0]===r&&this.selected[1]===c?' focus':'');
+      nums+=`<div class="${cls}" data-r="${r}" data-c="${c}">${this.nums[r][c]}</div>`;
+    }
+    nums+='</div>';
+    let rowt=`<div class="srowt" style="--n:${n}">`;
+    for(let r=0;r<n;r++)rowt+=`<div class="starget${this.rowVal(b,r)===this.rowTargets[r]?' ok':''}">${this.rowTargets[r]}</div>`;
+    rowt+='</div>';
+    let colt=`<div class="scolt" style="--n:${n}">`;
+    for(let c=0;c<n;c++)colt+=`<div class="starget${this.colVal(b,c)===this.colTargets[c]?' ok':''}">${this.colTargets[c]}</div>`;
+    colt+='</div>';
+    const corner=`<div class="scorner">${this.mode==='product'?'×':'+'}</div>`;
+    $('grid').innerHTML=`<div class="splayout">${nums}${rowt}${colt}${corner}</div>`;
+    if(!readonly)$('grid').querySelectorAll('.snum').forEach(el=>el.onclick=()=>this.cycle(+el.dataset.r,+el.dataset.c));
+  },
+  cycle(r,c){
+    const prev=this.board[r][c], next=(prev+1)%3;
+    Metacog.commit({r,c,val:next,prev});   // core applies + logs
+    this.selected=[r,c]; this.render();
+  },
+  checkSolution(){
+    const n=this.n; let roff=0,coff=0;
+    for(let r=0;r<n;r++)if(this.rowVal(this.board,r)!==this.rowTargets[r])roff++;
+    for(let c=0;c<n;c++)if(this.colVal(this.board,c)!==this.colTargets[c])coff++;
+    if(roff===0&&coff===0)this.msg('Solved! Every row and column hits its target. How did you decide what had to go — and how would you convince someone it works?');
+    else this.msg(`Not yet — ${roff} row${roff===1?'':'s'} and ${coff} column${coff===1?'':'s'} are off target. (Blank counts as kept; only ✕ removes a cell.)`);
+  },
+  revealOne(){
+    for(let r=0;r<this.n;r++)for(let c=0;c<this.n;c++)this.board[r][c]=this.mask[r][c]?KEEP:DEL;
+    this.render(); this.msg('Revealed one valid solution (● keep, ✕ delete).');
+  },
+  updateHintBtn(){ $('hint').style.display=$('hints').checked?'':'none'; },
+  hint(){
+    if(!$('hints').checked)return;
+    let cell=null; outer:for(let r=0;r<this.n;r++)for(let c=0;c<this.n;c++)if(this.board[r][c]===BLANK){cell=[r,c];break outer;}
+    if(!cell){ this.msg('Every cell is decided — nothing to hint.'); return; }
+    const [r,c]=cell, sol=this.mask[r][c]?KEEP:DEL, prev=this.board[r][c];
+    this.hintsUsed++;
+    Metacog.commit({r,c,val:sol,prev},{hint:true});
+    this.selected=[r,c]; this.render();
+    this.msg(`Hint: R${r+1}C${c+1} should be ${sol===KEEP?'● kept':'✕ deleted'}. (${this.hintsUsed} hint${this.hintsUsed>1?'s':''} used)`);
+  },
+};
+
+/* ============================================================================
+   3) WIRING  —  connect DOM controls to the core + game.
+   ============================================================================ */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&document.body.classList.contains('report-open')){Metacog.closeReport();return;}
+  const _t=(e.target&&e.target.tagName||'').toLowerCase();
+  if(_t==='input'||_t==='textarea'||_t==='select'||(e.target&&e.target.isContentEditable))return; // don't hijack typing in notes/report/sliders
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?Metacog.redo():Metacog.undo();return;}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();Metacog.redo();return;}
+  const n=Game.n; if(!n)return;
+  let [r,c]=Game.selected||[0,0];
+  if(e.key==='Enter'||e.key===' ')Game.cycle(r,c);
+  else if(e.key==='ArrowUp'&&r>0)Game.selected=[r-1,c];
+  else if(e.key==='ArrowDown'&&r<n-1)Game.selected=[r+1,c];
+  else if(e.key==='ArrowLeft'&&c>0)Game.selected=[r,c-1];
+  else if(e.key==='ArrowRight'&&c<n-1)Game.selected=[r,c+1];
+  else return;
+  e.preventDefault();Game.render();
+});
+window.addEventListener('DOMContentLoaded',()=>{
+  Metacog.init(Game);
+  $('new').onclick=()=>Game.newGame();
+  $('check').onclick=()=>Game.checkSolution();
+  $('reveal').onclick=()=>Game.revealOne();
+  $('review').onclick=()=>Metacog.review();
+  $('hint').onclick=()=>Game.hint();
+  $('hints').onchange=()=>Game.updateHintBtn();
+  $('addNote').onclick=()=>Metacog.addNote();
+  $('genreport').onclick=()=>Metacog.viewReport();
+  $('rptClose').onclick=()=>Metacog.closeReport();
+  $('rptDownload').onclick=()=>Metacog.downloadReport();
+  $('rptPrint').onclick=()=>window.print();
+  $('replay').oninput=e=>Metacog.replayTo(+e.target.value);
+  $('size').onchange=()=>Game.newGame();     // picking a new board size auto-deals a new puzzle
+  $('opmode').onchange=()=>Game.newGame();   // switching Sum <-> Product auto-deals a new puzzle
+  $('showTimer').onchange=()=>Metacog.updateTimer();
+  Game.newGame();
+});
+}
+</script>
+</body>
+</html>

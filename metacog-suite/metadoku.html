@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metadoku — TCE 318P prototype</title>
+<!--
+  ============================================================================
+  METADOKU  ·  Calcudoku + "watch your own thinking" playback
+  ============================================================================
+  This file is the REFERENCE app of a three-app suite (Metadoku / Metaplete /
+  Metagons). All three share one metacognition engine; only the game changes.
+
+  The code is split into two clearly separated zones so a sibling app is
+  "keep the CORE, rewrite the GAME":
+
+    1. METACOG CORE  — reusable, DO NOT edit per-game. Owns the move log,
+       timing, undo/redo, replay + annotate, and the thinking-analysis report.
+       Talks to the game only through the `Game` interface documented below.
+
+    2. GAME MODULE   — the ONLY part you rewrite for a sibling app. Implements
+       the small `Game` interface (emptyBoard, applyMove, render, describeMove,
+       header, observations, …) and owns everything Calcudoku-specific.
+
+  The CSS below is the shared "house style" — copy it as-is into the siblings
+  so the three apps read as one suite.
+  ============================================================================
+-->
+<style>
+ body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:720px;margin:24px auto;padding:0 16px;color:#1f2937;}
+ h1{font-size:20px;margin:0 0 2px;} .sub{color:#6b7280;font-size:13px;margin-bottom:18px;}
+ .panel{border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin-bottom:16px;background:#fff;}
+ .panel h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:#94a3b8;margin:0 0 12px;font-weight:700;}
+ .row{display:flex;flex-wrap:wrap;gap:14px;align-items:center;font-size:14px;}
+ .row label{display:flex;align-items:center;gap:5px;}
+ select,button,input{font:inherit;}
+ button{cursor:pointer;border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:7px 13px;}
+ button:hover{background:#f1f5f9;}
+ #new,#genreport{background:#2563eb;color:#fff;border-color:#2563eb;}
+ .grid{display:grid;grid-template-columns:repeat(var(--n),56px);grid-template-rows:repeat(var(--n),56px);border:3px solid #111;width:max-content;margin:0 auto;}
+ .cell{position:relative;border:1px solid #9ca3af;display:flex;align-items:center;justify-content:center;font-size:24px;user-select:none;cursor:pointer;box-sizing:border-box;}
+ .cell .clue{position:absolute;top:2px;left:4px;font-size:11px;font-weight:600;color:#374151;line-height:1;}
+ .cell.sel{background:#dbeafe;} .cell.bad{color:#dc2626;} .cell .val{pointer-events:none;}
+ .padlabel{font-size:12px;color:#6b7280;margin:12px 0 4px;text-align:center;}
+ .pad{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
+ .pad button{width:44px;height:44px;font-size:18px;transition:background .1s;}
+ .pad button:hover{background:#e5e7eb;}
+ .dots{display:flex;gap:8px;justify-content:center;margin:2px 0 4px;}
+ .dot{width:16px;height:16px;border-radius:50%;border:2px solid #2563eb;} .dot.on{background:#2563eb;}
+ #dotlabel{font-size:13px;color:#6b7280;text-align:center;}
+ #timer{font-variant-numeric:tabular-nums;font-size:14px;color:#6b7280;text-align:center;margin-bottom:6px;display:none;}
+ #msg{margin:12px 0 0;padding:10px 12px;background:#eff6ff;border-left:3px solid #2563eb;border-radius:4px;font-size:14px;min-height:20px;}
+ #replayWrap{margin-top:14px;}
+ #replay{width:100%;} #replayLabel{font-size:13px;color:#374151;margin-top:4px;}
+ .noterow{display:flex;gap:8px;margin:8px 0;}
+ #noteInput{flex:1;padding:6px 9px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;resize:vertical;min-height:40px;}
+ #report{font-size:14px;} #report ul{padding-left:18px;} #report li{margin:5px 0;}
+ .timeline{font-size:13px;color:#374151;padding-left:20px;} .timeline li{margin:2px 0;} .note-in{color:#2563eb;font-style:italic;margin:2px 0 6px;}
+ .note{font-size:12px;color:#9ca3af;margin-top:6px;}
+ #reportOverlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-start;justify-content:center;overflow:auto;z-index:1000;padding:24px;}
+ .report-panel{background:#fff;max-width:720px;width:100%;border-radius:12px;box-shadow:0 12px 44px rgba(0,0,0,.35);}
+ .report-bar{position:sticky;top:0;background:#fff;border-bottom:1px solid #e5e7eb;padding:12px 16px;display:flex;gap:8px;align-items:center;border-radius:12px 12px 0 0;}
+ .report-bar .report-tip{color:#9ca3af;font-size:12px;} .report-close{margin-left:auto;}
+ #reportDoc{padding:6px 20px 28px;line-height:1.55;} #reportDoc:focus{outline:none;}
+ #reportDoc h1{font-size:22px;margin:14px 0 2px;} #reportDoc .rmeta{color:#6b7280;font-size:14px;}
+ #reportDoc h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;margin-top:20px;}
+ #reportDoc ul,#reportDoc ol{padding-left:20px;} #reportDoc li{margin:3px 0;} #reportDoc .note{color:#2563eb;font-style:italic;margin:2px 0 8px;}
+ @media print{ body.report-open > *:not(#reportOverlay){display:none!important;} body.report-open #reportOverlay{position:static;background:none;padding:0;display:block!important;overflow:visible;} body.report-open .report-panel{box-shadow:none;max-width:none;} body.report-open .report-bar{display:none!important;} }
+</style>
+</head>
+<body>
+<h1>Metadoku <span style="font-weight:400;color:#9ca3af;">· Calcudoku with playback</span></h1>
+<div class="sub">Fill each row &amp; column with 1…N (no repeats). Each outlined cage must hit its target using the shown operation. Then <b>replay your own solve</b> and name your thinking.</div>
+
+<!-- The three panels + report overlay are shared house markup. A sibling app
+     reuses panels 2/3 and the overlay verbatim; only panel 1 (game setup) and
+     the board's guts change. IDs consumed by the core: #grid #pad #msg #dots
+     #dotlabel #replayWrap #replay #replayLabel #noteInput #addNote #report
+     #reportOverlay #reportDoc #rptDownload #rptPrint #rptClose #review #genreport -->
+<div class="panel">
+ <h2>1 · Set up the game</h2>
+ <div class="row">
+  <label>Board size:
+   <select id="size"><option value="3">3×3</option><option value="4" selected>4×4</option><option value="5">5×5</option><option value="6">6×6</option></select></label>
+  <label>Operations:</label>
+  <label><input type="checkbox" id="op43" checked>+</label>
+  <label><input type="checkbox" id="op45">−</label>
+  <label><input type="checkbox" id="op42">×</label>
+  <label><input type="checkbox" id="op47">÷</label>
+  <label>How many solutions? <input type="range" id="nsol" min="1" max="6" value="1"><span id="nsolval">1</span></label>
+  <span style="font-size:12px;color:#9ca3af;">1 = prove it's forced · 2+ = find &amp; justify all (not a difficulty dial)</span>
+  <label><input type="checkbox" id="hints" checked>Allow hints</label>
+  <label><input type="checkbox" id="showTimer">Show timer</label>
+  <button id="new">New puzzle</button>
+ </div>
+</div>
+
+<div class="panel">
+ <h2>2 · Game board</h2>
+ <div id="timer"></div>
+ <div class="dots" id="dots"></div>
+ <div id="dotlabel"></div>
+ <div class="grid" id="grid"></div>
+ <div class="padlabel">Click a cell, then enter a number (⌫ clear · ↶ undo · ↷ redo):</div>
+ <div class="pad" id="pad"></div>
+ <div style="text-align:center;margin-top:8px;"><button id="hint">Hint</button></div>
+ <div id="msg"></div>
+</div>
+
+<div class="panel">
+ <h2>3 · Gameplay analysis</h2>
+ <div class="row">
+  <button id="review">Review my thinking &#9656;</button>
+  <button id="check">Check solution</button>
+  <button id="reveal">Reveal one</button>
+ </div>
+ <div id="replayWrap" style="display:none;">
+  <input type="range" id="replay" min="0" value="0" step="1">
+  <div id="replayLabel"></div>
+  <div class="noterow"><textarea id="noteInput" rows="2" placeholder="Annotate this moment: what were you thinking here?"></textarea><button id="addNote">Attach note</button></div>
+  <div id="report"></div>
+ </div>
+ <div class="row" style="margin-top:14px;">
+  <button id="genreport">View thinking-analysis report</button>
+ </div>
+</div><div class="note">A Calcudoku-style puzzle — invented in 2004 by math teacher <a href="https://en.wikipedia.org/wiki/Tetsuya_Miyamoto" target="_blank" rel="noopener">Tetsuya Miyamoto</a> as a "teaching without teaching" tool. (His brand "KenKen" is trademarked; the puzzle type is generic.)</div>
+<div id="reportOverlay">
+ <div class="report-panel">
+  <div class="report-bar">
+   <button id="rptDownload">&#10515; Download (.md)</button>
+   <button id="rptPrint">Save as PDF</button>
+   <span class="report-tip">Editable &mdash; click in and revise.</span>
+   <button id="rptClose" class="report-close">Close &#10005;</button>
+  </div>
+  <div id="reportDoc" contenteditable="true"></div>
+ </div>
+</div>
+<script>
+/* ============================================================================
+   PURE ENGINE — CALCUDOKU (game-specific, node-testable, no DOM)
+   ----------------------------------------------------------------------------
+   Puzzle generation + solution counting. This is the deepest game-specific
+   layer — a sibling app replaces this whole block with its own generator.
+   Kept DOM-free so it can be unit-tested under node (see the module.exports
+   guard at the end).
+   ============================================================================ */
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function randomLatin(n){
+  const g=Array.from({length:n},()=>Array(n).fill(0));
+  (function bt(p){
+    if(p===n*n)return true;
+    const r=(p/n)|0,c=p%n;
+    for(const v of shuffle([...Array(n)].map((_,i)=>i+1))){
+      let ok=true;
+      for(let k=0;k<c;k++)if(g[r][k]===v){ok=false;break;}
+      if(ok)for(let k=0;k<r;k++)if(g[k][c]===v){ok=false;break;}
+      if(ok){g[r][c]=v;if(bt(p+1))return true;g[r][c]=0;}
+    }
+    return false;
+  })(0);
+  return g;
+}
+function partition(n){
+  const cells=[];for(let r=0;r<n;r++)for(let c=0;c<n;c++)cells.push([r,c]);
+  shuffle(cells);const used=new Set(),cages=[],key=(r,c)=>r*n+c;
+  for(const [r,c] of cells){
+    if(used.has(key(r,c)))continue;
+    const nb=[[r,c+1],[r+1,c],[r,c-1],[r-1,c]].filter(([a,b])=>a>=0&&a<n&&b>=0&&b<n&&!used.has(key(a,b)));
+    if(nb.length&&Math.random()>0.05){const [r2,c2]=nb[Math.floor(Math.random()*nb.length)];used.add(key(r,c));used.add(key(r2,c2));cages.push([[r,c],[r2,c2]]);}
+    else{used.add(key(r,c));cages.push([[r,c]]);}
+  }
+  return cages;
+}
+function assignOps(cages,sol,allowed){
+  return cages.map(cells=>{
+    const vals=cells.map(([r,c])=>sol[r][c]);
+    if(cells.length===1)return {op:'=',target:vals[0],cells};
+    const opts=[];
+    if(allowed.includes('+'))opts.push(['+',vals.reduce((a,b)=>a+b,0)]);
+    if(allowed.includes('-')&&cells.length===2)opts.push(['-',Math.abs(vals[0]-vals[1])]);
+    if(allowed.includes('*'))opts.push(['*',vals.reduce((a,b)=>a*b,1)]);
+    if(allowed.includes('/')&&cells.length===2){const a=Math.max(...vals),b=Math.min(...vals);if(b&&a%b===0)opts.push(['/',a/b]);}
+    const [op,target]=opts[Math.floor(Math.random()*opts.length)];
+    return {op,target,cells};
+  });
+}
+function cageOK(cage,g){
+  const v=cage.cells.map(([r,c])=>g[r][c]);
+  switch(cage.op){
+    case'=':return v[0]===cage.target;
+    case'+':return v.reduce((a,b)=>a+b,0)===cage.target;
+    case'*':return v.reduce((a,b)=>a*b,1)===cage.target;
+    case'-':return Math.abs(v[0]-v[1])===cage.target;
+    case'/':{const a=Math.max(...v),b=Math.min(...v);return b&&a%b===0&&a/b===cage.target;}
+  }
+}
+function countSolutions(n,cages,cap){
+  const cellCage=Array.from({length:n},()=>Array(n).fill(-1));
+  cages.forEach((cg,i)=>cg.cells.forEach(([r,c])=>cellCage[r][c]=i));
+  const lastPos=cages.map(cg=>Math.max(...cg.cells.map(([r,c])=>r*n+c)));
+  const g=Array.from({length:n},()=>Array(n).fill(0));let count=0;const found=[];
+  (function bt(p){
+    if(count>=cap)return;
+    if(p===n*n){count++;found.push(g.map(r=>r.slice()));return;}
+    const r=(p/n)|0,c=p%n;
+    for(let v=1;v<=n;v++){
+      let ok=true;
+      for(let k=0;k<c;k++)if(g[r][k]===v){ok=false;break;}
+      if(ok)for(let k=0;k<r;k++)if(g[k][c]===v){ok=false;break;}
+      if(!ok)continue;
+      g[r][c]=v;const ci=cellCage[r][c];
+      if(lastPos[ci]===p&&!cageOK(cages[ci],g)){g[r][c]=0;continue;}
+      bt(p+1);g[r][c]=0;if(count>=cap)return;
+    }
+  })(0);
+  return {count,found};
+}
+function generateUnique(n,allowed,tries=4000){
+  for(let t=0;t<tries;t++){
+    const sol=randomLatin(n);const cages=assignOps(partition(n),sol,allowed);
+    if(cages.filter(c=>c.op==='=').length>1)continue;
+    if(!allowed.every(o=>new Set(cages.map(c=>c.op)).has(o)))continue;
+    if(countSolutions(n,cages,2).count===1)return {sol,cages};
+  }
+  return null;
+}
+function generateOpen(n,allowed,minS,maxS,tries=4000){
+  for(let t=0;t<tries;t++){
+    const sol=randomLatin(n);let cages=assignOps(partition(n),sol,allowed);
+    shuffle(cages);
+    while(cages.length>2){
+      const trial=cages.slice(0,-1);
+      const {count}=countSolutions(n,trial,maxS+1);
+      if(count>maxS)break;
+      cages=trial;
+      if(count>=minS)return {sol,cages};
+    }
+  }
+  return null;
+}
+if(typeof module!=='undefined'&&module.exports)module.exports={generateUnique,generateOpen,countSolutions};
+
+if(typeof document!=='undefined'){
+const $=id=>document.getElementById(id);
+const esc=x=>String(x).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+/* ============================================================================
+   1) METACOG CORE  —  REUSABLE ACROSS ALL THREE APPS. DO NOT EDIT PER-GAME.
+   ----------------------------------------------------------------------------
+   The whole pedagogical point of the suite lives here: every action a learner
+   takes is time-stamped and logged, so they can replay their own solve,
+   annotate the moments, and read a "you did have a strategy — name it" report.
+
+   The core is game-agnostic. It never knows what the puzzle IS; it only knows
+   how to log moves, scrub a timeline, attach notes, and emit the report. It
+   reaches the game through this interface (implemented in the GAME MODULE):
+
+     game.board                  — the live board object the game mutates
+     game.emptyBoard()           — a fresh blank board (for replay reconstruction)
+     game.applyMove(board, m)    — apply move m to a board (m has {r,c,val,...})
+     game.render(readonly, b)    — draw board b (or the live board if omitted)
+     game.focus(r,c)             — move the game's selection to r,c
+     game.locLabel(r,c)          — human label for a location, e.g. "R1C2"
+     game.describeMove(m)        — e.g. "set to 3 at R1C2" / "cleared at R1C2"
+     game.header()               — one-line puzzle descriptor for the report
+     game.observations(moves,notes) — array of game-tuned reflection bullets (HTML)
+     game.msg(text)              — write to the status line
+
+   A "move" is a plain object {r,c,val,prev,t, undo?,redo?,hint?}. The core
+   stamps `t` (ms since the solve started) and the flags; the game supplies
+   r,c,val,prev. Undo/redo are recorded as real moves (not history erasure) —
+   backtracking is thinking, and it must survive into the playback.
+   ============================================================================ */
+const Metacog = {
+  game:null,
+  moves:[], notes:{}, undoStack:[], redoStack:[], startT:0, replayIndex:0,
+
+  init(game){ this.game=game; },
+
+  // Begin a fresh solve. Call from the game's newGame() after the board resets.
+  reset(){
+    this.moves=[]; this.notes={}; this.undoStack=[]; this.redoStack=[];
+    this.replayIndex=0; this.startT=0; this.started=false;   // clock starts on the FIRST move, not at puzzle creation
+    $('report').innerHTML=''; $('replayWrap').style.display='none';
+    if(!this._timerInt)this._timerInt=setInterval(()=>this.updateTimer(),1000);
+    this.updateTimer();
+  },
+
+  now(){ return this.started?Date.now()-this.startT:0; },
+
+  // Optional live elapsed-time display (OFF by default). Time is ALWAYS logged
+  // per move regardless — this only controls a clock during play. The real
+  // payoff is retrospective: pauses read as reasoning in the report.
+  updateTimer(){
+    const el=$('timer'); if(!el)return;
+    const on=$('showTimer')&&$('showTimer').checked;
+    el.style.display=on?'block':'none'; if(!on)return;
+    const s=Math.floor(this.now()/1000);
+    el.textContent=`⏱ ${String(s/60|0).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+  },
+
+  // Log a move that the caller has ALREADY applied to the live board.
+  record(m, flags){ if(!this.started){this.started=true;this.startT=Date.now();} this.moves.push(Object.assign({t:this.now()}, m, flags||{})); },
+
+  // Commit a fresh forward move: apply → log → enable undo → clear redo.
+  // The game calls this from setCell()/hint() instead of touching the log itself.
+  commit(m, flags){
+    this.game.applyMove(this.game.board, m);
+    this.record(m, flags);
+    this.undoStack.push({r:m.r,c:m.c,val:m.val,prev:m.prev});
+    this.redoStack=[];
+  },
+
+  undo(){
+    if(!this.undoStack.length){ this.game.msg('Nothing to undo.'); return; }
+    const op=this.undoStack.pop();
+    this.game.applyMove(this.game.board,{r:op.r,c:op.c,val:op.prev});
+    this.record({r:op.r,c:op.c,val:op.prev,prev:op.val},{undo:true});
+    this.redoStack.push(op);
+    this.game.focus(op.r,op.c); this.game.render();
+    this.game.msg(`Undid ${this.game.locLabel(op.r,op.c)} (back to ${op.prev||'empty'}). Backtracking is thinking — it stays in your playback.`);
+  },
+  redo(){
+    if(!this.redoStack.length){ this.game.msg('Nothing to redo.'); return; }
+    const op=this.redoStack.pop();
+    this.game.applyMove(this.game.board,{r:op.r,c:op.c,val:op.val});
+    this.record({r:op.r,c:op.c,val:op.val,prev:op.prev},{redo:true});
+    this.undoStack.push(op);
+    this.game.focus(op.r,op.c); this.game.render();
+  },
+
+  // Reconstruct the board as it stood after the first k moves (for replay).
+  boardAt(k){
+    const b=this.game.emptyBoard();
+    for(let i=0;i<k;i++)this.game.applyMove(b,this.moves[i]);
+    return b;
+  },
+
+  // "Review my thinking" — open the scrubber at the end and show live stats.
+  review(){
+    if(!this.moves.length){ this.game.msg('No moves recorded yet.'); return; }
+    $('replayWrap').style.display='block';
+    const sl=$('replay'); sl.max=this.moves.length; sl.value=this.moves.length;
+    this.replayTo(this.moves.length);
+    $('report').innerHTML=this.strategyReport();
+  },
+
+  // Scrub to move k: rebuild that board, redraw read-only, label the moment.
+  replayTo(k){
+    this.replayIndex=k;
+    this.game.render(true, this.boardAt(k));
+    if($('noteInput'))$('noteInput').value=this.notes[k]||'';
+    if(k===0){ $('replayLabel').textContent='start'; return; }
+    const m=this.moves[k-1];
+    const tag=m.undo?'UNDO — ':m.redo?'REDO — ':m.hint?'HINT — ':'';
+    $('replayLabel').textContent=`move ${k}/${this.moves.length}: ${tag}${this.game.describeMove(m)}  (t=${(m.t/1000).toFixed(1)}s)${this.notes[k]?'  📝':''}`;
+  },
+
+  // Attach/clear a note at the current replay moment.
+  addNote(){
+    if(this.replayIndex<1){ this.game.msg('Move the replay slider to a moment first, then attach a note.'); return; }
+    const t=$('noteInput').value.trim();
+    if(t)this.notes[this.replayIndex]=t; else delete this.notes[this.replayIndex];
+    this.replayTo(this.replayIndex);
+    this.game.msg(t?`Note attached at move ${this.replayIndex}.`:`Note cleared at move ${this.replayIndex}.`);
+  },
+
+  // The "you DID have a strategy" analysis: generic stats about the solve
+  // (pace, revisits, backtracks) + whatever game-tuned bullets the game adds.
+  strategyReport(){
+    const moves=this.moves;
+    const sets=moves.filter(m=>m.val&&!m.undo&&!m.redo), erases=moves.filter(m=>!m.val);
+    const undos=moves.filter(m=>m.undo).length;
+    const total=(moves[moves.length-1].t/1000).toFixed(1);
+    const touch={}; moves.forEach(m=>{const k=m.r+','+m.c; touch[k]=(touch[k]||0)+1;});
+    const revisits=Object.entries(touch).filter(([,c])=>c>1).sort((a,b)=>b[1]-a[1]);
+    const pauses=[]; for(let i=1;i<moves.length;i++)pauses.push(moves[i].t-moves[i-1].t);
+    const longest=pauses.length?Math.max(...pauses)/1000:0;
+    const li=[];
+    li.push(`You made <b>${moves.length}</b> moves over <b>${total}s</b> (${sets.length} entries, ${erases.length} clears, ${undos} undos).`);
+    // game-tuned bullets slot in here (e.g. Calcudoku's opening-cage read)
+    (this.game.observations(moves,this.notes)||[]).forEach(x=>li.push(x));
+    if(revisits.length)li.push(`You reconsidered <b>${revisits[0][0].split(',').map(x=>+x+1).join('C').replace(/^/,'R')}</b> most (${revisits[0][1]}×) — that spot carried real reasoning weight.`);
+    else li.push(`You never revisited a spot — one commitment each. That's a confident, deductive style.`);
+    li.push(`Longest pause: <b>${longest.toFixed(1)}s</b> — a moment of reasoning, not guessing.`);
+    if(undos)li.push(`You undid <b>${undos}</b> time${undos>1?'s':''} — visible second-guessing, which is data, not failure.`);
+    li.push(`<i>Now switch lenses — from your own solve to your future classroom: what is the value of this gameplay analysis for student learning? (Write your paragraph in the reflection space below.)</i>`);
+    return '<ul>'+li.map(x=>`<li>${x}</li>`).join('')+'</ul>';
+  },
+
+  // Open the editable, downloadable report overlay.
+  viewReport(){
+    if(!this.moves.length){ this.game.msg('Play a bit first — nothing to analyze yet.'); return; }
+    const stat=this.strategyReport();
+    let tl='';
+    this.moves.forEach((m,i)=>{
+      const k=i+1;
+      const tag=m.undo?'undo ':m.redo?'redo ':m.hint?'hint ':'';
+      tl+=`<li>t=${(m.t/1000).toFixed(1)}s — ${tag}${this.game.describeMove(m)}`;
+      if(this.notes[k])tl+=`<div class="note">📝 ${esc(this.notes[k])}</div>`;
+      tl+='</li>';
+    });
+    $('reportDoc').innerHTML=`<h1>Thinking analysis</h1><div class="rmeta">${this.game.header()}</div>`
+      +`<h2>Auto-observations</h2>${stat}`
+      +`<h2>Move-by-move (with my notes)</h2><ol>${tl}</ol>`
+      +`<h2>My reflection</h2>`
+      +`<p><b>Name your strategy.</b> ‹write a sentence or two: what was your strategy, really?›</p>`
+      +`<p><b>Why this matters for student learning.</b> ‹a paragraph: what is the value of this gameplay analysis for the students you'll teach?›</p>`;
+    document.body.classList.add('report-open'); $('reportOverlay').style.display='flex';
+    this.game.msg('Report open — edit freely, then Download (.md) or Save as PDF.');
+  },
+  closeReport(){ $('reportOverlay').style.display='none'; document.body.classList.remove('report-open'); },
+  downloadReport(){
+    const t=$('reportDoc').innerText;
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([t],{type:'text/markdown'}));
+    a.download='thinking-analysis.md'; a.click();
+  },
+};
+
+/* ============================================================================
+   2) GAME MODULE  —  CALCUDOKU (Metadoku).  THE ONLY PART A SIBLING REWRITES.
+   ----------------------------------------------------------------------------
+   Owns everything puzzle-specific: the live board, cell selection, drawing the
+   grid + number pad, the win check, hints — and it implements the small `Game`
+   interface the core calls (emptyBoard/applyMove/render/describeMove/header/
+   observations/focus/locLabel/msg).
+
+   The board here is an n×n array of ints (0 = empty). A move's (r,c) is the cell
+   and `val` the number placed (0 = cleared). For a sibling app you swap this
+   whole object — e.g. Metaplete's board is a keep/delete grid, Metagons' is a
+   set of vertex values — but keep the same method names and the core just works.
+   ============================================================================ */
+const SYM={'=':'','+':'+','-':'−','*':'×','/':'÷'};
+const Game = {
+  // --- live game state ---
+  n:0, allowed:[], puzzle:null, cellCage:null, anchors:null,
+  board:null, selected:null, allSolutions:[], foundSet:null, hintsUsed:0,
+
+  // --- interface the core needs ---
+  emptyBoard(){ return Array.from({length:this.n},()=>Array(this.n).fill(0)); },
+  applyMove(b,m){ b[m.r][m.c]=m.val; },
+  focus(r,c){ this.selected=[r,c]; },
+  locLabel(r,c){ return `R${r+1}C${c+1}`; },
+  describeMove(m){ return `${m.val?`set to ${m.val}`:'cleared'} at ${this.locLabel(m.r,m.c)}`; },
+  header(){ return `${this.n}×${this.n} · operations ${this.allowed.join(' ')} · ${this.puzzle.solutions} solution${this.puzzle.solutions>1?'s':''} · Metadoku (TCE 318P)`; },
+  msg(t){ $('msg').textContent=t; },
+
+  // Game-tuned reflection bullets appended after the core's move-count line.
+  observations(moves){
+    const li=[];
+    const first=moves[0], firstCage=this.puzzle.cages[this.cellCage[first.r][first.c]];
+    li.push(`First move: <b>${this.locLabel(first.r,first.c)}</b>, cage <b>${firstCage.target+SYM[firstCage.op]}</b>${firstCage.op==='='?' — a single-cell "given" (starting where you\'re certain is itself a strategy).':'.'}`);
+    if(this.hintsUsed)li.push(`You used <b>${this.hintsUsed}</b> hint${this.hintsUsed>1?'s':''} — where, and why there?`);
+    return li;
+  },
+
+  // --- Calcudoku-specific gameplay ---
+  readControls(){
+    this.n=+$('size').value;
+    this.allowed=['+','-','*','/'].filter(o=>$('op'+o.charCodeAt(0)).checked);
+    if(this.allowed.length===0){this.allowed=['+'];$('op43').checked=true;}
+  },
+  newGame(){
+    this.readControls();
+    const target=+$('nsol').value;
+    const p=(target===1)?generateUnique(this.n,this.allowed)
+      :(generateOpen(this.n,this.allowed,target,target)||generateOpen(this.n,this.allowed,Math.max(2,target-1),target+1));
+    if(!p){ this.msg('Could not generate with those settings — loosen operations or lower the solution count.'); return; }
+    this.puzzle=p;
+    const res=countSolutions(this.n,p.cages,60);
+    this.allSolutions=res.found.map(g=>g.flat().join('')); this.puzzle.solutions=res.count;
+    this.cellCage=Array.from({length:this.n},()=>Array(this.n).fill(-1));
+    p.cages.forEach((cg,i)=>cg.cells.forEach(([r,c])=>this.cellCage[r][c]=i));
+    this.anchors={}; p.cages.forEach(cg=>{const a=cg.cells.reduce((m,[r,c])=>Math.min(m,r*this.n+c),1e9);this.anchors[a]=cg;});
+    this.board=this.emptyBoard();
+    this.selected=[0,0]; this.foundSet=new Set(); this.hintsUsed=0;
+    Metacog.reset();          // core starts a fresh move log/timer
+    this.updateHintBtn(); this.render(); this.renderDots();
+    this.msg(this.puzzle.solutions===1?'Find the solution. (Top-left cell is selected — pick a number.)':`This puzzle has ${this.puzzle.solutions} solutions — find them all, then be ready to argue that's all of them.`);
+  },
+  render(readonly,showBoard){
+    const b=showBoard||this.board, n=this.n;
+    const grid=$('grid'); grid.style.setProperty('--n',n); grid.innerHTML='';
+    for(let r=0;r<n;r++)for(let c=0;c<n;c++){
+      const cell=document.createElement('div'); cell.className='cell';
+      const ci=this.cellCage[r][c];
+      const diff=(rr,cc)=>rr<0||cc<0||rr>=n||cc>=n||this.cellCage[rr][cc]!==ci;
+      if(diff(r-1,c))cell.style.borderTopWidth='3px';
+      if(diff(r,c-1))cell.style.borderLeftWidth='3px';
+      if(diff(r+1,c))cell.style.borderBottomWidth='3px';
+      if(diff(r,c+1))cell.style.borderRightWidth='3px';
+      const a=this.anchors[r*n+c];
+      if(a){const cl=document.createElement('div');cl.className='clue';cl.textContent=a.target+SYM[a.op];cell.appendChild(cl);}
+      const val=document.createElement('div'); val.className='val'; val.textContent=b[r][c]||''; cell.appendChild(val);
+      if(!readonly){
+        if(this.selected&&this.selected[0]===r&&this.selected[1]===c)cell.classList.add('sel');
+        if(b[r][c]&&this.conflict(b,r,c))cell.classList.add('bad');
+        cell.onclick=()=>{this.selected=[r,c];this.render();};
+      }
+      grid.appendChild(cell);
+    }
+    if(!readonly)this.buildPad();
+  },
+  conflict(b,r,c){const v=b[r][c];if(!v)return false;const n=this.n;for(let k=0;k<n;k++){if(k!==c&&b[r][k]===v)return true;if(k!==r&&b[k][c]===v)return true;}return false;},
+  buildPad(){
+    const pad=$('pad'); pad.innerHTML='';
+    for(let v=1;v<=this.n;v++){const btn=document.createElement('button');btn.textContent=v;btn.onclick=()=>this.setCell(v);pad.appendChild(btn);}
+    const e=document.createElement('button');e.textContent='⌫';e.title='Clear cell';e.onclick=()=>this.setCell(0);pad.appendChild(e);
+    const u=document.createElement('button');u.textContent='↶';u.title='Undo (Ctrl+Z)';u.onclick=()=>Metacog.undo();pad.appendChild(u);
+    const rd=document.createElement('button');rd.textContent='↷';rd.title='Redo (Ctrl+Y)';rd.onclick=()=>Metacog.redo();pad.appendChild(rd);
+  },
+  setCell(v){
+    if(!this.selected)return;
+    const [r,c]=this.selected, prev=this.board[r][c];
+    if(prev===v)return;
+    Metacog.commit({r,c,val:v,prev});   // core applies + logs
+    this.render();
+  },
+  checkSolution(){
+    const s=this.board.flat().join('');
+    if(this.board.flat().some(x=>x===0)){ this.msg('Board not full yet — keep going.'); return; }
+    if(this.allSolutions.includes(s)){
+      if(this.foundSet.has(s))this.msg('Valid — but you already found this one. Look for a different arrangement.');
+      else{ this.foundSet.add(s); this.renderDots();
+        this.msg(this.foundSet.size===this.puzzle.solutions?`That's all ${this.puzzle.solutions}! How would you convince someone there are no others?`:`Valid solution — ${this.foundSet.size} of ${this.puzzle.solutions}.`);}
+    }else this.msg('Full board, but a cage or a row/column rule is broken — not a valid solution.');
+  },
+  renderDots(){
+    const d=$('dots'); d.innerHTML='';
+    for(let i=0;i<this.puzzle.solutions;i++){const dot=document.createElement('span');dot.className='dot'+(i<this.foundSet.size?' on':'');d.appendChild(dot);}
+    $('dotlabel').textContent=`${this.foundSet.size} / ${this.puzzle.solutions} solutions found`;
+  },
+  revealOne(){
+    const missing=this.allSolutions.find(s=>!this.foundSet.has(s));
+    if(!missing){ this.msg('All solutions already found.'); return; }
+    const g=missing.split('').map(Number);
+    for(let r=0;r<this.n;r++)for(let c=0;c<this.n;c++)this.board[r][c]=g[r*this.n+c];
+    this.render(); this.msg('Revealed one solution.');
+  },
+  updateHintBtn(){ $('hint').style.display=$('hints').checked?'':'none'; },
+  hint(){
+    if(!$('hints').checked)return;
+    let cell=(this.selected&&this.board[this.selected[0]][this.selected[1]]===0)?this.selected:null;
+    if(!cell){outer:for(let r=0;r<this.n;r++)for(let c=0;c<this.n;c++)if(this.board[r][c]===0){cell=[r,c];break outer;}}
+    if(!cell){ this.msg('Board is full — nothing to hint.'); return; }
+    const sol=this.allSolutions.find(s=>{const g=s.split('').map(Number);return this.board.every((row,r)=>row.every((v,c)=>v===0||v===g[r*this.n+c]));})||this.allSolutions[0];
+    const g=sol.split('').map(Number); const [r,c]=cell; const val=g[r*this.n+c], prev=this.board[r][c];
+    this.hintsUsed++;
+    Metacog.commit({r,c,val,prev},{hint:true});   // logged as a hint move
+    this.selected=[r,c]; this.render();
+    this.msg(`Hint: R${r+1}C${c+1} is ${val}. (${this.hintsUsed} hint${this.hintsUsed>1?'s':''} used)`);
+  },
+};
+
+/* ============================================================================
+   3) WIRING  —  connect DOM controls to the core + game.
+   ============================================================================ */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&document.body.classList.contains('report-open')){Metacog.closeReport();return;}
+  const _t=(e.target&&e.target.tagName||'').toLowerCase();
+  if(_t==='input'||_t==='textarea'||_t==='select'||(e.target&&e.target.isContentEditable))return; // don't hijack typing in notes/report/sliders
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?Metacog.redo():Metacog.undo();return;}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();Metacog.redo();return;}
+  if(!Game.selected)return; let [r,c]=Game.selected;            // keyboard entry (safe: guard above bails when typing in a text field)
+  if(e.key>='1'&&e.key<=String(Game.n))Game.setCell(+e.key);
+  else if(e.key==='Backspace'||e.key==='Delete'||e.key==='0')Game.setCell(0);
+  else if(e.key==='ArrowUp'&&r>0)Game.selected=[r-1,c];
+  else if(e.key==='ArrowDown'&&r<Game.n-1)Game.selected=[r+1,c];
+  else if(e.key==='ArrowLeft'&&c>0)Game.selected=[r,c-1];
+  else if(e.key==='ArrowRight'&&c<Game.n-1)Game.selected=[r,c+1];
+  else return;
+  e.preventDefault();Game.render();
+});
+window.addEventListener('DOMContentLoaded',()=>{
+  Metacog.init(Game);
+  $('new').onclick=()=>Game.newGame();
+  $('check').onclick=()=>Game.checkSolution();
+  $('reveal').onclick=()=>Game.revealOne();
+  $('review').onclick=()=>Metacog.review();
+  $('hint').onclick=()=>Game.hint();
+  $('hints').onchange=()=>Game.updateHintBtn();
+  $('addNote').onclick=()=>Metacog.addNote();
+  $('genreport').onclick=()=>Metacog.viewReport();
+  $('rptClose').onclick=()=>Metacog.closeReport();
+  $('rptDownload').onclick=()=>Metacog.downloadReport();
+  $('rptPrint').onclick=()=>window.print();
+  $('replay').oninput=e=>Metacog.replayTo(+e.target.value);
+  $('nsol').oninput=e=>$('nsolval').textContent=e.target.value;
+  // Puzzle-defining controls regenerate on change, so the controls never
+  // silently disagree with the puzzle on screen (size/ops/solution-count).
+  // onchange fires on release — dragging still updates the label live above.
+  $('size').onchange=()=>Game.newGame();
+  $('nsol').onchange=()=>Game.newGame();
+  ['op43','op45','op42','op47'].forEach(id=>$(id).onchange=()=>Game.newGame());
+  $('showTimer').onchange=()=>Metacog.updateTimer();
+  Game.newGame();
+});
+}
+</script>
+</body>
+</html>

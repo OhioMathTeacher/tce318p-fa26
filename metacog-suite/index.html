@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Watch Your Own Thinking — metacognitive math puzzles</title>
+<meta name="description" content="Metadoku, Metaplete, and Metagons — puzzle games that record your solving so you can replay, annotate, and name your own thinking. Reasoning made visible, not drill.">
+<style>
+ :root{--ink:#1f2937;--muted:#6b7280;--line:#e5e7eb;--blue:#2563eb;--wash:#eff6ff;}
+ *{box-sizing:border-box;}
+ body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);margin:0;line-height:1.55;background:#fafafa;}
+ .wrap{max-width:820px;margin:0 auto;padding:0 20px;}
+ header{padding:56px 0 28px;}
+ .kicker{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--blue);font-weight:700;margin:0 0 10px;}
+ h1{font-size:34px;line-height:1.15;margin:0 0 14px;}
+ h1 .sub{color:var(--muted);font-weight:400;}
+ .lede{font-size:18px;color:#374151;margin:0;}
+ .manifesto{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px 26px;margin:26px 0;}
+ .manifesto p{margin:0 0 12px;} .manifesto p:last-child{margin-bottom:0;}
+ .manifesto .pull{font-size:16px;} .manifesto b{color:var(--ink);}
+ .quote{border-left:3px solid var(--blue);padding:2px 0 2px 16px;margin:16px 0;color:#374151;font-style:italic;}
+ .quote span{display:block;font-style:normal;font-size:13px;color:var(--muted);margin-top:4px;}
+ h2.section{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;font-weight:700;margin:34px 0 14px;}
+ .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+ @media(max-width:640px){.cards{grid-template-columns:1fr;}}
+ .card{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;transition:transform .12s,box-shadow .12s;}
+ .card:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.08);}
+ .card h3{margin:0 0 2px;font-size:20px;}
+ .card .type{font-size:12px;color:var(--muted);margin:0 0 12px;}
+ .card .lens{font-size:14px;color:#374151;flex:1;margin:0 0 16px;}
+ .card .lens b{color:var(--ink);}
+ .play{display:inline-block;text-align:center;text-decoration:none;background:var(--blue);color:#fff;font-weight:600;font-size:14px;border-radius:10px;padding:9px 14px;}
+ .play:hover{background:#1d4ed8;}
+ .how{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+ @media(max-width:640px){.how{grid-template-columns:1fr;}}
+ .step{background:var(--wash);border-radius:14px;padding:16px 18px;}
+ .step .n{font-weight:700;color:var(--blue);font-size:13px;}
+ .step p{margin:4px 0 0;font-size:14px;color:#374151;}
+ footer{border-top:1px solid var(--line);margin-top:44px;padding:26px 0 60px;color:var(--muted);font-size:13px;}
+ footer a{color:var(--blue);} footer p{margin:0 0 8px;}
+ .tag{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:12px;color:#374151;margin:0 6px 6px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+ <p class="kicker">Metacognitive math puzzles</p>
+ <h1>Watch your own thinking.<br><span class="sub">Three puzzles that record how you solve — then hand the reasoning back to you.</span></h1>
+ <p class="lede">Play a puzzle, then <b>replay and annotate your own solve</b> and download a <i>"here's how I actually thought about it"</i> report. The point isn't the answer — it's seeing the mind that got there.</p>
+</header>
+
+<div class="manifesto">
+ <p class="pull"><b>Math through play.</b> A well-made puzzle can carry a mathematical idea — but only because a teacher chose it, set the stage, and knows exactly what to watch for. Teachers aren't needed less here; they're needed <b>differently</b> — as designers of the experience and readers of the thinking.</p>
+ <div class="quote">"Give children good educational materials and they will think, learn, and grow on their own."<span>Tetsuya Miyamoto — a math teacher who invented this puzzle type in 2004 to do exactly that. His students reason for themselves because he engineered the materials, and guided them, so they could.</span></div>
+ <p>That's the stance here. The games don't explain the rules — students <b>infer</b> them. They don't grade a strategy — they <b>show it back</b> and ask the learner to name it. And crucially, they hand the <b>teacher</b> a window into that thinking: a replayable, annotatable record of how a student actually reasoned — exactly what you need to respond well. Struggle isn't a bug; it's the lesson, and the teacher is the one who frames it.</p>
+ <p>Which is also why these aren't <b>drill in a nicer costume.</b> Anyone can dress up procedures with animation. These make <b>reasoning visible</b> — deduction, elimination, working backward — so teacher and student can study the thinking together, not just check the answer.</p>
+</div>
+
+<h2 class="section">The three puzzles</h2>
+<div class="cards">
+ <div class="card">
+  <h3>Metadoku</h3>
+  <p class="type">Calcudoku · deduction</p>
+  <p class="lens">Fill the grid so every cage hits its target. The thinking it makes visible: <b>constraint deduction</b> — which clue forced which cell, and how you know the answer is the only one.</p>
+  <a class="play" href="metadoku.html">Play Metadoku →</a>
+ </div>
+ <div class="card">
+  <h3>Metaplete</h3>
+  <p class="type">Delete-to-target · elimination</p>
+  <p class="lens">Delete cells so each row and column hits its target — by sum or product. The thinking it makes visible: <b>hypothesis-testing</b> — when you knew, when you guessed, and when you backed a choice out.</p>
+  <a class="play" href="metaplete.html">Play Metaplete →</a>
+ </div>
+ <div class="card">
+  <h3>Metagons</h3>
+  <p class="type">Arithmagons · inverse</p>
+  <p class="lens">Each edge is the sum of the two circles it joins — work <b>backward</b> to the hidden values. The thinking it makes visible: <b>inverse reasoning</b> — where you entered the system and how you unwound it.</p>
+  <a class="play" href="metagons.html">Play Metagons →</a>
+ </div>
+</div>
+
+<h2 class="section">How each one works</h2>
+<div class="how">
+ <div class="step"><span class="n">1 · Solve</span><p>Infer the rules from a worked example, then solve. Every move is quietly time-stamped.</p></div>
+ <div class="step"><span class="n">2 · Replay &amp; annotate</span><p>Scrub back through your own solve and attach notes at the moments that carried real reasoning.</p></div>
+ <div class="step"><span class="n">3 · Report</span><p>Generate an editable, downloadable "thinking analysis" — your strategy, in your words. No data leaves the device.</p></div>
+</div>
+
+<footer>
+ <p><b>Built for the classroom.</b> These are being field-tested in Week 1 of <b>TCE 318P</b> (PK–5 mathematics methods) at Miami University, with pre-service teachers — as part of <b>Quinn Bobeczko's IRB-approved research</b> — and the course's culminating project has those candidates <b>building their own apps</b>. From playing the tools, to critiquing them, to shipping their own.</p>
+ <p>
+  <span class="tag">Self-contained · no server, no cloud</span>
+  <span class="tag">FERPA-clean by design</span>
+  <span class="tag">One shared engine, three games</span>
+  <span class="tag">Vibe-coded, ownable</span>
+ </p>
+ <p style="margin-top:14px;">Credits &amp; lineage — Metadoku: the puzzle <a href="https://en.wikipedia.org/wiki/Tetsuya_Miyamoto" target="_blank" rel="noopener">Tetsuya Miyamoto</a> invented as a teaching tool (KenKen is his trademark; the type is generic). Metaplete: the delete-to-target puzzle <a href="https://www.digitaltrends.com/gaming/sumplete-chatgpt-ai-game-design-ethics/" target="_blank" rel="noopener">popularized in 2023 as "Sumplete"</a> (a Kakuro/Hitori cousin). Metagons: <a href="https://nrich.maths.org/problems/arithmagons" target="_blank" rel="noopener">Arithmagons</a>, via NRICH.</p>
+</footer>
+
+</div>
+</body>
+</html>
