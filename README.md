@@ -1,8 +1,19 @@
-# TCE 318P — Mathematics for PK-5 Teachers (Fall 2026)
+# TCE 318P — Mathematics for PK–5 Teachers (Fall 2026)
 
-Public course materials, Miami University.
+Public, student-facing course materials for **TCE 318P** at Miami University.
 
-## Metacog puzzle suite
-Metadoku, Metaplete, and Metagons — puzzles that record your solving so you can replay, annotate, and name your own thinking.
+De-identified and **FERPA-safe**: no student names, work, or grades live here —
+those stay in Canvas. Design and planning docs live in a separate private repo.
 
-**Play:** https://ohiomathteacher.github.io/tce318p-fa26/metacog-suite/
+## What's here
+
+- **[`metacog-suite/`](metacog-suite/)** — the metacognitive math-puzzle apps:
+  **Metadoku · Metaplete · Metagons.** Self-contained, run in the browser, and
+  record your solving so you can replay and study your own reasoning.
+  → https://ohiomathteacher.github.io/tce318p-fa26/metacog-suite/
+
+- **[`week-1-reasoning-puzzles/`](week-1-reasoning-puzzles/)** — Week 1 (Reasoning
+  Puzzles): the Tuesday and Thursday day-outlines, the Solution Report and
+  Thinking-Analysis Report templates, and alias links to the apps above.
+
+More weeks will be added here as the semester unfolds.
