@@ -80,6 +80,7 @@
   <label><input type="checkbox" id="hints" checked>Allow hints</label>
   <label><input type="checkbox" id="showTimer">Show timer</label>
   <button id="new">New puzzle</button>
+  <button id="graded" style="background:#c1121f;color:#fff;font-weight:700;" title="Load the Tuesday board — the same puzzle you solved on paper in class">Tuesday Puzzle</button>
  </div>
 </div>
 
@@ -319,6 +320,14 @@ const Metacog = {
    generating vertices in `this.verts` (for hints/reveal). The board draws as an
    SVG polygon: clickable vertex circles + read-only edge boxes.
    ============================================================================ */
+// ============================================================================
+//  CURATED "TUESDAY PUZZLE" — the frozen Week-1 board (Arithmagon). Frozen 7/4 via
+//  Game.exportPuzzle() — Pentagon (5), uniquely solvable (odd cycle; validated).
+//  To re-freeze: click "New puzzle" at the chosen shape, run Game.exportPuzzle(),
+//  paste here. NOTE: odd cycles (Triangle/Pentagon) are uniquely solvable; even
+//  cycles (Square) admit a one-parameter family.
+// ============================================================================
+const CURATED = {"n":5,"verts":[2,7,2,9,4],"edges":[9,9,11,13,6]};
 const Game = {
   // --- live game state ---
   n:0, verts:null, edges:null, board:null, selected:null, hintsUsed:0,
@@ -352,13 +361,34 @@ const Game = {
   edgeOK(b,i){ const a=b[0][i],c=b[0][(i+1)%this.n]; return a&&c&&(a+c===this.edges[i]); },
   newGame(){
     this.readControls();
-    const p=generateArithmagon(this.n);
+    this.loadPuzzle(generateArithmagon(this.n));
+  },
+  // Load a specific puzzle {verts,edges} — shared by random generation and the
+  // curated "Tuesday Puzzle" loader. The core resets, so a fresh solve is logged.
+  loadPuzzle(p){
     this.verts=p.verts; this.edges=p.edges;
     this.board=this.emptyBoard();
     this.selected=0; this.hintsUsed=0;
     Metacog.reset();
     this.updateHintBtn(); this.render();
     this.msg('Fill each circle so every box equals the sum of the two circles it joins. Click a circle, then type its value.');
+  },
+  // Load the frozen Week-1 board — the SAME puzzle solved on paper Tuesday, so
+  // Thursday's playback/report is a shared board across the class. Sets the
+  // shape control to match so the UI stays honest with what's on screen.
+  loadTuesday(){
+    const g=CURATED;
+    this.n=g.n; $('size').value=String(g.n);
+    this.loadPuzzle({verts:g.verts.slice(),edges:g.edges.slice()});
+    this.msg('Tuesday Puzzle loaded — the same board from class. Fill the circles, then Review your thinking.');
+  },
+  // Dev helper: click "New puzzle" until you like a board, then run
+  // Game.exportPuzzle() in the console to copy the literal to freeze as CURATED.
+  exportPuzzle(){
+    const lit=JSON.stringify({n:this.n,verts:this.verts,edges:this.edges});
+    console.log(lit); try{navigator.clipboard&&navigator.clipboard.writeText(lit).catch(()=>{});}catch(e){}
+    this.msg('Puzzle JSON logged to console. Paste it to freeze the Tuesday board.');
+    return lit;
   },
   render(readonly,showBoard){
     const b=showBoard||this.board, n=this.n, pos=this.vertexPositions();
@@ -440,6 +470,8 @@ document.addEventListener('keydown',e=>{
 window.addEventListener('DOMContentLoaded',()=>{
   Metacog.init(Game);
   $('new').onclick=()=>Game.newGame();
+  $('graded').onclick=()=>Game.loadTuesday();
+  window.Game=Game;   // exposes Game.exportPuzzle() for freezing a Tuesday board
   $('check').onclick=()=>Game.checkSolution();
   $('reveal').onclick=()=>Game.revealOne();
   $('review').onclick=()=>Metacog.review();

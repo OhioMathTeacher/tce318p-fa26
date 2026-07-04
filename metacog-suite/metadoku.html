@@ -92,6 +92,7 @@
   <label><input type="checkbox" id="hints" checked>Allow hints</label>
   <label><input type="checkbox" id="showTimer">Show timer</label>
   <button id="new">New puzzle</button>
+  <button id="graded" style="background:#c1121f;color:#fff;font-weight:700;" title="Load the Tuesday board — the same puzzle you solved on paper in class">Tuesday Puzzle</button>
  </div>
 </div>
 
@@ -433,6 +434,16 @@ const Metacog = {
    set of vertex values — but keep the same method names and the core just works.
    ============================================================================ */
 const SYM={'=':'','+':'+','-':'−','*':'×','/':'÷'};
+
+// ============================================================================
+//  CURATED "TUESDAY PUZZLE" — the frozen Week-1 board. The SAME puzzle students
+//  solve on paper Tuesday (low-tech), loaded in-app Thursday via the red button
+//  so the whole class analyzes ONE shared board. Frozen 7/4 via Game.exportPuzzle()
+//  — 5×5, operations +−×, uniquely solvable (validated). To re-freeze a different
+//  board: click "New puzzle" at the chosen settings, run Game.exportPuzzle() in
+//  the console, and paste the result over this literal.
+// ============================================================================
+const CURATED = {"n":5,"allowed":["+","-","*"],"sol":[[4,3,5,1,2],[1,5,2,3,4],[5,2,1,4,3],[3,1,4,2,5],[2,4,3,5,1]],"cages":[{"op":"+","target":6,"cells":[[4,4],[3,4]]},{"op":"*","target":3,"cells":[[1,3],[0,3]]},{"op":"-","target":3,"cells":[[3,1],[4,1]]},{"op":"+","target":6,"cells":[[3,3],[3,2]]},{"op":"-","target":2,"cells":[[0,2],[0,1]]},{"op":"+","target":8,"cells":[[3,0],[2,0]]},{"op":"=","target":2,"cells":[[4,0]]},{"op":"-","target":1,"cells":[[2,2],[2,1]]},{"op":"-","target":2,"cells":[[4,2],[4,3]]},{"op":"*","target":8,"cells":[[0,4],[1,4]]},{"op":"+","target":7,"cells":[[1,2],[1,1]]},{"op":"-","target":1,"cells":[[2,3],[2,4]]},{"op":"*","target":4,"cells":[[1,0],[0,0]]}]};
 const Game = {
   // --- live game state ---
   n:0, allowed:[], puzzle:null, cellCage:null, anchors:null,
@@ -468,6 +479,12 @@ const Game = {
     const p=(target===1)?generateUnique(this.n,this.allowed)
       :(generateOpen(this.n,this.allowed,target,target)||generateOpen(this.n,this.allowed,Math.max(2,target-1),target+1));
     if(!p){ this.msg('Could not generate with those settings — loosen operations or lower the solution count.'); return; }
+    this.loadPuzzle(p);
+    this.msg(this.puzzle.solutions===1?'Find the solution. (Top-left cell is selected — pick a number.)':`This puzzle has ${this.puzzle.solutions} solutions — find them all, then be ready to argue that's all of them.`);
+  },
+  // Load a specific puzzle {sol,cages} — shared by random generation and the
+  // curated "Tuesday Puzzle" loader. The core resets, so a fresh solve is logged.
+  loadPuzzle(p){
     this.puzzle=p;
     const res=countSolutions(this.n,p.cages,60);
     this.allSolutions=res.found.map(g=>g.flat().join('')); this.puzzle.solutions=res.count;
@@ -478,7 +495,27 @@ const Game = {
     this.selected=[0,0]; this.foundSet=new Set(); this.hintsUsed=0;
     Metacog.reset();          // core starts a fresh move log/timer
     this.updateHintBtn(); this.render(); this.renderDots();
-    this.msg(this.puzzle.solutions===1?'Find the solution. (Top-left cell is selected — pick a number.)':`This puzzle has ${this.puzzle.solutions} solutions — find them all, then be ready to argue that's all of them.`);
+  },
+  // Load the frozen Week-1 board — the SAME puzzle solved on paper Tuesday, so
+  // Thursday's playback/report is a shared board across the class. Sets the
+  // controls to match so the UI stays honest with what's on screen.
+  loadTuesday(){
+    const g=CURATED;
+    this.n=g.n; $('size').value=String(g.n);
+    this.allowed=g.allowed.slice();
+    ['+','-','*','/'].forEach(o=>{const el=$('op'+o.charCodeAt(0));if(el)el.checked=g.allowed.includes(o);});
+    $('nsol').value='1'; if($('nsolval'))$('nsolval').textContent='1';
+    this.loadPuzzle({sol:g.sol.map(r=>r.slice()), cages:g.cages.map(c=>({op:c.op,target:c.target,cells:c.cells.map(x=>x.slice())}))});
+    this.msg('Tuesday Puzzle loaded — the same board from class. Solve it, then Review your thinking.');
+  },
+  // Dev helper: click "New puzzle" until you like a board, then run
+  // Game.exportPuzzle() in the console to copy the literal to freeze as CURATED.
+  exportPuzzle(){
+    const p=this.puzzle;
+    const lit=JSON.stringify({n:this.n,allowed:this.allowed,sol:p.sol,cages:p.cages.map(c=>({op:c.op,target:c.target,cells:c.cells}))});
+    console.log(lit); try{navigator.clipboard&&navigator.clipboard.writeText(lit).catch(()=>{});}catch(e){}
+    this.msg('Puzzle JSON logged to console (and copied). Paste it to freeze the Tuesday board.');
+    return lit;
   },
   render(readonly,showBoard){
     const b=showBoard||this.board, n=this.n;
@@ -576,6 +613,8 @@ document.addEventListener('keydown',e=>{
 window.addEventListener('DOMContentLoaded',()=>{
   Metacog.init(Game);
   $('new').onclick=()=>Game.newGame();
+  $('graded').onclick=()=>Game.loadTuesday();
+  window.Game=Game;   // exposes Game.exportPuzzle() for freezing a Tuesday board
   $('check').onclick=()=>Game.checkSolution();
   $('reveal').onclick=()=>Game.revealOne();
   $('review').onclick=()=>Metacog.review();

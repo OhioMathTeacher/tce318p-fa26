@@ -88,6 +88,7 @@
   <label><input type="checkbox" id="hints" checked>Allow hints</label>
   <label><input type="checkbox" id="showTimer">Show timer</label>
   <button id="new">New puzzle</button>
+  <button id="graded" style="background:#c1121f;color:#fff;font-weight:700;" title="Load the Tuesday board — the same puzzle you solved on paper in class">Tuesday Puzzle</button>
  </div>
 </div>
 
@@ -356,6 +357,12 @@ const Metacog = {
    applyMove/boardAt replay machinery expects. A click cycles 0→1→2→0.
    ============================================================================ */
 const BLANK=0, KEEP=1, DEL=2;
+// ============================================================================
+//  CURATED "TUESDAY PUZZLE" — the frozen Week-1 board (Sumplete). Frozen 7/4 via
+//  Game.exportPuzzle() — 5×5 Sum, uniquely solvable (validated). To re-freeze:
+//  click "New puzzle" at the chosen settings, run Game.exportPuzzle(), paste here.
+// ============================================================================
+const CURATED = {"n":5,"mode":"sum","nums":[[2,6,6,8,1],[8,8,3,5,4],[9,4,8,1,9],[7,5,7,6,7],[7,2,6,6,1]],"mask":[[true,true,false,false,true],[false,true,false,true,false],[true,true,true,false,false],[true,true,true,false,true],[false,true,true,true,false]],"rowTargets":[9,13,21,26,14],"colTargets":[18,25,21,11,8]};
 const Game = {
   // --- live game state ---
   n:0, nums:null, mask:null, rowTargets:null, colTargets:null,
@@ -396,6 +403,12 @@ const Game = {
   newGame(){
     this.readControls();
     const p=this.mode==='product'?generateMultiplete(this.n):generateSumplete(this.n);
+    this.loadPuzzle(p);
+  },
+  // Load a specific puzzle {nums,mask,rowTargets,colTargets} — shared by random
+  // generation and the curated "Tuesday Puzzle" loader. The core resets, so a
+  // fresh solve is logged. `this.mode` must already be set (drives the message).
+  loadPuzzle(p){
     this.nums=p.nums; this.mask=p.mask; this.rowTargets=p.rowTargets; this.colTargets=p.colTargets;
     this.board=this.emptyBoard();
     this.selected=null; this.hintsUsed=0;
@@ -404,6 +417,24 @@ const Game = {
     this.msg(this.mode==='product'
       ? 'Delete cells (✕) so every row and column MULTIPLIES to its target. Blank = kept; mark ● to record "this one stays."'
       : 'Delete cells (✕) so every row and column ADDS to its target. Blank = kept; mark ● to record "this one stays."');
+  },
+  // Load the frozen Week-1 board — the SAME puzzle solved on paper Tuesday, so
+  // Thursday's playback/report is a shared board across the class. Sets the
+  // controls to match so the UI stays honest with what's on screen.
+  loadTuesday(){
+    const g=CURATED;
+    this.n=g.n; $('size').value=String(g.n);
+    this.mode=g.mode; $('opmode').value=g.mode;
+    this.loadPuzzle({nums:g.nums.map(r=>r.slice()),mask:g.mask.map(r=>r.slice()),rowTargets:g.rowTargets.slice(),colTargets:g.colTargets.slice()});
+    this.msg('Tuesday Puzzle loaded — the same board from class. Delete cells, then Review your thinking.');
+  },
+  // Dev helper: click "New puzzle" until you like a board, then run
+  // Game.exportPuzzle() in the console to copy the literal to freeze as CURATED.
+  exportPuzzle(){
+    const lit=JSON.stringify({n:this.n,mode:this.mode,nums:this.nums,mask:this.mask,rowTargets:this.rowTargets,colTargets:this.colTargets});
+    console.log(lit); try{navigator.clipboard&&navigator.clipboard.writeText(lit).catch(()=>{});}catch(e){}
+    this.msg('Puzzle JSON logged to console. Paste it to freeze the Tuesday board.');
+    return lit;
   },
   render(readonly,showBoard){
     const b=showBoard||this.board, n=this.n;
@@ -477,6 +508,8 @@ document.addEventListener('keydown',e=>{
 window.addEventListener('DOMContentLoaded',()=>{
   Metacog.init(Game);
   $('new').onclick=()=>Game.newGame();
+  $('graded').onclick=()=>Game.loadTuesday();
+  window.Game=Game;   // exposes Game.exportPuzzle() for freezing a Tuesday board
   $('check').onclick=()=>Game.checkSolution();
   $('reveal').onclick=()=>Game.revealOne();
   $('review').onclick=()=>Metacog.review();
