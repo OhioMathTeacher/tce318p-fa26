@@ -16,4 +16,9 @@ those stay in Canvas. Design and planning docs live in a separate private repo.
   Puzzles): the Tuesday and Thursday day-outlines, the Solution Report and
   Thinking-Analysis Report templates, and alias links to the apps above.
 
+- **[`week-2-listening-questioning/`](week-2-listening-questioning/)** — Week 2
+  (Listening &amp; Questioning): the Tuesday and Thursday day-outlines, the
+  Thinker-Doer task handout, the MQR student-work analysis, the QFT form, and
+  the Solution Report #2 guideline.
+
 More weeks will be added here as the semester unfolds.
