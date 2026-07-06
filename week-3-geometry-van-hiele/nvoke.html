@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nVoke — build it · see it · say it</title>
+<style>
+  :root{
+    --outline:#1F4E96; --fill:#c7e2f4; --mark:#b23b3b; --ground:#fffdf5;
+    --ink:#1a2b4a; --muted:#5b6b82; --line:#d8e2ee; --ok:#2e7d32;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+       background:var(--ground);color:var(--ink);}
+  .wrap{max-width:960px;margin:0 auto;padding:22px 20px 60px;}
+  h1{font-size:26px;margin:0;color:var(--outline);letter-spacing:.3px}
+  h1 small{font-weight:600;color:var(--muted);font-size:14px;margin-left:8px}
+  .ferpa{font-size:12.5px;color:var(--muted);margin:4px 0 20px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:14px 0;
+        box-shadow:0 1px 0 rgba(0,0,0,.02)}
+  label{display:block;font-weight:600;margin:14px 0 6px;font-size:14px}
+  .row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end}
+  .row>div{flex:1;min-width:180px}
+  select,input[type=text],textarea{width:100%;padding:9px 11px;border:1px solid var(--line);
+        border-radius:9px;font:inherit;background:#fff;color:var(--ink)}
+  textarea{min-height:96px;resize:vertical}
+  input[type=range]{width:100%}
+  .seg{display:inline-flex;border:1px solid var(--outline);border-radius:10px;overflow:hidden}
+  .seg button{border:0;background:#fff;color:var(--outline);padding:9px 16px;font:inherit;font-weight:600;cursor:pointer}
+  .seg button.on{background:var(--outline);color:#fff}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:6px;font-weight:400}
+  button.primary{background:var(--outline);color:#fff;border:0;border-radius:10px;padding:12px 22px;
+        font:inherit;font-weight:700;cursor:pointer;font-size:16px}
+  button.ghost{background:#fff;border:1px solid var(--outline);color:var(--outline);border-radius:10px;
+        padding:10px 18px;font:inherit;font-weight:600;cursor:pointer}
+  button:disabled{opacity:.45;cursor:default}
+  /* stage */
+  #stage{display:none;position:fixed;inset:0;background:var(--ground);z-index:20;
+        flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+  #stageTop{position:absolute;top:16px;left:0;right:0;display:flex;justify-content:space-between;
+        padding:0 22px;color:var(--muted);font-size:13px;font-weight:600}
+  #endBtn{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:8px;
+        padding:4px 9px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;margin-left:8px}
+  #endBtn:hover{border-color:var(--mark);color:var(--mark)}
+  #stFlash{display:flex;align-items:center;gap:6px}
+  .fadj{background:#fff;border:1px solid var(--line);color:var(--outline);border-radius:6px;width:24px;height:24px;font:inherit;font-weight:700;cursor:pointer;line-height:1}
+  .fadj:hover{border-color:var(--outline)}
+  #bar{position:absolute;top:0;left:0;height:5px;background:var(--outline);width:0%}
+  .figbox{width:min(70vw,520px);height:min(70vw,520px);max-height:66vh;display:flex;align-items:center;justify-content:center}
+  .figbox svg,.figbox img{max-width:100%;max-height:60vh;border-radius:8px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+  .gcell{position:relative}
+  .gcell .lab{position:absolute;top:-6px;left:2px;font-weight:800;color:var(--ink)}
+  .count{font-size:120px;font-weight:800;color:var(--outline)}
+  .prompt{font-size:38px;font-weight:800;color:var(--outline);line-height:1.2}
+  .promptSub{font-size:18px;color:var(--muted);margin-top:10px}
+  .stageInput{width:min(90vw,620px);margin-top:22px}
+  .cap{font-size:20px;font-weight:700;color:var(--ink);margin-top:16px}
+  .stageBtns{margin-top:22px;display:flex;gap:12px;justify-content:center}
+  /* report */
+  .lvl{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;color:#fff}
+  .lvl0{background:#8a6d3b}.lvl1{background:#2f6f9f}.lvl2{background:#2e7d32}.lvlx{background:#98a2b3}
+  .rrow{display:flex;gap:14px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+  .rrow .thumb{width:64px;height:64px;flex:none;display:flex;align-items:center;justify-content:center}
+  .rrow .thumb svg,.rrow .thumb img{max-width:64px;max-height:64px}
+  .said{flex:1;font-size:14px}
+  .fingerprint{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 4px}
+  .chipbig{padding:8px 14px;border-radius:10px;font-weight:700;font-size:15px;color:#fff}
+  .ok{color:var(--ok);font-weight:700}.no{color:var(--mark);font-weight:700}
+  .small{font-size:12.5px;color:var(--muted)}
+  .ladder{margin:10px 0 8px;padding:10px 12px;background:#f5f8fc;border-radius:10px}
+  .ladrow{padding:3px 0}
+  .tagbtns{display:flex;gap:6px;flex-wrap:wrap}
+  .tagb{border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:999px;padding:4px 10px;font:inherit;font-size:12px;cursor:pointer}
+  .tagb.on{background:var(--outline);color:#fff;border-color:var(--outline)}
+  /* tabs + builder */
+  .tabs{display:inline-flex;gap:6px;margin:2px 0 4px}
+  .tab{border:1px solid var(--line);border-bottom:0;background:#fff;color:var(--muted);border-radius:10px 10px 0 0;padding:9px 18px;font:inherit;font-weight:700;cursor:pointer}
+  .tab.on{background:var(--outline);color:#fff;border-color:var(--outline)}
+  .setlist{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .striplabel{font-weight:700;font-size:13px;color:var(--outline);margin:12px 0 6px}
+  .setlist .sitem{position:relative;border:2px solid var(--line);border-radius:12px;padding:5px;background:#fff;cursor:grab;transition:transform .08s,box-shadow .1s}
+  .setlist .sitem:hover{box-shadow:0 3px 10px #0001}
+  .setlist .sitem.editing{outline:3px solid var(--outline);outline-offset:2px}
+  .setlist .sitem.dragging{opacity:.55;transform:scale(.94) rotate(-2deg);box-shadow:0 8px 20px #0003;cursor:grabbing}
+  .sthumb{width:96px;height:96px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .setlist .sitem svg,.setlist .sitem img{pointer-events:none}
+  .sitem .grip{position:absolute;top:2px;left:6px;color:#c3cbd6;font-size:16px;line-height:1;cursor:grab;pointer-events:none}
+  .sitem .num{position:absolute;bottom:4px;left:6px;font-size:11px;font-weight:800;color:#fff;background:var(--outline);border-radius:7px;padding:1px 7px;pointer-events:none}
+  .sitem.dl::before,.sitem.dr::after{content:"";position:absolute;top:-5px;bottom:-5px;width:7px;border-radius:4px;background:var(--outline);box-shadow:0 0 0 2px #5590e055}
+  .sitem.dl::before{left:-9px}
+  .sitem.dr::after{right:-9px}
+  .sitem .x,.mc .x{position:absolute;top:-8px;right:-8px;background:var(--mark);color:#fff;border:0;border-radius:999px;width:20px;height:20px;cursor:pointer;font-weight:700;line-height:1;font-size:12px}
+  .builderGrid{display:grid;grid-template-columns:1fr 350px;gap:18px;margin-top:12px}
+  .libgrid{display:flex;flex-wrap:wrap;gap:6px;max-height:470px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:8px}
+  .libgrid .lc{width:62px;height:62px;border:1px solid #eee;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:#fff}
+  .libgrid .lc:hover{border-color:var(--outline)}
+  .libgrid .ghdr{width:100%;font-size:12px;font-weight:700;color:var(--muted);margin:8px 2px 2px;display:flex;align-items:center;gap:6px}
+  .mkbtn{padding:2px 8px;font-size:11px;font-weight:700}
+  .setprev{border:1px solid var(--line);border-radius:10px;background:var(--ground);min-height:250px;display:flex;align-items:center;justify-content:center;padding:8px}
+  .setprev svg{max-width:100%;max-height:300px}
+  .memrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 8px;min-height:8px}
+  .memrow .mc{position:relative;width:52px;height:52px;border:1px solid var(--line);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:#fff}
+  .memrow .mc .rot{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);font-size:10px;color:#fff;background:var(--outline);padding:0 4px;border-radius:5px}
+  #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;z-index:50;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none}
+  /* KidPix canvas + paint */
+  .kidfont{font-family:"Comic Sans MS","Comic Neue","Chalkboard SE",system-ui,sans-serif}
+  #builder label{font-family:"Comic Sans MS","Comic Neue","Chalkboard SE",inherit;letter-spacing:.2px}
+  .canvasWrap{border:2px solid var(--line);border-radius:14px;background:#fff;padding:14px;min-height:270px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+  .board{display:grid;gap:8px;width:100%;max-width:340px}
+  .board.wodb{grid-template-columns:1fr 1fr}
+  .board.sort{grid-template-columns:1fr 1fr 1fr;max-width:340px}
+  .board.samediff{grid-template-columns:repeat(4,1fr);max-width:100%}
+  .cell2{aspect-ratio:1;border:2px dashed #cfd6e0;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;background:#fff;position:relative;transition:border-color .1s,box-shadow .1s}
+  .cell2.filled{border-style:solid;border-color:var(--line)}
+  .cell2:hover{border-color:var(--outline)}
+  .cell2.sel{border-color:var(--outline);border-style:solid;box-shadow:0 0 0 3px #5590e055}
+  .cell2 .ph{color:#cbd3de;font-size:30px;font-weight:800;line-height:1}
+  .cell2 svg{width:90%;height:90%}
+  .toolstrip{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:12px 0;padding:10px 12px;
+    border:2px solid var(--line);border-radius:14px;background:#fbfaf6}
+  .swatch{width:26px;height:26px;border-radius:50%;border:2px solid #0002;cursor:pointer}
+  .swatch.sel{outline:3px solid var(--outline);outline-offset:2px}
+  .tbtn{border:2px solid var(--line);background:#fff;border-radius:20px;padding:6px 13px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+  .tbtn:hover{border-color:var(--outline)}
+  .memrow .mc.sel{border-color:var(--outline);box-shadow:0 0 0 2px #5590e055}
+  /* Canva-style studio layout */
+  .wrap.wide{max-width:1240px}
+  .bhead .brow{display:flex;gap:14px;align-items:flex-end}
+  .bhead .bname{flex:1}
+  .studio{display:grid;grid-template-columns:80px 250px 1fr;gap:14px;margin-top:14px;align-items:start}
+  .rail{display:flex;flex-direction:column;gap:8px;position:sticky;top:12px}
+  .railbtn{border:2px solid var(--line);background:#fff;border-radius:13px;padding:9px 4px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:5px;font:inherit;font-size:10.5px;font-weight:700;color:var(--muted)}
+  .railbtn:hover{border-color:var(--outline)}
+  .railbtn.on{border-color:var(--outline);color:var(--outline);background:#eef4fc}
+  .railbtn svg{width:30px;height:30px}
+  .cardspanel{border:1px solid var(--line);border-radius:14px;background:#fff;padding:10px;max-height:600px;overflow:auto;position:sticky;top:12px}
+  .cardsearch{width:100%;padding:8px 11px;border:1px solid var(--line);border-radius:9px;font:inherit;margin-bottom:8px}
+  .cardspanel .libgrid{border:0;padding:0;max-height:none;gap:6px}
+  .cardspanel .lc{width:50px;height:50px}
+  .stage2{display:flex;flex-direction:column;gap:10px;min-width:0}
+  .stage2 .canvasWrap{min-height:420px}
+  .stage2 .board{max-width:500px}
+  .stage2 .board.sort{max-width:430px}
+  .stage2 .board.single{grid-template-columns:1fr;max-width:320px}
+  .stagefoot{display:flex;gap:10px;align-items:center}
+  .stagefoot input{flex:1}
+  .stagefoot button{flex:none}
+  @media(max-width:860px){
+    .wrap.wide{max-width:960px}
+    .studio{grid-template-columns:1fr;gap:12px}
+    .rail{flex-direction:row;flex-wrap:wrap;justify-content:center;position:static}
+    .railbtn{flex-direction:row;padding:7px 12px;font-size:12px}
+    .railbtn svg{width:22px;height:22px}
+    .cardspanel{max-height:220px;position:static}
+    .cardspanel .libgrid{justify-content:center}
+  }
+  /* presentation library */
+  .libraryGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;margin-top:12px}
+  .pcard{border:1px solid var(--line);border-radius:14px;background:#fff;padding:12px;display:flex;flex-direction:column;gap:9px}
+  .pthumb{height:150px;display:flex;align-items:center;justify-content:center;background:var(--ground);border-radius:10px;cursor:pointer;overflow:hidden}
+  .pthumb:hover{outline:2px solid var(--outline)}
+  .pthumb.noedit{cursor:default}
+  .pthumb.noedit:hover{outline:none}
+  .pthumb svg,.pthumb img{max-width:96%;max-height:142px}
+  .pname{font-weight:700;font-size:15px}
+  .pcount{font-size:12px;color:var(--muted)}
+  .pacts{display:flex;gap:6px;flex-wrap:wrap}
+  .pacts .tbtn{padding:5px 10px;font-size:12px}
+  .makebtn{width:100%;margin-bottom:8px;background:#eef4fc;border-color:var(--outline);color:var(--outline)}
+  /* dot-pattern editor */
+  .modal{position:fixed;inset:0;background:#0007;z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
+  .modalbox{background:#fff;border-radius:16px;padding:18px 20px 16px;max-width:560px;width:100%;box-shadow:0 12px 44px #0005}
+  .modalhd{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:18px;color:var(--outline)}
+  .dehint{font-size:12.5px;color:var(--muted);margin:6px 0 14px}
+  .dewrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center}
+  .degrid{display:grid;gap:7px;width:264px;height:264px}
+  .decell{border:2px solid var(--line);border-radius:50%;cursor:pointer;background:#fff}
+  .decell:hover{border-color:var(--outline)}
+  .decell.on{background:#2b2b2b;border-color:#2b2b2b}
+  .decell.red{background:#c62828;border-color:#c62828}
+  .degrid.tf .decell{border-radius:7px}
+  .depreview{width:200px;height:200px;border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--ground)}
+  .defoot{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap wide" id="apphdr">
+  <h1>nVoke <small>build it · see it · say it</small></h1>
+  <div class="tabs">
+    <button class="tab on" data-tab="library">📚 Library</button>
+    <button class="tab" data-tab="builder">🛠 Builder</button>
+    <button class="tab" data-tab="player">▶ Player</button>
+  </div>
+</div>
+
+<div class="wrap panel" id="setup" style="display:none">
+  <div class="ferpa">🔒 Everything stays on this device — no image or response is ever uploaded.</div>
+
+  <div class="card">
+    <label>Pack</label>
+    <div class="row">
+      <div><select id="packSel"></select></div>
+      <div style="flex:none">
+        <button class="ghost" id="loadBtn">Load pack / images…</button>
+        <input id="fileIn" type="file" multiple accept=".json,image/*" style="display:none">
+      </div>
+    </div>
+    <div class="hint" id="packInfo"></div>
+
+    <label>Mode</label>
+    <div class="seg" id="modeSeg">
+      <button data-mode="presentation" class="on">Presentation</button>
+      <button data-mode="diagnostic">Diagnostic</button>
+    </div>
+    <div class="hint" id="modeHint"></div>
+
+    <div class="row" style="margin-top:8px">
+      <div>
+        <label>Flash time: <span id="flashLbl">1s</span></label>
+        <input type="range" id="flash" min="1" max="5" step="1" value="1">
+      </div>
+      <div style="flex:none">
+        <label>Order</label>
+        <div class="seg" id="orderSeg">
+          <button data-order="as" class="on">As-is</button>
+          <button data-order="shuffle">Shuffle</button>
+        </div>
+      </div>
+      <div style="flex:none">
+        <label>Hide after flash</label>
+        <div class="seg" id="hideSeg">
+          <button data-hide="1" class="on">Yes</button>
+          <button data-hide="0">No</button>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:20px"><button class="primary" id="startBtn">Start ▶</button></div>
+  </div>
+  <div class="small">Built-in <b>van Hiele geometry</b> pack renders as crisp shapes (no image files). Your own packs = a
+    <code>.json</code> pack, or just image files whose <b>filenames are the answers</b> (→ a name quiz in Diagnostic mode).</div>
+</div>
+
+<!-- builder -->
+<div class="wrap panel wide" id="builder" style="display:none">
+  <div class="card bhead">
+    <div class="brow">
+      <div class="bname"><label>Presentation</label><input id="presName" type="text" value="My presentation"></div>
+      <button class="ghost" id="newPres">＋ New</button>
+      <button class="primary" id="savePres">💾 Save to Library</button>
+    </div>
+    <div class="striplabel">🖐 Your slides — <b>drag</b> to reorder · <b>click</b> a slide to edit</div>
+    <div class="setlist" id="setList"></div>
+  </div>
+  <div class="studio">
+    <div class="rail" id="tplRail">
+      <button class="railbtn on" data-tpl="wodb"><svg viewBox="0 0 36 36" fill="currentColor"><rect x="4" y="4" width="12" height="12" rx="2"/><rect x="20" y="4" width="12" height="12" rx="2"/><rect x="4" y="20" width="12" height="12" rx="2"/><rect x="20" y="20" width="12" height="12" rx="2"/></svg><span>WODB</span></button>
+      <button class="railbtn" data-tpl="same-diff"><svg viewBox="0 0 36 36" fill="currentColor"><rect x="3" y="11" width="13" height="14" rx="2"/><rect x="20" y="11" width="13" height="14" rx="2"/></svg><span>Same&amp;Diff</span></button>
+      <button class="railbtn" data-tpl="sort"><svg viewBox="0 0 36 36" fill="currentColor"><rect x="4" y="4" width="8" height="8" rx="1.5"/><rect x="14" y="4" width="8" height="8" rx="1.5"/><rect x="24" y="4" width="8" height="8" rx="1.5"/><rect x="4" y="14" width="8" height="8" rx="1.5"/><rect x="14" y="14" width="8" height="8" rx="1.5"/><rect x="24" y="14" width="8" height="8" rx="1.5"/><rect x="4" y="24" width="8" height="8" rx="1.5"/><rect x="14" y="24" width="8" height="8" rx="1.5"/><rect x="24" y="24" width="8" height="8" rx="1.5"/></svg><span>Sort</span></button>
+      <button class="railbtn" data-tpl="ispy"><svg viewBox="0 0 36 36" fill="currentColor"><circle cx="9" cy="11" r="5"/><rect x="19" y="5" width="10" height="10" rx="1.5"/><path d="M17 31 L10 20 L24 20 Z"/><circle cx="27" cy="26" r="4"/></svg><span>I Spy</span></button>
+      <button class="railbtn" data-tpl="single"><svg viewBox="0 0 36 36" fill="currentColor"><rect x="8" y="8" width="20" height="20" rx="3"/></svg><span>Single</span></button>
+    </div>
+    <div class="cardspanel">
+      <input id="cardSearch" class="cardsearch" type="text" placeholder="Search shapes…">
+      <div class="libgrid" id="libGrid"></div>
+    </div>
+    <div class="stage2">
+      <div class="tplhint hint kidfont" id="tplHint"></div>
+      <div class="toolstrip" id="toolStrip" style="display:none"></div>
+      <div class="canvasWrap" id="canvasWrap"></div>
+      <div class="stagefoot">
+        <input id="setPrompt" type="text" placeholder="Prompt shown after the flash (optional)…">
+        <button class="ghost" id="addSet">＋ Add image set to presentation</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- presentation library -->
+<div class="wrap panel wide" id="library">
+  <div class="card">
+    <label>Presentation Library</label>
+    <div class="hint">Click a presentation to <b>edit</b> it (built-ins: <b>Copy</b> first) · <b>▶ Play</b> to run it · <b>⬇ Export</b> a <code>.json</code> you can share · <b>Copy</b> / <b>Delete</b> below each.</div>
+    <div style="margin:10px 0 4px"><button class="ghost" id="importLib">⬆ Import routine (.json)…</button></div>
+    <div class="libraryGrid" id="libraryGrid"></div>
+  </div>
+</div>
+
+<!-- dot-pattern editor -->
+<div id="dotEditor" class="modal" style="display:none">
+  <div class="modalbox">
+    <div class="modalhd"><span id="deTitle">Make a dot pattern</span> <button class="tbtn" id="deClose">✕</button></div>
+    <div class="dehint" id="deHint">Click a cell: empty → <b>dot</b> → <b style="color:#c62828">red</b> (decomposition) → empty.</div>
+    <div class="dewrap">
+      <div class="degrid" id="deGrid"></div>
+      <div class="depreview" id="dePreview"></div>
+    </div>
+    <div class="defoot">
+      <button class="tbtn" id="deClear">Clear</button>
+      <button class="primary" id="deAdd">Add to canvas</button>
+    </div>
+  </div>
+</div>
+
+<!-- run stage -->
+<div id="stage">
+  <div id="bar"></div>
+  <div id="stageTop"><span id="stCount"></span><span id="stFlash"></span><span><span id="stName"></span> <button id="endBtn">✕ End &amp; reset</button></span></div>
+  <div id="stageBody"></div>
+</div>
+
+<!-- report -->
+<div class="wrap" id="report" style="display:none"></div>
+<div id="toast"></div>
+
+<script>
+const OUTLINE="#1a1a1a", FILL="#e9e9e9", MARK="#c62828";
+
+/* ================= built-in geometry pack ================= */
+const GEOMETRY_PACK = {
+  packFormat:"provoke-cards/v1", name:"van Hiele Geometry", builtIn:true, mode:"see", builtWith:"builder",
+  prompt:"What did you see? · How do you know?",
+  cards:[
+    {id:"single-1", template:"single",
+     members:[{ref:"square", rotate:0, color:"gray"}],
+     prompt:"What do you see? · How do you know?"},
+    {id:"single-2", template:"single",
+     members:[{figure:{kind:"poly", pts:[[0,1.344],[1.344,0],[0,-1.344],[-1.344,0]]}, rotate:0, color:"gray"}],
+     prompt:"What do you see? · How do you know?"},
+    {id:"wodb-3", template:"wodb",
+     members:[
+       {figure:{kind:"poly", pts:[[-1.32,0.7],[1.32,0.7],[1.32,-0.7],[-1.32,-0.7]]}, rotate:90, color:"gray"},
+       {figure:{kind:"poly", pts:[[-0.95,0.95],[0.95,0.95],[0.95,-0.95],[-0.95,-0.95]]}, rotate:0, color:"gray"},
+       {figure:{kind:"poly", pts:[[-1.42,0.42],[1.42,0.42],[1.42,-0.42],[-1.42,-0.42]]}, rotate:45, color:"gray"},
+       {figure:{kind:"poly", pts:[[-1.02,0.8],[1.02,0.8],[1.02,-0.8],[-1.02,-0.8]]}, rotate:0, color:"gray"}],
+     prompt:"Which one doesn't belong?"},
+    {id:"single-4", template:"single",
+     members:[{figure:{kind:"poly", pts:[[-1,0.92],[1.08,1],[1,-0.98],[-1.06,-0.9]], ticks:1, rights:[0,1,2,3]}, rotate:0, color:"gray"}],
+     prompt:"What do you see? How do you know?"},
+    {id:"wodb-5", template:"wodb",
+     members:[
+       {ref:"dart", rotate:0, color:"gray"},
+       {ref:"star5", rotate:0, color:"gray"},
+       {ref:"pentagon", rotate:0, color:"gray"},
+       {ref:"chevron", rotate:0, color:"gray"}],
+     prompt:"Which one doesn't belong — and how do you know?"},
+    {id:"same-diff-6", template:"same-diff",
+     members:[
+       {ref:"star5", rotate:0, color:"gray"},
+       {ref:"hexagon", rotate:0, color:"gray"},
+       {ref:"crescent", rotate:0, color:"gray"},
+       {ref:"heart", rotate:0, color:"gray"}],
+     prompt:"What's the same? What's different?"}
+  ]
+};
+
+/* ================= subitizing packs (ten-frames + dots) ================= */
+const SUB_LEVELS={"0":{name:"Count by ones",marker:"counted each dot, one at a time"},"1":{name:"Subitize a group",marker:"saw a group at a glance"},"2":{name:"Compose / decompose",marker:"combined or broke apart groups (“5 and 3”, “made ten”)"}};
+const SUB_RULES={
+  only0:"Lots of counting by ones → the arrangement isn't being SEEN as groups yet. Next: brief flashes (too fast to count) that push toward seeing groups.",
+  reached1:"You subitized groups on sight → perceptual subitizing is there.",
+  reached2:"You combined or broke apart groups (“4 and 4”, “made ten”) → conceptual subitizing, the goal.",
+  note:"How you SAW it matters more than the number — a mirror, not a score."
+};
+const SUB_LF={
+  "0":["counted","count","1 2 3","one by one","by ones","each one","one at a time"],
+  "1":["just saw","knew","saw five","recognized","like a die","dice","instantly"],
+  "2":["and 1","and 2","and 3","and 4","and 5","5 and","4 and","3 and","two groups","group of","made ten","make ten","10 minus","doubles","two fives"]
+};
+const tf=(id,cells)=>({id, figure:{type:"tenframe",cells}, lookFors:SUB_LF});
+const TEN_FRAMES_PACK={packFormat:"provoke-cards/v1", name:"Ten-Frame Flash", mode:"see", builtIn:true,
+  prompt:"How many did you see? How did you see it?", levels:SUB_LEVELS, reportRules:SUB_RULES,
+  cards:[ tf("4-row",[0,1,2,3]), tf("4-as-2+2",[0,1,5,6]), tf("5-row",[0,1,2,3,4]),
+    tf("6-as-5+1",[0,1,2,3,4,5]), tf("7",[0,1,2,3,5,6,7]), tf("8-as-3+5",[0,1,2,5,6,7,8,9]),
+    tf("8-as-4+4",[0,1,2,3,5,6,7,8]), tf("9-as-5+4",[0,1,2,3,4,5,6,7,8]) ]};
+const dp=(id,points,hi)=>({id, figure:{type:"dots",points,hi:hi||[]}, lookFors:SUB_LF});
+const DOT_PATTERNS_PACK={packFormat:"provoke-cards/v1", name:"Dot Patterns", mode:"see", builtIn:true,
+  prompt:"How many did you see? How did you see it?", levels:SUB_LEVELS, reportRules:SUB_RULES,
+  cards:[
+    dp("5-scatter",[[-0.9,0.5],[0.25,0.85],[0.8,-0.1],[-0.35,-0.55],[0.05,0.15]]),
+    dp("6-as-4+2",[[-0.8,0.35],[-0.25,0.35],[-0.8,-0.2],[-0.25,-0.2],[0.55,0.6],[0.65,-0.05]],[4,5]),
+    dp("6-line",[[-0.95,0],[-0.57,0],[-0.19,0],[0.19,0],[0.57,0],[0.95,0]]),
+    dp("7-as-5+2",[[-0.75,0.55],[-0.2,0.55],[-0.45,0.2],[-0.75,-0.15],[-0.2,-0.15],[0.5,0.4],[0.5,-0.15]],[5,6]),
+    dp("7-scatter",[[-0.9,0.55],[-0.3,0.82],[0.45,0.65],[0.8,0.15],[-0.55,-0.15],[0.1,-0.35],[0.6,-0.62]]),
+    dp("8-as-5+3",[[-0.9,0.2],[-0.55,0.55],[-0.1,0.68],[0.35,0.52],[0.62,0.18],[-0.3,-0.42],[0.1,-0.62],[0.5,-0.42]],[0,1,2,3,4]),
+    dp("9-as-4+4+1",[[-0.8,0.6],[-0.3,0.6],[-0.8,0.1],[-0.3,0.1],[0.3,0.6],[0.8,0.6],[0.3,0.1],[0.8,0.1],[0.0,-0.62]],[8]),
+    dp("10-as-5+5",[[-0.8,0.45],[-0.35,0.45],[-0.8,-0.05],[-0.35,-0.05],[-0.575,0.2],[0.35,0.45],[0.8,0.45],[0.35,-0.05],[0.8,-0.05],[0.575,0.2]],[0,1,2,3,4]),
+    dp("5-die",[[-0.7,-0.7],[0.7,-0.7],[0,0],[-0.7,0.7],[0.7,0.7]]),
+    dp("9-as-3x3",[[-0.75,-0.75],[0,-0.75],[0.75,-0.75],[-0.75,0],[0,0],[0.75,0],[-0.75,0.75],[0,0.75],[0.75,0.75]])
+  ]};
+
+/* ================= geometry renderer (SVG) ================= */
+const rot=(vs,deg)=>{const a=deg*Math.PI/180,c=Math.cos(a),s=Math.sin(a);
+  return vs.map(([x,y])=>[x*c-y*s, x*s+y*c]);};
+const SH={
+  square:(s=0.95)=>[[-s,-s],[s,-s],[s,s],[-s,s]],
+  rect:(w=1.32,h=0.7)=>[[-w,-h],[w,-h],[w,h],[-w,h]],
+  rhombus:(a=1.12,b=0.72)=>[[0,-b],[a,0],[0,b],[-a,0]],
+  parallelogram:(w=1,h=0.7,k=0.55)=>[[-w-k,-h],[w-k,-h],[w+k,h],[-w+k,h]],
+  triUp:(s=1.05)=>[[-s,-0.82*s],[s,-0.82*s],[0,0.95*s]],
+  triDown:(s=1.05)=>[[-s,0.82*s],[s,0.82*s],[0,-0.95*s]],
+  triSkinny:()=>[[-1.15,-0.55],[1.15,-0.35],[0.35,0.75]],
+  hexReg:(r=1.05)=>[0,1,2,3,4,5].map(i=>{const a=Math.PI/3*i+Math.PI/6;return[r*Math.cos(a),r*Math.sin(a)];}),
+  hexIrr:()=>[[-1.1,-0.2],[-0.5,-0.95],[0.7,-0.82],[1.16,0.1],[0.4,0.92],[-0.72,0.75]],
+  quadSkew:()=>[[-1.0,-0.92],[1.08,-1.0],[1.0,0.98],[-1.06,0.9]]
+};
+const CELL={
+  "rect-wide":{shape:"rect"},"square":{shape:"square"},
+  "rect-long":{shape:"rect",_wh:[1.42,0.42]},"rect-near":{shape:"rect",_wh:[1.02,0.8]}
+};
+function buildFig(spec){
+  let v;
+  switch(spec.shape){
+    case "square": v=SH.square(); break;
+    case "rect": case "rectangle": v=spec._wh?SH.rect(spec._wh[0],spec._wh[1]):SH.rect(); break;
+    case "rhombus": v=SH.rhombus(); break;
+    case "parallelogram": v=SH.parallelogram(); break;
+    case "triangle":
+      v = spec.variant==="skinny"?SH.triSkinny(): SH.triUp();
+      if(spec.orientation==="point-down") v=SH.triDown();
+      break;
+    case "hexagon": v=spec.variant==="irregular"?SH.hexIrr():SH.hexReg(); break;
+    case "quad-skew": v=SH.quadSkew(); break;
+    case "poly": v=spec.pts.map(p=>[p[0],p[1]]); break;
+    default: v=SH.square();
+  }
+  if(spec.rotate) v=rot(v,spec.rotate);
+  const n=v.length;
+  const ticks=spec.ticks==="all"?[...Array(n).keys()]:(spec.ticks||[]);
+  const rights=spec.rights==="all"?[...Array(n).keys()]:(spec.rights||[]);
+  return {v,ticks,rights};
+}
+function tickSVG(p1,p2,z=0.11){let dx=p2[0]-p1[0],dy=p2[1]-p1[1];const L=Math.hypot(dx,dy);dx/=L;dy/=L;
+  const mx=(p1[0]+p2[0])/2,my=(p1[1]+p2[1])/2,px=-dy,py=dx;
+  return `<line x1="${mx-px*z}" y1="${my-py*z}" x2="${mx+px*z}" y2="${my+py*z}" stroke="${MARK}" stroke-width="0.05" stroke-linecap="round"/>`;}
+function rightSVG(v,i,z=0.2){const c=v[i],a=v[(i-1+v.length)%v.length],b=v[(i+1)%v.length];
+  let ax=a[0]-c[0],ay=a[1]-c[1],bx=b[0]-c[0],by=b[1]-c[1];const la=Math.hypot(ax,ay),lb=Math.hypot(bx,by);
+  ax/=la;ay/=la;bx/=lb;by/=lb;
+  const p1=[c[0]+ax*z,c[1]+ay*z],p2=[c[0]+(ax+bx)*z,c[1]+(ay+by)*z],p3=[c[0]+bx*z,c[1]+by*z];
+  return `<polyline points="${p1} ${p2} ${p3}" fill="none" stroke="${MARK}" stroke-width="0.04"/>`;}
+function figSVG(spec,px=300){
+  const {v,ticks,rights}=buildFig(spec);
+  const poly=`<polygon points="${v.map(p=>p.join(',')).join(' ')}" fill="${FILL}" stroke="${OUTLINE}" stroke-width="0.06" stroke-linejoin="round"/>`;
+  const t=ticks.map(e=>tickSVG(v[e],v[(e+1)%v.length])).join("");
+  const r=rights.map(i=>rightSVG(v,i)).join("");
+  return `<svg viewBox="-1.85 -1.85 3.7 3.7" width="${px}" height="${px}"><g transform="scale(1,-1)">${poly}${t}${r}</g></svg>`;
+}
+function sceneSVG(items,px=340){
+  let g="";
+  for(const it of items){
+    let v=buildFig({shape:it.shape,_wh:it.wh,pts:it.pts}).v;
+    const s=it.scale||1; v=v.map(([x,y])=>[x*s,y*s]);
+    if(it.rotate) v=rot(v,it.rotate);
+    v=v.map(([x,y])=>[x+(it.x||0),y+(it.y||0)]);
+    g+=`<polygon points="${v.map(p=>p.join(',')).join(' ')}" fill="${FILL}" stroke="${OUTLINE}" stroke-width="0.05" stroke-linejoin="round"/>`;
+  }
+  return `<svg viewBox="-3 -3 6 6" width="${px}" height="${px}"><g transform="scale(1,-1)">${g}</g></svg>`;
+}
+function tenFrameSVG(cells,px=340){
+  const set=new Set(cells);
+  let g=`<rect x="0" y="0" width="5" height="2" fill="#fff" stroke="${OUTLINE}" stroke-width="0.05"/>`;
+  for(let i=1;i<5;i++) g+=`<line x1="${i}" y1="0" x2="${i}" y2="2" stroke="${OUTLINE}" stroke-width="0.03"/>`;
+  g+=`<line x1="0" y1="1" x2="5" y2="1" stroke="${OUTLINE}" stroke-width="0.03"/>`;
+  for(let p=0;p<10;p++){ if(!set.has(p)) continue; const col=p%5,row=p<5?0:1;
+    g+=`<circle cx="${col+0.5}" cy="${row+0.5}" r="0.36" fill="${MARK}"/>`; }
+  return `<svg viewBox="-0.5 -2 6 6" width="${px}" height="${px}">${g}</svg>`;
+}
+function dotsSVG(points,hi,px=320){
+  const H=new Set(hi||[]);
+  const g=points.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="0.2" fill="${H.has(i)?MARK:"#2b2b2b"}"/>`).join("");
+  return `<svg viewBox="-1.35 -1.35 2.7 2.7" width="${px}" height="${px}">${g}</svg>`;
+}
+function pathsSVG(items,px=340){
+  return `<div class="grid2">`+items.map(it=>
+    `<div class="gcell">`+
+    `<svg viewBox="0 0 2 2" width="${Math.round(px*0.6)}" height="${Math.round(px*0.6)}">`+
+    `<path d="${it.d}" fill="${FILL}" stroke="${OUTLINE}" stroke-width="0.05" stroke-linejoin="round"/></svg></div>`).join("")+`</div>`;
+}
+function cardVisual(card,px=320){
+  if(card.image) return `<img src="${card.image}" alt="">`;
+  if(card.cells){
+    return `<div class="grid2">`+card.cells.map(c=>
+      `<div class="gcell">${figSVG(CELL[c]||{shape:"square"},210)}</div>`).join("")+`</div>`;
+  }
+  if(card.template) return imageSetSVG(card,px);
+  const f=card.figure;
+  if(f){
+    if(f.kind) return atomSVG(f,px);
+    if(f.type==="tenframe") return tenFrameSVG(f.cells,px);
+    if(f.type==="dots") return dotsSVG(f.points,f.hi,px);
+    if(f.type==="scene") return sceneSVG(f.items,px);
+    if(f.type==="paths") return pathsSVG(f.items,px);
+    return figSVG(f,px);
+  }
+  return "";
+}
+
+/* ================= atom library (single-shape cards → templates) ================= */
+const D2R=Math.PI/180;
+const rectPts=(w,h)=>[[-w,-h],[w,-h],[w,h],[-w,h]];
+const ngon=(n,r,rot=-90)=>Array.from({length:n},(_,i)=>{const a=(rot+360/n*i)*D2R;return[+(r*Math.cos(a)).toFixed(3),+(r*Math.sin(a)).toFixed(3)];});
+const starPts=(n,ro,ri,rot=-90)=>{const p=[];for(let i=0;i<2*n;i++){const r=i%2?ri:ro;const a=(rot+180/n*i)*D2R;p.push([+(r*Math.cos(a)).toFixed(3),+(r*Math.sin(a)).toFixed(3)]);}return p;};
+const SPIRAL_D=(()=>{let p=[],t=0;while(t<=4.2*Math.PI){const r=0.10+0.088*t;p.push(`${(r*Math.cos(t)).toFixed(3)} ${(r*Math.sin(t)).toFixed(3)}`);t+=0.18;}return "M "+p.join(" L ");})();
+
+/* KidPix paint palette (default = greyscale; color is an authoring choice) */
+const PAINT={gray:"#e9e9e9",white:"#ffffff",red:"#ef5b53",orange:"#f39a3e",yellow:"#f4cf46",green:"#5cba6a",teal:"#3fb6ad",blue:"#5590e0",purple:"#a56fd0",pink:"#ef86bd"};
+const PAINT_ORDER=["gray","white","red","orange","yellow","green","teal","blue","purple","pink"];
+function shade(hex,pct){let n=parseInt(hex.slice(1),16),r=(n>>16)&255,g=(n>>8)&255,b=n&255;const t=pct<0?0:255,p=Math.abs(pct)/100;
+  r=Math.round((t-r)*p)+r; g=Math.round((t-g)*p)+g; b=Math.round((t-b)*p)+b; return "#"+(0x1000000+(r<<16)+(g<<8)+b).toString(16).slice(1);}
+function paintStyle(m){
+  const c=(m&&m.color)||"gray", base=PAINT[c]||FILL;
+  const ink=(c==="gray"||c==="white")?OUTLINE:shade(base,-40);
+  if(m&&m.fillStyle==="outline") return {fill:"none", stroke:ink, sw:0.12};
+  return {fill:base, stroke:ink, sw:0.06};
+}
+function atomElt(a, st){
+  st=st||{}; const F=st.fill!==undefined?st.fill:FILL, S=st.stroke!==undefined?st.stroke:OUTLINE, W=st.sw!==undefined?st.sw:0.06;
+  if(a.kind==="circle") return `<circle cx="${a.cx||0}" cy="${a.cy||0}" r="${a.r}" fill="${F}" stroke="${S}" stroke-width="${W}"/>`;
+  if(a.kind==="ellipse") return `<ellipse cx="0" cy="0" rx="${a.rx}" ry="${a.ry}" fill="${F}" stroke="${S}" stroke-width="${W}"/>`;
+  if(a.kind==="path") return `<path d="${a.d}" fill="${F}" stroke="${S}" stroke-width="${W}" stroke-linejoin="round"/>`;
+  if(a.kind==="stroke") return `<path d="${a.d}" fill="none" stroke="${st.stroke!==undefined?st.stroke:OUTLINE}" stroke-width="${a.sw||0.11}" stroke-linecap="round"/>`;
+  if(a.kind==="group") return a.parts.map(p=>atomElt(p,st)).join("");
+  if(a.kind==="dots"){
+    const hi=new Set(a.hi||[]);
+    return `<g transform="scale(1.4)">`+a.points.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="0.2" fill="${hi.has(i)?MARK:'#2b2b2b'}"/>`).join("")+`</g>`;
+  }
+  if(a.kind==="tenframe"){
+    const set=new Set(a.cells);
+    let g=`<rect x="0" y="0" width="5" height="2" fill="none" stroke="${OUTLINE}" stroke-width="0.1"/>`;
+    for(let i=1;i<5;i++) g+=`<line x1="${i}" y1="0" x2="${i}" y2="2" stroke="${OUTLINE}" stroke-width="0.06"/>`;
+    g+=`<line x1="0" y1="1" x2="5" y2="1" stroke="${OUTLINE}" stroke-width="0.06"/>`;
+    for(let p=0;p<10;p++){ if(!set.has(p)) continue; const col=p%5,row=p<5?0:1; g+=`<circle cx="${col+0.5}" cy="${row+0.5}" r="0.34" fill="${MARK}"/>`; }
+    return `<g transform="translate(-1.3 -0.52) scale(0.52)">${g}</g>`;
+  }
+  if(!a.pts) return "";
+  let s=`<polygon points="${a.pts.map(q=>q.join(',')).join(' ')}" fill="${F}" stroke="${S}" stroke-width="${W}" stroke-linejoin="round"/>`;
+  if(a.ticks) s+=a.pts.map((_,i)=>tickSVG(a.pts[i],a.pts[(i+1)%a.pts.length])).join("");
+  if(a.rights) s+=(a.rights==="all"?a.pts.map((_,i)=>i):a.rights).map(i=>rightSVG(a.pts,i)).join("");
+  return s;
+}
+function atomSVG(a,px=300,st){
+  const rot=a.rotate?` transform="rotate(${a.rotate})"`:"";
+  return `<svg viewBox="-1.85 -1.85 3.7 3.7" width="${px}" height="${px}"><g${rot}>${atomElt(a,st)}</g></svg>`;
+}
+
+const CARD_LIBRARY=[
+ {id:"square",label:"Square",group:"Quadrilaterals",figure:{kind:"poly",pts:rectPts(0.95,0.95)}},
+ {id:"rect-wide",label:"Rectangle",group:"Quadrilaterals",figure:{kind:"poly",pts:rectPts(1.35,0.72)}},
+ {id:"rect-long",label:"Long rectangle",group:"Quadrilaterals",figure:{kind:"poly",pts:rectPts(1.55,0.42)}},
+ {id:"rect-vlong",label:"Very long rectangle",group:"Quadrilaterals",figure:{kind:"poly",pts:rectPts(1.62,0.24)}},
+ {id:"rhombus",label:"Rhombus",group:"Quadrilaterals",figure:{kind:"poly",pts:[[0,-0.72],[1.12,0],[0,0.72],[-1.12,0]]}},
+ {id:"parallelogram",label:"Parallelogram",group:"Quadrilaterals",figure:{kind:"poly",pts:[[-1.55,-0.7],[0.45,-0.7],[1.55,0.7],[-0.45,0.7]]}},
+ {id:"kite",label:"Kite",group:"Quadrilaterals",figure:{kind:"poly",pts:[[0,-1.25],[0.72,-0.15],[0,1.15],[-0.72,-0.15]]}},
+ {id:"dart",label:"Concave kite (dart)",group:"Quadrilaterals",figure:{kind:"poly",pts:[[0,-1.25],[0.72,0.55],[0,0.02],[-0.72,0.55]]}},
+ {id:"tri-equilateral",label:"Equilateral triangle",group:"Triangles",figure:{kind:"poly",pts:ngon(3,1.15,-90)}},
+ {id:"tri-right",label:"Right triangle",group:"Triangles",figure:{kind:"poly",pts:[[-1.0,-0.95],[-1.0,1.0],[1.15,1.0]]}},
+ {id:"tri-obtuse",label:"Obtuse triangle",group:"Triangles",figure:{kind:"poly",pts:[[-1.35,0.55],[1.35,0.7],[0.55,-0.7]]}},
+ {id:"tri-skinny",label:"Skinny triangle",group:"Triangles",figure:{kind:"poly",pts:[[-1.15,-0.55],[1.15,-0.35],[0.35,0.75]]}},
+ {id:"pentagon",label:"Pentagon",group:"Many-sided",figure:{kind:"poly",pts:ngon(5,1.2,-90)}},
+ {id:"hexagon",label:"Hexagon",group:"Many-sided",figure:{kind:"poly",pts:ngon(6,1.12,-90)}},
+ {id:"hexagon-irr",label:"Irregular hexagon",group:"Many-sided",figure:{kind:"poly",pts:[[-1.1,-0.2],[-0.5,-0.95],[0.7,-0.82],[1.16,0.1],[0.4,0.92],[-0.72,0.75]]}},
+ {id:"star5",label:"5-point star",group:"Many-sided",figure:{kind:"poly",pts:starPts(5,1.3,0.52)}},
+ {id:"star6",label:"6-point star",group:"Many-sided",figure:{kind:"poly",pts:starPts(6,1.25,0.72)}},
+ {id:"circle-lg",label:"Circle",group:"Curved",figure:{kind:"circle",r:1.25}},
+ {id:"circle-sm",label:"Small circle",group:"Curved",figure:{kind:"circle",r:0.7}},
+ {id:"oval",label:"Oval / egg",group:"Curved",figure:{kind:"ellipse",rx:0.9,ry:1.2}},
+ {id:"heart",label:"Heart",group:"Curved",figure:{kind:"path",d:"M 0 1.15 C -1.35 0.05 -1.05 -1.0 0 -0.35 C 1.05 -1.0 1.35 0.05 0 1.15 Z"}},
+ {id:"cone",label:"Ice-cream cone",group:"Curved",figure:{kind:"group",parts:[{kind:"circle",cx:0,cy:-0.5,r:0.75},{kind:"path",d:"M -0.62 -0.15 L 0.62 -0.15 L 0 1.3 Z"}]}},
+ {id:"crescent",label:"Crescent moon",group:"Curved",figure:{kind:"path",d:"M 0.35 -1.15 A 1.2 1.2 0 1 0 0.35 1.15 A 0.9 0.9 0 1 1 0.35 -1.15 Z"}},
+ {id:"teardrop",label:"Teardrop",group:"Curved",figure:{kind:"path",d:"M 0 -1.25 C 0.85 -0.25 0.72 1.15 0 1.15 C -0.72 1.15 -0.85 -0.25 0 -1.25 Z"}},
+ {id:"spiral",label:"Spiral",group:"Curved",figure:{kind:"stroke",d:SPIRAL_D}},
+ {id:"arrow",label:"Arrow",group:"Directional",figure:{kind:"poly",pts:[[0,-1.3],[0.75,-0.35],[0.28,-0.35],[0.28,1.2],[-0.28,1.2],[-0.28,-0.35],[-0.75,-0.35]]}},
+ {id:"chevron",label:"Chevron",group:"Directional",figure:{kind:"poly",pts:[[0,-1.0],[1.0,0.05],[1.0,0.55],[0,-0.5],[-1.0,0.55],[-1.0,0.05]]}},
+ {id:"arc-smile",label:"Arc (smile)",group:"Arcs",figure:{kind:"stroke",d:"M -1.3 -0.45 A 1.8 1.8 0 0 0 1.3 -0.45"}},
+ {id:"arc-bowl",label:"Arc (bowl)",group:"Arcs",figure:{kind:"stroke",d:"M -1.3 -0.3 A 1.3 1.3 0 0 0 1.3 -0.3"}},
+ {id:"arc-quarter",label:"Arc (quarter)",group:"Arcs",figure:{kind:"stroke",d:"M -1.15 1.0 A 2.15 2.15 0 0 1 1.0 -1.15"}},
+ {id:"arc-wave",label:"Arc (wave)",group:"Arcs",figure:{kind:"stroke",d:"M -1.4 0 C -0.7 -1.0 0.0 -1.0 0 0 C 0 1.0 0.7 1.0 1.4 0"}},
+];
+/* subitizing content → library cards: familiar dice faces (the builder makes the rest) + ten-frames */
+const DICE=[
+ [[0,0]],
+ [[-0.62,-0.62],[0.62,0.62]],
+ [[-0.68,-0.68],[0,0],[0.68,0.68]],
+ [[-0.62,-0.62],[0.62,-0.62],[-0.62,0.62],[0.62,0.62]],
+ [[-0.62,-0.62],[0.62,-0.62],[0,0],[-0.62,0.62],[0.62,0.62]],
+ [[-0.62,-0.7],[-0.62,0],[-0.62,0.7],[0.62,-0.7],[0.62,0],[0.62,0.7]]
+];
+DICE.forEach((pts,i)=>CARD_LIBRARY.push({id:"die-"+(i+1), label:"Die "+(i+1), group:"Dot patterns", figure:{kind:"dots", points:pts}}));
+TEN_FRAMES_PACK.cards.forEach(c=>CARD_LIBRARY.push({id:"tf-"+c.id, label:"Ten-frame "+c.id, group:"Ten-frames", figure:{kind:"tenframe", cells:c.figure.cells}}));
+const GROUP_ORDER=["Dot patterns","Ten-frames","Quadrilaterals","Triangles","Many-sided","Curved","Directional","Arcs"];
+const LIB=Object.fromEntries(CARD_LIBRARY.map(c=>[c.id,c]));
+
+/* ---- templates: arrange cards into an image set ---- */
+const TEMPLATES={
+  wodb:{label:"Which One Doesn't Belong?", max:4, prompt:"Which one doesn't belong — and how do you know?"},
+  "same-diff":{label:"Same & Different", max:4, prompt:"What's the same? What's different?"},
+  sort:{label:"Sort", max:9, prompt:"Sort these and state your rule."},
+  ispy:{label:"I Spy", max:24, prompt:"I spy a shape that… (name a property)"},
+  single:{label:"Single card", max:1, prompt:"What do you see? · How do you know?"}
+};
+function memberFig(m){return m.figure||(LIB[m.ref]&&LIB[m.ref].figure)||null;}
+function placeMember(m,cx,cy,s){
+  const fig=memberFig(m); if(!fig) return "";
+  const rot=m.rotate?` rotate(${m.rotate})`:"";
+  return `<g transform="translate(${cx} ${cy}) scale(${s})${rot}">${atomElt(fig, paintStyle(m))}</g>`;
+}
+function scatterLayout(n){
+  const cols=Math.max(1,Math.ceil(Math.sqrt(n*1.5))), rows=Math.ceil(n/cols), gap=2.7, out=[];
+  for(let i=0;i<n;i++){const c=i%cols, r=Math.floor(i/cols);
+    out.push({cx:+((c-(cols-1)/2)*gap+Math.sin(i*2.7)*0.55).toFixed(2),
+              cy:+((r-(rows-1)/2)*gap+Math.cos(i*1.9)*0.55).toFixed(2),
+              s:+(0.55+((i*37)%38)/100).toFixed(2), rot:(i*45)%360});}
+  return {places:out, W:+(cols*gap+2).toFixed(2), H:+(rows*gap+2).toFixed(2)};
+}
+function imageSetSVG(set,px=520){
+  const M=set.members||[], T=set.template;
+  const svg=(vb,w,h,inner)=>`<svg viewBox="${vb}" width="${w}" height="${h}" style="background:#fffdf5">${inner}</svg>`;
+  if(T==="single") return svg("-1.95 -1.95 3.9 3.9", px, px, M[0]?placeMember(M[0],0,0,1.35):"");
+  if(T==="wodb"){
+    const c=[[-1.75,-1.75],[1.75,-1.75],[-1.75,1.75],[1.75,1.75]];
+    const g=`<line x1="0" y1="-3.7" x2="0" y2="3.7" stroke="#cfcfcf" stroke-width="0.05"/><line x1="-3.7" y1="0" x2="3.7" y2="0" stroke="#cfcfcf" stroke-width="0.05"/>`;
+    return svg("-3.7 -3.7 7.4 7.4",px,px, g+M.slice(0,4).map((m,i)=>placeMember(m,c[i][0],c[i][1],0.92)).join(""));
+  }
+  if(T==="same-diff"){
+    const n=Math.min(Math.max(M.length,1),4), gap=3.4, W=n*gap;
+    return svg(`${-W/2} -1.9 ${W} 3.8`, px, Math.round(px*3.8/W), M.slice(0,4).map((m,i)=>placeMember(m,(i-(n-1)/2)*gap,0,1.05)).join(""));
+  }
+  if(T==="sort"){
+    const gap=2.5, out=[];
+    for(let i=0;i<Math.min(M.length,9);i++){const c=i%3,r=Math.floor(i/3);out.push(placeMember(M[i],(c-1)*gap,(r-1)*gap,0.72));}
+    return svg("-3.9 -3.9 7.8 7.8",px,px,out.join(""));
+  }
+  const L=scatterLayout(M.length), places=set.layout||L.places;
+  const body=M.slice(0,places.length).map((m,i)=>{const p=places[i];
+    return placeMember(Object.assign({},m,{rotate:(m.rotate||0)+(p.rot||0)}),p.cx,p.cy,p.s);}).join("");
+  return svg(`${(-L.W/2).toFixed(2)} ${(-L.H/2).toFixed(2)} ${L.W} ${L.H}`, px, Math.round(px*L.H/L.W), body);
+}
+
+/* ---- convert any pack card → an editable builder image set ---- */
+function shapeToAtom(spec){
+  try{ const {v,ticks,rights}=buildFig(spec); const a={kind:"poly", pts:v.map(p=>[+p[0].toFixed(3),+(-p[1]).toFixed(3)])};
+    if(ticks&&ticks.length) a.ticks=1; if(rights&&rights.length) a.rights=rights; return a; }
+  catch(e){ return {kind:"circle", r:0.9}; }
+}
+function pathToAtom(d){ // parse an M/L/Z polygon path → a centered poly atom
+  const nums=(String(d).match(/-?\d*\.?\d+/g)||[]).map(Number), pts=[];
+  for(let i=0;i+1<nums.length;i+=2) pts.push([nums[i],nums[i+1]]);
+  if(pts.length<3) return {kind:"circle", r:0.6};
+  const mx=pts.reduce((a,p)=>a+p[0],0)/pts.length, my=pts.reduce((a,p)=>a+p[1],0)/pts.length;
+  return {kind:"poly", pts:pts.map(p=>[+(p[0]-mx).toFixed(3), +(-(p[1]-my)).toFixed(3)])};
+}
+function normalizeFigure(f){
+  if(!f) return {kind:"circle", r:0.9};
+  if(f.kind) return f;
+  if(f.type==="tenframe") return {kind:"tenframe", cells:f.cells};
+  if(f.type==="dots") return {kind:"dots", points:f.points, hi:f.hi};
+  if(f.shape) return shapeToAtom(f);
+  return {kind:"circle", r:0.9};
+}
+function cardToImageSet(card){
+  if(card.template) return {template:card.template, members:(card.members||[]).map(m=>Object.assign({},m)), layout:card.layout, prompt:card.prompt||""};
+  if(card.cells) return {template:"wodb", members:card.cells.slice(0,4).map(c=>({figure:shapeToAtom(CELL[c]||{shape:"square"}), rotate:0, color:"gray"})), prompt:card.prompt||""};
+  const f=card.figure;
+  if(f && f.type==="scene") return {template:"ispy", members:f.items.map(it=>({figure:shapeToAtom({shape:it.shape, _wh:it.wh, pts:it.pts, rotate:it.rotate}), rotate:0, color:"gray"})), prompt:card.prompt||""};
+  if(f && f.type==="paths") return {template:"ispy", members:f.items.map(it=>({figure:pathToAtom(it.d), rotate:0, color:"gray"})), prompt:card.prompt||""};
+  return {template:"single", members:[{figure:normalizeFigure(card.figure), rotate:0, color:"gray"}], prompt:card.prompt||""};
+}
+
+/* ================= IndexedDB pack store ================= */
+const DBN="seesay",STORE="packs";
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open(DBN,1);
+  r.onupgradeneeded=()=>r.result.createObjectStore(STORE);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+function idbPut(k,v){return idb().then(db=>new Promise((res,rej)=>{const t=db.transaction(STORE,"readwrite");
+  t.objectStore(STORE).put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error);}));}
+function idbGet(k){return idb().then(db=>new Promise(res=>{const t=db.transaction(STORE,"readonly");
+  const q=t.objectStore(STORE).get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null);}));}
+function idbKeys(){return idb().then(db=>new Promise(res=>{const t=db.transaction(STORE,"readonly");
+  const q=t.objectStore(STORE).getAllKeys();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([]);}));}
+function idbDel(k){return idb().then(db=>new Promise((res,rej)=>{const t=db.transaction(STORE,"readwrite");
+  t.objectStore(STORE).delete(k);t.oncomplete=res;t.onerror=()=>rej(t.error);}));}
+
+/* ================= state ================= */
+let PACKS={}; // name -> pack
+let cfg={packName:GEOMETRY_PACK.name, mode:"presentation", flash:1, order:"as", hide:true};
+
+async function init(){
+  PACKS[GEOMETRY_PACK.name]=GEOMETRY_PACK;
+  PACKS[TEN_FRAMES_PACK.name]=TEN_FRAMES_PACK;
+  PACKS[DOT_PATTERNS_PACK.name]=DOT_PATTERNS_PACK;
+  refreshPackSel(); wireUI(); updateHints(); initBuilder(); renderLibrary();
+  try{ for(const k of await idbKeys()){ const p=await idbGet(k); if(p&&p.cards) PACKS[p.name||k]=p; } refreshPackSel(); renderLibrary(); }
+  catch(err){ console.warn("persisted packs unavailable:",err); }
+}
+function refreshPackSel(){
+  const sel=document.getElementById("packSel");
+  sel.innerHTML=Object.keys(PACKS).map(n=>`<option ${n===cfg.packName?"selected":""}>${n}</option>`).join("");
+}
+function curPack(){return PACKS[cfg.packName];}
+function packHasLookFors(p){return p.cards.some(c=>c.lookFors);}
+function packHasAnswers(p){return p.mode==="name"||p.cards.some(c=>c.answer);}
+function updateHints(){
+  const p=curPack();
+  document.getElementById("packInfo").textContent=
+    `${p.cards.length} cards · ${packHasAnswers(p)?"name quiz (answers)":"free response"}`;
+  document.getElementById("modeHint").textContent = cfg.mode==="presentation"
+    ? "Project & discuss. Flash each image, then a “What did you see?” slide. Nothing is captured."
+    : (packHasAnswers(p) ? "You type the answer after each flash → checked → streak."
+       : "You type what you saw; at the end you review all your responses and decide the patterns yourself — then export a PDF to share.");
+}
+
+/* ================= UI wiring ================= */
+function wireUI(){
+  const $=id=>document.getElementById(id);
+  $("packSel").onchange=e=>{cfg.packName=e.target.value;updateHints();};
+  $("flash").oninput=e=>{cfg.flash=+e.target.value;$("flashLbl").textContent=cfg.flash+"s";};
+  segWire("modeSeg","mode",v=>{cfg.mode=v;updateHints();});
+  segWire("orderSeg","order",v=>cfg.order=v);
+  segWire("hideSeg","hide",v=>cfg.hide=(v==="1"));
+  $("loadBtn").onclick=()=>$("fileIn").click();
+  { const il=$("importLib"); if(il) il.onclick=()=>$("fileIn").click(); }
+  $("fileIn").onchange=onFiles;
+  $("startBtn").onclick=startRun;
+  document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+}
+function switchTab(t){
+  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.tab===t));
+  document.getElementById("setup").style.display=t==="player"?"block":"none";
+  document.getElementById("builder").style.display=t==="builder"?"block":"none";
+  document.getElementById("library").style.display=t==="library"?"block":"none";
+  if(t==="library") renderLibrary();
+  window.scrollTo(0,0);
+}
+function toast(t){let el=document.getElementById("toast");el.textContent=t;el.style.opacity="1";clearTimeout(el._t);el._t=setTimeout(()=>el.style.opacity="0",2800);}
+
+/* ================= BUILDER ================= */
+let builder={sets:[], sel:-1, editing:-1, dragFrom:null, origName:null, cur:{template:"wodb", members:[], prompt:""}};
+function initBuilder(){
+  renderLibGrid(); renderTplHint(); renderCanvas(); renderTool(); renderSetList();
+  document.querySelectorAll("#tplRail .railbtn").forEach(b=>b.onclick=()=>{
+    document.querySelectorAll("#tplRail .railbtn").forEach(x=>x.classList.toggle("on",x===b));
+    builder.cur.template=b.dataset.tpl; builder.sel=-1;
+    const max=TEMPLATES[b.dataset.tpl].max; if(builder.cur.members.length>max) builder.cur.members=builder.cur.members.slice(0,max);
+    renderTplHint(); renderCanvas(); renderTool();});
+  document.getElementById("cardSearch").oninput=e=>renderLibGrid(e.target.value.trim().toLowerCase());
+  document.getElementById("addSet").onclick=addSet;
+  document.getElementById("newPres").onclick=newPresentation;
+  document.getElementById("savePres").onclick=savePresentation;
+  document.getElementById("deClose").onclick=closeEditor;
+  document.getElementById("deClear").onclick=()=>{de.cells=new Array(de.rows*de.cols).fill(0); renderDE();};
+  document.getElementById("deAdd").onclick=()=>{
+    if(!deHasContent()){toast("Place at least one counter.");return;}
+    if(addCardFigure(deFigure())) closeEditor();};
+  document.getElementById("setPrompt").oninput=e=>builder.cur.prompt=e.target.value;
+}
+function renderTplHint(){const t=TEMPLATES[builder.cur.template];
+  document.getElementById("tplHint").textContent=`${t.label} · up to ${t.max} card${t.max===1?'':'s'} · after the flash: “${t.prompt}”`;}
+function renderLibGrid(q){
+  const groups={};
+  CARD_LIBRARY.forEach(c=>{ if(q && !c.label.toLowerCase().includes(q) && !c.group.toLowerCase().includes(q)) return;
+    (groups[c.group]=groups[c.group]||[]).push(c);});
+  const el=document.getElementById("libGrid");
+  const gi=g=>{const i=GROUP_ORDER.indexOf(g);return i<0?99:i;};
+  const keys=Object.keys(groups).sort((a,b)=>gi(a)-gi(b));
+  const mk={"Dot patterns":"dots","Ten-frames":"tenframe"};
+  el.innerHTML=keys.length ? keys.map(g=>
+    `<div class="ghdr">${g}${mk[g]?` <button class="tbtn mkbtn" data-make="${mk[g]}">✏️ Make</button>`:``}</div>`
+    +groups[g].map(c=>`<div class="lc" data-id="${c.id}" title="${c.label}">${atomSVG(c.figure,46)}</div>`).join("")).join("")
+    : `<div class="small" style="padding:8px">No shapes match “${q}”.</div>`;
+  el.querySelectorAll(".lc").forEach(d=>d.onclick=()=>addCard(d.dataset.id));
+  el.querySelectorAll(".mkbtn").forEach(b=>b.onclick=()=>openEditor(b.dataset.make));
+}
+function addCard(id){
+  const cur=builder.cur, max=TEMPLATES[cur.template].max;
+  if(cur.members.length>=max){ toast(`That template holds up to ${max} cards.`); return; }
+  cur.members.push({ref:id, rotate:0, color:"gray"}); builder.sel=cur.members.length-1;
+  renderCanvas(); renderTool();
+}
+function addCardFigure(figure){
+  const cur=builder.cur, max=TEMPLATES[cur.template].max;
+  if(cur.members.length>=max){ toast(`That template holds up to ${max} cards.`); return false; }
+  cur.members.push({figure:figure, rotate:0, color:"gray"}); builder.sel=cur.members.length-1;
+  renderCanvas(); renderTool(); return true;
+}
+/* ---- dot-pattern + ten-frame editor ---- */
+let de={mode:"dots", rows:5, cols:5, cells:[]};
+function openEditor(mode){
+  de.mode=mode; de.rows=(mode==="tenframe"?2:5); de.cols=5;
+  de.cells=new Array(de.rows*de.cols).fill(0);
+  document.getElementById("deTitle").textContent = mode==="tenframe"?"Make a ten-frame":"Make a dot pattern";
+  document.getElementById("deHint").innerHTML = mode==="tenframe"
+    ? "Click a cell to place or remove a counter."
+    : `Click a cell: empty → <b>dot</b> → <b style="color:#c62828">red</b> (decomposition) → empty.`;
+  document.getElementById("dotEditor").style.display="flex"; renderDE();
+}
+function closeEditor(){ document.getElementById("dotEditor").style.display="none"; }
+function deHasContent(){ return de.cells.some(v=>v); }
+function deFigure(){
+  if(de.mode==="tenframe"){ const cells=[]; de.cells.forEach((v,i)=>{ if(v) cells.push(i); }); return {kind:"tenframe", cells}; }
+  const N=de.cols, sp=1.7/(N-1), pts=[], hi=[];
+  de.cells.forEach((v,i)=>{ if(!v) return; const c=i%N, r=Math.floor(i/N);
+    if(v===2) hi.push(pts.length);
+    pts.push([+(-0.85+c*sp).toFixed(3), +(-0.85+r*sp).toFixed(3)]); });
+  return {kind:"dots", points:pts, hi};
+}
+function renderDE(){
+  const g=document.getElementById("deGrid"), states=(de.mode==="tenframe"?2:3);
+  g.style.gridTemplateColumns=`repeat(${de.cols},1fr)`;
+  g.style.width=(de.mode==="tenframe"?"330px":"264px");
+  g.style.height=(de.mode==="tenframe"?"138px":"264px");
+  g.classList.toggle("tf", de.mode==="tenframe");
+  g.innerHTML=de.cells.map((v,i)=>{
+    const cls = de.mode==="tenframe" ? (v?"red":"") : (v===1?"on":v===2?"red":"");
+    return `<div class="decell ${cls}" data-i="${i}"></div>`;}).join("");
+  g.querySelectorAll(".decell").forEach(d=>d.onclick=()=>{const i=+d.dataset.i; de.cells[i]=(de.cells[i]+1)%states; renderDE();});
+  document.getElementById("dePreview").innerHTML = deHasContent()? atomSVG(deFigure(),180) : `<span class="small">preview</span>`;
+}
+function selectMember(i){ builder.sel=(builder.sel===i?-1:i); renderCanvas(); renderTool(); }
+function rotateSel(){const m=builder.cur.members[builder.sel]; if(m){m.rotate=((m.rotate||0)+45)%360; renderCanvas(); renderTool();}}
+function paintSel(c){const m=builder.cur.members[builder.sel]; if(m){m.color=c; renderCanvas(); renderTool();}}
+function fillSel(){const m=builder.cur.members[builder.sel]; if(m){m.fillStyle=(m.fillStyle==="outline"?undefined:"outline"); renderCanvas(); renderTool();}}
+function removeSel(){if(builder.sel<0)return; builder.cur.members.splice(builder.sel,1); builder.sel=-1; renderCanvas(); renderTool();}
+function cellSVG(m,px){return atomSVG(Object.assign({},memberFig(m),{rotate:m.rotate}), px||100, paintStyle(m));}
+function renderCanvas(){
+  const cur=builder.cur, wrap=document.getElementById("canvasWrap"), t=cur.template;
+  if(t==="ispy"){
+    wrap.innerHTML=(cur.members.length?`<div style="width:100%;text-align:center">${imageSetSVG(cur,340)}</div>`
+      :`<span class="small">Click cards on the left to scatter them here…</span>`)
+      +`<div class="memrow" style="width:100%;justify-content:center">`+cur.members.map((m,i)=>
+        `<div class="mc ${i===builder.sel?'sel':''}" data-i="${i}" title="click to select">${cellSVG(m,40)}</div>`).join("")+`</div>`;
+    wrap.querySelectorAll(".mc").forEach(d=>d.onclick=()=>selectMember(+d.dataset.i));
+    return;
+  }
+  const cls=t==="wodb"?"wodb":t==="sort"?"sort":t==="single"?"single":"samediff", n=TEMPLATES[t].max;
+  let cells="";
+  for(let i=0;i<n;i++){const m=cur.members[i];
+    cells+= m
+      ? `<div class="cell2 filled ${i===builder.sel?'sel':''}" data-i="${i}">${cellSVG(m)}</div>`
+      : `<div class="cell2 empty" data-i="${i}"><span class="ph">＋</span></div>`;}
+  wrap.innerHTML=`<div class="board ${cls}">${cells}</div>`;
+  wrap.querySelectorAll(".cell2").forEach(d=>d.onclick=()=>{const i=+d.dataset.i;
+    if(cur.members[i]) selectMember(i);
+    else { builder.sel=-1; renderTool(); toast("Pick a card on the left to fill this slot."); }});
+}
+function renderTool(){
+  const strip=document.getElementById("toolStrip"), m=builder.cur.members[builder.sel];
+  if(!m){ strip.style.display="none"; return; }
+  strip.style.display="flex";
+  strip.innerHTML=`<span class="kidfont" style="font-weight:700;font-size:13px">Paint:</span>`
+    +PAINT_ORDER.map(c=>`<span class="swatch ${m.color===c?'sel':''}" data-c="${c}" title="${c}" style="background:${PAINT[c]}${c==='white'?';border-color:#bbb':''}"></span>`).join("")
+    +`<button class="tbtn" id="tFill">${m.fillStyle==='outline'?'◻ outline':'◼ solid'}</button>`
+    +`<button class="tbtn" id="tRot">↻ ${m.rotate||0}°</button>`
+    +`<button class="tbtn" id="tDel">🗑 remove</button>`;
+  strip.querySelectorAll(".swatch").forEach(s=>s.onclick=()=>paintSel(s.dataset.c));
+  document.getElementById("tFill").onclick=fillSel;
+  document.getElementById("tRot").onclick=rotateSel;
+  document.getElementById("tDel").onclick=removeSel;
+}
+function addSet(){
+  const cur=builder.cur;
+  if(!cur.members.length){toast("Add some cards first.");return;}
+  const set={template:cur.template, members:cur.members.map(m=>Object.assign({},m)), prompt:cur.prompt||""};
+  if(cur.template==="ispy") set.layout=scatterLayout(set.members.length).places;
+  if(builder.editing>=0 && builder.editing<builder.sets.length){ builder.sets[builder.editing]=set; toast("Image set updated."); }
+  else { builder.sets.push(set); toast("Image set added — build another, or Save to Library."); }
+  builder.editing=-1;
+  builder.cur={template:cur.template, members:[], prompt:""}; builder.sel=-1;
+  document.getElementById("setPrompt").value="";
+  document.getElementById("addSet").textContent="＋ Add image set to presentation";
+  renderCanvas(); renderTool(); renderSetList();
+}
+function editImageSet(i){
+  const s=builder.sets[i]; if(!s) return;
+  builder.cur={template:s.template, members:s.members.map(m=>Object.assign({},m)), prompt:s.prompt||"", layout:s.layout};
+  builder.editing=i; builder.sel=-1;
+  document.getElementById("setPrompt").value=s.prompt||"";
+  document.querySelectorAll("#tplRail .railbtn").forEach(x=>x.classList.toggle("on",x.dataset.tpl===s.template));
+  document.getElementById("addSet").textContent="✔ Update image set";
+  renderTplHint(); renderCanvas(); renderTool(); renderSetList();
+  toast("Editing this image set — change it, then Update.");
+}
+function newPresentation(){
+  builder.sets=[]; builder.cur={template:"wodb", members:[], prompt:""}; builder.sel=-1; builder.editing=-1; builder.origName=null;
+  document.getElementById("presName").value="My presentation";
+  document.getElementById("setPrompt").value="";
+  document.getElementById("addSet").textContent="＋ Add image set to presentation";
+  document.querySelectorAll("#tplRail .railbtn").forEach(x=>x.classList.toggle("on",x.dataset.tpl==="wodb"));
+  renderTplHint(); renderCanvas(); renderTool(); renderSetList(); toast("Started a new presentation.");
+}
+function renderSetList(){
+  const el=document.getElementById("setList");
+  if(!builder.sets.length){el.innerHTML=`<span class="small">No image sets yet — build one below, then <b>＋ Add image set</b>. Click a saved one to edit it · drag to reorder.</span>`;return;}
+  el.innerHTML=builder.sets.map((s,i)=>
+    `<div class="sitem ${i===builder.editing?'editing':''}" draggable="true" data-i="${i}" title="Drag to reorder · click to edit">`
+    +`<span class="grip">⠿</span>`
+    +`<div class="sthumb">${imageSetSVG(s,92)}</div>`
+    +`<span class="num">${i+1}</span>`
+    +`<button class="x" data-i="${i}" title="Remove">✕</button></div>`).join("");
+  const items=el.querySelectorAll(".sitem");
+  const clearDrops=()=>items.forEach(x=>x.classList.remove("dl","dr"));
+  items.forEach(it=>{
+    const i=+it.dataset.i;
+    it.querySelector(".sthumb").onclick=()=>editImageSet(i);
+    it.querySelector(".x").onclick=ev=>{ ev.stopPropagation();
+      builder.sets.splice(i,1);
+      if(builder.editing===i){ builder.editing=-1; document.getElementById("addSet").textContent="＋ Add image set to presentation"; }
+      else if(builder.editing>i) builder.editing--;
+      renderSetList(); };
+    it.ondragstart=e=>{ builder.dragFrom=i; builder.dropTo=null; e.dataTransfer.effectAllowed="move"; e.dataTransfer.setData("text/plain",String(i)); it.classList.add("dragging"); };
+    it.ondragend=()=>{ it.classList.remove("dragging"); clearDrops(); };
+    it.ondragover=e=>{ e.preventDefault(); if(builder.dragFrom==null) return;
+      const r=it.getBoundingClientRect(), before=e.clientX < r.left+r.width/2;
+      clearDrops(); it.classList.add(before?"dl":"dr"); builder.dropTo=before?i:i+1; };
+    it.ondrop=e=>{ e.preventDefault(); e.stopPropagation(); clearDrops();
+      const from=builder.dragFrom; if(from==null) return;
+      let to=(builder.dropTo!=null?builder.dropTo:i);
+      const editSet = builder.editing>=0? builder.sets[builder.editing] : null;
+      const arr=builder.sets, m=arr.splice(from,1)[0]; if(from<to) to--; arr.splice(to,0,m);
+      builder.editing = editSet? arr.indexOf(editSet) : -1;
+      builder.dragFrom=null; builder.dropTo=null; renderSetList(); };
+  });
+}
+async function savePresentation(){
+  if(!builder.sets.length){toast("Add at least one image set first.");return;}
+  const name=(document.getElementById("presName").value||"My presentation").trim();
+  const pack={packFormat:"provoke-cards/v1", name, mode:"see", builtWith:"builder",
+    prompt:"What did you see? · How do you know?",
+    cards:builder.sets.map((s,i)=>({id:`${s.template}-${i+1}`, template:s.template,
+      members:s.members, layout:s.layout, prompt:s.prompt||TEMPLATES[s.template].prompt}))};
+  // if this was opened from an existing presentation and the name changed, replace (don't duplicate)
+  if(builder.origName && builder.origName!==name && !(PACKS[builder.origName]||{}).builtIn){
+    delete PACKS[builder.origName]; try{ await idbDel(builder.origName); }catch(e){}
+  }
+  PACKS[name]=pack; cfg.packName=name; builder.origName=name;
+  try{ await idbPut(name,pack); }catch(err){ console.warn("persist failed",err); }
+  refreshPackSel(); updateHints(); renderLibrary(); switchTab("library");
+  toast(`Saved “${name}” to your Library.`);
+}
+/* ---- Presentation Library ---- */
+function renderLibrary(){
+  const el=document.getElementById("libraryGrid"); if(!el) return;
+  const names=Object.keys(PACKS);
+  if(!names.length){ el.innerHTML=`<div class="small">No presentations yet — build one in the Builder.</div>`; return; }
+  el.innerHTML=names.map(n=>{
+    const p=PACKS[n], first=p.cards[0], editable=!p.builtIn;
+    return `<div class="pcard"><div class="pthumb ${editable?'':'noedit'}" ${editable?`data-editthumb="${encodeURIComponent(n)}"`:''} title="${editable?'Click to edit':'Built-in — Copy it to edit'}">${first?cardVisual(first,150):""}</div>`
+      +`<div><div class="pname">${n}</div><div class="pcount">${p.cards.length} image set${p.cards.length!==1?'s':''}${p.builtIn?' · built-in':''}</div></div>`
+      +`<div class="pacts"><button class="tbtn" data-play2="${encodeURIComponent(n)}">▶ Play</button>`
+      +(editable?`<button class="tbtn" data-edit="${encodeURIComponent(n)}">✎ Edit</button>`:``)
+      +`<button class="tbtn" data-copy="${encodeURIComponent(n)}">⧉ Copy</button>`
+      +`<button class="tbtn" data-export="${encodeURIComponent(n)}">⬇ Export</button>`
+      +(p.builtIn?``:`<button class="tbtn" data-del="${encodeURIComponent(n)}">🗑</button>`)
+      +`</div></div>`;
+  }).join("");
+  const dec=s=>decodeURIComponent(s);
+  el.querySelectorAll("[data-editthumb]").forEach(b=>b.onclick=()=>editPresentation(dec(b.dataset.editthumb)));
+  el.querySelectorAll("[data-play2]").forEach(b=>b.onclick=()=>playPresentation(dec(b.dataset.play2)));
+  el.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editPresentation(dec(b.dataset.edit)));
+  el.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>copyPresentation(dec(b.dataset.copy)));
+  el.querySelectorAll("[data-export]").forEach(b=>b.onclick=()=>exportPresentation(dec(b.dataset.export)));
+  el.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>deletePresentation(dec(b.dataset.del)));
+}
+function exportPresentation(name){
+  const p=PACKS[name]; if(!p) return;
+  const blob=new Blob([JSON.stringify(p,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const safe=(name.replace(/[^a-z0-9\-_]+/gi,"-").replace(/^-+|-+$/g,"")||"routine")+".json";
+  const a=document.createElement("a"); a.href=url; a.download=safe;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+  toast(`Exported “${name}” as ${safe}`);
+}
+function playPresentation(name){ if(!PACKS[name])return; cfg.packName=name; refreshPackSel(); updateHints(); switchTab("player"); }
+function editPresentation(name){
+  const p=PACKS[name]; if(!p) return;
+  builder.sets=p.cards.map(cardToImageSet);
+  builder.cur={template:"wodb", members:[], prompt:""}; builder.sel=-1; builder.editing=-1; builder.origName=name;
+  document.getElementById("addSet").textContent="＋ Add image set to presentation";
+  document.getElementById("presName").value=name;
+  document.querySelectorAll("#tplRail .railbtn").forEach(x=>x.classList.toggle("on",x.dataset.tpl==="wodb"));
+  renderTplHint(); renderCanvas(); renderTool(); renderSetList(); switchTab("builder");
+  toast(`Editing “${name}” — Save to Library keeps the same name (overwrites).`);
+}
+async function copyPresentation(name){
+  const p=PACKS[name]; if(!p) return;
+  let nn=name+" copy", i=2; while(PACKS[nn]) nn=name+" copy "+(i++);
+  const sets=p.cards.map(cardToImageSet);
+  const clone={packFormat:"provoke-cards/v1", name:nn, mode:"see", builtWith:"builder",
+    prompt:p.prompt||"What did you see? · How do you know?",
+    cards:sets.map((s,idx)=>({id:`${s.template}-${idx+1}`, template:s.template, members:s.members, layout:s.layout, prompt:s.prompt||TEMPLATES[s.template].prompt}))};
+  PACKS[nn]=clone; try{ await idbPut(nn,clone); }catch(e){}
+  refreshPackSel(); renderLibrary(); toast(`Copied to “${nn}” — now editable in the Builder.`);
+}
+async function deletePresentation(name){
+  if(!confirm(`Delete “${name}”? This cannot be undone.`)) return;
+  delete PACKS[name]; try{ await idbDel(name); }catch(e){}
+  if(cfg.packName===name) cfg.packName=GEOMETRY_PACK.name;
+  refreshPackSel(); updateHints(); renderLibrary(); toast(`Deleted “${name}”.`);
+}
+function segWire(id,key,cb){const el=document.getElementById(id);
+  el.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    el.querySelectorAll("button").forEach(x=>x.classList.remove("on"));b.classList.add("on");
+    cb(b.dataset[key]);});}
+
+/* ---- load packs / images ---- */
+async function onFiles(e){
+  const files=[...e.target.files]; if(!files.length) return;
+  const json=files.find(f=>f.name.endsWith(".json"));
+  let pack;
+  if(json){ pack=JSON.parse(await json.text()); if(!pack.name) pack.name=json.name.replace(/\.json$/,""); }
+  else {
+    const imgs=files.filter(f=>f.type.startsWith("image/"));
+    if(!imgs.length){alert("Select a .json pack or image files.");return;}
+    const cards=[];
+    for(const f of imgs){ cards.push({id:f.name, image:await toDataURL(f), answer:f.name.replace(/\.[^.]+$/,"")}); }
+    pack={packFormat:"provoke-cards/v1", name:prompt("Name this pack:", "My images")||"My images",
+          mode:"name", prompt:"Who is this?", cards};
+  }
+  PACKS[pack.name]=pack; cfg.packName=pack.name;
+  try{ await idbPut(pack.name,pack); }catch(err){ console.warn("persist failed",err); }
+  refreshPackSel(); updateHints(); renderLibrary();
+  toast(`Imported “${pack.name}” into your Library.`);
+  e.target.value="";
+}
+const toDataURL=f=>new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f);});
+
+/* ================= run ================= */
+let ses=null;
+function startRun(){
+  const p=curPack();
+  let idx=p.cards.map((_,i)=>i);
+  if(cfg.order==="shuffle") for(let i=idx.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]];}
+  ses={pack:p, mode:cfg.mode, flashMs:cfg.flash*1000, hide:cfg.hide, order:idx, i:0, responses:[]};
+  document.getElementById("setup").style.display="none";
+  document.getElementById("report").style.display="none";
+  document.getElementById("stage").style.display="flex";
+  document.getElementById("endBtn").onclick=endRun;
+  flashCard();
+}
+function stageEl(id){return document.getElementById(id);}
+function renderFlashCtl(){
+  const s=Math.round(ses.flashMs/1000);
+  stageEl("stFlash").innerHTML=`⏱ <button class="fadj" id="fdn">−</button> <b>${s}s</b> <button class="fadj" id="fup">＋</button>`;
+  stageEl("fdn").onclick=()=>adjFlash(-1);
+  stageEl("fup").onclick=()=>adjFlash(1);
+}
+function adjFlash(d){
+  let s=Math.round(ses.flashMs/1000)+d; s=Math.max(1,Math.min(5,s)); ses.flashMs=s*1000; renderFlashCtl();
+}
+function flashCard(){
+  const c=ses.pack.cards[ses.order[ses.i]];
+  stageEl("stCount").textContent=`${ses.i+1} / ${ses.order.length}`;
+  stageEl("stName").textContent=ses.pack.name;
+  renderFlashCtl();
+  stageEl("stageBody").innerHTML=`<div class="figbox">${cardVisual(c)}</div>`;
+  // timer bar
+  const bar=stageEl("bar"); bar.style.transition="none"; bar.style.width="100%";
+  requestAnimationFrame(()=>{bar.style.transition=`width ${ses.flashMs}ms linear`; bar.style.width="0%";});
+  clearTimeout(ses.t);
+  ses.t=setTimeout(promptPhase, ses.flashMs);
+}
+function promptPhase(){
+  const c=ses.pack.cards[ses.order[ses.i]];
+  const showImg = !ses.hide;
+  const visual = showImg?`<div class="figbox" style="max-height:34vh">${cardVisual(c,220)}</div>`:"";
+  if(ses.mode==="presentation"){
+    stageEl("stageBody").innerHTML=`${visual}
+      <div class="prompt">${c.prompt||"What did you see?"}</div>
+      <div class="promptSub">How do you know?</div>
+      <div class="stageBtns">
+        ${ses.hide?'<button class="ghost" id="peek">👁 Show it again</button>':""}
+        <button class="primary" id="next">${ses.i+1<ses.order.length?"Next ▶":"Finish"}</button>
+      </div>`;
+    if(ses.hide) stageEl("peek").onclick=()=>{
+      stageEl("stageBody").querySelector(".prompt").insertAdjacentHTML("beforebegin",
+        `<div class="figbox" style="max-height:34vh">${cardVisual(c,220)}</div>`);
+      stageEl("peek").remove();
+    };
+    stageEl("next").onclick=advance;
+  } else {
+    const ans = packHasAnswers(ses.pack);
+    const draft = ses.draft||""; ses.draft="";
+    stageEl("stageBody").innerHTML=`${visual}
+      <div class="prompt" style="font-size:30px">${ans?"Who / what is it?":(c.prompt||"What did you see?")}</div>
+      <div class="promptSub">${ans?"":"How do you know?"}</div>
+      <div class="stageInput"><textarea id="resp" placeholder="Type what you saw…">${escapeHtml(draft)}</textarea></div>
+      <div class="stageBtns">
+        <button class="ghost" id="look">👁 Look again</button>
+        <button class="primary" id="next">${ses.i+1<ses.order.length?"Submit ▶":"Submit & finish"}</button></div>`;
+    const ta=stageEl("resp"); ta.focus();
+    stageEl("look").onclick=reflash;
+    stageEl("next").onclick=()=>{ ses.responses[ses.i]=ta.value.trim(); advance(); };
+    ta.onkeydown=ev=>{ if(ev.key==="Enter"&&(ev.metaKey||ev.ctrlKey)){ses.responses[ses.i]=ta.value.trim();advance();} };
+  }
+}
+function advance(){
+  if(ses.i+1<ses.order.length){ ses.i++; flashCard(); }
+  else finish();
+}
+function reflash(){
+  const c=ses.pack.cards[ses.order[ses.i]];
+  const ta=document.getElementById("resp"); if(ta) ses.draft=ta.value;
+  stageEl("stageBody").innerHTML=`<div class="figbox">${cardVisual(c)}</div>`;
+  const bar=stageEl("bar"); bar.style.transition="none"; bar.style.width="100%";
+  requestAnimationFrame(()=>{bar.style.transition=`width ${ses.flashMs}ms linear`; bar.style.width="0%";});
+  clearTimeout(ses.t); ses.t=setTimeout(promptPhase, ses.flashMs);
+}
+function endRun(){
+  if(ses) clearTimeout(ses.t);
+  document.getElementById("stage").style.display="none";
+  document.getElementById("report").style.display="none";
+  document.getElementById("setup").style.display="block";
+  window.scrollTo(0,0);
+}
+function finish(){
+  document.getElementById("stage").style.display="none";
+  const rep=document.getElementById("report"); rep.style.display="block";
+  if(ses.mode==="presentation") rep.innerHTML=doneCard("Presentation complete — nothing was captured.");
+  else if(packHasAnswers(ses.pack)) rep.innerHTML=quizReport();
+  else { rep.innerHTML=responsesReport(); wireDiag(); }
+  const again=rep.querySelector("#again"); if(again) again.onclick=backToStart;
+}
+function backToStart(){
+  document.getElementById("report").style.display="none";
+  document.getElementById("setup").style.display="block";
+  window.scrollTo(0,0);
+}
+function doneCard(msg){
+  return `<div class="card"><h1>Done</h1><p style="font-size:16px">${msg}</p>
+    <button class="primary" id="again">◀ Back to start</button></div>`;
+}
+/* ---- diagnostic: van Hiele ---- */
+function detectLevel(text,lookFors){
+  const t=(text||"").toLowerCase(); let hi=-1, hits=[];
+  for(const L of [0,1,2]){ for(const ph of (lookFors?.[L]||[])){ if(t.includes(ph)){ hits.push(L); if(L>hi)hi=L; break; } } }
+  return {hi, hits};
+}
+function responsesReport(){
+  const rows=ses.order.map((ci,k)=>{const c=ses.pack.cards[ci];
+    return `<div class="rrow"><div class="thumb">${cardVisual(c,64)}</div>
+      <div class="said"><b>${k+1}.</b> <i>“${escapeHtml(ses.responses[k]||"(blank)")}”</i></div></div>`;}).join("");
+  return `<div class="card">
+    <h1>Look back at what you saw</h1>
+    <p style="font-size:15px">Here's everything you said, all at once. <b>You</b> decide what the patterns are.</p>
+    ${rows}
+    <label style="font-weight:700;margin-top:18px;display:block">Looking across <i>all</i> your responses — what do you see?</label>
+    <textarea id="metaReflect" placeholder="Patterns, surprises, what stands out to you…"></textarea>
+    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="primary" id="again">◀ Run again</button>
+      <button class="ghost" id="exportPDF">📄 Export PDF (for a classmate or AI)</button>
+      <button class="ghost" id="copyAI">📋 Copy as text</button>
+    </div>
+  </div>`;
+}
+function exportPDF(){
+  const p=ses.pack;
+  const meta=(document.getElementById("metaReflect")||{}).value||"";
+  const rows=ses.order.map((ci,k)=>{const c=p.cards[ci];
+    return `<div class="pr"><div class="pi">${cardVisual(c,120)}</div><div class="pt"><b>${k+1}.</b> “${escapeHtml(ses.responses[k]||"")}”</div></div>`;}).join("");
+  const doc=`<!doctype html><html><head><meta charset="utf-8"><title>nVoke — ${p.name}</title>
+<style>body{font-family:Inter,system-ui,sans-serif;color:#1a2b4a;max-width:720px;margin:24px auto;padding:0 16px}
+h1{color:#1F4E96;margin-bottom:2px}h3{color:#1F4E96;margin-top:22px}
+.pr{display:flex;gap:14px;align-items:center;border-top:1px solid #e5e5e5;padding:8px 0}
+.pi svg,.pi img{max-width:110px;max-height:110px}.pt{font-size:14px}
+.meta{background:#f5f8fc;border-radius:8px;padding:12px;font-size:14px;white-space:pre-wrap}</style>
+</head><body>
+<h1>nVoke — ${p.name}</h1>
+<p style="font-size:12.5px;color:#666">What I saw, and what I see across my own responses. (Everything stayed on my device; I chose to export this to share.)</p>
+<h3>Looking across all my responses, what do I see?</h3>
+<div class="meta">${escapeHtml(meta)||"(not written)"}</div>
+<h3>My responses</h3>${rows}
+</body></html>`;
+  const w=window.open("","_blank");
+  if(!w){ alert("Allow pop-ups to export, or use your browser's Print → Save as PDF."); return; }
+  w.document.write(doc); w.document.close(); w.focus(); setTimeout(()=>w.print(),350);
+}
+function wireDiag(){
+  const rep=document.getElementById("report");
+  const ex=rep.querySelector("#exportPDF"); if(ex) ex.onclick=exportPDF;
+  const copy=rep.querySelector("#copyAI");
+  if(copy) copy.onclick=()=>{
+    const meta=(document.getElementById("metaReflect")||{}).value||"";
+    let txt=`I did a "${ses.pack.name}" seeing activity — for each image I typed what I saw.\n\nMy responses:\n`;
+    ses.order.forEach((ci,k)=>{txt+=`${k+1}. ${ses.responses[k]||"(blank)"}\n`;});
+    txt+=`\nLooking across them all, what I see: ${meta||"(not written)"}\n\nWhat patterns do you notice?`;
+    navigator.clipboard.writeText(txt).then(()=>{copy.textContent="✓ Copied";},()=>{copy.textContent="(copy failed)";});
+  };
+}
+function quizReport(){
+  const p=ses.pack; let correct=0,best=0,streak=0,rows="";
+  ses.order.forEach((ci,k)=>{
+    const c=p.cards[ci], r=(ses.responses[k]||"").trim().toLowerCase();
+    const a=(c.answer||"").trim().toLowerCase();
+    const ok = a && (r===a || r===a.split(" ")[0] || a.split(" ")[0]===r);
+    if(ok){correct++;streak++;best=Math.max(best,streak);} else streak=0;
+    rows+=`<div class="rrow"><div class="thumb">${cardVisual(c,64)}</div>
+      <div class="said">you said <b>“${escapeHtml(ses.responses[k]||"")}”</b> · answer: <b>${escapeHtml(c.answer||"")}</b></div>
+      <div class="${ok?"ok":"no"}">${ok?"✓":"✗"}</div></div>`;
+  });
+  return `<div class="card"><h1>Quiz results</h1>
+    <p style="font-size:16px"><b>${correct} / ${ses.order.length}</b> correct · best streak <b>${best}</b></p>
+    ${rows}<div style="margin-top:16px"><button class="primary" id="again">◀ Run again</button></div></div>`;
+}
+function reflectionReport(){
+  const p=ses.pack; let rows="";
+  ses.order.forEach((ci,k)=>{const c=p.cards[ci];
+    rows+=`<div class="rrow"><div class="thumb">${cardVisual(c,64)}</div>
+      <div class="said"><i>“${escapeHtml(ses.responses[k]||"(blank)")}”</i></div></div>`;});
+  return `<div class="card"><h1>What you saw</h1><div class="small">No look-fors in this pack — here are your responses to reflect on.</div>
+    ${rows}<div style="margin-top:16px"><button class="primary" id="again">◀ Run again</button></div></div>`;
+}
+function escapeHtml(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+init();
+</script>
+</body>
+</html>
