@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pentomino Builder — TCE 318P</title>
+<!--
+  Pentomino Builder — DRAFT v0.4 (7/8). Teacher task-creation canvas for Wk4.
+  v0.3: FRAME = sticky vertex/outline builder (snap to lattice, axis-aligned edges,
+        must-turn, no reused vertex, self-intersection check on close → grid-conforming
+        interior). Save drawn frames to a reusable library (localStorage).
+        Pieces (place/rotate/flip/color · 1 Set/Multi) only drop inside the frame.
+  v0.4: CURSOR-RELATIVE placement — the piece cell under the cursor is the anchor
+        (fixes dropping X/T/U/plus into matching holes). DRAG a placed piece to slide it.
+  v0.5: SIZE control (S/M/L/XL) scales grid + pieces together for younger kids (--u var);
+        each size sets a default board (SIZES). CLEAR removes placed pieces (keeps frame).
+  v0.6: TASK AUTHORING — prompt field + DOK question-stem picker (teacher-owned, app never
+        scores level) + self-assigned DOK tag + "for the learner who" note. Puzzle<->Solution
+        toggle (lift pieces -> blank). PRINT / Save-as-PDF with Full board / Frame-only crop.
+  v0.6.1: split into TABS (Build the puzzle | Task & DOK) — DOK authoring was below the fold.
+  v0.6.2: Task & DOK is now a two-column layout — board (left) + a right-hand panel with the
+        DOK toggle (shows ONLY the selected level's stems), prompt, learner note, and the
+        Show / Print-area / Print controls. Everything fits without scrolling.
+  v0.6.3: pieces may be placed/dragged ANYWHERE on the board (not just inside the frame) —
+        stage & rotate in the margin, then drag into the frame. Frame is now a visual target.
+  v0.8: ③ PLAY tab — a partner solves a finished level in-app (single laptop, turn-taking);
+        the app captures the solve (placements/removals/time, solved-detection) and generates a
+        FERPA-clean downloadable PLAY REPORT (metacog-style). Replaces print-and-swap peer-play.
+  v0.8.1: close a frame -> auto-return to the Pieces tool. RIGHT-CLICK a placed piece for a
+        context menu: rotate 90/180/270 · flip horizontal/vertical · delete (Delete key still works).
+  v0.8.2: "Show as" is now PER LEVEL (was one global toggle) — each DOK level stores its own
+        Blank frame / Answer key / Pieces-only (colored, no frame); the packet renders each page
+        by its own setting. Task tab previews it; Build always shows pieces+frame for authoring.
+  v0.8.3: GIVEN pieces — right-click a placed piece -> "Pin as given" (dashed outline). A given
+        stays visible in ALL show modes (even Blank), so you can show a reference piece (e.g. the
+        original) next to an empty frame (its double). Frame-only crop keeps givens; Play pre-places
+        givens (locked) and excludes them from the solve check.
+  v0.8.4: Play UX — dropping a piece now DESELECTS (like design; unlimited supply kept) so no
+        accidental duplicate pieces, and click-to-select a placed piece behaves like design. Any
+        cell poking OUTSIDE the frame is highlighted red so "N outside frame" is visible.
+  v0.8.5: Play now honors the level's SUPPLY mode (1-Set = distinct pieces, as built) — stored per
+        level. A color swatch now recolors the SELECTED placed piece (design + play), so you can
+        tell same-shaped pieces apart.
+  v0.8.7: out-of-bounds cells (in Play) show "out of the play region" as a GREY WASH (reads as
+        inactive) + a diagonal HATCH on top (reads as excluded) — replacing the earlier red outline
+        that looked like a selection highlight. Piece color stays faintly visible underneath.
+  v0.8.8: Play is now low-pressure & reasoning-first — a "Your answer & explanation" NOTES field
+        (goes in the report; you can answer in words without tiling), an "I'm done" button to mark a
+        question complete, and the TIMER is OFF by default with an On/Off toggle. Typing no longer
+        triggers piece shortcuts. Report carries notes + done/tiled status; time only if timer was on.
+  v0.8.9: Play layout — moved level-selector / Rotate-Flip-Restart / Timer / hint into a bar UNDER
+        the board, so the right panel is just task -> big answer box -> I'm done -> Download (more
+        room to write).
+  v0.7: ASSIGNMENT PACKET — each DOK level (1-4) is its own slot/grid; the task carries across
+        levels as a starting point. "✓ Finished with DOK n" saves a level; "Print packet PDF"
+        assembles every finished level into one multi-page document (page 1 = DOK 1, ...).
+        Slots persist in localStorage. "Editing · DOK n" badge shows the active level.
+  v0.7.1: packet/print controls moved to an output bar UNDER the board; right panel = authoring
+        only. Printed pages gain the DOK level name + a "Show your thinking" ruled work area.
+  NEXT: DOK x n coverage grid · solvability check · "differentiate this" clone.
+-->
+<style>
+ :root{--ink:#1f2937;--muted:#6b7280;--line:#d7dbe0;--accent:#2f6fd0;--accentbg:#eaf1fb;--outside:#e9ecf1;--u:30px;}
+ *{box-sizing:border-box}
+ body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);line-height:1.45;margin:0 auto;padding:18px 16px 60px;max-width:1300px}
+ h1{font-size:21px;margin:0 0 2px} .sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+ .bar{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;margin:8px 0}
+ .grp{display:flex;gap:8px;align-items:center}
+ .grp > label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+ .seg{display:inline-flex;border:2px solid var(--line);border-radius:20px;overflow:hidden}
+ .seg button{border:0;background:#fff;font:inherit;font-size:13px;font-weight:700;padding:6px 13px;cursor:pointer;color:var(--muted)}
+ .seg button.on{background:var(--accent);color:#fff}
+ .btn{border:2px solid var(--line);background:#fff;border-radius:20px;padding:6px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;color:var(--ink)}
+ .btn:hover{border-color:var(--accent);color:var(--accent)}
+ .num{width:50px;border:2px solid var(--line);border-radius:8px;padding:5px 7px;font:inherit;font-size:13px}
+ .rail{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#f7f8fa;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0}
+ .rail .tp{border:2px solid var(--line);border-radius:9px;background:#fff;padding:5px 7px 3px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:52px;position:relative}
+ .rail .tp:hover{border-color:var(--accent)} .rail .tp .nm{font-size:10px;font-weight:700;color:var(--muted)}
+ .rail .tp .x{position:absolute;top:-6px;right:-6px;background:#fff;border:1px solid var(--line);border-radius:50%;width:16px;height:16px;line-height:13px;font-size:11px;text-align:center;color:#c33}
+ .layout{display:flex;gap:22px;flex-wrap:nowrap;align-items:flex-start;margin-top:10px}
+ .side{flex:0 0 250px}
+ #boardWrap{flex:1 1 0;min-width:0}
+ .palette{display:flex;flex-wrap:wrap;gap:8px;max-width:240px}
+ .pc{border:2px solid var(--line);border-radius:10px;background:#fff;padding:6px;cursor:pointer;width:66px;display:flex;flex-direction:column;align-items:center;gap:3px}
+ .pc:hover{border-color:var(--accent)} .pc.sel{border-color:var(--accent);background:var(--accentbg)}
+ .pc.used{opacity:.25;pointer-events:none} .pc .lab{font-size:11px;font-weight:800;color:var(--muted)}
+ .cap{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin:14px 0 6px}
+ .swatches{display:flex;flex-wrap:wrap;gap:6px;max-width:240px}
+ .sw{width:22px;height:22px;border-radius:6px;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer}
+ .sw.on{box-shadow:0 0 0 2px var(--accent)}
+ #boardWrap{overflow:auto;max-width:100%}
+ #boardStage{position:relative;width:max-content}
+ #board{display:grid;background:#fff;border:2px solid var(--line);border-radius:6px;width:max-content}
+ #overlay{position:absolute;left:2px;top:2px;pointer-events:none;z-index:5}
+ .cell{width:var(--u);height:var(--u);background:#fff}
+ #board.gridon .cell{box-shadow:inset 0 0 0 1px #e6e9ee}
+ .hint{color:var(--muted);font-size:12px;margin-top:10px} .count{font-weight:800}
+ kbd{background:#f1f3f6;border:1px solid var(--line);border-radius:4px;padding:0 5px;font-size:11px}
+ /* top-level tabs */
+ .tabs{display:flex;gap:4px;border-bottom:2px solid var(--line);margin:8px 0 14px}
+ .tabs button{border:2px solid transparent;border-bottom:0;background:none;font:inherit;font-size:14px;font-weight:800;color:var(--muted);padding:9px 18px;cursor:pointer;border-radius:11px 11px 0 0;margin-bottom:-2px}
+ .tabs button.on{color:var(--accent);border-color:var(--line);background:#fff;border-bottom-color:#fff}
+ .tabs button:hover:not(.on){color:var(--ink)}
+ /* task authoring — right-hand column on the Task & DOK tab */
+ .taskpanel{flex:0 0 372px;display:flex;flex-direction:column;gap:9px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fbfcfe;align-self:flex-start}
+ .taskpanel .grp{flex-wrap:wrap}
+ .stemhead{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--ink)}
+ .stemhead .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+ .stemlist{display:flex;flex-direction:column;gap:6px;max-height:46vh;overflow:auto}
+ .stemhint{font-size:12px;color:var(--muted);padding:9px 10px;border:1px dashed var(--line);border-radius:8px}
+ .stem{border:1px solid var(--line);border-radius:7px;background:#fff;text-align:left;font:inherit;font-size:12px;line-height:1.3;color:var(--ink);padding:6px 8px;cursor:pointer}
+ .stem:hover{border-color:var(--accent);background:var(--accentbg)}
+ .flab{display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin:2px 0 -3px}
+ #promptIn{width:100%;min-height:66px;border:2px solid var(--line);border-radius:9px;padding:8px 10px;font:inherit;font-size:14px;resize:vertical}
+ #learnerIn{width:100%;border:2px solid var(--line);border-radius:9px;padding:7px 10px;font:inherit;font-size:13px}
+ .tpout{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;border-top:1px solid var(--line);padding-top:10px;margin-top:2px}
+ .dokchip{display:inline-block;color:#fff;font-weight:800;font-size:12px;border-radius:20px;padding:2px 10px}
+ /* assignment packet */
+ .pktsec{border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:7px}
+ .pktsec .cap{margin:0}
+ .pktbtns{display:flex;flex-wrap:wrap;gap:6px}
+ .pktstrip{display:flex;flex-direction:column;gap:4px;max-height:20vh;overflow:auto}
+ .pkgchip{display:flex;align-items:center;gap:7px;font-size:12px;border:1px solid var(--line);border-radius:7px;padding:4px 8px;background:#fff}
+ .pkgchip .pn{font-weight:800} .pkgchip .pk{color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .pkx{border:0;background:none;color:#c33;font-size:16px;cursor:pointer;line-height:1;padding:0 2px}
+ .pktempty{font-size:12px;color:#9aa0a6}
+ .ebadge{margin-left:auto;align-self:center;font-size:12px;font-weight:800;color:#fff;border-radius:20px;padding:3px 12px}
+ .seg button.done::after{content:' ✓'}
+ #finishBtn{align-self:flex-start}
+ /* packet print pages (hidden on screen) */
+ #pkgPrint{display:none}
+ .pkghead{margin:0 0 10px}
+ .pkghead .pprompt{font-size:16px;line-height:1.4;margin-top:6px}
+ .pkghead .forwho{font-size:12px;color:#555;font-style:italic;margin-left:10px}
+ .pkgboard{display:grid;width:max-content;border:1px solid #cfd4da;background:#fff}
+ .pkgboard .pcell{box-shadow:inset 0 0 0 1px #e6e9ee}
+ .pkghead .doknm{font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.03em;margin-left:8px}
+ .pkgwork{margin-top:18px;max-width:640px}
+ .pkgwork .wl{font-size:12px;font-weight:700;color:#555;margin-bottom:10px}
+ .pkgwork .wline{border-bottom:1.5px solid #cfd4da;height:32px}
+ /* output bar under the board (Task & DOK tab) */
+ .outbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fbfcfe;margin-top:14px}
+ #pkgCount{font-size:12px;color:var(--muted);font-weight:700}
+ /* Play panel (③ Play tab) — right-hand column */
+ .playpanel{flex:0 0 340px;display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#f6faf6;align-self:flex-start}
+ .playpanel select{border:2px solid var(--line);border-radius:8px;padding:5px 8px;font:inherit;font-size:13px}
+ #playTask{border:1px solid var(--line);border-radius:9px;background:#fff;padding:10px}
+ #playTask .pprompt{font-size:15px;line-height:1.4;margin-top:6px}
+ #playTask .forwho{display:block;font-size:12px;color:#555;font-style:italic;margin-top:8px}
+ .playstat{font-size:14px;font-weight:700}
+ .playstat b{font-variant-numeric:tabular-nums}
+ #playSolved{font-weight:800;color:#2e7d32;font-size:15px;min-height:20px}
+ #playNotes{width:100%;min-height:260px;flex:1;border:2px solid var(--line);border-radius:9px;padding:9px 11px;font:inherit;font-size:14px;line-height:1.5;resize:vertical}
+ #playDoneBtn.on{border-color:#2e7d32;color:#2e7d32;background:#eaf5ea}
+ .playhint{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px}
+ .playempty{font-size:13px;color:#9aa0a6;padding:10px;border:1px dashed var(--line);border-radius:8px}
+ /* right-click context menu on a placed piece */
+ .ctxmenu{position:fixed;z-index:60;background:#fff;border:1px solid var(--line);border-radius:9px;box-shadow:0 6px 20px rgba(0,0,0,.16);padding:4px;min-width:176px}
+ .ctxmenu button{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;font-size:13px;padding:7px 12px;border-radius:6px;cursor:pointer;color:var(--ink)}
+ .ctxmenu button:hover{background:var(--accentbg);color:var(--accent)}
+ .ctxmenu hr{border:0;border-top:1px solid var(--line);margin:4px 2px}
+ .ctxmenu button.del{color:#c0392b} .ctxmenu button.del:hover{background:#fdecea;color:#c0392b}
+ /* print head (worksheet header) — hidden on screen */
+ #printHead{display:none}
+ @media print{
+  @page{margin:14mm}
+  body{max-width:none;padding:0}
+  h1,.sub,.tabs,.bar,.rail,.side,.hint,.taskpanel,#overlay{display:none!important}
+  .layout{display:block;margin:0}
+  #boardWrap{overflow:visible}
+  #printHead{display:block;margin:0 0 12px}
+  #printHead .pprompt{font-size:16px;line-height:1.4;margin-top:6px}
+  #printHead .forwho{font-size:12px;color:#555;font-style:italic;margin-left:10px}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  /* packet mode: hide the live board, show the assembled pages, one per sheet */
+  body.printing-packet .layout,body.printing-packet #printHead{display:none!important}
+  body.printing-packet #pkgPrint{display:block!important}
+  .pkgpage{page-break-after:always}
+  .pkgpage:last-child{page-break-after:auto}
+ }
+</style>
+</head>
+<body>
+<h1>Pentomino Builder <span style="font-size:12px;color:var(--muted);font-weight:400">· v0.8.9 draft</span></h1>
+<div class="sub">Teacher task canvas — draw a grid-conforming frame, then place, rotate, flip, and color pentominoes to fill it.</div>
+
+<div class="tabs" id="tabs">
+ <button data-tab="build" class="on">① Build the puzzle</button>
+ <button data-tab="task">② Task &amp; DOK</button>
+ <button data-tab="play">③ Play</button>
+ <span class="ebadge" id="editingBadge"></span>
+</div>
+
+<div class="bar">
+ <div class="grp"><label>Tool</label>
+  <div class="seg" id="toolSeg"><button data-tool="pieces" class="on">Pieces</button><button data-tool="frame">Draw&nbsp;Frame</button></div>
+ </div>
+ <div class="grp"><label>Supply</label>
+  <div class="seg" id="modeSeg"><button data-mode="1set" class="on">1 Set</button><button data-mode="multi">Multi</button></div>
+ </div>
+ <div class="grp"><label>Grid</label>
+  <div class="seg" id="gridSeg"><button data-grid="1" class="on">On</button><button data-grid="0">Off</button></div>
+ </div>
+ <div class="grp"><label>Size</label>
+  <div class="seg" id="sizeSeg"><button data-u="22">S</button><button data-u="30" class="on">M</button><button data-u="42">L</button><button data-u="56">XL</button></div>
+ </div>
+ <div class="grp"><label>Piece</label>
+  <button class="btn" id="rotBtn" title="Rotate (R)">⟳ Rotate</button>
+  <button class="btn" id="flipBtn" title="Flip (F)">⇋ Flip</button>
+ </div>
+ <div class="grp"><label>Board</label>
+  <input class="num" id="colsIn" type="number" min="3" max="40" value="28"> ×
+  <input class="num" id="rowsIn" type="number" min="3" max="40" value="18">
+  <button class="btn" id="resizeBtn">Resize</button>
+  <button class="btn" id="clearBtn" title="Remove all placed pieces (keeps the frame)">Clear</button>
+ </div>
+</div>
+
+<div class="rail" id="rail"></div>
+
+<div id="printHead"></div>
+
+<div class="layout">
+ <div class="side">
+  <div class="cap">Pieces</div>
+  <div class="palette" id="palette"></div>
+  <div class="cap">Color</div>
+  <div class="swatches" id="swatches"></div>
+ </div>
+ <div id="boardWrap">
+  <div id="boardStage">
+   <div id="board" class="gridon"></div>
+   <svg id="overlay"></svg>
+  </div>
+  <div class="hint" id="hint"></div>
+  <div class="outbar" id="outbar">
+   <div class="grp"><label>Assignment packet</label> <span id="pkgCount"></span></div>
+   <div class="grp"><label>Show this level as</label>
+    <div class="seg" id="showSeg"><button data-show="blank">Blank frame</button><button data-show="key" class="on">Answer key</button><button data-show="pieces">Pieces only</button></div>
+   </div>
+   <div class="grp"><label>Print area</label>
+    <div class="seg" id="scopeSeg"><button data-s="full" class="on">Full board</button><button data-s="frame">Frame only</button></div>
+   </div>
+   <button class="btn" id="printPkgBtn" title="Assemble every finished level into one multi-page PDF">🖨 Print packet PDF</button>
+   <button class="btn" id="printBtn" title="Print just the current level">🖨 This page</button>
+   <button class="btn" id="clearPkgBtn">Clear all</button>
+  </div>
+  <div class="outbar" id="playbar">
+   <div class="grp"><label>Play a level</label><select id="playLevelSel"></select></div>
+   <button class="btn" id="playRotBtn" title="Rotate (R)">⟳ Rotate</button>
+   <button class="btn" id="playFlipBtn" title="Flip (F)">⇋ Flip</button>
+   <button class="btn" id="playRestartBtn" title="Clear your pieces, keep the frame">↺ Restart</button>
+   <div class="grp"><label>Timer</label><div class="seg" id="timerSeg"><button data-t="0" class="on">Off</button><button data-t="1">On</button></div></div>
+   <span class="playstat" id="playTimer"></span>
+   <div class="playhint" style="flex-basis:100%;margin:0">Place pentominoes, or just answer in words — you don't have to fill the frame. Click to place, <b>R</b>/<b>F</b> rotate/flip, drag to slide; click a placed piece then a <b>color</b> (left) to recolor. Write your explanation on the right, click <b>I'm done</b>, then download the report.</div>
+  </div>
+ </div>
+ <div class="taskpanel">
+  <div class="grp"><label>DOK level (you decide)</label>
+   <div class="seg" id="dokSeg"><button data-dok="1" class="on">1</button><button data-dok="2">2</button><button data-dok="3">3</button><button data-dok="4">4</button></div>
+  </div>
+  <div class="stemlist" id="stemGrid"></div>
+  <label class="flab" for="promptIn">Task prompt</label>
+  <textarea id="promptIn" placeholder="Type the task, or click a stem above…"></textarea>
+  <label class="flab" for="learnerIn">For the learner who…</label>
+  <input id="learnerIn" type="text" placeholder="e.g. finds area but not yet why perimeter changes">
+  <button class="btn" id="finishBtn">✓ Finished with DOK 1</button>
+ </div>
+ <div class="playpanel" id="playpanel">
+  <div id="playTask"></div>
+  <div class="playstat" id="playProgress"></div>
+  <div id="playSolved"></div>
+  <label class="flab" for="playNotes">Your answer &amp; explanation</label>
+  <textarea id="playNotes" placeholder="Answer the question and explain your reasoning — you don't have to fill the whole frame."></textarea>
+  <button class="btn" id="playDoneBtn">✓ I'm done with this question</button>
+  <button class="btn" id="playReportBtn">⬇ Download play report</button>
+ </div>
+</div>
+
+<div class="ctxmenu" id="ctxmenu" style="display:none">
+ <button data-act="rot90">⟳ Rotate 90°</button>
+ <button data-act="rot180">⟳ Rotate 180°</button>
+ <button data-act="rot270">⟳ Rotate 270°</button>
+ <hr>
+ <button data-act="fliph">⇋ Flip horizontal</button>
+ <button data-act="flipv">⇵ Flip vertical</button>
+ <hr>
+ <button data-act="given" id="ctxGiven">📌 Pin as given (always shown)</button>
+ <hr>
+ <button data-act="del" class="del">🗑 Delete piece</button>
+</div>
+
+<div id="pkgPrint"></div>
+
+<script>
+// ---------- pentomino set (article "look-alike" letters: C=U, M=W) ----------
+const PENTS = {
+ F:{cells:[[0,1],[0,2],[1,0],[1,1],[2,1]], color:'#e0567a'}, I:{cells:[[0,0],[0,1],[0,2],[0,3],[0,4]], color:'#4aa3df'},
+ L:{cells:[[0,0],[1,0],[2,0],[3,0],[3,1]], color:'#f0a13b'}, N:{cells:[[0,0],[1,0],[1,1],[2,1],[3,1]], color:'#7e57c2'},
+ P:{cells:[[0,0],[0,1],[1,0],[1,1],[2,0]], color:'#26a69a'}, T:{cells:[[0,0],[0,1],[0,2],[1,1],[2,1]], color:'#ef5350'},
+ C:{cells:[[0,0],[0,2],[1,0],[1,1],[1,2]], color:'#66bb6a'}, V:{cells:[[0,0],[1,0],[2,0],[2,1],[2,2]], color:'#ab47bc'},
+ M:{cells:[[0,0],[1,0],[1,1],[2,1],[2,2]], color:'#8d6e63'}, X:{cells:[[0,1],[1,0],[1,1],[1,2],[2,1]], color:'#ffca28'},
+ Y:{cells:[[0,1],[1,0],[1,1],[2,1],[3,1]], color:'#5c6bc0'}, Z:{cells:[[0,0],[0,1],[1,1],[2,1],[2,2]], color:'#26c6da'},
+};
+const ORDER = ['L','N','P','T','C','V','M','X','Y','Z','F','I'];
+const SWATCH = ['#ef5350','#f0a13b','#ffca28','#66bb6a','#26a69a','#4aa3df','#5c6bc0','#7e57c2','#e0567a','#8d6e63','#90a4ae'];
+let U=30; // cell px — the Size control scales the grid + pieces together (for younger kids)
+const SIZES={22:[38,25],30:[28,18],42:[20,12],56:[15,10]}; // Size px -> [cols,rows] default board
+// DOK question stems — teacher-owned starters (the app never scores level). CRM / Simpson 2015.
+const STEMS={
+ 1:["What is the area of this shape?","What is the perimeter of this shape?","Fill the frame with pentominoes.","How many pieces fill the frame?","Which pentomino is this? Name it.","Cover the shape — how many squares did you use?"],
+ 2:["Fill the frame using exactly ___ pieces.","Sort the pentominoes by perimeter.","Sort the pentominoes by lines of symmetry.","Fill the frame using only ___-pieces.","Which pieces will fit in this frame? Which won't?","Find two pentominoes with the same perimeter.","Make a line plot of the 12 perimeters."],
+ 3:["How do you know you've found all 12 pentominoes?","Why do all pentominoes have area 5 but different perimeters?","Fill the frame two different ways — how are the solutions different?","Which pentominoes can be doubled with 4 distinct pieces? Which can't — and why?","Convince a partner that your solution is correct.","What has to be true about a frame for these pieces to fill it?"],
+ 4:["Design a frame that only these pieces can fill.","Build a piece 3× as large — what happens to its area and perimeter? Why?","Investigate how the number of pieces grows as shapes get bigger (n = 1, 2, 3, 4, 5 …).","Create your own pentomino puzzle for a partner and predict how they'll solve it.","Find every way to tile this frame — how do you know you have them all?","Compare two frames of equal area: which is harder to fill, and why?"],
+};
+const DOKCOL={1:'#2e7d32',2:'#1565c0',3:'#e67e22',4:'#7e57c2'};
+const DOKNAME={1:'Recall & Reproduce',2:'Skills & Concepts',3:'Strategic Reasoning',4:'Extended Thinking'};
+
+// ---------- geometry ----------
+function norm(cells){ const mr=Math.min(...cells.map(c=>c[0])), mc=Math.min(...cells.map(c=>c[1])); return cells.map(([r,c])=>[r-mr,c-mc]).sort((a,b)=>a[0]-b[0]||a[1]-b[1]); }
+const rotate = cells => norm(cells.map(([r,c])=>[c,-r]));
+const flip   = cells => norm(cells.map(([r,c])=>[r,-c]));   // horizontal (mirror left-right)
+const flipV  = cells => norm(cells.map(([r,c])=>[-r,c]));   // vertical (mirror top-bottom)
+const key = (r,c)=> r+','+c;
+const veq = (a,b)=> a[0]===b[0]&&a[1]===b[1];
+function orient(p,q,r){ const v=(q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]); return v>0?1:v<0?2:0; }
+function onSeg(p,q,r){ return Math.min(p[0],r[0])<=q[0]&&q[0]<=Math.max(p[0],r[0]) && Math.min(p[1],r[1])<=q[1]&&q[1]<=Math.max(p[1],r[1]); }
+function segInt(p1,p2,p3,p4){ const o1=orient(p1,p2,p3),o2=orient(p1,p2,p4),o3=orient(p3,p4,p1),o4=orient(p3,p4,p2);
+ if(o1!==o2&&o3!==o4) return true;
+ if(o1===0&&onSeg(p1,p3,p2))return true; if(o2===0&&onSeg(p1,p4,p2))return true;
+ if(o3===0&&onSeg(p3,p1,p4))return true; if(o4===0&&onSeg(p3,p2,p4))return true; return false; }
+// closed polygon simple? (no non-adjacent edge crossings)
+function isSimple(v){ const n=v.length; for(let i=0;i<n;i++){ const a=v[i],b=v[(i+1)%n];
+ for(let j=i+1;j<n;j++){ if(j===i) continue; const adj = (j===(i+1)%n)||((j+1)%n===i); if(adj) continue;
+  const c=v[j],d=v[(j+1)%n]; if(segInt(a,b,c,d)) return false; } } return true; }
+function pip(v,cx,cy){ let inside=false; for(let i=0,j=v.length-1;i<v.length;j=i++){ const xi=v[i][1],yi=v[i][0],xj=v[j][1],yj=v[j][0];
+ if(((yi>cy)!==(yj>cy)) && (cx < (xj-xi)*(cy-yi)/(yj-yi)+xi)) inside=!inside; } return inside; }
+
+// ---------- state ----------
+let R=18, C=28;
+let grid, instances, nextId, used, hover, cellEls, lastGhost=[];
+let mode='1set', gridOn=true, tool='pieces';
+let dok='1', reveal=true, frameVis=true, curShow='key', printScope='full', tab='build';
+// reveal = pieces shown? · frameVis = frame outline shown? · curShow (per active level) = 'blank'|'key'|'pieces'
+let slots=loadSlots();   // {1..4} -> per-level puzzle snapshots (the assignment packet); persisted
+let active=null, selected=null;
+let frame=null;                 // null = whole board fillable; else Set of "r,c"
+let poly=[], drawing=false, preview=null;   // frame drawing
+let custom = loadCustom();
+
+const boardEl=document.getElementById('board'), overlay=document.getElementById('overlay');
+const paletteEl=document.getElementById('palette'), swatchEl=document.getElementById('swatches');
+const railEl=document.getElementById('rail'), hintEl=document.getElementById('hint');
+const stemGrid=document.getElementById('stemGrid'), promptIn=document.getElementById('promptIn'), learnerIn=document.getElementById('learnerIn');
+
+const inFrame=(r,c)=> frame===null || frame.has(key(r,c));
+function loadCustom(){ try{ return JSON.parse(localStorage.getItem('pb_frames_v1')||'[]'); }catch(e){ return []; } }
+function saveCustom(){ localStorage.setItem('pb_frames_v1', JSON.stringify(custom)); }
+function miniSVG(cells,color,px){ px=px||9; const rows=Math.max(...cells.map(c=>c[0]))+1, cols=Math.max(...cells.map(c=>c[1]))+1;
+ let s=`<svg width="${cols*px}" height="${rows*px}" viewBox="0 0 ${cols*px} ${rows*px}">`;
+ for(const [y,x] of cells) s+=`<rect x="${x*px}" y="${y*px}" width="${px}" height="${px}" fill="${color}" stroke="#fff" stroke-width="1"/>`; return s+'</svg>'; }
+
+// ---------- render board ----------
+function cellBase(r,c){ const id=grid[r][c]; if(id!=null && (reveal || instances[id].given)) return instances[id].color; return inFrame(r,c)?'#fff':'#e9ecf1'; }
+function render(){
+ for(let r=0;r<R;r++)for(let c=0;c<C;c++){ const d=cellEls[r][c]; d.style.border=''; d.style.boxShadow=''; d.style.background=cellBase(r,c);
+  if(frameVis && frame!==null && frame.has(key(r,c))){ const b='2.5px solid #334';
+   if(!inFrame(r-1,c)) d.style.borderTop=b; if(!inFrame(r+1,c)) d.style.borderBottom=b;
+   if(!inFrame(r,c-1)) d.style.borderLeft=b; if(!inFrame(r,c+1)) d.style.borderRight=b; } }
+ for(const gid in instances){ if(!instances[gid].given) continue; const id=+gid, same=(r,c)=> r>=0&&r<R&&c>=0&&c<C&&grid[r][c]===id, gb='2px dashed #555';
+  for(const [r,c] of instances[gid].cells){ const d=cellEls[r][c];
+   if(!same(r-1,c)) d.style.borderTop=gb; if(!same(r+1,c)) d.style.borderBottom=gb; if(!same(r,c-1)) d.style.borderLeft=gb; if(!same(r,c+1)) d.style.borderRight=gb; } }
+ if(selected!=null && instances[selected]){ const id=selected, same=(r,c)=> r>=0&&r<R&&c>=0&&c<C&&grid[r][c]===id, sb='3px solid #111';
+  for(const [r,c] of instances[id].cells){ const d=cellEls[r][c];
+   if(!same(r-1,c)) d.style.borderTop=sb; if(!same(r+1,c)) d.style.borderBottom=sb; if(!same(r,c-1)) d.style.borderLeft=sb; if(!same(r,c+1)) d.style.borderRight=sb; } }
+ if(tab==='play' && frame!==null){   // "out of the play region": grey wash (reads as inactive) + hatch on top (reads as excluded)
+  const wash='linear-gradient(rgba(124,132,143,.55), rgba(124,132,143,.55))';
+  const hatch='repeating-linear-gradient(45deg, rgba(40,45,55,.32) 0 4px, rgba(255,255,255,0) 4px 9px)';
+  for(const idk in instances){ if(instances[idk].given) continue;
+   for(const [r,c] of instances[idk].cells){ if(!frame.has(key(r,c))) cellEls[r][c].style.backgroundImage=hatch+', '+wash; } } }
+ lastGhost=[]; const cw=document.getElementById('count'); if(cw) cw.textContent=Object.keys(instances).length; paintGhost();
+}
+// anchor = the filled cell nearest the piece's centre → that cell sits under the cursor
+// (fixes dropping X/T/U/plus, whose bbox top-left corner is empty).
+function anchorOf(cells){ const cr=cells.reduce((s,c)=>s+c[0],0)/cells.length, cc=cells.reduce((s,c)=>s+c[1],0)/cells.length;
+ let best=cells[0], bd=Infinity; for(const c of cells){ const d=(c[0]-cr)**2+(c[1]-cc)**2; if(d<bd){ bd=d; best=c; } } return best; }
+function paintGhost(){ for(const [r,c] of lastGhost) cellEls[r][c].style.background=cellBase(r,c); lastGhost=[];
+ if(tool!=='pieces' || !active || !hover) return;
+ const [ar,ac]=anchorOf(active.cells);
+ const t=active.cells.map(([r,c])=>[hover[0]+r-ar,hover[1]+c-ac]);
+ const ok=t.every(([r,c])=> r>=0&&r<R&&c>=0&&c<C&&grid[r][c]==null);   // any empty on-board cell (inside OR outside the frame — stage/rotate pieces in the margin)
+ for(const [r,c] of t){ if(r<0||r>=R||c<0||c>=C) continue; cellEls[r][c].style.background = ok?active.color:'#f7b3b3'; lastGhost.push([r,c]); } }
+
+// ---------- overlay (frame drawing) ----------
+function sizeOverlay(){ overlay.setAttribute('width',C*U); overlay.setAttribute('height',R*U); overlay.setAttribute('viewBox',`0 0 ${C*U} ${R*U}`); }
+const SVGNS='http://www.w3.org/2000/svg';
+function svgEl(tag,attrs){ const e=document.createElementNS(SVGNS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); return e; }
+function drawOverlay(){
+ while(overlay.firstChild) overlay.removeChild(overlay.firstChild);
+ if(tool!=='frame') return;
+ overlay.appendChild(svgEl('rect',{x:0,y:0,width:C*U,height:R*U,fill:'#fff','fill-opacity':0,'pointer-events':'all'}));
+ if(poly.length){ let pts=poly.map(v=>`${v[1]*U},${v[0]*U}`).join(' '); if(preview) pts+=` ${preview[1]*U},${preview[0]*U}`;
+  overlay.appendChild(svgEl('polyline',{points:pts,fill:'none',stroke:'#2f6fd0','stroke-width':3,'stroke-linejoin':'round'}));
+  poly.forEach((v,i)=> overlay.appendChild(svgEl('circle',{cx:v[1]*U,cy:v[0]*U,r:i===0?6:4,fill:i===0?'#fff':'#2f6fd0',stroke:'#2f6fd0','stroke-width':2})));
+ }
+}
+function latticeFromEvt(e){ const rc=overlay.getBoundingClientRect(); const col=Math.max(0,Math.min(C,Math.round((e.clientX-rc.left)/U))); const row=Math.max(0,Math.min(R,Math.round((e.clientY-rc.top)/U))); return [row,col]; }
+function snapAxis(last,p){ if(Math.abs(p[1]-last[1])>=Math.abs(p[0]-last[0])) return [last[0],p[1]]; return [p[0],last[1]]; }
+
+overlay.addEventListener('mousemove',e=>{ if(tool!=='frame'||!drawing) return; const p=latticeFromEvt(e); preview = veq(p,poly[poly.length-1])?null:snapAxis(poly[poly.length-1],p); drawOverlay(); });
+overlay.addEventListener('click',e=>{ if(tool!=='frame') return; const raw=latticeFromEvt(e);
+ if(!drawing){ // begin: clear board + frame
+  instances={}; grid=Array.from({length:R},()=>Array(C).fill(null)); used=new Set(); frame=null; render();
+  poly=[raw]; drawing=true; preview=null; drawOverlay(); return; }
+ const last=poly[poly.length-1];
+ if(veq(raw,poly[0]) && poly.length>=3){ return closePoly(); }   // click start → close
+ const p=snapAxis(last,raw);
+ if(veq(p,last)) return;
+ // must turn (no straight / backtrack)
+ if(poly.length>=2 && orient(poly[poly.length-2],last,p)===0){ flash('Turn at each corner — pick a point off the current line.'); return; }
+ if(poly.some(v=>veq(v,p))){ flash('That point is already used.'); return; }
+ // no crossing existing edges (skip the previous edge, which shares "last")
+ for(let i=0;i<poly.length-2;i++){ if(segInt(last,p,poly[i],poly[i+1])){ flash('That side would cross the outline.'); return; } }
+ poly.push(p); preview=null; drawOverlay();
+});
+function closePoly(){ const last=poly[poly.length-1], start=poly[0];
+ if(last[0]!==start[0] && last[1]!==start[1]){ flash('Return along a grid line (same row or column as the start) to close.'); return; }
+ if(orient(poly[poly.length-2],last,start)===0){ flash('Turn before closing.'); return; }
+ if(!isSimple(poly)){ flash('That outline crosses itself — adjust and try again.'); return; }
+ // fill interior
+ frame=new Set(); for(let r=0;r<R;r++)for(let c=0;c<C;c++){ if(pip(poly,c+0.5,r+0.5)) frame.add(key(r,c)); }
+ drawing=false; poly=[]; preview=null;
+ if(frame.size===0){ flash('That outline enclosed no cells.'); frame=null; drawOverlay(); render(); return; }
+ render(); setTool('pieces');   // one frame per puzzle — hop back to Pieces so you can place/move right away
+}
+let flashTimer=null;
+function flash(msg){ hintEl.innerHTML='<span style="color:#c0392b;font-weight:700">'+msg+'</span>'; clearTimeout(flashTimer); flashTimer=setTimeout(updateHint,2200); }
+
+// ---------- palette / swatches / rail ----------
+function renderPalette(){ paletteEl.innerHTML=''; for(const lab of ORDER){ const p=PENTS[lab]; const el=document.createElement('button');
+  el.className='pc'+(active&&active.label===lab?' sel':'')+(mode==='1set'&&used.has(lab)?' used':'');
+  el.innerHTML=miniSVG(norm(p.cells),p.color)+`<span class="lab">${lab}</span>`; el.onclick=()=>setActive(lab); paletteEl.appendChild(el); } }
+function renderSwatches(){ swatchEl.innerHTML=''; const selCol = (selected!=null && instances[selected])? instances[selected].color : null;
+ for(const col of SWATCH){ const s=document.createElement('div'); s.className='sw'+(((active&&active.color===col)||selCol===col)?' on':''); s.style.background=col;
+  s.onclick=()=>{ if(selected!=null && instances[selected]){ instances[selected].color=col; render(); renderSwatches(); }   // recolor the SELECTED placed piece
+    else if(active){ active.color=col; renderSwatches(); paintGhost(); } }; swatchEl.appendChild(s); } }
+function tpThumb(t){ const el=document.createElement('button'); el.className='tp'; const px=Math.max(3,Math.floor(40/Math.max(t.cols,t.rows)));
+ el.innerHTML=miniSVG(t.cells,'#9db4d6',px)+`<span class="nm">${t.name}</span>`; el.onclick=()=>loadFrame(t); return el; }
+function renderRail(){ railEl.innerHTML=''; const lbl=document.createElement('span'); lbl.className='cap'; lbl.style.margin='0 4px 0 0'; lbl.textContent='Saved frames'; railEl.appendChild(lbl);
+ if(!custom.length){ const e=document.createElement('span'); e.style.cssText='font-size:12px;color:#9aa0a6'; e.textContent='none yet — draw one, then Save.'; railEl.appendChild(e); }
+ custom.forEach((t,i)=>{ const el=tpThumb(t); const x=document.createElement('span'); x.className='x'; x.textContent='×'; x.onclick=e=>{ e.stopPropagation(); custom.splice(i,1); saveCustom(); renderRail(); }; el.appendChild(x); railEl.appendChild(el); });
+ const full=document.createElement('button'); full.className='btn'; full.textContent='Full board'; full.onclick=()=>{ frame=null; drawing=false; poly=[]; drawOverlay(); render(); }; railEl.appendChild(full);
+ const save=document.createElement('button'); save.className='btn'; save.textContent='＋ Save frame'; save.onclick=saveFrame; railEl.appendChild(save);
+}
+
+// ---------- actions ----------
+function setActive(lab){ if(mode==='1set'&&used.has(lab)) return; active={label:lab,color:PENTS[lab].color,cells:norm(PENTS[lab].cells)}; selected=null; renderPalette(); renderSwatches(); render(); }
+function onCellClick(r,c){ if(tool!=='pieces') return;
+ if(grid[r][c]!=null){ if(tab==='play' && instances[grid[r][c]].given) return;   // givens are locked while playing
+  selected=grid[r][c]; active=null; renderPalette(); renderSwatches(); render(); return; }   // click placed → select
+ if(!active){ if(selected!=null){ selected=null; render(); } return; }
+ const [ar,ac]=anchorOf(active.cells);
+ const t=active.cells.map(([rr,cc])=>[r+rr-ar,c+cc-ac]);
+ if(!t.every(([rr,cc])=> rr>=0&&rr<R&&cc>=0&&cc<C&&grid[rr][cc]==null)) return;
+ const id=nextId++; instances[id]={label:active.label,color:active.color,cells:t}; t.forEach(([rr,cc])=>grid[rr][cc]=id);
+ if(mode==='1set'){ used.add(active.label); active=null; } else if(tab==='play'){ active=null; }   // play: unlimited supply but deselect after each drop (feels like design; no accidental duplicates)
+ selected=null; render(); renderPalette(); renderSwatches();
+ if(tab==='play'){ recordPlay('place', instances[id].label); playAfterChange(); } }
+function removeInstance(id){ const inst=instances[id]; if(!inst) return; if(tab==='play') recordPlay('remove', inst.label);
+ inst.cells.forEach(([r,c])=>grid[r][c]=null); if(mode==='1set') used.delete(inst.label); delete instances[id]; render(); renderPalette();
+ if(tab==='play') playAfterChange(); }
+function bboxCenter(cells){ const rs=cells.map(c=>c[0]),cs=cells.map(c=>c[1]); return [(Math.min(...rs)+Math.max(...rs))/2,(Math.min(...cs)+Math.max(...cs))/2]; }
+function reposition(id,newCells){ const inst=instances[id]; inst.cells.forEach(([r,c])=>grid[r][c]=null);
+ const ok=newCells.every(([r,c])=> r>=0&&r<R&&c>=0&&c<C&&grid[r][c]==null);
+ if(ok){ inst.cells=newCells; newCells.forEach(([r,c])=>grid[r][c]=id); } else inst.cells.forEach(([r,c])=>grid[r][c]=id); return ok; }
+function transformSelected(fn){ if(selected==null||!instances[selected]) return; const inst=instances[selected];
+ const t=fn(norm(inst.cells)); const oc=bboxCenter(inst.cells), nc=bboxCenter(t); const br=Math.round(oc[0]-nc[0]), bc=Math.round(oc[1]-nc[1]);
+ for(const [dr,dc] of [[0,0],[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1],[-2,0],[2,0],[0,-2],[0,2]]){
+  const cand=t.map(([r,c])=>[r+br+dr,c+bc+dc]); if(reposition(selected,cand)){ render(); return; } }
+ flash('No room to turn the piece there — move it first.'); }
+function moveSelected(dr,dc){ if(selected==null||!instances[selected]) return; const cand=instances[selected].cells.map(([r,c])=>[r+dr,c+dc]); if(reposition(selected,cand)) render(); }
+function loadFrame(t){ const m=1; C=t.cols+2*m; R=t.rows+2*m; document.getElementById('colsIn').value=C; document.getElementById('rowsIn').value=R;
+ resetGrid(); buildBoard(); frame=new Set(t.cells.map(([r,c])=>key(r+m,c+m))); render(); renderPalette(); }
+function saveFrame(){ if(frame===null||frame.size===0){ flash('Draw and close a frame first (Tool → Draw Frame).'); return; }
+ const name=prompt('Name this frame:','My frame'); if(!name) return;
+ const cells=[...frame].map(s=>s.split(',').map(Number)); const nc=norm(cells);
+ custom.push({name, cols:Math.max(...nc.map(c=>c[1]))+1, rows:Math.max(...nc.map(c=>c[0]))+1, cells:nc}); saveCustom(); renderRail(); }
+
+// ---------- board ----------
+function resetGrid(){ grid=Array.from({length:R},()=>Array(C).fill(null)); instances={}; nextId=1; used=new Set(); hover=null; lastGhost=[]; }
+function buildBoard(){ boardEl.style.gridTemplateColumns=`repeat(${C},${U}px)`; boardEl.innerHTML=''; cellEls=[];
+ for(let r=0;r<R;r++){ cellEls[r]=[]; for(let c=0;c<C;c++){ const d=document.createElement('div'); d.className='cell'; d._r=r; d._c=c;
+   d.onmouseenter=()=>{hover=[r,c]; paintGhost();}; d.onclick=()=>onCellClick(r,c); boardEl.appendChild(d); cellEls[r][c]=d; } }
+ boardEl.onmouseleave=()=>{hover=null; paintGhost();}; sizeOverlay(); }
+
+// ---------- drag a placed piece ----------
+let drag=null;   // {id, grab:[r,c], moved}
+function cellFromPoint(e){ const rc=boardEl.getBoundingClientRect();
+ const c=Math.floor((e.clientX-rc.left-2)/U), r=Math.floor((e.clientY-rc.top-2)/U);
+ if(r<0||r>=R||c<0||c>=C) return null; return [r,c]; }
+boardEl.addEventListener('mousedown',e=>{ if(e.button!==0) return; if(tool!=='pieces') return; const d=e.target.closest('.cell'); if(!d) return;
+ const id=grid[d._r][d._c]; if(id==null) return;                 // empty cell → let click place
+ if(tab==='play' && instances[id].given) return;                 // givens are locked while playing
+ e.preventDefault(); selected=id; active=null; drag={id, grab:[d._r,d._c], moved:false};
+ renderPalette(); renderSwatches(); render(); });
+// ---------- right-click context menu on a placed piece (delete · rotate · flip) ----------
+const ctxEl=document.getElementById('ctxmenu');
+function hideCtx(){ ctxEl.style.display='none'; }
+function showCtx(x,y){ ctxEl.style.display='block'; const w=ctxEl.offsetWidth, h=ctxEl.offsetHeight;
+ ctxEl.style.left=Math.max(4,Math.min(x, window.innerWidth-w-6))+'px'; ctxEl.style.top=Math.max(4,Math.min(y, window.innerHeight-h-6))+'px'; }
+boardEl.addEventListener('contextmenu', e=>{ if(tool!=='pieces') return; const d=e.target.closest('.cell'); if(!d) return;
+ e.preventDefault(); const id=grid[d._r][d._c]; if(id==null){ hideCtx(); return; }
+ selected=id; active=null; renderPalette(); renderSwatches(); render();
+ document.getElementById('ctxGiven').textContent = instances[id].given ? '📌 Unpin (make solution)' : '📌 Pin as given (always shown)';
+ showCtx(e.clientX, e.clientY); });
+ctxEl.onclick=e=>{ const b=e.target.closest('button'); if(!b) return; e.stopPropagation(); const a=b.dataset.act; hideCtx();
+ if(selected==null||!instances[selected]) return;
+ if(a==='rot90')  transformSelected(rotate);
+ else if(a==='rot180') transformSelected(c=>rotate(rotate(c)));
+ else if(a==='rot270') transformSelected(c=>rotate(rotate(rotate(c))));
+ else if(a==='fliph') transformSelected(flip);
+ else if(a==='flipv') transformSelected(flipV);
+ else if(a==='given'){ instances[selected].given=!instances[selected].given; render(); }
+ else if(a==='del'){ const id=selected; selected=null; removeInstance(id); } };
+document.addEventListener('click', hideCtx);
+document.addEventListener('scroll', hideCtx, true);
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') hideCtx(); });
+document.addEventListener('mousemove',e=>{ if(!drag) return; const cell=cellFromPoint(e); if(!cell) return;
+ const dr=cell[0]-drag.grab[0], dc=cell[1]-drag.grab[1]; if(dr===0&&dc===0) return;
+ const cand=instances[drag.id].cells.map(([r,c])=>[r+dr,c+dc]);
+ if(reposition(drag.id,cand)){ drag.grab=cell; drag.moved=true; render(); } });
+document.addEventListener('mouseup',()=>{ drag=null; });
+
+// ---------- controls ----------
+function setTool(t){ tool=t;
+ document.querySelectorAll('#toolSeg button').forEach(x=>x.classList.toggle('on', x.dataset.tool===t));
+ active=null; drawing=false; poly=[]; preview=null;
+ overlay.style.pointerEvents = t==='frame'?'auto':'none'; overlay.style.cursor = t==='frame'?'crosshair':'default';
+ renderPalette(); render(); drawOverlay(); updateHint(); }
+document.getElementById('toolSeg').onclick=e=>{ const b=e.target.closest('button'); if(b) setTool(b.dataset.tool); };
+document.getElementById('modeSeg').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; mode=b.dataset.mode; [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b)); used=new Set(); if(mode==='1set') for(const id in instances) used.add(instances[id].label); renderPalette(); };
+document.getElementById('gridSeg').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; gridOn=b.dataset.grid==='1'; boardEl.classList.toggle('gridon',gridOn); [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b)); };
+function setCellSize(px){ U=px; document.documentElement.style.setProperty('--u',U+'px');
+ const dim=SIZES[px]; if(dim){ C=dim[0]; R=dim[1]; document.getElementById('colsIn').value=C; document.getElementById('rowsIn').value=R;
+  frame=null; drawing=false; poly=[]; resetGrid(); }
+ buildBoard(); render(); drawOverlay(); renderPalette(); }
+document.getElementById('sizeSeg').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b)); setCellSize(+b.dataset.u); };
+function clearBoard(){ resetGrid(); selected=null; active=null; render(); renderPalette(); renderSwatches(); updateHint(); }
+document.getElementById('clearBtn').onclick=clearBoard;
+
+// ---------- tabs (Build | Task & DOK) — board stays visible on both ----------
+function setTab(t){ const leaving=tab; tab=t;
+ const build=(t==='build'), task=(t==='task'), playing=(t==='play');
+ document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+ document.querySelector('.bar').style.display = build?'':'none';
+ railEl.style.display = build?'':'none';
+ document.querySelector('.side').style.display = (build||playing)?'':'none';   // palette for building AND playing
+ hintEl.style.display = build?'':'none';
+ document.getElementById('outbar').style.display = task?'':'none';
+ document.getElementById('playbar').style.display = playing?'':'none';
+ document.querySelector('.taskpanel').style.display = task?'':'none';
+ document.getElementById('playpanel').style.display = playing?'':'none';
+ if(!build && tool==='frame'){ tool='pieces'; overlay.style.pointerEvents='none'; overlay.style.cursor='default'; drawing=false; poly=[]; drawOverlay(); }
+ if(playing){ reveal=true; frameVis=true; enterPlay(); }
+ else { if(leaving==='play') exitPlay();          // restores the design board + its curShow
+   if(build){ reveal=true; frameVis=true; }         // Build always shows pieces+frame for authoring
+   else { reveal=(curShow!=='blank'); frameVis=(curShow!=='pieces'); }   // Task previews the active level's "Show as"
+   render(); updateShowSeg(); } }
+document.getElementById('tabs').onclick=e=>{ const b=e.target.closest('button'); if(b) setTab(b.dataset.tab); };
+
+// ---------- task authoring (prompt + DOK stems + tag) ----------
+// show only the currently-toggled DOK level's stems (teacher picks the level; app never scores it)
+function renderStems(){ stemGrid.innerHTML='';
+ if(!dok){ stemGrid.innerHTML='<div class="stemhint">Pick a DOK level above to see its question stems — or just type your own prompt below.</div>'; return; }
+ const head=document.createElement('div'); head.className='stemhead';
+ head.innerHTML=`<span class="dot" style="background:${DOKCOL[dok]}"></span>DOK ${dok} · ${DOKNAME[dok]} — click to drop into the prompt`;
+ stemGrid.appendChild(head);
+ for(const s of STEMS[dok]){ const b=document.createElement('button'); b.className='stem'; b.textContent=s; b.onclick=()=>insertStem(s); stemGrid.appendChild(b); } }
+function insertStem(text){ const el=promptIn, s=el.selectionStart, e=el.selectionEnd, v=el.value;
+ const pre=v.slice(0,s), post=v.slice(e); const sep = (pre && !/\s$/.test(pre)) ? ' ' : '';
+ el.value = pre + sep + text + post; const pos = (pre+sep+text).length; el.focus(); el.setSelectionRange(pos,pos); }
+document.getElementById('dokSeg').onclick=e=>{ const b=e.target.closest('button'); if(b) switchLevel(b.dataset.dok); };
+function updateShowSeg(){ document.querySelectorAll('#showSeg button').forEach(b=>b.classList.toggle('on', b.dataset.show===curShow)); }
+function applyShow(v){ curShow=v; reveal=(v!=='blank'); frameVis=(v!=='pieces'); updateShowSeg(); selected=null; render(); }
+document.getElementById('showSeg').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; applyShow(b.dataset.show); saveActiveSlot(); renderPacketStatus(); };
+document.getElementById('scopeSeg').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; printScope=b.dataset.s; [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b)); };
+
+// ---------- print / PDF ----------
+function escapeHtml(s){ return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function syncPrint(){ const ph=document.getElementById('printHead'); let h='';
+ if(dok) h+=`<span class="dokchip" style="background:${DOKCOL[dok]}">DOK ${dok}</span>`;
+ const learner=learnerIn.value.trim(); if(learner) h+=`<span class="forwho">For the learner who ${escapeHtml(learner)}</span>`;
+ const p=promptIn.value.trim(); h+=`<div class="pprompt">${escapeHtml(p)||'&nbsp;'}</div>`; ph.innerHTML=h; }
+function frameBBox(){ if(!frame||!frame.size) return null; let r0=1e9,c0=1e9,r1=-1,c1=-1;
+ for(const s of frame){ const [r,c]=s.split(',').map(Number); if(r<r0)r0=r; if(c<c0)c0=c; if(r>r1)r1=r; if(c>c1)c1=c; } return {r0,c0,r1,c1}; }
+function applyCrop(){ const bb = printScope==='frame' ? frameBBox() : null; const stage=document.getElementById('boardStage'); if(!bb) return;
+ stage.style.overflow='hidden'; stage.style.width=((bb.c1-bb.c0+1)*U)+'px'; stage.style.height=((bb.r1-bb.r0+1)*U)+'px';
+ boardEl.style.marginLeft=(-bb.c0*U)+'px'; boardEl.style.marginTop=(-bb.r0*U)+'px'; }
+function clearCrop(){ const stage=document.getElementById('boardStage'); stage.style.overflow=''; stage.style.width=''; stage.style.height=''; boardEl.style.marginLeft=''; boardEl.style.marginTop=''; }
+document.getElementById('printBtn').onclick=()=>{ if(printScope==='frame' && (!frame||!frame.size)){ flash('No frame drawn — printing the full board.'); }
+ syncPrint(); applyCrop(); window.print(); clearCrop(); };
+window.addEventListener('beforeprint',()=>{ if(document.body.classList.contains('printing-packet')) return; syncPrint(); applyCrop(); });
+window.addEventListener('afterprint', ()=>{ clearCrop(); document.body.classList.remove('printing-packet'); });
+
+// ---------- DOK levels as slots + the assignment packet ----------
+function loadSlots(){ try{ return JSON.parse(localStorage.getItem('pb_slots_v1')||'{}'); }catch(e){ return {}; } }
+function saveSlots(){ localStorage.setItem('pb_slots_v1', JSON.stringify(slots)); }
+function snapshotBoard(){ return { cols:C, rows:R, u:U, frame: frame?[...frame]:null,
+ pieces: Object.values(instances).map(i=>({label:i.label,color:i.color,cells:i.cells.map(c=>[c[0],c[1]]),given:!!i.given})),
+ prompt: promptIn.value, learner: learnerIn.value, show: curShow, mode: mode }; }
+function slotHasContent(s){ return s && (s.pieces.length || s.frame || (s.prompt||'').trim() || (s.learner||'').trim()); }
+function saveActiveSlot(){ const snap=snapshotBoard(); if(!slotHasContent(snap) && !slots[dok]) return;
+ slots[dok] = {...snap, done: slots[dok]? slots[dok].done : false}; saveSlots(); }
+function restoreBoard(s){ C=s.cols; R=s.rows; U=s.u||30; document.documentElement.style.setProperty('--u',U+'px');
+ document.getElementById('colsIn').value=C; document.getElementById('rowsIn').value=R;
+ resetGrid(); buildBoard(); frame = s.frame? new Set(s.frame): null;
+ for(const pc of (s.pieces||[])){ const id=nextId++; instances[id]={label:pc.label,color:pc.color,cells:pc.cells.map(c=>[c[0],c[1]]),given:!!pc.given};
+  pc.cells.forEach(([r,c])=>{ if(r>=0&&r<R&&c>=0&&c<C) grid[r][c]=id; }); }
+ if(mode==='1set'){ used=new Set(); for(const id in instances) used.add(instances[id].label); }
+ promptIn.value=s.prompt||''; learnerIn.value=s.learner||''; curShow=s.show||'key';
+ render(); renderPalette(); drawOverlay(); }
+function switchLevel(nl){ if(nl===dok) return; saveActiveSlot(); dok=nl;
+ if(slots[nl]){ restoreBoard(slots[nl]); }
+ else { promptIn.value=''; learnerIn.value=''; curShow='key'; }   // empty level: carry the task over, fresh prompt/show
+ updateDokButtons(); renderStems(); renderPacketStatus(); applyShow(curShow); }
+function finishLevel(){ saveActiveSlot(); if(!slots[dok]) slots[dok]={...snapshotBoard(),done:false};
+ slots[dok].done=true; saveSlots(); updateDokButtons(); renderPacketStatus(); flash('DOK '+dok+' saved to the packet.'); }
+function clearPacket(){ const n=[1,2,3,4].filter(l=>slots[l]).length; if(!n) return;
+ if(!confirm('Clear all saved levels ('+n+')? This empties the packet.')) return;
+ slots={}; saveSlots(); updateDokButtons(); renderPacketStatus(); flash('Packet cleared.'); }
+function updateDokButtons(){ document.querySelectorAll('#dokSeg button').forEach(b=>{ const lv=b.dataset.dok;
+  b.classList.toggle('on', lv===dok); b.classList.toggle('done', !!(slots[lv] && slots[lv].done)); });
+ const eb=document.getElementById('editingBadge'); if(eb){ eb.textContent='Editing · DOK '+dok; eb.style.background=DOKCOL[dok]; }
+ const fb=document.getElementById('finishBtn'); if(fb) fb.textContent=(slots[dok]&&slots[dok].done)?('✓ DOK '+dok+' finished — re-save'):('✓ Finished with DOK '+dok); }
+function renderPacketStatus(){ const done=[1,2,3,4].filter(l=>slots[l]&&slots[l].done);
+ const el=document.getElementById('pkgCount'); if(el) el.textContent = done.length? `— ${done.length} page${done.length>1?'s':''} (DOK ${done.join(', ')})` : '— none finished yet'; }
+// build the printable pages (one per finished level)
+function renderPuzzleBoard(s){ const show=s.show||'key', drawPieces=show!=='blank', drawFrame=show!=='pieces';
+ const fs=new Set(s.frame||[]); const inF=(r,c)=> !s.frame || fs.has(r+','+c);
+ const occ={}; (s.pieces||[]).forEach(pc=>pc.cells.forEach(([r,c])=> occ[r+','+c]={color:pc.color, given:!!pc.given}));
+ let r0=0,c0=0,r1=s.rows-1,c1=s.cols-1;
+ if(printScope==='frame'){ const pts=[]; if(s.frame) for(const k of s.frame){ const [r,c]=k.split(',').map(Number); pts.push([r,c]); }
+  (s.pieces||[]).forEach(pc=>{ if(pc.given) pc.cells.forEach(rc=>pts.push(rc)); });   // keep given/reference pieces in the crop
+  if(pts.length){ r0=1e9;c0=1e9;r1=-1;c1=-1; for(const [r,c] of pts){ if(r<r0)r0=r; if(c<c0)c0=c; if(r>r1)r1=r; if(c>c1)c1=c; } } }
+ const W=c1-c0+1; const board=document.createElement('div'); board.className='pkgboard'; board.style.gridTemplateColumns=`repeat(${W},${s.u}px)`;
+ for(let r=r0;r<=r1;r++) for(let c=c0;c<=c1;c++){ const d=document.createElement('div'); d.className='pcell'; d.style.width=d.style.height=s.u+'px';
+  const o=occ[r+','+c]; d.style.background=(o && (drawPieces || o.given))? o.color : '#fff';
+  if(drawFrame && inF(r,c)){ const b='2.5px solid #334'; if(!inF(r-1,c))d.style.borderTop=b; if(!inF(r+1,c))d.style.borderBottom=b; if(!inF(r,c-1))d.style.borderLeft=b; if(!inF(r,c+1))d.style.borderRight=b; }
+  board.appendChild(d); } return board; }
+function renderPuzzlePage(s, level){ const page=document.createElement('div'); page.className='pkgpage';
+ const head=document.createElement('div'); head.className='pkghead';
+ let h=`<span class="dokchip" style="background:${DOKCOL[level]}">DOK ${level}</span><span class="doknm">${DOKNAME[level]}</span>`;
+ const learner=(s.learner||'').trim(); if(learner) h+=`<span class="forwho">For the learner who ${escapeHtml(learner)}</span>`;
+ h+=`<div class="pprompt">${escapeHtml((s.prompt||'').trim())||'&nbsp;'}</div>`; head.innerHTML=h;
+ page.appendChild(head); page.appendChild(renderPuzzleBoard(s));
+ const work=document.createElement('div'); work.className='pkgwork';
+ work.innerHTML='<div class="wl">Show your thinking:</div>'+'<div class="wline"></div>'.repeat(5);
+ page.appendChild(work); return page; }
+function printPacket(){ saveActiveSlot(); const levels=[1,2,3,4].filter(l=>slots[l]&&slots[l].done);
+ if(!levels.length){ flash('Mark at least one DOK level ✓ Finished first.'); return; }
+ const root=document.getElementById('pkgPrint'); root.innerHTML=''; levels.forEach(l=> root.appendChild(renderPuzzlePage(slots[l], l)));
+ document.body.classList.add('printing-packet'); window.print(); document.body.classList.remove('printing-packet'); }
+document.getElementById('finishBtn').onclick=finishLevel;
+document.getElementById('printPkgBtn').onclick=printPacket;
+document.getElementById('clearPkgBtn').onclick=clearPacket;
+document.getElementById('rotBtn').onclick=()=>{ if(selected!=null) transformSelected(rotate); else if(active){active.cells=rotate(active.cells); paintGhost();} };
+document.getElementById('flipBtn').onclick=()=>{ if(selected!=null) transformSelected(flip); else if(active){active.cells=flip(active.cells); paintGhost();} };
+document.getElementById('resizeBtn').onclick=()=>{ C=Math.max(3,Math.min(40,+document.getElementById('colsIn').value||24)); R=Math.max(3,Math.min(40,+document.getElementById('rowsIn').value||20)); frame=null; drawing=false; poly=[]; resetGrid(); buildBoard(); render(); renderPalette(); drawOverlay(); };
+document.addEventListener('keydown',e=>{
+ const tn=(e.target&&e.target.tagName)||''; if(tn==='INPUT'||tn==='TEXTAREA'||tn==='SELECT') return;   // don't fire piece shortcuts while typing notes/prompt
+ if(tool==='frame'&&drawing){ if(e.key==='Backspace'){ e.preventDefault(); poly.pop(); if(!poly.length) drawing=false; drawOverlay(); return; } if(e.key==='Escape'){ drawing=false; poly=[]; preview=null; drawOverlay(); return; } }
+ if(tool!=='pieces') return;
+ if(e.key==='r'||e.key==='R'){ if(selected!=null) transformSelected(rotate); else if(active){active.cells=rotate(active.cells); paintGhost();} }
+ else if(e.key==='f'||e.key==='F'){ if(selected!=null) transformSelected(flip); else if(active){active.cells=flip(active.cells); paintGhost();} }
+ else if(e.key==='ArrowUp'){ if(selected!=null){ e.preventDefault(); moveSelected(-1,0);} }
+ else if(e.key==='ArrowDown'){ if(selected!=null){ e.preventDefault(); moveSelected(1,0);} }
+ else if(e.key==='ArrowLeft'){ if(selected!=null){ e.preventDefault(); moveSelected(0,-1);} }
+ else if(e.key==='ArrowRight'){ if(selected!=null){ e.preventDefault(); moveSelected(0,1);} }
+ else if(e.key==='Delete'||e.key==='Backspace'){ if(selected!=null){ e.preventDefault(); const id=selected; selected=null; removeInstance(id);} }
+ else if(e.key==='Escape'){ active=null; selected=null; renderPalette(); render(); } });
+function updateHint(){ hintEl.innerHTML = tool==='frame'
+  ? 'Click lattice points to trace an outline (edges snap horizontal/vertical). Click the <b>start dot</b> to close. <kbd>Backspace</kbd> undo point · <kbd>Esc</kbd> cancel. Then <b>＋ Save frame</b> and switch Tool → <b>Pieces</b>.'
+  : 'Pick a piece → click to place <b>anywhere</b> (the cell <b>under your cursor</b> is the anchor). Stage pieces in the margin, rotate/flip, then <b>drag them into the frame</b>. Click a placed piece to select → <kbd>R</kbd>/<kbd>F</kbd> rotate/flip · <kbd>↑↓←→</kbd> move · <kbd>Delete</kbd> remove · <kbd>Esc</kbd> deselect. &nbsp; Placed: <span class="count" id="count">'+Object.keys(instances||{}).length+'</span>'; }
+
+// ---------- init ----------
+// ---------- ③ Play: a partner solves a finished level in-app; capture -> play report ----------
+let play=null, playTimer=null, play_prevReveal=true, play_prevMode='1set', showTimer=false;   // timer OFF by default (no time pressure)
+const nowMs=()=> (window.performance&&performance.now)?performance.now():Date.now();
+function playElapsed(){ return play&&play.startT!=null? Math.round(nowMs()-play.startT):0; }
+function fmtT(ms){ const s=Math.round(ms/1000); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+function doRotate(){ if(selected!=null) transformSelected(rotate); else if(active){ active.cells=rotate(active.cells); paintGhost(); } }
+function doFlip(){ if(selected!=null) transformSelected(flip); else if(active){ active.cells=flip(active.cells); paintGhost(); } }
+
+function recordPlay(a,label){ if(!play) return; if(play.startT==null){ play.startT=nowMs(); if(showTimer) startPlayTimer(); }
+ play.events.push({a, p:label||'', t:playElapsed()}); if(a==='place') play.placements++; if(a==='remove') play.removals++; }
+function playStats(){ let filled=0, overflow=0;
+ if(frame){ for(const k of frame){ const [r,c]=k.split(',').map(Number); if(grid[r][c]!=null) filled++; } }
+ for(const idk in instances){ if(instances[idk].given) continue; for(const [r,c] of instances[idk].cells){ if(!inFrame(r,c)) overflow++; } }
+ const total=frame?frame.size:0;
+ return {filled,total,overflow,pieces:Object.keys(instances).length, solved: !!frame && total>0 && filled===total && overflow===0}; }
+function playAfterChange(){ if(!play) return; const st=playStats();
+ document.getElementById('playProgress').innerHTML = `Filled: <b>${st.filled} / ${st.total}</b>`+(st.overflow?` · <span style="color:#c0392b">${st.overflow} outside frame</span>`:'');
+ if(st.solved && !play.solved){ play.solved=true; play.solveT=playElapsed(); recordPlay('solved',''); stopPlayTimer(); }
+ else if(!st.solved && play.solved){ play.solved=false; }
+ document.getElementById('playSolved').textContent = play.solved? `✓ Solved in ${fmtT(play.solveT)}!` : '';
+ updateTimerText(); }
+function updateTimerText(){ const el=document.getElementById('playTimer'); if(!el) return;
+ if(!showTimer){ el.style.display='none'; return; } el.style.display='';
+ el.innerHTML = (play&&play.startT!=null)? `Time: <b>${fmtT(play.solved?play.solveT:playElapsed())}</b>` : 'Time: <b>0:00</b>'; }
+function startPlayTimer(){ stopPlayTimer(); playTimer=setInterval(()=>{ if(play&&play.startT!=null&&!play.solved) updateTimerText(); },1000); }
+function stopPlayTimer(){ if(playTimer){ clearInterval(playTimer); playTimer=null; } }
+
+function loadPlayLevel(level){ const s=slots[level]; if(!s) return;
+ mode = s.mode || '1set';   // Play honors the supply mode the level was BUILT with (1-Set = distinct pieces)
+ C=s.cols; R=s.rows; U=s.u||30; document.documentElement.style.setProperty('--u',U+'px');
+ document.getElementById('colsIn').value=C; document.getElementById('rowsIn').value=R;
+ resetGrid(); buildBoard(); frame = s.frame? new Set(s.frame): null;
+ for(const pc of (s.pieces||[])){ if(!pc.given) continue;   // pre-place given/reference pieces (e.g. the "original" to double); solution pieces stay hidden
+  const id=nextId++; instances[id]={label:pc.label,color:pc.color,cells:pc.cells.map(c=>[c[0],c[1]]),given:true};
+  pc.cells.forEach(([r,c])=>{ if(r>=0&&r<R&&c>=0&&c<C) grid[r][c]=id; }); }
+ render(); renderPalette(); drawOverlay();
+ play={level, startT:null, events:[], placements:0, removals:0, solved:false, solveT:null, notes:'', done:false, doneT:null};
+ const pn=document.getElementById('playNotes'); if(pn) pn.value='';
+ const db=document.getElementById('playDoneBtn'); if(db){ db.textContent="✓ I'm done with this question"; db.classList.remove('on'); }
+ const learner=(s.learner||'').trim();
+ document.getElementById('playTask').innerHTML =
+   `<span class="dokchip" style="background:${DOKCOL[level]}">DOK ${level}</span> <span style="font-size:12px;font-weight:700;color:#666">${DOKNAME[level]}</span>`+
+   `<div class="pprompt">${escapeHtml((s.prompt||'').trim())||'(no prompt)'}</div>`+
+   (learner?`<span class="forwho">Play as the learner who ${escapeHtml(learner)}</span>`:'');
+ stopPlayTimer(); playAfterChange(); updateTimerText(); }
+function enterPlay(){ saveActiveSlot(); play_prevMode=mode;   // mode is set per-level in loadPlayLevel; reveal/frameVis set by setTab
+ const fin=[1,2,3,4].filter(l=>slots[l]&&slots[l].done); const sel=document.getElementById('playLevelSel'); sel.innerHTML='';
+ if(!fin.length){ play=null;
+   document.getElementById('playTask').innerHTML='<div class="playempty">No finished levels yet. On the ② Task &amp; DOK tab, build a task and click ✓ Finished — then come back to play it.</div>';
+   document.getElementById('playProgress').textContent=''; document.getElementById('playTimer').textContent=''; document.getElementById('playSolved').textContent=''; return; }
+ for(const l of fin){ const o=document.createElement('option'); o.value=l; o.textContent='DOK '+l; sel.appendChild(o); }
+ const start=(slots[dok]&&slots[dok].done)? String(dok) : String(fin[0]); sel.value=start; loadPlayLevel(start); }
+function exitPlay(){ stopPlayTimer(); mode=play_prevMode; play=null;
+ if(slots[dok]) restoreBoard(slots[dok]); else { resetGrid(); buildBoard(); frame=null; render(); } renderPalette(); }
+
+function playBoardHTML(){ const snap={cols:C,rows:R,u:U,frame:frame?[...frame]:null, show:'key',
+   pieces:Object.values(instances).map(i=>({label:i.label,cells:i.cells.map(c=>[c[0],c[1]]),color:i.color}))};
+ const pr=printScope; printScope='frame'; const el=renderPuzzleBoard(snap); const s=el.outerHTML; printScope=pr; return s; }
+function playReportHTML(){ const s=slots[play.level]||{}; const st=playStats(); const notes=(play.notes||'').trim();
+ const col0=showTimer?'Time':'Step';
+ const rows=play.events.map((e,i)=>`<tr><td>${showTimer?fmtT(e.t):(i+1)}</td><td>${e.a}</td><td>${escapeHtml(e.p)}</td></tr>`).join('');
+ const tileTxt=st.solved?'Frame fully tiled':`Frame not fully tiled (${st.filled}/${st.total} cells)`;
+ const doneTxt=play.done?'Student marked DONE':'not marked done';
+ const timeTxt=showTimer?` · Time: ${fmtT(play.done&&play.doneT!=null?play.doneT:(play.solved?play.solveT:playElapsed()))}`:'';
+ return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Pentomino Play Report — DOK ${play.level}</title>
+<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#1f2937;max-width:720px;margin:24px auto;padding:0 16px;line-height:1.5}
+h1{font-size:20px;margin:0 0 4px}.sub{color:#6b7280;font-size:13px;margin:0 0 16px}
+.dokchip{display:inline-block;color:#fff;font-weight:800;font-size:12px;border-radius:20px;padding:2px 10px}
+.pprompt{font-size:16px;margin:8px 0}.forwho{font-style:italic;color:#555;font-size:13px}
+.pkgboard{display:grid;width:max-content;border:1px solid #cfd4da;background:#fff;margin:12px 0}
+.pkgboard div{box-shadow:inset 0 0 0 1px #e6e9ee}
+table{border-collapse:collapse;font-size:12px;margin-top:6px}td,th{border:1px solid #d7dbe0;padding:2px 8px;text-align:left}
+.stats{font-size:14px}.answer{border:1px solid #cfd4da;border-radius:8px;padding:10px 12px;margin-top:12px;font-size:14px}
+.answer .a{white-space:pre-wrap;margin-top:4px}.note{border:1px solid #d7dbe0;border-radius:8px;padding:10px;margin-top:14px;font-size:13px}
+.fill{display:inline-block;border-bottom:1px solid #9aa0a6;min-width:170px}@media print{body{margin:0}}</style></head><body>
+<h1>Pentomino — Play Report</h1><div class="sub">Generated by the Pentomino Builder · FERPA-clean (no names captured)</div>
+<div><span class="dokchip" style="background:${DOKCOL[play.level]}">DOK ${play.level}</span> <b>${DOKNAME[play.level]}</b></div>
+<div class="pprompt">${escapeHtml((s.prompt||'').trim())||'(no prompt)'}</div>
+${(s.learner||'').trim()?`<div class="forwho">Played as the learner who ${escapeHtml(s.learner.trim())}</div>`:''}
+${playBoardHTML()}
+<div class="stats"><b>Result:</b> ${tileTxt} · ${doneTxt} · <b>${play.placements}</b> placed · <b>${play.removals}</b> taken back${timeTxt}</div>
+<div class="answer"><b>Student's answer &amp; explanation</b><div class="a">${escapeHtml(notes)||'<i>(none written)</i>'}</div></div>
+<h3 style="margin:16px 0 4px;font-size:14px">Play log</h3>
+<table><thead><tr><th>${col0}</th><th>Action</th><th>Piece</th></tr></thead><tbody>${rows||`<tr><td colspan="3">(no moves — answered in words)</td></tr>`}</tbody></table>
+<div class="note"><b>Designer — compare to your anticipation.</b> What did you predict this learner would do, and where did you expect them to get stuck? Did the play match?<br><br>Designer: <span class="fill"></span> &nbsp; Player: <span class="fill"></span> &nbsp; Date: <span class="fill"></span></div>
+</body></html>`; }
+function downloadFile(name,text,type){ const blob=new Blob([text],{type}); const url=URL.createObjectURL(blob);
+ const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500); }
+function downloadPlayReport(){ if(!play){ flash('Pick a level to play first.'); return; }
+ downloadFile(`pentomino-play-report-DOK${play.level}.html`, playReportHTML(), 'text/html'); flash('Play report downloaded.'); }
+document.getElementById('playLevelSel').onchange=e=>{ loadPlayLevel(e.target.value); };
+document.getElementById('playRotBtn').onclick=doRotate;
+document.getElementById('playFlipBtn').onclick=doFlip;
+document.getElementById('playRestartBtn').onclick=()=>{ if(play) loadPlayLevel(play.level); };
+document.getElementById('playReportBtn').onclick=downloadPlayReport;
+document.getElementById('playNotes').oninput=e=>{ if(play) play.notes=e.target.value; };
+document.getElementById('timerSeg').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; showTimer=b.dataset.t==='1';
+ [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));
+ if(showTimer && play && play.startT!=null && !play.solved) startPlayTimer(); else stopPlayTimer(); updateTimerText(); };
+document.getElementById('playDoneBtn').onclick=()=>{ if(!play){ flash('Pick a level to play first.'); return; }
+ play.done=true; play.doneT=playElapsed(); recordPlay('done',''); const db=document.getElementById('playDoneBtn');
+ db.textContent='✓ Marked done — now download the report'; db.classList.add('on'); flash('Marked done. Download your play report to submit.'); };
+
+resetGrid(); buildBoard(); renderPalette(); renderSwatches(); renderRail(); renderStems(); render(); updateHint(); setTab('build');
+if(slots[dok]) restoreBoard(slots[dok]); updateDokButtons(); renderPacketStatus();
+</script>
+</body>
+</html>
