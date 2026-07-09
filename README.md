@@ -48,6 +48,12 @@ Click **Launch** to open one.
   pack and `.json` export/import.
   → https://ohiomathteacher.github.io/tce318p-fa26/week-3-geometry-van-hiele/nvoke.html
 
+- **[`week-4-pentominoes-differentiate-dok/`](week-4-pentominoes-differentiate-dok/)** — Week 4
+  (Differentiation &amp; Measurement): the Tuesday and Thursday day-outlines, the Week 4 Reading
+  Homework (Edwards &amp; Simpson), and Pedagogical Excursion #4 — building differentiated
+  pentomino tasks across **Depth of Knowledge** levels in the **Pentomino Builder** (in the
+  Applets table above).
+
 More weeks will be added here as the semester unfolds.
 
 ## License
