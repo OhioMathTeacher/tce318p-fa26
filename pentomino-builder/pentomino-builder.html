@@ -463,7 +463,7 @@ function onCellClick(r,c){ if(tool!=='pieces') return;
  const t=active.cells.map(([rr,cc])=>[r+rr-ar,c+cc-ac]);
  if(!t.every(([rr,cc])=> rr>=0&&rr<R&&cc>=0&&cc<C&&grid[rr][cc]==null)) return;
  const id=nextId++; instances[id]={label:active.label,color:active.color,cells:t}; t.forEach(([rr,cc])=>grid[rr][cc]=id);
- if(mode==='1set'){ used.add(active.label); active=null; } else if(tab==='play'){ active=null; }   // play: unlimited supply but deselect after each drop (feels like design; no accidental duplicates)
+ if(mode==='1set') used.add(active.label); active=null;   // deselect after EVERY drop (all modes) — the tool stops being armed, so the next board click selects/moves instead of dropping a duplicate; re-pick from the palette to place another
  selected=null; render(); renderPalette(); renderSwatches();
  if(tab==='play'){ recordPlay('place', instances[id].label); playAfterChange(); } }
 function removeInstance(id){ const inst=instances[id]; if(!inst) return; if(tab==='play') recordPlay('remove', inst.label);
@@ -538,7 +538,14 @@ function setTool(t){ tool=t;
  overlay.style.pointerEvents = t==='frame'?'auto':'none'; overlay.style.cursor = t==='frame'?'crosshair':'default';
  renderPalette(); render(); drawOverlay(); updateHint(); }
 document.getElementById('toolSeg').onclick=e=>{ const b=e.target.closest('button'); if(b) setTool(b.dataset.tool); };
-document.getElementById('modeSeg').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; mode=b.dataset.mode; [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b)); used=new Set(); if(mode==='1set') for(const id in instances) used.add(instances[id].label); renderPalette(); };
+document.getElementById('modeSeg').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; mode=b.dataset.mode; [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));
+ if(mode==='1set'){                                   // leaving Multi → enforce one-of-each: keep the first-placed of each label, drop the repeats
+  const seen=new Set();
+  for(const id of Object.keys(instances).map(Number).sort((a,b)=>a-b)){ const inst=instances[id];
+   if(seen.has(inst.label)){ inst.cells.forEach(([r,c])=>grid[r][c]=null); delete instances[id]; } else seen.add(inst.label); }
+  used=new Set(seen); if(selected!=null && !instances[selected]) selected=null; active=null;
+ } else used=new Set();
+ render(); renderPalette(); renderSwatches(); };
 document.getElementById('gridSeg').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; gridOn=b.dataset.grid==='1'; boardEl.classList.toggle('gridon',gridOn); [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b)); };
 function setCellSize(px){ U=px; document.documentElement.style.setProperty('--u',U+'px');
  const dim=SIZES[px]; if(dim){ C=dim[0]; R=dim[1]; document.getElementById('colsIn').value=C; document.getElementById('rowsIn').value=R;
