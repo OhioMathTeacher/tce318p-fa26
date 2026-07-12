@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research Question Studio — Week 7</title>
+<style>
+  :root {
+    --ink: #1f2933;
+    --muted: #52606d;
+    --line: #d7dde3;
+    --accent: #1a5fb4;
+    --accent-soft: #e7f0fb;
+    --gold: #b3730a;
+    --gold-soft: #fbf1dd;
+    --ok: #2b7a3d;
+    --warn: #b23b2e;
+    --warn-soft: #fbe6e3;
+    --panel: #ffffff;
+    --page: #eef1f4;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--ink);
+    background: var(--page);
+    line-height: 1.55;
+  }
+  .shell { max-width: 820px; margin: 0 auto; padding: 26px 22px 80px; }
+
+  header h1 { font-size: 25px; margin: 0 0 3px; color: var(--accent); }
+  header .sub { color: var(--muted); margin: 0; font-size: 14px; }
+  .privacy {
+    font-size: 12.5px; color: #6b4a08; background: var(--gold-soft);
+    border: 1px solid #e7d3a1; border-radius: 8px; padding: 8px 12px; margin: 14px 0 20px;
+  }
+  .privacy strong { color: var(--gold); }
+
+  .tip { background: var(--accent-soft); border: 1px solid #cfe0f5; border-radius: 8px;
+    padding: 10px 13px; font-size: 13px; color: #22333f; margin: 0 0 16px; line-height: 1.5; }
+  .tip strong { color: var(--accent); }
+
+  /* ---- tab bar ---- */
+  .tabs { display: flex; gap: 6px; margin-bottom: 22px; flex-wrap: wrap; }
+  .tab {
+    flex: 1; min-width: 120px; border: 1px solid var(--line); background: var(--panel);
+    border-radius: 9px; padding: 9px 8px 8px; cursor: pointer; text-align: center;
+    font-family: inherit; color: var(--muted); transition: all .12s;
+  }
+  .tab:hover { border-color: var(--accent); }
+  .tab .n {
+    display: inline-block; width: 22px; height: 22px; line-height: 22px; border-radius: 50%;
+    background: #eceef0; color: var(--muted); font-size: 12px; font-weight: 700; margin-bottom: 3px;
+  }
+  .tab .lbl { display: block; font-size: 12.5px; font-weight: 600; }
+  .tab.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+  .tab.active .n { background: var(--accent); color: #fff; }
+  .tab.done .n::after { content: " ✓"; }
+  .tab.done .n { background: var(--ok); color: #fff; }
+  .tab.active.done .n { background: var(--accent); }
+
+  /* ---- panels ---- */
+  .panel { display: none; }
+  .panel.active { display: block; animation: fade .18s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 22px 24px; }
+  .card > h2 { margin: 0 0 4px; font-size: 20px; }
+  .lead { color: var(--muted); font-size: 14.5px; margin: 0 0 18px; }
+  .rules { margin: 4px 0 16px; padding-left: 20px; font-size: 14px; color: var(--muted); }
+  .rules li { margin-bottom: 5px; }
+  .tag-oc { display: inline-block; font-weight: 700; font-size: 12px; padding: 1px 6px; border-radius: 4px; margin: 0 2px; }
+  .tag-o { background: var(--accent-soft); color: var(--accent); }
+  .tag-c { background: #eceef0; color: var(--muted); }
+
+  label.fld { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin: 14px 0 4px; }
+  input[type=text], textarea, select {
+    width: 100%; border: 1px solid var(--line); border-radius: 7px;
+    padding: 9px 11px; font-family: inherit; font-size: 14px; color: var(--ink);
+    background: var(--panel); resize: vertical;
+  }
+  input:focus, textarea:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+  .row2 { display: flex; gap: 14px; }
+  .row2 > div { flex: 1; }
+  .adapt-chips { margin: 10px 0 2px; }
+  .adapt-chip { border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 8px;
+    padding: 8px 10px 8px 12px; margin-bottom: 8px; background: #fafbfc; display: flex; gap: 10px; align-items: flex-start; }
+  .adapt-chip .body { flex: 1; }
+  .adapt-chip .name { font-weight: 600; font-size: 13.5px; }
+  .adapt-chip .desc { font-size: 12.5px; color: var(--muted); font-style: italic; margin-top: 2px; }
+
+  /* sample cards */
+  .sample { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; background: #fafbfc; }
+  .sample.active { border-color: var(--accent); background: #fff; box-shadow: 0 1px 8px rgba(26,95,180,.08); }
+  .sample-head { display: flex; justify-content: space-between; align-items: center; }
+  .sample-head strong { font-size: 14px; }
+  /* collapsed (already-entered) samples */
+  .sample.collapsed { cursor: pointer; padding: 11px 16px; }
+  .sample.collapsed:hover { border-color: var(--accent); }
+  .sample.collapsed .snip { font-size: 13px; color: var(--muted); margin: 2px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sample.collapsed .edit-hint { font-size: 12px; color: var(--accent); }
+
+  .photo-row { display: flex; align-items: center; gap: 12px; margin: 14px 0 2px; flex-wrap: wrap; }
+  .look {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--accent);
+    cursor: pointer; border: 1px dashed var(--accent); border-radius: 6px; padding: 5px 11px; background: var(--accent-soft);
+  }
+  .look input { display: none; }
+  .photo-help { font-size: 12px; color: var(--muted); }
+
+  /* Flameshot-style redaction editor */
+  .editor { margin-top: 10px; }
+  .tools {
+    display: inline-flex; align-items: center; gap: 5px; background: #eef2f6;
+    border: 1px solid var(--line); border-radius: 8px; padding: 5px 6px; margin-bottom: 8px;
+  }
+  .tools button {
+    border: 1px solid transparent; background: #fff; border-radius: 6px; width: 34px; height: 31px;
+    cursor: pointer; font-size: 15px; color: var(--ink); display: inline-flex; align-items: center; justify-content: center;
+  }
+  .tools button:hover { border-color: var(--accent); }
+  .tools button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tsep { width: 1px; height: 20px; background: var(--line); margin: 0 3px; }
+  .canvas-wrap {
+    overflow: auto; max-height: 72vh; border: 1px solid var(--line);
+    border-radius: 8px; background: #fff;
+  }
+  .redact-canvas { display: block; cursor: crosshair; touch-action: none; background: #fff; }
+  .editor-cap { font-size: 12px; color: var(--gold); margin: 7px 0 8px; }
+  .editor-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .save-img {
+    background: var(--accent); color: #fff; border: none; border-radius: 20px;
+    padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .save-img:hover { background: #164e93; }
+  .saved-note { font-size: 12.5px; color: var(--ok); }
+  .rm-photo { border: none; background: none; color: var(--warn); cursor: pointer; font-size: 12.5px; text-decoration: underline; padding: 0; }
+  .pdfwarn { background: var(--warn-soft); border: 1px solid #e7b9b2; color: var(--warn); border-radius: 8px; padding: 8px 12px; font-size: 13px; margin: 0 0 16px; }
+
+  .sample-pager { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+  .pager-label { font-weight: 700; color: var(--muted); font-size: 14px; }
+  .sample-actions { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
+  .sample-actions .next { padding: 9px 18px; border-radius: 22px; }
+  #sampleHint { font-size: 12.5px; color: var(--warn); margin: 8px 0 0; min-height: 0; }
+
+  /* step-3 reference: your collected work */
+  .qfocus-ref { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin: 6px 0 20px; }
+  .ref-card { border: 1px solid var(--line); border-radius: 10px; background: #fafbfc; padding: 12px; font-size: 13px; }
+  .ref-card h4 { margin: 0 0 8px; font-size: 13px; color: var(--accent); }
+  .ref-card img { max-width: 100%; max-height: 160px; border-radius: 6px; border: 1px solid var(--line); display: block; margin-bottom: 8px; }
+  .ref-card .rf { margin: 4px 0; color: var(--muted); }
+  .ref-card .rf b { color: var(--ink); font-weight: 600; }
+  .ref-empty { font-size: 13.5px; color: var(--muted); font-style: italic; margin: 4px 0 16px; }
+
+  /* question storm */
+  .q-add { display: flex; gap: 8px; margin-bottom: 12px; }
+  .q-add input { flex: 1; }
+  .q-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; background: var(--panel); }
+  .q-item .qtext { flex: 1; font-size: 14px; padding-top: 4px; }
+  .oc-toggle { display: flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; flex-shrink: 0; }
+  .oc-toggle button { border: none; background: #fff; padding: 5px 10px; cursor: pointer; font-weight: 700; font-size: 12px; color: var(--muted); }
+  .oc-toggle button.act-o { background: var(--accent); color: #fff; }
+  .oc-toggle button.act-c { background: var(--muted); color: #fff; }
+  .q-empty { font-size: 13.5px; color: var(--muted); font-style: italic; }
+
+  button.mini { border: 1px solid var(--line); background: #fff; border-radius: 6px; cursor: pointer; color: var(--muted); font-size: 13px; padding: 6px 10px; }
+  button.mini:hover { background: #f0f2f4; }
+  .x { border: none; background: none; color: var(--warn); cursor: pointer; font-size: 18px; line-height: 1; padding: 0 4px; }
+
+  /* de-id gate */
+  .gate { border-radius: 10px; padding: 14px 16px; margin-top: 4px; background: #f5f7f8; border: 1px solid var(--line); }
+  .gate.flag { background: var(--warn-soft); border-color: #e7b9b2; }
+  .gate.clean { background: #e9f5ec; border-color: #b6ddc0; }
+  .gate h3 { margin: 0 0 6px; font-size: 15px; }
+  .gate.flag h3 { color: var(--warn); }
+  .gate.clean h3 { color: var(--ok); }
+  .flag-chip { display: inline-block; background: #fff; border: 1px solid var(--warn); color: var(--warn); border-radius: 14px; padding: 3px 10px; font-size: 12.5px; margin: 3px 4px 3px 0; }
+  label.ck { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; color: var(--ink); margin-top: 14px; cursor: pointer; }
+
+  pre.preview {
+    background: #1e2530; color: #d7e3f2; border-radius: 10px; padding: 16px;
+    font-family: 'Courier New', monospace; font-size: 12.5px; white-space: pre-wrap;
+    max-height: 320px; overflow-y: auto; margin: 12px 0 0;
+  }
+
+  .btn-dl { background: var(--ok); color: #fff; border: none; padding: 13px 24px; font-size: 15px; font-weight: 700; border-radius: 24px; cursor: pointer; }
+  .btn-dl:disabled { background: #b7c0b9; cursor: not-allowed; }
+  .btn-dl:hover:not(:disabled) { background: #226630; }
+
+  /* nav */
+  .nav { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; }
+  .nav button {
+    border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+    border-radius: 22px; padding: 10px 22px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
+  }
+  .nav button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .nav button:disabled { opacity: .4; cursor: not-allowed; }
+  .nav .next { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .nav .next:hover:not(:disabled) { background: #164e93; color: #fff; }
+
+  .foot { font-size: 12px; color: var(--muted); margin-top: 22px; text-align: center; }
+
+  /* ===== Produce-PDF: printable document (hidden on screen) ===== */
+  #printDoc { display: none; }
+  #printDoc .pd-title { font-size: 18px; font-weight: 700; margin: 0 0 2px; }
+  #printDoc .pd-sub { font-size: 11px; color: #555; margin: 0 0 6px; }
+  #printDoc h3 { font-size: 13.5px; margin: 11px 0 3px; border-bottom: 1px solid #bbb; padding-bottom: 2px; }
+  #printDoc .pd-fact { margin: 2px 0; font-size: 12px; line-height: 1.35; }
+  #printDoc ul { margin: 3px 0; padding-left: 18px; font-size: 12px; }
+  #printDoc li { margin-bottom: 2px; }
+  #printDoc .pd-sample { break-inside: avoid; page-break-inside: avoid; margin: 6px 0; }
+  #printDoc .pd-gallery { display: flex; flex-wrap: wrap; gap: 0.25in; align-items: flex-start; margin-top: 4px; }
+  #printDoc .pd-fig { break-inside: avoid; page-break-inside: avoid; }
+  #printDoc .pd-fig .cap { font-size: 11px; font-weight: 700; color: #333; margin-bottom: 2px; }
+  #printDoc .pd-fig img { max-height: 4.6in; max-width: 100%; display: block; border: 1px solid #bbb; }
+  @media print {
+    body > .shell { display: none !important; }
+    #printDoc { display: block !important; font-family: 'Segoe UI', Tahoma, sans-serif; color: #111; }
+    @page { margin: 0.6in; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <h1>Research Question Studio</h1>
+    <p class="sub">Week 7 · TCE 318P · turn your collected work into one researchable question</p>
+  </header>
+
+  <div class="privacy">
+    <strong>Everything here stays on your computer.</strong> Nothing is uploaded to any server. Add a
+    photo of the child's work, <strong>cover the names right here</strong>, and the anonymized picture
+    is what you save for your documentation — the original never leaves your laptop. Keep everything
+    de-identified: a persona, never a real name.
+  </div>
+
+  <div id="pdfWarn" class="pdfwarn" style="display:none;"></div>
+
+  <!-- tab bar -->
+  <div class="tabs" id="tabs">
+    <button class="tab" data-step="0"><span class="n">1</span><span class="lbl">Learner</span></button>
+    <button class="tab" data-step="1"><span class="n">2</span><span class="lbl">Collected work</span></button>
+    <button class="tab" data-step="2"><span class="n">3</span><span class="lbl">Brainstorm</span></button>
+    <button class="tab" data-step="3"><span class="n">4</span><span class="lbl">Check names</span></button>
+    <button class="tab" data-step="4"><span class="n">5</span><span class="lbl">Hand off</span></button>
+  </div>
+
+  <!-- ===== STEP 1: LEARNER ===== -->
+  <section class="panel" data-step="0">
+    <div class="card">
+      <h2>1 · Your focal learner</h2>
+      <p class="lead">Name the child as a de-identified persona, and recall the adaptation — the
+        need — you named in Week 6. Your whole project answers a question about <em>this</em> need.</p>
+      <div class="row2">
+        <div>
+          <label class="fld" for="grade">Grade level</label>
+          <select id="grade">
+            <option value="">Select a grade…</option>
+            <option>Kindergarten</option>
+            <option>Grade 1</option>
+            <option>Grade 2</option>
+            <option>Grade 3</option>
+            <option>Grade 4</option>
+            <option>Grade 5</option>
+          </select>
+        </div>
+        <div>
+          <label class="fld" for="focus">Math the student will be studying (Weeks 11–12)</label>
+          <select id="focus"><option value="">Select a grade first…</option></select>
+          <input type="text" id="focusOther" placeholder="Name the standard or topic…" style="display:none; margin-top:8px;">
+          <p class="photo-help" style="margin:5px 0 0;">Ohio's Learning Standards for the grade you chose.</p>
+        </div>
+      </div>
+      <label class="fld" for="adaptType">Overall student need (adaptation target)</label>
+      <p class="photo-help" style="margin:0 0 6px;">Pick the one or few you're weighing — you'll narrow these with Alkimi.</p>
+      <select id="adaptType"><option value="">Add an adaptation…</option></select>
+      <input type="text" id="adaptTypeOther" placeholder="Name your own adaptation, then press Enter…" style="display:none; margin-top:8px;">
+      <div id="adaptChips" class="adapt-chips"></div>
+      <label class="fld" for="adaptation">How I'm thinking of using these with my student</label>
+      <textarea id="adaptation" rows="2" placeholder="e.g. I'll give base-ten blocks and read each problem aloud before we start."></textarea>
+    </div>
+  </section>
+
+  <!-- ===== STEP 2: COLLECTED WORK ===== -->
+  <section class="panel" data-step="1">
+    <div class="card">
+      <h2>2 · Your QFocus — the work you collected</h2>
+      <p class="lead">Enter your Week 6 work samples <strong>one at a time</strong> — these are your
+        <strong>QFocus</strong>, the thing your questions come from. Describe each one de-identified:
+        the task, what the child did, and the strategy or error you noticed. Add a photo of the work
+        and <strong>cover any names</strong> right on it. Keep going until you've entered them all.</p>
+      <div class="tip">
+        <strong>Choosing good samples.</strong> Aim for <strong>3–5 well-chosen samples</strong> — work
+        collected recently, and/or tied to the math your student will study in the field (Weeks 11–12).
+        Capture <strong>one work sample per image</strong>: a single page (like one worksheet),
+        photographed or scanned so it is large and clear. One clear page is easier to read than an
+        image that crowds several pages together.
+      </div>
+      <div id="samples"></div>
+      <p id="sampleHint"></p>
+      <div class="sample-actions">
+        <button class="mini" id="addSample">＋ Enter another sample</button>
+        <button class="next" id="doneSamples">✓ I'm done collecting →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== STEP 3: QUESTION STORM ===== -->
+  <section class="panel" data-step="2">
+    <div class="card">
+      <h2>3 · Brainstorm questions about your work samples</h2>
+      <p class="lead">Look closely at the work you collected and produce as many questions as you can.
+        <span style="color:var(--muted);font-size:13px;">(Flip back to <strong>Collected work</strong> anytime to see the images.)</span></p>
+      <div id="qfocusRef"></div>
+      <p class="lead" style="margin-top:2px;">Follow the four QFT rules:</p>
+      <ol class="rules">
+        <li>Ask as many questions as you can.</li>
+        <li>Do not stop to discuss, judge, or answer any question.</li>
+        <li>Write every question down exactly as it is thought.</li>
+        <li>Turn any statement into a question.</li>
+      </ol>
+      <div class="q-add">
+        <input type="text" id="qInput" placeholder="Type a question and press Enter…">
+        <button class="mini" id="qAdd">Add</button>
+      </div>
+      <div id="questions"></div>
+      <p class="lead" style="margin:14px 0 0;">Then mark each one
+        <span class="tag-oc tag-o">O</span> open (invites more than a yes/no) or
+        <span class="tag-oc tag-c">C</span> closed — you'll notice which kind you tend to ask.</p>
+    </div>
+  </section>
+
+  <!-- ===== STEP 4: CHECK NAMES ===== -->
+  <section class="panel" data-step="3">
+    <div class="card">
+      <h2>4 · Check for names</h2>
+      <p class="lead">Before anything leaves, read the whole snapshot below for a real name, school,
+        or detail that could identify the child. The studio highlights words to double-check — but
+        the final judgment is yours.</p>
+      <div class="gate" id="gate">
+        <h3 id="gateTitle">Review before you export</h3>
+        <p style="margin:4px 0;font-size:13.5px;" id="gateMsg">Fill in your work first, then review here.</p>
+        <div id="flags"></div>
+        <label class="ck"><input type="checkbox" id="confirm">
+          I have read the snapshot below and there is no real name, school, or identifying detail in it.</label>
+      </div>
+      <pre class="preview" id="previewA"></pre>
+    </div>
+  </section>
+
+  <!-- ===== STEP 5: HAND OFF ===== -->
+  <section class="panel" data-step="4">
+    <div class="card">
+      <h2>5 · Hand off to the Research Question Mentor</h2>
+      <p class="lead">Produce <strong>one PDF</strong> — your write-up plus your covered-up work
+        samples — and upload it to <strong>Alkimi's Research Question Mentor</strong>. Ask it to help
+        you <em>sharpen</em> your questions toward one that is researchable, feasible, and focused.
+        <strong>You produce the question — Alkimi sharpens, it never writes it for you.</strong></p>
+      <p id="dlHint" class="lead" style="color:var(--warn);"></p>
+      <div class="export-bar">
+        <button class="btn-dl" id="produce" disabled>🖨 Produce PDF</button>
+        <span id="pageEst" style="font-size:13px;color:var(--muted);"></span>
+      </div>
+      <p class="lead" style="font-size:12.5px; margin-top:8px;">In the print dialog choose
+        <strong>“Save as PDF.”</strong> Everything is in this one file — so Alkimi sees the actual
+        work, and you upload just one file (not a pile of screenshots).</p>
+      <pre class="preview" id="previewB"></pre>
+    </div>
+  </section>
+
+  <!-- PDF reader (local copy — no CDN, works offline once served). -->
+  <script type="module">
+    try {
+      const pdfjsLib = await import('./pdf.min.js');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.js';
+      window.pdfjsLib = pdfjsLib;
+    } catch (e) { console.warn('PDF support unavailable (open via a served URL, not file://):', e); }
+  </script>
+
+  <!-- nav -->
+  <div class="nav">
+    <button class="back" id="back">← Back</button>
+    <button class="next" id="next">Next →</button>
+  </div>
+
+  <p class="foot">Your work autosaves in this browser only.
+    <button class="mini" id="clearAll" style="margin-left:6px;">Clear everything</button></p>
+</div>
+
+<div id="printDoc"></div>
+
+<script>
+"use strict";
+const STORE = "tce318p-wk7-rqstudio";
+const $ = id => document.getElementById(id);
+const STEPS = 5;
+let step = 0;
+
+let state = {
+  grade: "", focus: "", focusOther: "",
+  adaptTypes: [], adaptation: "",
+  seq: 0,
+  samples: [],          // {id, task, did, noticed}
+  questions: []         // {text, oc}
+};
+let activeSample = 0;   // which sample is open for editing (one at a time)
+const images = {};      // id -> FLATTENED redacted dataURL (for thumbnail/reference). In memory only.
+const shots = {};       // id -> { ops: [redaction rects] }. In memory only.
+const imgCache = {};    // id -> decoded working <img> (may be a crop). In memory only.
+const original = {};    // id -> pristine uploaded dataURL, so Reset can restore. In memory only.
+let tool = "redact";    // active tool: "redact" (box) | "blur" (pixelate) | "crop"
+let editorZoom = 1;     // view zoom for the sample editor
+
+function uid() { state.seq = (state.seq || 0) + 1; return "s" + state.seq; }
+function blankSample() { return { id: uid(), task: "", did: "", noticed: "" }; }
+
+function load() {
+  try { const raw = localStorage.getItem(STORE); if (raw) state = Object.assign(state, JSON.parse(raw)); } catch (e) {}
+  if (!state.samples.length) state.samples = [blankSample()];
+  state.samples.forEach(s => { if (!s.id) s.id = uid(); });   // backfill older saves
+  if (!Array.isArray(state.adaptTypes)) state.adaptTypes = [];
+  activeSample = state.samples.length - 1;
+}
+function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} }
+function sampleHasContent(s) { return !!(s.task.trim() || s.did.trim() || s.noticed.trim() || shots[s.id]); }
+
+// ---- learner ----
+// Ohio's Learning Standards for Mathematics, cluster-level, grouped by domain.
+const STANDARDS = {
+  "Kindergarten": [
+    ["Counting & Cardinality", ["Count to 100 and count objects (cardinality)", "Compare numbers"]],
+    ["Operations & Algebraic Thinking", ["Add and subtract within 10; decompose numbers"]],
+    ["Number & Operations in Base Ten", ["Numbers 11–19 and place-value foundations"]],
+    ["Measurement & Data", ["Describe and compare measurable attributes", "Sort and count objects by category"]],
+    ["Geometry", ["Identify and describe shapes", "Analyze, compare, and build shapes"]]
+  ],
+  "Grade 1": [
+    ["Operations & Algebraic Thinking", ["Add and subtract within 20 (word problems & strategies)", "Meaning of the equal sign; find the unknown"]],
+    ["Number & Operations in Base Ten", ["Count to 120; place value (tens and ones)", "Add within 100; subtract multiples of 10"]],
+    ["Measurement & Data", ["Measure and order lengths", "Tell time to the hour and half-hour", "Represent and interpret data"]],
+    ["Geometry", ["Reason with shapes and their attributes", "Partition into halves and fourths"]]
+  ],
+  "Grade 2": [
+    ["Operations & Algebraic Thinking", ["Add and subtract within 20 fluently", "Foundations of multiplication (equal groups & arrays)", "Odd and even numbers"]],
+    ["Number & Operations in Base Ten", ["Place value to 1,000", "Add and subtract within 1,000"]],
+    ["Measurement & Data", ["Measure and estimate lengths (standard units)", "Work with time and money", "Represent and interpret data (line plots, graphs)"]],
+    ["Geometry", ["Reason with shapes and their attributes", "Partition shapes into equal shares"]]
+  ],
+  "Grade 3": [
+    ["Operations & Algebraic Thinking", ["Multiplication and division within 100 (meaning & fluency)", "Properties of operations", "Two-step word problems and patterns"]],
+    ["Number & Operations in Base Ten", ["Place value; round to the nearest 10 or 100", "Add and subtract within 1,000", "Multiply one-digit numbers by multiples of 10"]],
+    ["Number & Operations — Fractions", ["Understand fractions as numbers (number line)", "Equivalent fractions", "Compare fractions"]],
+    ["Measurement & Data", ["Tell time to the minute; elapsed time", "Area", "Perimeter", "Mass and liquid volume", "Scaled picture and bar graphs"]],
+    ["Geometry", ["Reason with shapes; partition into equal areas"]]
+  ],
+  "Grade 4": [
+    ["Operations & Algebraic Thinking", ["Multi-step word problems; interpret remainders", "Factors and multiples; prime and composite", "Generate and analyze patterns"]],
+    ["Number & Operations in Base Ten", ["Generalize place value (to 1,000,000)", "Multi-digit multiplication", "Multi-digit division"]],
+    ["Number & Operations — Fractions", ["Equivalent fractions and comparison", "Add and subtract fractions", "Multiply a fraction by a whole number", "Decimal notation for fractions"]],
+    ["Measurement & Data", ["Measurement and unit conversion", "Area and perimeter", "Angles and angle measurement", "Line plots with fractions"]],
+    ["Geometry", ["Points, lines, rays, and angles", "Classify shapes; recognize symmetry"]]
+  ],
+  "Grade 5": [
+    ["Operations & Algebraic Thinking", ["Write and interpret numerical expressions", "Analyze patterns and relationships"]],
+    ["Number & Operations in Base Ten", ["Place-value system (to thousandths)", "Multi-digit multiplication and division", "Operations with decimals to hundredths"]],
+    ["Number & Operations — Fractions", ["Add and subtract fractions (unlike denominators)", "Multiply and divide fractions"]],
+    ["Measurement & Data", ["Convert measurement units", "Represent and interpret data (line plots)", "Volume"]],
+    ["Geometry", ["Graph points on the coordinate plane", "Classify two-dimensional figures"]]
+  ]
+};
+
+function focusText() { return state.focus === "__other__" ? (state.focusOther || "").trim() : (state.focus || "").trim(); }
+
+// Instructional adaptations (Todd's list) — label + the "what we have in mind" description.
+const ADAPTATIONS = [
+  ["Hands-on materials", `Unifix cubes, base-ten blocks, counters, fraction pieces, pattern blocks. The foundation of every elementary math lesson.`],
+  ["Pictures and diagrams", `Ten frames, number lines, part-part-whole mats, area models, bar diagrams. Something for the student to point at before they have to write.`],
+  ["Shorter assignments", `A smaller, well-chosen set instead of a full page. Not "do the odds" but "do these five that cover the range."`],
+  ["Extra time", `More room to think, especially on story problems and multi-step tasks. Applies to classwork and assessments both.`],
+  ["One step at a time", `Break a multi-step problem into visible pieces. One box per step, one problem per page, a folded worksheet that reveals one part at a time.`],
+  ["Reading the problem aloud", `Teacher or partner reads the word problem so the reading load doesn't hide the math.`],
+  ["Charts and reference tools", `Number charts, hundreds charts, addition and times-table cards, anchor charts on the wall. Frees up working memory for the actual thinking.`],
+  ["Graph paper and place-value mats", `Keeps digits lined up and place value honest. Wide-lined paper works too for younger kids doing multi-digit work.`],
+  ["Pre-teaching math words", `Frontload "equal," "difference," "denominator," "sum" before the lesson. Picture cards, math word walls, cognates for multilingual learners.`],
+  ["Showing a worked example", `A completed problem beside the new one so the student can study it, imitate it, and compare.`],
+  ["Sentence starters", `"I know ___ because ___." "First I ___, then I ___." Gets kids talking math when the language, not the math, is the wall.`],
+  ["Working with a partner or small group", `Structured pairs, think-pair-share, teacher-led small group. Not just "work together" but a defined role for each student.`],
+  ["Choice in numbers or problems", `"Choose your numbers," tiered tasks, open-middle problems. Same math goal, different on-ramps.`],
+  ["Showing work in different ways", `Draw it, tell it, build it, act it out — not only write it. Kids can show what they know without a paragraph.`],
+  ["Math games and movement", `Standing number lines, counting with the body, card games, station rotations. Little kids think with their bodies.`]
+];
+const ADAPT_DESC = {}; ADAPTATIONS.forEach(([l, d]) => ADAPT_DESC[l] = d);
+
+function adaptList() { return state.adaptTypes.filter(a => (a || "").trim()); }
+
+function populateAdapt() {
+  const sel = $("adaptType"); sel.textContent = "";
+  const first = document.createElement("option"); first.value = ""; first.textContent = "Add an adaptation…"; sel.appendChild(first);
+  ADAPTATIONS.forEach(([label]) => { const o = document.createElement("option"); o.value = label; o.textContent = label; sel.appendChild(o); });
+  const oo = document.createElement("option"); oo.value = "__other__"; oo.textContent = "Other (name your own)…"; sel.appendChild(oo);
+}
+function addAdapt(label) {
+  label = (label || "").trim();
+  if (label && !state.adaptTypes.includes(label)) { state.adaptTypes.push(label); renderAdaptChips(); sync(); }
+}
+function renderAdaptChips() {
+  const wrap = $("adaptChips"); wrap.textContent = "";
+  state.adaptTypes.forEach((label, i) => {
+    const chip = document.createElement("div"); chip.className = "adapt-chip";
+    const x = document.createElement("button"); x.className = "x"; x.textContent = "×"; x.title = "Remove";
+    x.onclick = () => { state.adaptTypes.splice(i, 1); renderAdaptChips(); sync(); };
+    const body = document.createElement("div"); body.className = "body";
+    const name = document.createElement("div"); name.className = "name"; name.textContent = label;
+    body.appendChild(name);
+    if (ADAPT_DESC[label]) { const d = document.createElement("div"); d.className = "desc"; d.textContent = ADAPT_DESC[label]; body.appendChild(d); }
+    chip.appendChild(x); chip.appendChild(body); wrap.appendChild(chip);
+  });
+}
+
+function populateFocus(grade) {
+  const sel = $("focus"); sel.textContent = "";
+  const first = document.createElement("option");
+  first.value = ""; first.textContent = grade ? "Select the math…" : "Select a grade first…";
+  sel.appendChild(first);
+  const groups = STANDARDS[grade];
+  if (!groups) return;
+  groups.forEach(([domain, items]) => {
+    const og = document.createElement("optgroup"); og.label = domain;
+    items.forEach(t => { const o = document.createElement("option"); o.value = t; o.textContent = t; og.appendChild(o); });
+    sel.appendChild(og);
+  });
+  const oo = document.createElement("option"); oo.value = "__other__"; oo.textContent = "Other (type it in)…";
+  sel.appendChild(oo);
+}
+
+function fillLearner() {
+  $("grade").value = state.grade || "";
+  populateFocus(state.grade);
+  $("focus").value = state.focus || "";
+  const other = $("focusOther");
+  if (state.focus === "__other__") { other.style.display = ""; other.value = state.focusOther || ""; }
+  else { other.style.display = "none"; }
+
+  populateAdapt();
+  $("adaptType").value = "";
+  const aother = $("adaptTypeOther"); aother.style.display = "none"; aother.value = "";
+  renderAdaptChips();
+  $("adaptation").value = state.adaptation || "";
+}
+
+function bindLearner() {
+  const grade = $("grade"), focus = $("focus"), other = $("focusOther");
+  const adaptType = $("adaptType"), aother = $("adaptTypeOther"), adapt = $("adaptation");
+  grade.addEventListener("change", () => {
+    state.grade = grade.value;
+    populateFocus(state.grade);
+    state.focus = ""; focus.value = ""; state.focusOther = ""; other.value = ""; other.style.display = "none";
+    sync();
+  });
+  focus.addEventListener("change", () => {
+    state.focus = focus.value;
+    if (focus.value === "__other__") { other.style.display = ""; other.focus(); }
+    else { other.style.display = "none"; state.focusOther = ""; }
+    sync();
+  });
+  other.addEventListener("input", () => { state.focusOther = other.value; sync(); });
+
+  adaptType.addEventListener("change", () => {
+    const v = adaptType.value;
+    if (v === "__other__") { aother.style.display = ""; aother.focus(); }
+    else if (v) { addAdapt(v); }
+    adaptType.value = "";                     // reset the picker after each add
+  });
+  aother.addEventListener("keydown", e => {
+    if (e.key === "Enter") { e.preventDefault(); addAdapt(aother.value); aother.value = ""; aother.style.display = "none"; }
+  });
+  aother.addEventListener("blur", () => { addAdapt(aother.value); aother.value = ""; aother.style.display = "none"; });
+  adapt.addEventListener("input", () => { state.adaptation = adapt.value; sync(); });
+}
+
+// ---- samples: one per screen, flip with Prev/Next (the rolodex) ----
+function renderSamples() {
+  const wrap = $("samples"); wrap.textContent = "";
+  if (!state.samples.length) state.samples = [blankSample()];
+  activeSample = Math.max(0, Math.min(activeSample, state.samples.length - 1));
+
+  const pager = document.createElement("div"); pager.className = "sample-pager";
+  const prev = document.createElement("button"); prev.className = "mini"; prev.textContent = "◀ Prev";
+  prev.disabled = activeSample === 0;
+  prev.onclick = () => { activeSample--; renderSamples(); };
+  const label = document.createElement("span"); label.className = "pager-label";
+  label.textContent = "Sample " + (activeSample + 1) + " of " + state.samples.length;
+  const next = document.createElement("button"); next.className = "mini"; next.textContent = "Next ▶";
+  next.disabled = activeSample === state.samples.length - 1;
+  next.onclick = () => { activeSample++; renderSamples(); };
+  pager.appendChild(prev); pager.appendChild(label); pager.appendChild(next);
+  wrap.appendChild(pager);
+
+  wrap.appendChild(activeSampleCard(state.samples[activeSample], activeSample));
+}
+
+function activeSampleCard(s, i) {
+  const card = document.createElement("div"); card.className = "sample active";
+  const head = document.createElement("div"); head.className = "sample-head";
+  const title = document.createElement("strong"); title.textContent = "Sample " + (i + 1);
+  head.appendChild(title);
+  if (state.samples.length > 1) {
+    const del = document.createElement("button"); del.className = "x"; del.title = "Remove this sample"; del.textContent = "×";
+    del.onclick = () => {
+      delete images[s.id];
+      state.samples.splice(i, 1);
+      if (activeSample >= state.samples.length) activeSample = state.samples.length - 1;
+      renderSamples(); sync();
+    };
+    head.appendChild(del);
+  }
+  card.appendChild(head);
+
+  card.appendChild(fieldFor(i, "task", "Task the child was doing", 1, "e.g. Order the numbers 43, 152, 9 from least to greatest."));
+  card.appendChild(fieldFor(i, "did", "What the child did", 2, "e.g. Wrote 152, 43, 9 — treated more digits as smaller."));
+  card.appendChild(fieldFor(i, "noticed", "Strategy or error you noticed", 2, "e.g. Compared leading digits only; no place-value language."));
+
+  // work + redaction editor (local only)
+  const row = document.createElement("div"); row.className = "photo-row";
+  const look = document.createElement("label"); look.className = "look";
+  look.appendChild(document.createTextNode(shots[s.id] ? "📄 Replace work" : "📄 Add a photo, screenshot, or PDF"));
+  const file = document.createElement("input"); file.type = "file"; file.accept = "image/*,application/pdf"; look.appendChild(file);
+  const help = document.createElement("span"); help.className = "photo-help";
+  help.textContent = "Stays on this laptop. Each page of a PDF becomes its own sample.";
+  row.appendChild(look); row.appendChild(help); card.appendChild(row);
+
+  if (shots[s.id]) card.appendChild(buildEditor(s.id));
+
+  file.addEventListener("change", () => {
+    const f = file.files && file.files[0]; if (!f) return;
+    const isPdf = f.type === "application/pdf" || /\.pdf$/i.test(f.name);
+    if (isPdf) {
+      if (!window.pdfjsLib) { $("sampleHint").textContent = "PDF support didn't load — open the studio from its web address (not a file on disk), or add an image/screenshot instead."; return; }
+      $("sampleHint").textContent = "Rendering PDF pages…";
+      pdfToPages(f).then(pages => {
+        $("sampleHint").textContent = "";
+        if (!pages.length) return;
+        setSampleImage(s.id, pages[0]);                    // first page → this sample
+        for (let p = 1; p < pages.length; p++) {           // extra pages → new samples
+          const ns = blankSample(); state.samples.push(ns); setSampleImage(ns.id, pages[p]);
+        }
+        renderSamples(); sync();
+      }).catch(err => { $("sampleHint").textContent = "Could not read that PDF."; console.error(err); });
+    } else {
+      const reader = new FileReader();
+      reader.onload = e => setSampleImage(s.id, e.target.result);
+      reader.readAsDataURL(f);   // decoded in-browser; the original never leaves
+    }
+  });
+  return card;
+}
+
+// Decode a data URL into this sample's working image (resets any covers).
+function applyBase(id, dataURL) {
+  shots[id] = { ops: [] };
+  images[id] = dataURL;                    // flattened = this image until they redact
+  const img = new Image();
+  img.onload = () => { imgCache[id] = img; renderSamples(); sync(); };
+  img.src = dataURL;
+}
+// Fresh upload (photo/screenshot/PDF page): also remember the pristine original.
+function setSampleImage(id, dataURL) { original[id] = dataURL; applyBase(id, dataURL); }
+// Crop keeps the pristine original so Reset can restore the full page.
+function cropSampleTo(id, dataURL) { applyBase(id, dataURL); }
+function resetSample(id) { if (original[id]) applyBase(id, original[id]); }
+
+// Render every page of a PDF to a PNG data URL, fully in-browser (PDF never leaves).
+async function pdfToPages(f) {
+  const buf = await f.arrayBuffer();
+  const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
+  const out = [];
+  const n = Math.min(pdf.numPages, 30);    // safety cap
+  for (let i = 1; i <= n; i++) {
+    const page = await pdf.getPage(i);
+    const vp = page.getViewport({ scale: 2 });
+    const canvas = document.createElement("canvas");
+    canvas.width = vp.width; canvas.height = vp.height;
+    await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+    out.push(canvas.toDataURL("image/png"));
+  }
+  return out;
+}
+
+// ---- redaction editor (Flameshot-style) ----
+function normalizeRect(a, b) {
+  return { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), w: Math.abs(a.x - b.x), h: Math.abs(a.y - b.y) };
+}
+function applyOp(ctx, canvas, op) {
+  if (op.w < 1 || op.h < 1) return;
+  if (op.type === "blur") {
+    const block = Math.max(8, Math.round(Math.min(op.w, op.h) / 6));
+    const sw = Math.max(1, Math.round(op.w / block)), sh = Math.max(1, Math.round(op.h / block));
+    const off = document.createElement("canvas"); off.width = sw; off.height = sh;
+    const octx = off.getContext("2d"); if (!octx) return;
+    octx.imageSmoothingEnabled = false;
+    octx.drawImage(canvas, op.x, op.y, op.w, op.h, 0, 0, sw, sh);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(off, 0, 0, sw, sh, op.x, op.y, op.w, op.h);
+    ctx.imageSmoothingEnabled = true;
+  } else {
+    ctx.fillStyle = "#111"; ctx.fillRect(op.x, op.y, op.w, op.h);
+  }
+}
+function paintCanvas(canvas, id, preview) {
+  const ctx = canvas.getContext && canvas.getContext("2d");
+  const img = imgCache[id];
+  if (!ctx || !img) return;
+  canvas.width = img.naturalWidth || img.width;
+  canvas.height = img.naturalHeight || img.height;
+  ctx.drawImage(img, 0, 0);
+  (shots[id].ops || []).forEach(op => applyOp(ctx, canvas, op));
+  if (preview && preview.w > 0 && preview.h > 0) {
+    ctx.save();
+    if (preview.type === "crop") {
+      // dim everything outside the keep-region, outline the keep-region
+      ctx.fillStyle = "rgba(0,0,0,.45)";
+      ctx.fillRect(0, 0, canvas.width, preview.y);
+      ctx.fillRect(0, preview.y + preview.h, canvas.width, canvas.height - preview.y - preview.h);
+      ctx.fillRect(0, preview.y, preview.x, preview.h);
+      ctx.fillRect(preview.x + preview.w, preview.y, canvas.width - preview.x - preview.w, preview.h);
+      ctx.strokeStyle = "#1a5fb4"; ctx.lineWidth = 2; ctx.setLineDash([6, 4]);
+      ctx.strokeRect(preview.x, preview.y, preview.w, preview.h);
+    } else {
+      if (preview.type === "blur") { ctx.fillStyle = "rgba(30,40,55,.35)"; ctx.strokeStyle = "#1a5fb4"; }
+      else { ctx.fillStyle = "rgba(17,17,17,.6)"; ctx.strokeStyle = "#111"; }
+      ctx.fillRect(preview.x, preview.y, preview.w, preview.h);
+      ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.strokeRect(preview.x, preview.y, preview.w, preview.h);
+    }
+    ctx.restore();
+  }
+}
+function commitCanvas(canvas, id) {
+  paintCanvas(canvas, id);
+  if (canvas.getContext && canvas.getContext("2d") && imgCache[id]) {
+    try { images[id] = canvas.toDataURL("image/png"); } catch (e) {}
+  }
+}
+function buildEditor(id) {
+  const box = document.createElement("div"); box.className = "editor";
+  const bar = document.createElement("div"); bar.className = "tools";
+  bar.appendChild(toolBtn("redact", "▭", "Cover with a solid box — safest for names"));
+  bar.appendChild(toolBtn("blur", "▨", "Pixelate a region"));
+  bar.appendChild(toolBtn("crop", "⛶", "Crop — drag to keep just that part"));
+  bar.appendChild(sepEl());
+  bar.appendChild(actBtn("↶", "Undo last cover", () => { const s = shots[id]; if (s && s.ops.length) { s.ops.pop(); renderSamples(); sync(); } }));
+  bar.appendChild(actBtn("✕", "Clear all covers", () => { const s = shots[id]; if (s && s.ops.length) { s.ops = []; renderSamples(); sync(); } }));
+  bar.appendChild(actBtn("↺", "Reset to the original page", () => resetSample(id)));
+  bar.appendChild(sepEl());
+  const canvas = document.createElement("canvas"); canvas.className = "redact-canvas";
+  canvas.style.width = (editorZoom * 100) + "%"; canvas.style.height = "auto";
+  bar.appendChild(actBtn("－", "Zoom out", () => setZoom(editorZoom / 1.25, canvas)));
+  bar.appendChild(actBtn("＋", "Zoom in", () => setZoom(editorZoom * 1.25, canvas)));
+  box.appendChild(bar);
+
+  const wrap = document.createElement("div"); wrap.className = "canvas-wrap";
+  wrap.appendChild(canvas); box.appendChild(wrap);
+  attachDrawing(canvas, id);
+  commitCanvas(canvas, id);
+
+  const cap = document.createElement("p"); cap.className = "editor-cap";
+  cap.textContent = "Cover names (▭ ▨), crop to the useful part (⛶), and zoom (－ ＋). It all stays on your laptop; the original page is one Reset (↺) away.";
+  box.appendChild(cap);
+
+  const actions = document.createElement("div"); actions.className = "editor-actions";
+  const note = document.createElement("span"); note.className = "saved-note";
+  note.textContent = "✓ Saved with this sample — your covered-up version goes into the final PDF on step 5.";
+  const rm = document.createElement("button"); rm.className = "rm-photo"; rm.textContent = "Remove work";
+  rm.onclick = () => { delete shots[id]; delete imgCache[id]; delete images[id]; delete original[id]; renderSamples(); sync(); };
+  actions.appendChild(note); actions.appendChild(rm); box.appendChild(actions);
+  return box;
+}
+function toolBtn(t, glyph, title) {
+  const b = document.createElement("button"); b.textContent = glyph; b.title = title;
+  if (tool === t) b.className = "on";
+  b.onclick = () => { tool = t; renderSamples(); };
+  return b;
+}
+function actBtn(glyph, title, fn) {
+  const b = document.createElement("button"); b.textContent = glyph; b.title = title; b.onclick = fn; return b;
+}
+function sepEl() { const s = document.createElement("span"); s.className = "tsep"; return s; }
+function setZoom(z, canvas) { editorZoom = Math.max(0.5, Math.min(6, z)); canvas.style.width = (editorZoom * 100) + "%"; }
+
+function cropCanvasTo(canvas, id, r) {
+  paintCanvas(canvas, id);   // clean base + covers, no preview
+  const w = Math.round(r.w), h = Math.round(r.h);
+  const tmp = document.createElement("canvas"); tmp.width = w; tmp.height = h;
+  const tctx = tmp.getContext("2d"); if (!tctx) return;
+  tctx.drawImage(canvas, r.x, r.y, r.w, r.h, 0, 0, w, h);
+  cropSampleTo(id, tmp.toDataURL("image/png"));
+}
+function attachDrawing(canvas, id) {
+  let drawing = false, start = null;
+  const toImg = e => {
+    const r = canvas.getBoundingClientRect();
+    const sx = (canvas.width || 1) / (r.width || 1), sy = (canvas.height || 1) / (r.height || 1);
+    return { x: (e.clientX - r.left) * sx, y: (e.clientY - r.top) * sy };
+  };
+  const finish = e => {
+    if (!drawing) return; drawing = false;
+    const r = normalizeRect(start, toImg(e));
+    if (r.w < 4 || r.h < 4) { paintCanvas(canvas, id); return; }
+    if (tool === "crop") { cropCanvasTo(canvas, id, r); return; }
+    r.type = tool; shots[id].ops.push(r);
+    commitCanvas(canvas, id); sync();
+  };
+  canvas.addEventListener("mousedown", e => { if (!imgCache[id]) return; drawing = true; start = toImg(e); });
+  canvas.addEventListener("mousemove", e => {
+    if (!drawing) return;
+    const r = normalizeRect(start, toImg(e)); r.type = tool;
+    paintCanvas(canvas, id, r);
+  });
+  canvas.addEventListener("mouseup", finish);
+  canvas.addEventListener("mouseleave", finish);
+}
+
+function fieldFor(i, key, labelText, rows, ph) {
+  const frag = document.createDocumentFragment();
+  const lab = document.createElement("label"); lab.className = "fld"; lab.textContent = labelText;
+  const ta = document.createElement("textarea"); ta.rows = rows; ta.value = state.samples[i][key] || ""; ta.placeholder = ph;
+  ta.addEventListener("input", () => { state.samples[i][key] = ta.value; sync(); });
+  frag.appendChild(lab); frag.appendChild(ta); return frag;
+}
+
+// ---- step-3 reference: your collected work ----
+function renderReference() {
+  const wrap = $("qfocusRef"); wrap.textContent = "";
+  const real = state.samples.filter(sampleHasContent);
+  if (!real.length) {
+    const e = document.createElement("p"); e.className = "ref-empty";
+    e.textContent = "No work entered yet — go back to step 2 to add your samples.";
+    wrap.appendChild(e); wrap.className = ""; return;
+  }
+  wrap.className = "qfocus-ref";
+  real.forEach((s, i) => {
+    const c = document.createElement("div"); c.className = "ref-card";
+    const h = document.createElement("h4"); h.textContent = "Sample " + (i + 1); c.appendChild(h);
+    [["Task", s.task], ["Did", s.did], ["Noticed", s.noticed]].forEach(([k, v]) => {
+      if (!v.trim()) return;
+      const p = document.createElement("p"); p.className = "rf";
+      const b = document.createElement("b"); b.textContent = k + ": "; p.appendChild(b);
+      p.appendChild(document.createTextNode(v.trim())); c.appendChild(p);
+    });
+    wrap.appendChild(c);
+  });
+}
+
+// ---- questions ----
+function renderQuestions() {
+  const wrap = $("questions"); wrap.textContent = "";
+  if (!state.questions.length) {
+    const e = document.createElement("p"); e.className = "q-empty";
+    e.textContent = "No questions yet — add several before you stop to sort them.";
+    wrap.appendChild(e); return;
+  }
+  state.questions.forEach((q, i) => {
+    const item = document.createElement("div"); item.className = "q-item";
+    const txt = document.createElement("div"); txt.className = "qtext"; txt.textContent = q.text; item.appendChild(txt);
+    const toggle = document.createElement("div"); toggle.className = "oc-toggle";
+    ["O", "C"].forEach(v => {
+      const b = document.createElement("button"); b.textContent = v;
+      if (q.oc === v) b.className = v === "O" ? "act-o" : "act-c";
+      b.onclick = () => { q.oc = (q.oc === v ? "" : v); renderQuestions(); sync(); };
+      toggle.appendChild(b);
+    });
+    item.appendChild(toggle);
+    const del = document.createElement("button"); del.className = "x"; del.textContent = "×"; del.title = "Remove";
+    del.onclick = () => { state.questions.splice(i, 1); renderQuestions(); sync(); };
+    item.appendChild(del); wrap.appendChild(item);
+  });
+}
+function addQuestion() {
+  const inp = $("qInput"); const v = inp.value.trim(); if (!v) return;
+  state.questions.push({ text: v, oc: "" }); inp.value = "";
+  renderQuestions(); sync(); inp.focus();
+}
+
+// ---- de-id name scan ----
+const ALLOW = new Set((
+  "I I'm I'll Monday Tuesday Wednesday Thursday Friday Grade Math QFocus QFT Alkimi Week " +
+  "Sample Open Closed Number Place Value Fraction Fractions Addition Subtraction Multiplication " +
+  "Division CRA DOK FERPA September October November December January February March April May June July August"
+).split(/\s+/));
+function scanNames() {
+  const text = [state.grade, focusText(), ...adaptList(), state.adaptation,
+    ...state.samples.flatMap(s => [s.task, s.did, s.noticed]),
+    ...state.questions.map(q => q.text)].join("\n");
+  const flags = new Set();
+  text.split(/\n/).forEach(line => {
+    const words = line.trim().split(/\s+/);
+    words.forEach((w, idx) => {
+      const clean = w.replace(/^[^A-Za-z']+|[^A-Za-z']+$/g, "");
+      if (clean.length < 2) return;
+      if (!/^[A-Z][a-z]+$/.test(clean)) return;
+      if (idx === 0) return;
+      if (/[.!?:]$/.test(words[idx - 1] || "")) return;
+      if (ALLOW.has(clean)) return;
+      flags.add(clean);
+    });
+  });
+  return [...flags];
+}
+
+// ---- export ----
+function hasContent() {
+  return state.grade.trim() || focusText() || adaptList().length || state.adaptation.trim() ||
+    state.samples.some(s => s.task.trim() || s.did.trim() || s.noticed.trim()) || state.questions.length;
+}
+function buildSnapshot() {
+  const L = [];
+  L.push("DE-IDENTIFIED LEARNER SNAPSHOT — Week 7 Research Question handoff");
+  L.push("(Prepared in the Research Question Studio. Nothing here identifies a real child.)");
+  L.push("");
+  L.push("FOCAL LEARNER");
+  L.push("  Grade level: " + (state.grade.trim() || "—"));
+  L.push("  Math the student will study (Weeks 11–12): " + (focusText() || "—"));
+  const adapts = adaptList();
+  if (adapts.length) {
+    L.push("  Adaptations I'm weighing (help me narrow to one):");
+    adapts.forEach(a => L.push("    - " + a));
+  } else {
+    L.push("  Adaptations I'm weighing (help me narrow to one): —");
+  }
+  L.push("  How I'm thinking of using them with this learner: " + (state.adaptation.trim() || "—"));
+  L.push("");
+  L.push("WHAT I COLLECTED (my QFocus)");
+  const real = state.samples.filter(s => s.task.trim() || s.did.trim() || s.noticed.trim());
+  if (!real.length) L.push("  (no samples described yet)");
+  real.forEach((s, i) => {
+    L.push("  Sample " + (i + 1));
+    L.push("    Task the child was doing: " + (s.task.trim() || "—"));
+    L.push("    What the child did: " + (s.did.trim() || "—"));
+    L.push("    Strategy or error I noticed: " + (s.noticed.trim() || "—"));
+  });
+  L.push("");
+  L.push("MY QUESTION STORM (produced with the QFT — mine to sharpen, not yours to replace)");
+  if (!state.questions.length) L.push("  (no questions yet)");
+  state.questions.forEach(q => { L.push("  " + (q.oc === "O" ? "O  " : q.oc === "C" ? "C  " : "") + q.text); });
+  L.push("");
+  L.push("WHAT I WANT FROM YOU");
+  L.push("  Help me sharpen my own questions toward ONE that is researchable, feasible, and");
+  L.push("  focused on this learner and the Week 6 adaptation. Please do not write the");
+  L.push("  question for me — press on mine.");
+  return L.join("\n");
+}
+
+// Build the printable one-file handoff: write-up + redacted work images embedded.
+function buildPrintDoc() {
+  const d = $("printDoc"); d.textContent = "";
+  const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+  d.appendChild(el("div", "pd-title", "Research Question — Week 7 Handoff"));
+  d.appendChild(el("p", "pd-sub", "De-identified. Prepared in the Research Question Studio — nothing here identifies a real child."));
+
+  d.appendChild(el("h3", null, "Focal learner"));
+  d.appendChild(el("p", "pd-fact", "Grade level: " + (state.grade || "—")));
+  d.appendChild(el("p", "pd-fact", "Math the student will study (Weeks 11–12): " + (focusText() || "—")));
+  d.appendChild(el("p", "pd-fact", "Adaptations I'm weighing (help me narrow to one):"));
+  const aul = document.createElement("ul");
+  const adapts = adaptList();
+  (adapts.length ? adapts : ["—"]).forEach(a => aul.appendChild(el("li", null, a)));
+  d.appendChild(aul);
+  d.appendChild(el("p", "pd-fact", "How I'm thinking of using them: " + (state.adaptation.trim() || "—")));
+
+  d.appendChild(el("h3", null, "What I collected (my QFocus)"));
+  const real = state.samples.filter(sampleHasContent);
+  if (!real.length) d.appendChild(el("p", "pd-fact", "(no samples yet)"));
+  real.forEach((s, i) => {
+    const box = el("div", "pd-sample");
+    box.appendChild(el("p", "pd-fact", "Sample " + (i + 1)));
+    if (s.task.trim()) box.appendChild(el("p", "pd-fact", "Task: " + s.task.trim()));
+    if (s.did.trim()) box.appendChild(el("p", "pd-fact", "What the child did: " + s.did.trim()));
+    if (s.noticed.trim()) box.appendChild(el("p", "pd-fact", "Strategy or error I noticed: " + s.noticed.trim()));
+    d.appendChild(box);
+  });
+
+  // Work images packed side-by-side (narrow ones pair up; wide ones take a row).
+  const withImg = real.map((s, i) => ({ s, i })).filter(o => images[o.s.id]);
+  if (withImg.length) {
+    d.appendChild(el("h3", null, "Work samples"));
+    const gal = el("div", "pd-gallery");
+    withImg.forEach(({ s, i }) => {
+      const fig = el("div", "pd-fig");
+      fig.appendChild(el("div", "cap", "Sample " + (i + 1)));
+      const im = document.createElement("img"); im.src = images[s.id]; fig.appendChild(im);
+      gal.appendChild(fig);
+    });
+    d.appendChild(gal);
+  }
+
+  d.appendChild(el("h3", null, "My question storm (QFT — mine to sharpen, not yours to replace)"));
+  const qul = document.createElement("ul");
+  if (!state.questions.length) qul.appendChild(el("li", null, "(no questions yet)"));
+  state.questions.forEach(q => qul.appendChild(el("li", null, (q.oc === "O" ? "[O] " : q.oc === "C" ? "[C] " : "") + q.text)));
+  d.appendChild(qul);
+
+  d.appendChild(el("h3", null, "What I want from you"));
+  d.appendChild(el("p", "pd-fact", "Help me sharpen my own questions toward ONE that is researchable, feasible, and focused on this learner and the Week 6 adaptation. Please do not write the question for me — press on mine."));
+}
+function producePDF() { buildPrintDoc(); window.print(); }
+function pageEstimate() { return 1 + state.samples.filter(s => images[s.id]).length; }
+
+// ---- gate / preview / download ----
+function refreshGate() {
+  const gate = $("gate"), flagsEl = $("flags"), msg = $("gateMsg"), title = $("gateTitle");
+  flagsEl.textContent = "";
+  if (!hasContent()) {
+    gate.className = "gate"; title.textContent = "Review before you export";
+    msg.textContent = "Fill in your work first, then review here."; return;
+  }
+  const flags = scanNames();
+  if (flags.length) {
+    gate.className = "gate flag"; title.textContent = "Double-check these words";
+    msg.textContent = "Is any of these a real name or place? If so, replace it with a persona before you export.";
+    flags.forEach(f => { const c = document.createElement("span"); c.className = "flag-chip"; c.textContent = f; flagsEl.appendChild(c); });
+  } else {
+    gate.className = "gate clean"; title.textContent = "No obvious names found";
+    msg.textContent = "The scan is a helper, not a guarantee — read the snapshot below yourself before you confirm.";
+  }
+}
+function refreshProduce() {
+  const ok = $("confirm").checked && hasContent();
+  $("produce").disabled = !ok;
+  $("dlHint").textContent = ok ? "" : "First read and confirm the snapshot on step 4 · Check names.";
+  const p = pageEstimate();
+  const est = $("pageEst");
+  est.textContent = "Estimated PDF: ~" + p + " page" + (p === 1 ? "" : "s") + (p > 10 ? " — Alkimi bills per page; consider trimming to your most telling samples." : "");
+  est.style.color = p > 10 ? "var(--warn)" : "var(--muted)";
+}
+function refreshPreview() { const t = buildSnapshot(); $("previewA").textContent = t; $("previewB").textContent = t; }
+
+// ---- tabs / nav ----
+function stepDone(i) {
+  if (i === 0) return !!(state.grade.trim() || focusText() || adaptList().length || state.adaptation.trim());
+  if (i === 1) return state.samples.some(sampleHasContent);
+  if (i === 2) return state.questions.length > 0;
+  if (i === 3) return $("confirm").checked;
+  return false;
+}
+function showStep(i) {
+  step = Math.max(0, Math.min(STEPS - 1, i));
+  document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", +p.dataset.step === step));
+  document.querySelectorAll(".tab").forEach(t => {
+    const s = +t.dataset.step;
+    t.classList.toggle("active", s === step);
+    t.classList.toggle("done", stepDone(s));
+  });
+  $("back").disabled = step === 0;
+  $("next").style.visibility = step === STEPS - 1 ? "hidden" : "visible";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function sync() {
+  save(); renderReference(); refreshPreview(); refreshGate(); refreshProduce();
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("done", stepDone(+t.dataset.step)));
+}
+
+function addAnotherSample() {
+  const cur = state.samples[activeSample];
+  if (cur && !sampleHasContent(cur)) {
+    $("sampleHint").textContent = "Add some detail to this sample before starting another.";
+    return;
+  }
+  $("sampleHint").textContent = "";
+  state.samples.push(blankSample());
+  activeSample = state.samples.length - 1;
+  renderSamples(); sync();
+}
+
+function init() {
+  load(); bindLearner(); fillLearner(); renderSamples(); renderQuestions();
+  $("addSample").onclick = addAnotherSample;
+  $("doneSamples").onclick = () => { $("sampleHint").textContent = ""; showStep(2); };
+  $("qAdd").onclick = addQuestion;
+  $("qInput").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); addQuestion(); } });
+  $("confirm").addEventListener("change", () => { refreshProduce(); showStep(step); });
+  $("produce").onclick = producePDF;
+  $("clearAll").onclick = () => {
+    if (!confirm("Clear everything in this studio? This can't be undone.")) return;
+    localStorage.removeItem(STORE);
+    [images, shots, imgCache, original].forEach(m => Object.keys(m).forEach(k => delete m[k]));
+    state = { grade: "", focus: "", focusOther: "", adaptTypes: [], adaptation: "", seq: 0, samples: [], questions: [] };
+    state.samples = [blankSample()]; activeSample = 0;
+    fillLearner(); renderSamples(); renderQuestions(); $("confirm").checked = false; sync(); showStep(0);
+  };
+  document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => showStep(+t.dataset.step)));
+  $("back").onclick = () => showStep(step - 1);
+  $("next").onclick = () => showStep(step + 1);
+  sync(); showStep(0);
+
+  // If the PDF reader didn't load (e.g. opened as a file on disk), say so plainly.
+  setTimeout(() => {
+    if (window.pdfjsLib) return;
+    const b = $("pdfWarn"); b.style.display = "";
+    b.textContent = location.protocol === "file:"
+      ? "PDF upload is off because you opened this from a file on your disk. Open it from its web address (http://…) to turn PDF on. Photos and screenshots work either way."
+      : "The PDF reader didn't load — reload the page to enable PDF upload. Photos and screenshots still work.";
+  }, 1200);
+}
+init();
+</script>
+</body>
+</html>
