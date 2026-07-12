@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 8 · Question-Strengthening (slides) — TCE 318P</title>
+<!--
+  Wk8 Tuesday warm-up SLIDES (projected). One move = one slide PAIR: Before (discuss) -> After (discuss).
+  MULTIPLE examples per move (3) so the pattern of the move is visible, not a single case.
+  Source/curation: design/wk8-rq-example-bank.md. Composite questions; de-identified; FERPA-safe.
+  Nav: click a slide = next; → / ← arrows, Space, and on-screen buttons also work. Self-contained; Firefox-safe.
+  Pairs with the faded handout (week-8-question-strengthening-practice.html) + week-8-tue.html block 2.
+-->
+<style>
+ :root{--red:#C41E3A;--ink:#1f2937;--muted:#6b7280;--green:#166534;}
+ *{box-sizing:border-box;}
+ html,body{margin:0;height:100%;}
+ body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:#fff;}
+ .deck{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:5vh 7vw 9vh;}
+ .slide{display:none;width:100%;max-width:1000px;}
+ .slide.on{display:block;animation:fade .18s ease;}
+ @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+ .kick{font-size:clamp(16px,2vw,28px);font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--red);margin-bottom:20px;}
+ .kick.small{color:var(--muted);}
+ .tag{display:inline-block;font-size:clamp(11px,1.05vw,15px);font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+   color:var(--muted);background:#f3f4f6;border-radius:5px;padding:2px 8px;margin-right:8px;vertical-align:middle;}
+ /* Before slide: list of first-draft questions */
+ .qlist{list-style:none;margin:0;padding:0;}
+ .qlist li{font-size:clamp(19px,2.15vw,34px);line-height:1.3;font-weight:600;margin:14px 0;}
+ .prompt{font-size:clamp(15px,1.6vw,24px);color:var(--muted);margin-top:28px;font-style:italic;}
+ /* After slide: before -> after rows */
+ .palist{list-style:none;margin:0;padding:0;}
+ .palist li{margin:14px 0;padding-left:14px;border-left:3px solid #eee;}
+ .palist .b{font-size:clamp(13px,1.4vw,20px);color:var(--muted);line-height:1.25;}
+ .palist .a{font-size:clamp(16px,1.85vw,28px);color:var(--green);font-weight:600;line-height:1.28;margin-top:3px;}
+ .move{font-size:clamp(15px,1.6vw,24px);font-style:italic;color:var(--muted);margin-top:26px;border-top:2px solid #eee;padding-top:14px;}
+ .move b{color:var(--red);font-style:normal;}
+ /* title + summary */
+ .title h1{font-size:clamp(34px,4.5vw,72px);color:var(--red);margin:0 0 12px;}
+ .title p{font-size:clamp(16px,1.9vw,30px);color:var(--muted);margin:0;}
+ .moveslist{font-size:clamp(18px,2.1vw,34px);line-height:1.85;}
+ .moveslist b{color:var(--red);}
+ /* chrome */
+ .bar{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:space-between;
+   padding:10px 16px;font-size:13px;color:var(--muted);background:linear-gradient(transparent,#fff 40%);}
+ .bar button{border:1px solid #d1d5db;background:#fff;border-radius:20px;padding:7px 16px;font:inherit;cursor:pointer;color:var(--ink);}
+ .bar button:hover{border-color:var(--red);color:var(--red);}
+ .count{font-variant-numeric:tabular-nums;}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+ <section class="slide title">
+  <h1>Question-Strengthening</h1>
+  <p>You can already spot a strong research question. Today: how to make <em>yours</em> stronger — one move at a time.</p>
+ </section>
+
+ <!-- MOVE 1 -->
+ <section class="slide">
+  <div class="kick">Move 1 · Before</div>
+  <ul class="qlist">
+   <li><span class="tag">K · counting</span>Can Robin count to 20?</li>
+   <li><span class="tag">Gr 3 · facts</span>Does Kai know 6 × 7?</li>
+   <li><span class="tag">Gr 5 · decimals</span>Can Sam order decimals correctly?</li>
+  </ul>
+  <div class="prompt">What do these three have in common — and what would make each a stronger research question?</div>
+ </section>
+ <section class="slide">
+  <div class="kick small">Move 1 · After</div>
+  <ul class="palist">
+   <li><div class="b">Can Robin count to 20?</div><div class="a">When Robin counts a group of objects, how does Robin keep track of which are already counted — and what happens when I rearrange them?</div></li>
+   <li><div class="b">Does Kai know 6 × 7?</div><div class="a">When Kai meets a multiplication fact they don't know by heart, how do they figure it out?</div></li>
+   <li><div class="b">Can Sam order decimals correctly?</div><div class="a">How does Sam decide which of 0.45 and 0.5 is larger — what are they attending to?</div></li>
+  </ul>
+  <div class="move"><b>The move:</b> from <em>did they get it right</em> → <em>how do they make sense of it.</em></div>
+ </section>
+
+ <!-- MOVE 2 -->
+ <section class="slide">
+  <div class="kick">Move 2 · Before</div>
+  <ul class="qlist">
+   <li><span class="tag">Gr 4 · fractions</span>How does my student understand fractions?</li>
+   <li><span class="tag">Gr 2 · addition</span>How does Ari understand addition?</li>
+   <li><span class="tag">Gr 1 · geometry</span>How does Lee understand geometry?</li>
+  </ul>
+  <div class="prompt">These are already about understanding — so what's still too big to investigate?</div>
+ </section>
+ <section class="slide">
+  <div class="kick small">Move 2 · After</div>
+  <ul class="palist">
+   <li><div class="b">How does my student understand fractions?</div><div class="a">How does Jordan treat a fraction like 3/4 as a single number — for instance, when placing it on a number line from 0 to 1?</div></li>
+   <li><div class="b">How does Ari understand addition?</div><div class="a">When Ari adds two two-digit numbers, how do they handle the tens and the ones — keep place value, or count all?</div></li>
+   <li><div class="b">How does Lee understand geometry?</div><div class="a">How does Lee decide whether a shape is a triangle when it's turned or stretched?</div></li>
+  </ul>
+  <div class="move"><b>The move:</b> <em>narrow a whole domain to one facet a single task can surface.</em></div>
+ </section>
+
+ <!-- MOVE 3 -->
+ <section class="slide">
+  <div class="kick">Move 3 · Before</div>
+  <ul class="qlist">
+   <li><span class="tag">Gr 3 · subtraction</span>Why can't Alex regroup when subtracting?</li>
+   <li><span class="tag">Gr 5 · fractions</span>Why does Nico struggle to add unlike fractions?</li>
+   <li><span class="tag">Gr 2 · word problems</span>Why can't Dana solve word problems?</li>
+  </ul>
+  <div class="prompt">What does each of these assume before we've even looked?</div>
+ </section>
+ <section class="slide">
+  <div class="kick small">Move 3 · After</div>
+  <ul class="palist">
+   <li><div class="b">Why can't Alex regroup when subtracting?</div><div class="a">When a subtraction needs regrouping, what does Alex actually do — and what does that reveal about how they think about tens and ones?</div></li>
+   <li><div class="b">Why does Nico struggle to add unlike fractions?</div><div class="a">When Nico adds fractions with different denominators, what rule are they following — and what does it show about how they see the pieces?</div></li>
+   <li><div class="b">Why can't Dana solve word problems?</div><div class="a">When Dana meets a word problem, how do they decide which operation to use — what in the problem are they keying on?</div></li>
+  </ul>
+  <div class="move"><b>The move:</b> from <em>why can't they / what's missing</em> → <em>what is their current, sensible logic.</em></div>
+ </section>
+
+ <!-- MOVE 4 -->
+ <section class="slide">
+  <div class="kick">Move 4 · Before</div>
+  <ul class="qlist">
+   <li><span class="tag">Gr 2 · place value</span>Does Sam understand place value?</li>
+   <li><span class="tag">Gr 4 · multiplication</span>How does Rae think about multiplication?</li>
+   <li><span class="tag">K · number</span>Does Robin know their numbers?</li>
+  </ul>
+  <div class="prompt">Each of these could be about any child. What would tie it to <em>this</em> one?</div>
+ </section>
+ <section class="slide">
+  <div class="kick small">Move 4 · After</div>
+  <ul class="palist">
+   <li><div class="b">Does Sam understand place value?</div><div class="a">In her work, Sam decided 45 > 63 “because 5 is more than 3.” How is Sam using the digits to decide which number is larger?</div></li>
+   <li><div class="b">How does Rae think about multiplication?</div><div class="a">Rae solved 4 × 16 as 4 × 10 and 4 × 6, then added. How does Rae use place value to break multiplication apart — and does it hold with harder numbers?</div></li>
+   <li><div class="b">Does Robin know their numbers?</div><div class="a">Robin said “six” instantly for a die's dots but counted a scattered set of six. How does the arrangement change how Robin sees a quantity?</div></li>
+  </ul>
+  <div class="move"><b>The move:</b> <em>ground it in something this child actually did.</em></div>
+ </section>
+
+ <!-- MOVE 5 -->
+ <section class="slide">
+  <div class="kick">Move 5 · Before</div>
+  <ul class="qlist">
+   <li><span class="tag">Gr 3 · a year of growth</span>How has my student improved in math this year?</li>
+   <li><span class="tag">Gr 5 · fractions</span>Does Nico understand all of fractions?</li>
+   <li><span class="tag">Gr 1 · number sense</span>How is Lee's number sense developing?</li>
+  </ul>
+  <div class="prompt">Could one lesson's worth of a child's work actually answer these?</div>
+ </section>
+ <section class="slide">
+  <div class="kick small">Move 5 · After</div>
+  <ul class="palist">
+   <li><div class="b">How has my student improved in math this year?</div><div class="a">What does Alex attend to when deciding which of two fractions is larger?</div></li>
+   <li><div class="b">Does Nico understand all of fractions?</div><div class="a">When Nico compares 2/3 and 3/4, what strategy do they reach for?</div></li>
+   <li><div class="b">How is Lee's number sense developing?</div><div class="a">When Lee adds within 20, do they count on from the larger number or count all — and when do they switch?</div></li>
+  </ul>
+  <div class="move"><b>The move:</b> <em>right-size it — to what one lesson's work could actually show.</em></div>
+ </section>
+
+ <!-- SUMMARY -->
+ <section class="slide">
+  <div class="kick">The five moves we named</div>
+  <div class="moveslist">
+   <b>1 · Correctness → reasoning</b><br>
+   <b>2 · Narrow the concept</b><br>
+   <b>3 · Deficit → asset</b><br>
+   <b>4 · Ground it in what you saw</b><br>
+   <b>5 · Right-size the evidence</b>
+  </div>
+  <div class="prompt">Now take them to your own question — the practice handout, the gallery walk, and your NRICH shelf.</div>
+ </section>
+
+</div>
+
+<div class="bar">
+ <button id="prev">← Back</button>
+ <span class="count" id="count"></span>
+ <button id="next">Next →</button>
+</div>
+
+<script>
+"use strict";
+var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+var i = 0;
+function show(n){
+  i = Math.max(0, Math.min(slides.length - 1, n));
+  slides.forEach(function(s, k){ s.classList.toggle("on", k === i); });
+  document.getElementById("count").textContent = (i + 1) + " / " + slides.length;
+  document.getElementById("prev").style.visibility = i === 0 ? "hidden" : "visible";
+  document.getElementById("next").style.visibility = i === slides.length - 1 ? "hidden" : "visible";
+}
+document.getElementById("next").onclick = function(){ show(i + 1); };
+document.getElementById("prev").onclick = function(){ show(i - 1); };
+document.addEventListener("keydown", function(e){
+  if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") { e.preventDefault(); show(i + 1); }
+  else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); show(i - 1); }
+});
+document.getElementById("deck").addEventListener("click", function(){ show(i + 1); });
+show(0);
+</script>
+</body>
+</html>
