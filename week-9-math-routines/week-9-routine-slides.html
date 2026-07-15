@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 9 · Routine — the Before (slides) — TCE 318P</title>
+<!--
+  Wk9 Tuesday SLIDES (projected) — Part 1 of Week 9 Tuesday (Part 2 = the "Your turn" design activity,
+  in the outline, not slides). Grounded in REAL routines from the daily-routines library
+  (https://visiblethinking.weebly.com/daily-routines.html) — Fraction Talks, Same or Different,
+  Would You Rather (quarters), Clothesline Math — each shown as its ACTUAL figure, not a description.
+
+  SHARED TASK (Todd's pick 7/14): fraction of a SET — "Here are 12 counters; show 3/4 of them; how do
+  you know it's 3/4?" — pinned at the top of every routine slide (the deck's nav is the carousel).
+
+  STRUCTURE (8 slides): title -> the task -> four routine JUDGE slides (figure + "Before, or give-away?")
+  -> the principle -> the test to carry. The slides state NO verdicts — the ROOM decides (7/14, Todd):
+  a clear give-away is the best talking point, so the deck spans the spectrum (clearly primes / clearly
+  gives away / off-concept / worth a fight). The principle names the one rule: a good Before warms up the
+  SAME mathematics but WITHHOLDS the task's move.
+
+  Firefox-safe: static inline SVG in source (no innerHTML on SVG); <use href> for the quarters. Nav:
+  click / arrows / space / buttons. Source/curation: design/wk9-routine-the-before.md. De-identified.
+-->
+<style>
+ :root{--red:#C41E3A;--ink:#1f2937;--muted:#6b7280;--green:#166534;--amber:#b45309;--blue:#1a5fb4;--blue-soft:#e7f0fb;--shade:#f4c9cf;}
+ *{box-sizing:border-box;}
+ html,body{margin:0;height:100%;}
+ body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:#fff;}
+ .deck{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:5vh 6vw 9vh;}
+ .slide{display:none;width:100%;max-width:1000px;}
+ .slide.on{display:block;animation:fade .18s ease;}
+ @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+ .kick{font-size:clamp(15px,1.9vw,26px);font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--red);margin-bottom:14px;}
+ .kick.small{color:var(--muted);}
+ .tag{display:inline-block;font-size:clamp(11px,1.05vw,15px);font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+   color:var(--muted);background:#f3f4f6;border-radius:5px;padding:2px 8px;margin-right:8px;vertical-align:middle;}
+ .anchor{border:2px solid #e5e7eb;border-radius:12px;padding:14px 18px;margin:6px 0 8px;background:#fafafa;}
+ .anchor .lbl{font-size:clamp(11px,1.05vw,15px);font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--amber);}
+ .anchor .task{font-size:clamp(16px,1.75vw,26px);font-weight:600;line-height:1.3;margin-top:6px;}
+ .anchor .rq{font-size:clamp(12px,1.3vw,18px);color:var(--muted);font-style:italic;margin-top:8px;}
+ .routine{font-size:clamp(17px,1.95vw,30px);line-height:1.32;font-weight:600;margin:6px 0;}
+ .prompt{font-size:clamp(15px,1.6vw,24px);color:var(--muted);margin-top:18px;font-style:italic;}
+ .say{font-size:clamp(16px,1.75vw,27px);font-weight:600;color:var(--ink);margin:8px 0;}
+ .fig-cap{text-align:center;font-size:clamp(12px,1.3vw,18px);color:var(--muted);margin:2px 0 0;}
+ .viz{display:block;margin:12px auto 4px;width:100%;max-width:640px;height:auto;}
+ .viz.sm{max-width:440px;} .viz.lg{max-width:760px;}
+ .viz text{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;fill:var(--ink);}
+ .two{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:stretch;margin-top:6px;}
+ .ver{border:1px solid #e5e7eb;border-radius:12px;padding:12px 14px;background:#fafafa;display:flex;flex-direction:column;justify-content:flex-start;}
+ .ver .vh{font-size:clamp(12px,1.2vw,17px);font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-bottom:6px;}
+ .ver .q{font-size:clamp(14px,1.5vw,22px);font-weight:600;}
+ .pair{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:6px;}
+ .col{border-radius:12px;padding:12px 15px;line-height:1.3;}
+ .col.good{background:#e8f4ec;border:1px solid #b7ddc4;}
+ .col.over{background:#fbe9e6;border:1px solid #edc2ba;}
+ .col .h{font-size:clamp(12px,1.2vw,17px);font-weight:800;text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;}
+ .col.good .h{color:var(--green);} .col.over .h{color:var(--red);}
+ .col .q{font-size:clamp(14px,1.5vw,22px);font-weight:600;}
+ .col .note{font-size:clamp(12px,1.3vw,17px);color:var(--muted);margin-top:6px;}
+ .handed{font-size:clamp(14px,1.5vw,22px);font-style:italic;color:var(--muted);margin-top:16px;border-top:2px solid #eee;padding-top:12px;}
+ .handed b{color:var(--red);font-style:normal;}
+ .sort{list-style:none;margin:6px 0 0;padding:0;}
+ .sort li{font-size:clamp(14px,1.55vw,23px);line-height:1.3;margin:12px 0;padding-left:14px;border-left:4px solid #eee;}
+ .sort .primes{color:var(--green);font-weight:800;} .sort .usurps{color:var(--red);font-weight:800;} .sort .off{color:var(--amber);font-weight:800;}
+ .sort .why{color:var(--ink);font-weight:400;}
+ /* per-routine resolve */
+ .resolve{border-radius:14px;padding:22px 26px;margin-top:14px;}
+ .resolve.primes{background:#e8f4ec;border:1px solid #b7ddc4;}
+ .resolve.usurps{background:#fbe9e6;border:1px solid #edc2ba;}
+ .resolve.off{background:#fdf3e3;border:1px solid #eed6a8;}
+ .resolve .recall{font-size:clamp(14px,1.5vw,22px);color:var(--muted);margin:0 0 6px;font-style:italic;}
+ .resolve .verdict{font-size:clamp(24px,3vw,46px);font-weight:800;line-height:1.1;}
+ .resolve.primes .verdict{color:var(--green);} .resolve.usurps .verdict{color:var(--red);} .resolve.off .verdict{color:var(--amber);}
+ .resolve .rwhy{font-size:clamp(16px,1.8vw,27px);color:var(--ink);margin-top:12px;line-height:1.42;}
+ /* discussion prompt (no verdict shown — the room decides) */
+ .discuss{border:2px solid #e5e7eb;border-radius:14px;padding:26px 30px;margin-top:16px;background:#fafafa;}
+ .discuss .dq{font-size:clamp(19px,2.2vw,34px);line-height:1.42;font-weight:600;margin:0;}
+ .discuss .dq strong{color:var(--ink);}
+ /* pinned task header — the task stays pinned while the routines cycle beneath */
+ .taskbar{background:#fbf6ec;border:1px solid #eaddc0;border-left:4px solid var(--amber);border-radius:8px;padding:9px 14px;margin:0 0 16px;font-size:clamp(13px,1.4vw,20px);line-height:1.35;color:#5a4a2a;}
+ .taskbar b{color:var(--amber);text-transform:uppercase;letter-spacing:.03em;font-size:.8em;}
+ .title h1{font-size:clamp(30px,4.2vw,64px);color:var(--red);margin:0 0 12px;}
+ .title p{font-size:clamp(16px,1.9vw,29px);color:var(--muted);margin:0;}
+ .big{font-size:clamp(19px,2.2vw,34px);line-height:1.45;}
+ .big b{color:var(--red);}
+ @media(max-width:680px){.two,.pair{grid-template-columns:1fr;}}
+ .bar{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:space-between;
+   padding:10px 16px;font-size:13px;color:var(--muted);background:linear-gradient(transparent,#fff 40%);}
+ .bar button{border:1px solid #d1d5db;background:#fff;border-radius:20px;padding:7px 16px;font:inherit;cursor:pointer;color:var(--ink);}
+ .bar button:hover{border-color:var(--red);color:var(--red);}
+ .count{font-variant-numeric:tabular-nums;}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+ <section class="slide title">
+  <h1>The Before</h1>
+  <p>A routine opens your lesson and warms up the thinking. The danger: warming up so much you give the task away. Today — how to prime without pre-teaching.</p>
+ </section>
+
+ <!-- ===== THE TASK + FOUR ROUTINES ===== -->
+ <section class="slide">
+  <div class="kick">The task these routines lead into</div>
+  <div class="anchor">
+   <div class="lbl">The task (the During)</div>
+   <div class="task">Here are 12 counters. Show me 3/4 of them — and tell me how you know it's 3/4.</div>
+   <div class="rq">Research question: How does this learner find a fraction of a whole group?</div>
+  </div>
+  <!-- 12 counters, ungrouped -->
+  <svg class="viz sm" viewBox="0 0 320 120" role="img" aria-label="Twelve identical counters in two rows of six">
+   <g fill="#e7f0fb" stroke="#1a5fb4" stroke-width="2">
+    <circle cx="40" cy="42" r="15"/><circle cx="84" cy="42" r="15"/><circle cx="128" cy="42" r="15"/><circle cx="172" cy="42" r="15"/><circle cx="216" cy="42" r="15"/><circle cx="260" cy="42" r="15"/>
+    <circle cx="40" cy="90" r="15"/><circle cx="84" cy="90" r="15"/><circle cx="128" cy="90" r="15"/><circle cx="172" cy="90" r="15"/><circle cx="216" cy="90" r="15"/><circle cx="260" cy="90" r="15"/>
+   </g>
+  </svg>
+  <p class="prompt">Next: four routines from the shelf someone might run as the Before. For each — warm up the thinking, or hand the task away?</p>
+ </section>
+
+ <!-- Fraction Talks judge -->
+ <section class="slide">
+  <div class="taskbar"><b>The task</b> · Here are 12 counters. Show me 3/4 of them — and tell me how you know it's 3/4.</div>
+  <div class="kick small">Routine · judge it</div>
+  <div class="routine"><span class="tag">Fraction Talks</span>“How much is shaded? Convince us.”</div>
+  <svg class="viz" viewBox="0 0 520 150" role="img" aria-label="A rectangle divided into eight equal parts, five shaded">
+   <g stroke="#1f2937" stroke-width="2.5">
+    <rect x="40"  y="30" width="55" height="80" fill="#f4c9cf"/>
+    <rect x="95"  y="30" width="55" height="80" fill="#f4c9cf"/>
+    <rect x="150" y="30" width="55" height="80" fill="#f4c9cf"/>
+    <rect x="205" y="30" width="55" height="80" fill="#f4c9cf"/>
+    <rect x="260" y="30" width="55" height="80" fill="#f4c9cf"/>
+    <rect x="315" y="30" width="55" height="80" fill="#ffffff"/>
+    <rect x="370" y="30" width="55" height="80" fill="#ffffff"/>
+    <rect x="425" y="30" width="55" height="80" fill="#ffffff"/>
+   </g>
+  </svg>
+  <p class="fig-cap">(an area model — collect the different fractions students see, then “how do you know?”)</p>
+  <p class="prompt">Before, or give-away?</p>
+ </section>
+
+ <!-- Same or Different judge -->
+ <section class="slide">
+  <div class="taskbar"><b>The task</b> · Here are 12 counters. Show me 3/4 of them — and tell me how you know it's 3/4.</div>
+  <div class="kick small">Routine · judge it</div>
+  <div class="routine"><span class="tag">Same or Different</span>“Are the fractions equivalent or not? How do you know?”</div>
+  <svg class="viz" viewBox="0 0 560 180" role="img" aria-label="On the left a circle split in half with one half shaded (one-half); on the right a rectangle in four equal parts with two shaded (two-quarters)">
+   <!-- one-half circle -->
+   <g stroke="#1f2937" stroke-width="2.5">
+    <path d="M140 90 L140 30 A60 60 0 0 0 140 150 Z" fill="#f4c9cf"/>
+    <circle cx="140" cy="90" r="60" fill="none"/>
+    <line x1="140" y1="30" x2="140" y2="150"/>
+   </g>
+   <!-- two-quarters rectangle -->
+   <g stroke="#1f2937" stroke-width="2.5">
+    <rect x="330" y="52" width="52" height="76" fill="#f4c9cf"/>
+    <rect x="382" y="52" width="52" height="76" fill="#f4c9cf"/>
+    <rect x="434" y="52" width="52" height="76" fill="#ffffff"/>
+    <rect x="486" y="52" width="52" height="76" fill="#ffffff"/>
+   </g>
+  </svg>
+  <p class="prompt">Before, or give-away?</p>
+ </section>
+
+ <!-- Would You Rather judge -->
+ <section class="slide">
+  <div class="taskbar"><b>The task</b> · Here are 12 counters. Show me 3/4 of them — and tell me how you know it's 3/4.</div>
+  <div class="kick small">Routine · judge it</div>
+  <div class="routine"><span class="tag">Would You Rather</span>“Which would you rather — and how do you know?”</div>
+  <svg class="viz lg" viewBox="0 0 720 175" role="img" aria-label="Two options, each a group of twelve quarters (25-cent coins): option A three-quarters of these, option B two-thirds of these">
+   <defs>
+    <g id="q25">
+     <circle r="15" fill="#f2d34e" stroke="#b78a1e" stroke-width="2"/>
+     <circle r="11" fill="none" stroke="#cfa63a" stroke-width="1"/>
+     <text x="0" y="4" text-anchor="middle" font-size="10" font-weight="700" fill="#6b5010">25¢</text>
+    </g>
+   </defs>
+   <text x="180" y="24" text-anchor="middle" font-size="22" font-weight="700">3/4 of these</text>
+   <use href="#q25" x="70" y="70"/><use href="#q25" x="110" y="70"/><use href="#q25" x="150" y="70"/><use href="#q25" x="190" y="70"/><use href="#q25" x="230" y="70"/><use href="#q25" x="270" y="70"/>
+   <use href="#q25" x="70" y="112"/><use href="#q25" x="110" y="112"/><use href="#q25" x="150" y="112"/><use href="#q25" x="190" y="112"/><use href="#q25" x="230" y="112"/><use href="#q25" x="270" y="112"/>
+   <text x="360" y="98" text-anchor="middle" font-size="26" font-weight="700" fill="#6b7280">or</text>
+   <text x="540" y="24" text-anchor="middle" font-size="22" font-weight="700">2/3 of these</text>
+   <use href="#q25" x="430" y="70"/><use href="#q25" x="470" y="70"/><use href="#q25" x="510" y="70"/><use href="#q25" x="550" y="70"/><use href="#q25" x="590" y="70"/><use href="#q25" x="630" y="70"/>
+   <use href="#q25" x="430" y="112"/><use href="#q25" x="470" y="112"/><use href="#q25" x="510" y="112"/><use href="#q25" x="550" y="112"/><use href="#q25" x="590" y="112"/><use href="#q25" x="630" y="112"/>
+  </svg>
+  <p class="prompt">Before, or give-away?</p>
+ </section>
+
+ <!-- Clothesline judge -->
+ <section class="slide">
+  <div class="taskbar"><b>The task</b> · Here are 12 counters. Show me 3/4 of them — and tell me how you know it's 3/4.</div>
+  <div class="kick small">Routine · judge it</div>
+  <div class="routine"><span class="tag">Clothesline Math</span>“Where does each card go? Hang them and defend it.”</div>
+  <svg class="viz lg" viewBox="0 0 720 160" role="img" aria-label="An open number line labelled 0 and 1, with loose fraction cards one-half, one-quarter and three-quarters waiting above to be placed">
+   <!-- cards to hang -->
+   <g font-size="20" font-weight="700">
+    <rect x="150" y="16" width="56" height="40" rx="4" fill="#fff8e1" stroke="#b45309" stroke-width="2"/><text x="178" y="43" text-anchor="middle">1/2</text>
+    <rect x="330" y="16" width="56" height="40" rx="4" fill="#fff8e1" stroke="#b45309" stroke-width="2"/><text x="358" y="43" text-anchor="middle">1/4</text>
+    <rect x="510" y="16" width="56" height="40" rx="4" fill="#fff8e1" stroke="#b45309" stroke-width="2"/><text x="538" y="43" text-anchor="middle">3/4</text>
+   </g>
+   <!-- the clothesline / open number line -->
+   <line x1="40" y1="118" x2="680" y2="118" stroke="#1f2937" stroke-width="3"/>
+   <line x1="60"  y1="106" x2="60"  y2="130" stroke="#1f2937" stroke-width="3"/>
+   <line x1="660" y1="106" x2="660" y2="130" stroke="#1f2937" stroke-width="3"/>
+   <text x="60"  y="150" text-anchor="middle" font-size="22" font-weight="700">0</text>
+   <text x="660" y="150" text-anchor="middle" font-size="22" font-weight="700">1</text>
+  </svg>
+  <p class="prompt">Before, or give-away?</p>
+ </section>
+
+ <!-- ===== PRINCIPLE + APPLY ===== -->
+ <section class="slide">
+  <div class="kick">The principle</div>
+  <div class="big">
+   A good Before warms up the <b>same mathematics</b> your task investigates and surfaces the learner's <b>entry thinking</b> — but it <b>withholds the task's move</b>, so the task can still reveal what the child brings.
+  </div>
+ </section>
+
+ <section class="slide">
+  <div class="kick small">The test to carry</div>
+  <div class="big">After your routine, could your learner still show you something <b>genuinely their own</b> on the task —<br>or did the routine already do the task's work?</div>
+  <p class="prompt">Now open the routines library, find the shelf for your concept, and pick a Before that primes your task without giving it away.</p>
+ </section>
+
+</div>
+
+<div class="bar">
+ <button id="prev">← Back</button>
+ <span class="count" id="count"></span>
+ <button id="next">Next →</button>
+</div>
+
+<script>
+"use strict";
+var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+var i = 0;
+function show(n){
+  i = Math.max(0, Math.min(slides.length - 1, n));
+  slides.forEach(function(s, k){ s.classList.toggle("on", k === i); });
+  document.getElementById("count").textContent = (i + 1) + " / " + slides.length;
+  document.getElementById("prev").style.visibility = i === 0 ? "hidden" : "visible";
+  document.getElementById("next").style.visibility = i === slides.length - 1 ? "hidden" : "visible";
+}
+document.getElementById("next").onclick = function(){ show(i + 1); };
+document.getElementById("prev").onclick = function(){ show(i - 1); };
+document.addEventListener("keydown", function(e){
+  if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") { e.preventDefault(); show(i + 1); }
+  else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); show(i - 1); }
+});
+document.getElementById("deck").addEventListener("click", function(){ show(i + 1); });
+show(0);
+</script>
+</body>
+</html>
