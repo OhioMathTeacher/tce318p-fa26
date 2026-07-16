@@ -239,19 +239,19 @@
 
   <!-- tab bar -->
   <div class="tabs" id="tabs">
-    <button class="tab" data-step="0"><span class="n">1</span><span class="lbl">Learner</span></button>
+    <button class="tab" data-step="0"><span class="n">1</span><span class="lbl">The Concept</span></button>
     <button class="tab" data-step="1"><span class="n">2</span><span class="lbl">Collected work</span></button>
     <button class="tab" data-step="2"><span class="n">3</span><span class="lbl">Brainstorm</span></button>
     <button class="tab" data-step="3"><span class="n">4</span><span class="lbl">Check names</span></button>
     <button class="tab" data-step="4"><span class="n">5</span><span class="lbl">Hand off</span></button>
   </div>
 
-  <!-- ===== STEP 1: LEARNER ===== -->
+  <!-- ===== STEP 1: THE CONCEPT ===== -->
   <section class="panel" data-step="0">
     <div class="card">
-      <h2>1 · Your focal learner</h2>
-      <p class="lead">Name the child as a de-identified persona, and recall the adaptation — the
-        need — you named in Week 6. Your whole project answers a question about <em>this</em> need.</p>
+      <h2>1 · Your focus concept</h2>
+      <p class="lead">Name the concept you are planning to explore. Your whole project answers a
+        question about how students learn the concept.</p>
       <div class="row2">
         <div>
           <label class="fld" for="grade">Grade level</label>
@@ -272,12 +272,12 @@
           <p class="photo-help" style="margin:5px 0 0;">Ohio's Learning Standards for the grade you chose.</p>
         </div>
       </div>
-      <label class="fld" for="adaptType">Overall student need (adaptation target)</label>
-      <p class="photo-help" style="margin:0 0 6px;">Pick the one or few you're weighing — you'll narrow these with Alkimi.</p>
-      <select id="adaptType"><option value="">Add an adaptation…</option></select>
-      <input type="text" id="adaptTypeOther" placeholder="Name your own adaptation, then press Enter…" style="display:none; margin-top:8px;">
+      <label class="fld" for="adaptType">Teaching methods you're interested in</label>
+      <p class="photo-help" style="margin:0 0 6px;">Pick the one or few you're drawn to — this helps Alkimi focus its feedback.</p>
+      <select id="adaptType"><option value="">Add a teaching method…</option></select>
+      <input type="text" id="adaptTypeOther" placeholder="Name your own method, then press Enter…" style="display:none; margin-top:8px;">
       <div id="adaptChips" class="adapt-chips"></div>
-      <label class="fld" for="adaptation">How I'm thinking of using these with my student</label>
+      <label class="fld" for="adaptation">How I'm thinking of engaging students in the concept</label>
       <textarea id="adaptation" rows="2" placeholder="e.g. I'll give base-ten blocks and read each problem aloud before we start."></textarea>
     </div>
   </section>
@@ -472,16 +472,16 @@ const STANDARDS = {
 
 function focusText() { return state.focus === "__other__" ? (state.focusOther || "").trim() : (state.focus || "").trim(); }
 
-// Instructional adaptations (Todd's list) — label + the "what we have in mind" description.
+// Teaching methods & supports (Todd's list) — label + the "what we have in mind" description.
 const ADAPTATIONS = [
   ["Hands-on materials", `Unifix cubes, base-ten blocks, counters, fraction pieces, pattern blocks. The foundation of every elementary math lesson.`],
   ["Pictures and diagrams", `Ten frames, number lines, part-part-whole mats, area models, bar diagrams. Something for the student to point at before they have to write.`],
-  ["Shorter assignments", `A smaller, well-chosen set instead of a full page. Not "do the odds" but "do these five that cover the range."`],
-  ["Extra time", `More room to think, especially on story problems and multi-step tasks. Applies to classwork and assessments both.`],
+  ["Number talks", `A short daily routine: pose one problem like 18 × 5, students solve it mentally and share strategies, you record their thinking. Builds flexible reasoning out loud.`],
+  ["Notice and wonder", `Show an image, pattern, or problem with no question yet. Students say what they notice and what they wonder before any task is set. Surfaces thinking and hands you their questions.`],
   ["One step at a time", `Break a multi-step problem into visible pieces. One box per step, one problem per page, a folded worksheet that reveals one part at a time.`],
   ["Reading the problem aloud", `Teacher or partner reads the word problem so the reading load doesn't hide the math.`],
-  ["Charts and reference tools", `Number charts, hundreds charts, addition and times-table cards, anchor charts on the wall. Frees up working memory for the actual thinking.`],
-  ["Graph paper and place-value mats", `Keeps digits lined up and place value honest. Wide-lined paper works too for younger kids doing multi-digit work.`],
+  ["Productive struggle", `Launch a rich problem before you teach the method. Students grapple first, then you connect and name their strategies. The struggle is where the learning happens.`],
+  ["Math talk moves", `Revoicing, turn-and-talk, "who can add on?", agree or disagree and say why. Structured moves that get the whole room reasoning about each other's ideas.`],
   ["Pre-teaching math words", `Frontload "equal," "difference," "denominator," "sum" before the lesson. Picture cards, math word walls, cognates for multilingual learners.`],
   ["Showing a worked example", `A completed problem beside the new one so the student can study it, imitate it, and compare.`],
   ["Sentence starters", `"I know ___ because ___." "First I ___, then I ___." Gets kids talking math when the language, not the math, is the wall.`],
@@ -496,7 +496,7 @@ function adaptList() { return state.adaptTypes.filter(a => (a || "").trim()); }
 
 function populateAdapt() {
   const sel = $("adaptType"); sel.textContent = "";
-  const first = document.createElement("option"); first.value = ""; first.textContent = "Add an adaptation…"; sel.appendChild(first);
+  const first = document.createElement("option"); first.value = ""; first.textContent = "Add a teaching method…"; sel.appendChild(first);
   ADAPTATIONS.forEach(([label]) => { const o = document.createElement("option"); o.value = label; o.textContent = label; sel.appendChild(o); });
   const oo = document.createElement("option"); oo.value = "__other__"; oo.textContent = "Other (name your own)…"; sel.appendChild(oo);
 }
@@ -914,20 +914,20 @@ function hasContent() {
 }
 function buildSnapshot() {
   const L = [];
-  L.push("DE-IDENTIFIED LEARNER SNAPSHOT — Week 7 Research Question handoff");
+  L.push("DE-IDENTIFIED CONCEPT SNAPSHOT — Week 7 Research Question handoff");
   L.push("(Prepared in the Research Question Studio. Nothing here identifies a real child.)");
   L.push("");
-  L.push("FOCAL LEARNER");
+  L.push("THE CONCEPT");
   L.push("  Grade level: " + (state.grade.trim() || "—"));
   L.push("  Math the student will study (Weeks 11–12): " + (focusText() || "—"));
   const adapts = adaptList();
   if (adapts.length) {
-    L.push("  Adaptations I'm weighing (help me narrow to one):");
+    L.push("  Teaching methods I'm interested in:");
     adapts.forEach(a => L.push("    - " + a));
   } else {
-    L.push("  Adaptations I'm weighing (help me narrow to one): —");
+    L.push("  Teaching methods I'm interested in: —");
   }
-  L.push("  How I'm thinking of using them with this learner: " + (state.adaptation.trim() || "—"));
+  L.push("  How I'm thinking of engaging students in the concept: " + (state.adaptation.trim() || "—"));
   L.push("");
   L.push("WHAT I COLLECTED (my QFocus)");
   const real = state.samples.filter(s => s.task.trim() || s.did.trim() || s.noticed.trim());
@@ -945,7 +945,7 @@ function buildSnapshot() {
   L.push("");
   L.push("WHAT I WANT FROM YOU");
   L.push("  Help me sharpen my own questions toward ONE that is researchable, feasible, and");
-  L.push("  focused on this learner and the Week 6 adaptation. Please do not write the");
+  L.push("  focused on how students learn this concept. Please do not write the");
   L.push("  question for me — press on mine.");
   return L.join("\n");
 }
@@ -957,15 +957,15 @@ function buildPrintDoc() {
   d.appendChild(el("div", "pd-title", "Research Question — Week 7 Handoff"));
   d.appendChild(el("p", "pd-sub", "De-identified. Prepared in the Research Question Studio — nothing here identifies a real child."));
 
-  d.appendChild(el("h3", null, "Focal learner"));
+  d.appendChild(el("h3", null, "The concept"));
   d.appendChild(el("p", "pd-fact", "Grade level: " + (state.grade || "—")));
   d.appendChild(el("p", "pd-fact", "Math the student will study (Weeks 11–12): " + (focusText() || "—")));
-  d.appendChild(el("p", "pd-fact", "Adaptations I'm weighing (help me narrow to one):"));
+  d.appendChild(el("p", "pd-fact", "Teaching methods I'm interested in:"));
   const aul = document.createElement("ul");
   const adapts = adaptList();
   (adapts.length ? adapts : ["—"]).forEach(a => aul.appendChild(el("li", null, a)));
   d.appendChild(aul);
-  d.appendChild(el("p", "pd-fact", "How I'm thinking of using them: " + (state.adaptation.trim() || "—")));
+  d.appendChild(el("p", "pd-fact", "How I'm thinking of engaging students in the concept: " + (state.adaptation.trim() || "—")));
 
   d.appendChild(el("h3", null, "What I collected (my QFocus)"));
   const real = state.samples.filter(sampleHasContent);
@@ -1000,7 +1000,7 @@ function buildPrintDoc() {
   d.appendChild(qul);
 
   d.appendChild(el("h3", null, "What I want from you"));
-  d.appendChild(el("p", "pd-fact", "Help me sharpen my own questions toward ONE that is researchable, feasible, and focused on this learner and the Week 6 adaptation. Please do not write the question for me — press on mine."));
+  d.appendChild(el("p", "pd-fact", "Help me sharpen my own questions toward ONE that is researchable, feasible, and focused on how students learn this concept. Please do not write the question for me — press on mine."));
 }
 function producePDF() { buildPrintDoc(); window.print(); }
 function pageEstimate() { return 1 + state.samples.filter(s => images[s.id]).length; }
