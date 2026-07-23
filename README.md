@@ -18,6 +18,9 @@ Click **Launch** to open one.
 | **Metagons** | Arithmagons with playback | [Launch](https://ohiomathteacher.github.io/tce318p-fa26/metacog-suite/metagons.html) |
 | **nVoke** | flash-and-respond "what do you see?" — built-in van Hiele pack, `.json` export/import | [Launch](https://ohiomathteacher.github.io/tce318p-fa26/week-3-geometry-van-hiele/nvoke.html) |
 | **Pentomino Builder** | teacher task-creation — build framed pentomino puzzles, tag by DOK, print differentiated packets, and play in-app with a downloadable play report | [Launch](https://ohiomathteacher.github.io/tce318p-fa26/pentomino-builder/pentomino-builder.html) |
+| **Journaler** | close-read the weekly article, make margin notes, and keep your dated Reading Journal — with a Todd-in-a-Can chat and a printable journal (Act I) | [Launch](https://ohiomathteacher.github.io/journaler/) |
+
+*Journaler is a shared reading app in its own repo ([OhioMathTeacher/journaler](https://github.com/OhioMathTeacher/journaler)), reused across courses, so it launches from its own site rather than this one.*
 
 ## What's here
 
