@@ -8,36 +8,47 @@
   Course home / web syllabus for TCE 318P (Fall 2026). Public, student-facing, FERPA-safe.
   Source of truth for the SCHEDULE (links to each week) + the 350-pt ledger + course policies.
   No Zoom credentials or student data here — those live in Canvas.
-  DRAFT 7/17 — reconciles the stale FA26 syllabus docx (design/) into a living web syllabus.
+
+  The stylesheet and the script are BYTE-IDENTICAL to tce284-fa26/index.html, deliberately.
+  If you change accordion behaviour or styling here, make the same change there, or the two
+  course homes start behaving differently for no reason a student could guess.
+
+  ⚠ BUMP THE "Last updated" STAMP IN THE FOOTER ON EVERY EDIT. Deliberately hand-written
+  rather than read from document.lastModified: that property silently falls back to the time
+  the page was LOADED when no Last-Modified header is sent, so a stale page would confidently
+  report itself as current. A stamp that can go stale and be noticed beats one that lies.
+
+  STILL MISSING: an Instructor & logistics block. 284 has one (section, CRN, room, meeting
+  time, office hours, term). This page gives students no room number and no meeting time.
 -->
 <style>
- :root{--red:#C41E3A;--ink:#1f2937;--mut:#6b7280;--line:#e5e7eb;}
+ :root{--accent:#7A3B10;--ink:#1f2937;--mut:#6b7280;--line:#e5e7eb;}
  *{box-sizing:border-box;}
  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:860px;margin:0 auto;padding:24px 18px 64px;color:var(--ink);line-height:1.55;}
- h1{font-size:26px;margin:0 0 2px;} h2{font-size:19px;margin:34px 0 10px;padding-bottom:4px;border-bottom:2px solid var(--red);}
+ h1{font-size:26px;margin:0 0 2px;} h2{font-size:19px;margin:34px 0 10px;padding-bottom:4px;border-bottom:2px solid var(--accent);}
  h3{font-size:15px;margin:18px 0 4px;} .sub{color:var(--mut);font-size:14px;margin-bottom:4px;}
  a{color:#2563eb;} p{margin:8px 0;}
  nav{position:sticky;top:0;z-index:30;display:flex;flex-wrap:wrap;align-items:baseline;column-gap:14px;row-gap:2px;background:#f3f4f6;border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:16px 0 8px;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);}
  nav a{white-space:nowrap;}
- .lead{background:#e7f3ff;border-radius:8px;padding:14px 16px;margin:14px 0;}
- .callout{border-left:4px solid var(--red);background:#fff7f8;padding:12px 16px;border-radius:2px;margin:14px 0;}
+ .lead{background:#fdf6ef;border-radius:8px;padding:14px 16px;margin:14px 0;}
+ .callout{border-left:4px solid var(--accent);background:#fdf6ef;padding:12px 16px;border-radius:2px;margin:14px 0;}
  table{border-collapse:collapse;width:100%;margin:10px 0;font-size:14px;}
  th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
  th{background:#f9fafb;font-size:13px;} tbody tr:nth-child(even){background:#fafafa;}
- .acthead{font-weight:700;color:var(--red);background:#fdeef0 !important;}
+ .acthead td{font-weight:700;color:var(--accent);background:#faf0e6 !important;}
  .muted{color:var(--mut);} .nowrap{white-space:nowrap;}
  .pts{text-align:right;white-space:nowrap;} .tot td{border-top:2px solid var(--ink);font-weight:700;}
  ul{margin:6px 0;padding-left:22px;} li{margin:3px 0;}
  #toggleAll{font-size:17px;line-height:1;color:var(--mut);background:none;border:0;padding:0 0 0 2px;cursor:pointer;}
- #toggleAll:hover{color:var(--red);}
+ #toggleAll:hover{color:var(--accent);}
  details.sect > summary{list-style:none;cursor:pointer;}
  details.sect > summary::-webkit-details-marker{display:none;}
  details.sect > summary::marker{content:"";}
  details.sect > summary h2{scroll-margin-top:72px;display:flex;align-items:baseline;justify-content:space-between;gap:12px;}
  details.sect > summary h2::after{content:"\002B";font-size:16px;font-weight:400;color:var(--mut);}
  details.sect[open] > summary h2::after{content:"\2212";}
- details.sect > summary:hover h2{color:var(--red);}
- details.sect > summary:focus-visible h2{outline:2px solid var(--red);outline-offset:3px;}
+ details.sect > summary:hover h2{color:var(--accent);}
+ details.sect > summary:focus-visible h2{outline:2px solid var(--accent);outline-offset:3px;}
  details.part{border-top:1px solid var(--line);}
  details.sect > details.part:last-of-type{border-bottom:1px solid var(--line);}
  details.part > summary{list-style:none;cursor:pointer;}
@@ -46,8 +57,8 @@
  details.part > summary h3{scroll-margin-top:78px;display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:9px 0;}
  details.part > summary h3::after{content:"\002B";color:var(--mut);font-weight:400;}
  details.part[open] > summary h3::after{content:"\2212";}
- details.part > summary:hover h3{color:var(--red);}
- details.part > summary:focus-visible h3{outline:2px solid var(--red);outline-offset:3px;}
+ details.part > summary:hover h3{color:var(--accent);}
+ details.part > summary:focus-visible h3{outline:2px solid var(--accent);outline-offset:3px;}
  details.part[open]{padding-bottom:6px;}
  @media print{nav{position:static;box-shadow:none;} #toggleAll{display:none;} details.sect > summary h2::after,details.part > summary h3::after{content:"";} details.part{border:0;}}
  footer{margin-top:40px;border-top:1px solid var(--line);padding-top:12px;font-size:12px;color:var(--mut);}
@@ -172,6 +183,23 @@
  </tbody>
 </table>
 <p class="muted">You are graded on evidence-based reasoning and honesty about limits — not on whether you "answered" your question. An honest "here is what I saw, and here is what I still don't know" is strong work.</p>
+
+<details class="part">
+<summary><h3>Grading scale</h3></summary>
+<p>Your grade is the total of the deliverables above, out of 350 points. <strong>You earn the grade in the highest row whose point figure you have reached.</strong> Every possible total lands in exactly one row, including totals with a fraction: 304.5 reaches 294 but not 305, so it is a B.</p>
+<table>
+ <thead><tr><th>Grade</th><th class="pts">Points (at least)</th><th class="pts">Percent</th><th>Grade</th><th class="pts">Points (at least)</th><th class="pts">Percent</th></tr></thead>
+ <tbody>
+  <tr><td><strong>A+</strong></td><td class="pts">343</td><td class="pts">98%</td><td><strong>C+</strong></td><td class="pts">270</td><td class="pts">77%</td></tr>
+  <tr><td><strong>A</strong></td><td class="pts">329</td><td class="pts">94%</td><td><strong>C</strong></td><td class="pts">259</td><td class="pts">74%</td></tr>
+  <tr><td><strong>A−</strong></td><td class="pts">315</td><td class="pts">90%</td><td><strong>C−</strong></td><td class="pts">245</td><td class="pts">70%</td></tr>
+  <tr><td><strong>B+</strong></td><td class="pts">305</td><td class="pts">87%</td><td><strong>D+</strong></td><td class="pts">235</td><td class="pts">67%</td></tr>
+  <tr><td><strong>B</strong></td><td class="pts">294</td><td class="pts">84%</td><td><strong>D</strong></td><td class="pts">224</td><td class="pts">64%</td></tr>
+  <tr><td><strong>B−</strong></td><td class="pts">280</td><td class="pts">80%</td><td><strong>D−</strong></td><td class="pts">210</td><td class="pts">60%</td></tr>
+  <tr><td></td><td class="pts"></td><td class="pts"></td><td><strong>F</strong></td><td class="pts">below 210</td><td class="pts">below 60%</td></tr>
+ </tbody>
+</table>
+</details>
 </details>
 
 <details class="sect">
@@ -274,7 +302,7 @@
 </details>
 
 <footer>
- <p id="stamp"><strong>Last updated: 31 July 2026, 1:22 p.m. ET.</strong> If what you are reading differs from what your instructor is showing in class, say so — one of us is on a cached copy. A hard refresh (Ctrl+Shift+R, or ⌘+Shift+R on a Mac) fetches the current version.</p>
+ <p id="stamp"><strong>Last updated: 31 July 2026, 1:30 p.m. ET.</strong> If what you are reading differs from what your instructor is showing in class, say so — one of us is on a cached copy. A hard refresh (Ctrl+Shift+R, or ⌘+Shift+R on a Mac) fetches the current version.</p>
  © 2026 Michael Todd Edwards. Materials licensed under AGPL-3.0 with the Commons Clause (source-available; not for sale) — see <a href="LICENSE">LICENSE</a>. Public and FERPA-safe; planning docs live in a separate private repository.
 </footer>
 
