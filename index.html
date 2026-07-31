@@ -17,8 +17,8 @@
  h1{font-size:26px;margin:0 0 2px;} h2{font-size:19px;margin:34px 0 10px;padding-bottom:4px;border-bottom:2px solid var(--red);}
  h3{font-size:15px;margin:18px 0 4px;} .sub{color:var(--mut);font-size:14px;margin-bottom:4px;}
  a{color:#2563eb;} p{margin:8px 0;}
- nav{background:#f3f4f6;border-radius:8px;padding:10px 14px;margin:16px 0 8px;font-size:14px;}
- nav a{margin-right:14px;white-space:nowrap;display:inline-block;}
+ nav{position:sticky;top:0;z-index:30;display:flex;flex-wrap:wrap;align-items:baseline;column-gap:14px;row-gap:2px;background:#f3f4f6;border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:16px 0 8px;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);}
+ nav a{white-space:nowrap;}
  .lead{background:#e7f3ff;border-radius:8px;padding:14px 16px;margin:14px 0;}
  .callout{border-left:4px solid var(--red);background:#fff7f8;padding:12px 16px;border-radius:2px;margin:14px 0;}
  table{border-collapse:collapse;width:100%;margin:10px 0;font-size:14px;}
@@ -28,6 +28,28 @@
  .muted{color:var(--mut);} .nowrap{white-space:nowrap;}
  .pts{text-align:right;white-space:nowrap;} .tot td{border-top:2px solid var(--ink);font-weight:700;}
  ul{margin:6px 0;padding-left:22px;} li{margin:3px 0;}
+ #toggleAll{font-size:17px;line-height:1;color:var(--mut);background:none;border:0;padding:0 0 0 2px;cursor:pointer;}
+ #toggleAll:hover{color:var(--red);}
+ details.sect > summary{list-style:none;cursor:pointer;}
+ details.sect > summary::-webkit-details-marker{display:none;}
+ details.sect > summary::marker{content:"";}
+ details.sect > summary h2{scroll-margin-top:72px;display:flex;align-items:baseline;justify-content:space-between;gap:12px;}
+ details.sect > summary h2::after{content:"\002B";font-size:16px;font-weight:400;color:var(--mut);}
+ details.sect[open] > summary h2::after{content:"\2212";}
+ details.sect > summary:hover h2{color:var(--red);}
+ details.sect > summary:focus-visible h2{outline:2px solid var(--red);outline-offset:3px;}
+ details.part{border-top:1px solid var(--line);}
+ details.sect > details.part:last-of-type{border-bottom:1px solid var(--line);}
+ details.part > summary{list-style:none;cursor:pointer;}
+ details.part > summary::-webkit-details-marker{display:none;}
+ details.part > summary::marker{content:"";}
+ details.part > summary h3{scroll-margin-top:78px;display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:9px 0;}
+ details.part > summary h3::after{content:"\002B";color:var(--mut);font-weight:400;}
+ details.part[open] > summary h3::after{content:"\2212";}
+ details.part > summary:hover h3{color:var(--red);}
+ details.part > summary:focus-visible h3{outline:2px solid var(--red);outline-offset:3px;}
+ details.part[open]{padding-bottom:6px;}
+ @media print{nav{position:static;box-shadow:none;} #toggleAll{display:none;} details.sect > summary h2::after,details.part > summary h3::after{content:"";} details.part{border:0;}}
  footer{margin-top:40px;border-top:1px solid var(--line);padding-top:12px;font-size:12px;color:var(--mut);}
 </style>
 </head>
@@ -41,14 +63,16 @@
  <a href="#about">About</a>
  <a href="#objectives">Objectives</a>
  <a href="#schedule">Schedule</a>
- <a href="#work">Deliverables &amp; Grading</a>
- <a href="#ai">AI &amp; Gemini</a>
+ <a href="#work" title="Deliverables &amp; grading">Deliverables</a>
+ <a href="#ai" title="Working with AI &amp; Gemini">AI</a>
  <a href="#policies">Policies</a>
- <a href="#support">Support</a>
- <a href="#tools">Tools</a>
+ <a href="#support" title="Student support">Support</a>
+ <a href="#tools" title="Course tools">Tools</a>
+ <button id="toggleAll" type="button" title="Expand every section" aria-label="Expand every section" hidden>⊞</button>
 </nav>
 
-<h2 id="about">About this course</h2>
+<details class="sect">
+<summary><h2 id="about">About this course</h2></summary>
 <p>TCE 318P is a methods course for preservice PK–5 teachers, focused on teaching mathematics for understanding. You will design, enact, and revise lessons that are responsive to students' developmental needs, mathematical thinking, and lived experiences — learning to read curriculum materials, assess student work, and reflect on practice through field-based experience.</p>
 <div class="lead">
  <strong>The arc of the semester.</strong> The whole course builds toward one act of evidence-based inquiry: you develop a question about how students understand a mathematical concept, build a lesson to investigate it, take it into a real classroom, and report honestly on what you found.
@@ -58,8 +82,10 @@
   <li><strong>Act III — Field &amp; report (Wks 11–15).</strong> Enact the lesson, collect student work, and communicate what you learned in a final report.</li>
  </ul>
 </div>
+</details>
 
-<h2 id="objectives">Course objectives</h2>
+<details class="sect">
+<summary><h2 id="objectives">Course objectives</h2></summary>
 <p>By the end of this course, candidates will be able to:</p>
 <ul>
  <li>Design and adapt lesson plans that align with standards, address developmental progressions, and respond to student thinking.</li>
@@ -69,28 +95,45 @@
  <li>Integrate principles of access, inclusion, and differentiation into mathematics instruction.</li>
  <li>Engage in reflective practice to improve teaching and communicate professional insights.</li>
 </ul>
+</details>
 
-<h2 id="schedule">Schedule</h2>
+<details class="sect">
+<summary><h2 id="schedule">Schedule</h2></summary>
 <p class="muted">The course runs <strong>August 25 – December 11, 2026</strong> (the last day of finals). We meet Tuesdays and Thursdays through December 3; finals week is December 7–11, and the final paper is due Wednesday, December 9. Class outlines are linked here as we reach each week.</p>
 
+<details class="part">
+<summary><h3>Act I — Foundations</h3></summary>
 <table>
  <thead><tr><th>Week</th><th>Focus</th><th>Class pages</th></tr></thead>
  <tbody>
-  <tr class="acthead"><td colspan="3">Act I — Foundations</td></tr>
   <tr><td class="nowrap">Week 1</td><td>Reasoning puzzles</td><td><a href="week-1-reasoning-puzzles/week-1-tue.html">Tue</a> · <a href="week-1-reasoning-puzzles/week-1-thu.html">Thu</a></td></tr>
   <tr><td class="nowrap">Week 2</td><td>Listening &amp; questioning</td><td><span class="muted">Tue · Thu</span></td></tr>
   <tr><td class="nowrap">Week 3</td><td>Geometry &amp; van Hiele</td><td><span class="muted">Tue · Thu</span></td></tr>
   <tr><td class="nowrap">Week 4</td><td>Differentiation &amp; measurement</td><td><span class="muted">Tue · Thu</span></td></tr>
   <tr><td class="nowrap">Week 5</td><td>Assessment &amp; rubrics</td><td><span class="muted">Tue · Thu</span></td></tr>
+ </tbody>
+</table>
+</details>
 
-  <tr class="acthead"><td colspan="3">Act II — Build the investigation</td></tr>
+<details class="part">
+<summary><h3>Act II — Build the investigation</h3></summary>
+<table>
+ <thead><tr><th>Week</th><th>Focus</th><th>Class pages</th></tr></thead>
+ <tbody>
   <tr><td class="nowrap">Week 6</td><td>Field dip &amp; the concept profile</td><td class="muted">in the field</td></tr>
   <tr><td class="nowrap">Week 7</td><td>Research questions</td><td><span class="muted">Tue · Thu</span></td></tr>
   <tr><td class="nowrap">Week 8</td><td>Rich tasks</td><td><span class="muted">Tue · Thu</span></td></tr>
   <tr><td class="nowrap">Week 9</td><td>Math routines</td><td><span class="muted">Tue · Thu</span></td></tr>
   <tr><td class="nowrap">Week 10</td><td>The investigation plan</td><td><span class="muted">Tue · Thu</span></td></tr>
+ </tbody>
+</table>
+</details>
 
-  <tr class="acthead"><td colspan="3">Act III — Field &amp; report</td></tr>
+<details class="part">
+<summary><h3>Act III — Field &amp; report</h3></summary>
+<table>
+ <thead><tr><th>Week</th><th>Focus</th><th>Class pages</th></tr></thead>
+ <tbody>
   <tr><td class="nowrap">Week 11</td><td>Field enactment</td><td class="muted">in the field</td></tr>
   <tr><td class="nowrap">Week 12</td><td>Field enactment</td><td class="muted">in the field — no seminar</td></tr>
   <tr><td class="nowrap">Week 13</td><td>The week back: share-out &amp; writing</td><td><span class="muted">Tue · Thu</span></td></tr>
@@ -99,8 +142,11 @@
   <tr><td class="nowrap">Finals</td><td><strong>Final Report + Review &amp; Reflection due Wed, Dec 9</strong> (via Canvas)</td><td class="muted">—</td></tr>
  </tbody>
 </table>
+</details>
+</details>
 
-<h2 id="work">Deliverables &amp; grading</h2>
+<details class="sect">
+<summary><h2 id="work">Deliverables &amp; grading</h2></summary>
 <p>The course is worth <strong>350 points</strong>. Everything builds toward the field investigation and its report.</p>
 <table>
  <thead><tr><th>Deliverable</th><th>When</th><th class="pts">Points</th></tr></thead>
@@ -126,8 +172,10 @@
  </tbody>
 </table>
 <p class="muted">You are graded on evidence-based reasoning and honesty about limits — not on whether you "answered" your question. An honest "here is what I saw, and here is what I still don't know" is strong work.</p>
+</details>
 
-<h2 id="ai">Working with AI &amp; Gemini</h2>
+<details class="sect">
+<summary><h2 id="ai">Working with AI &amp; Gemini</h2></summary>
 <div class="callout">
  <p><strong>Using generative AI is your choice, not a requirement.</strong> When you do use it, use it as a <em>thinking partner, not an answer generator</em> — the reasoning has to be yours.</p>
  <ul>
@@ -137,10 +185,13 @@
   <li><strong>Todd-in-a-Can</strong> is our course AI reviewer, built for the final paper. Run it as often as it helps; a human peer reads your draft too.</li>
  </ul>
 </div>
+</details>
 
-<h2 id="policies">Policies</h2>
+<details class="sect" open>
+<summary><h2 id="policies">Policies</h2></summary>
 
-<h3>Accessibility &amp; Student Disability Services</h3>
+<details class="part">
+<summary><h3>Accessibility &amp; Student Disability Services</h3></summary>
 <div class="callout">
  <p>If you anticipate or experience barriers based on disability in relation to the course design, you are encouraged to connect with Student Disability Services (SDS) and request reasonable accommodation. SDS provides accommodations and services for students with a variety of disabilities, including chronic illnesses, psychological, medical, learning, physical, and sensory disabilities, amongst others. I invite you to speak with me regarding your access needs while contacting SDS to learn more about the affiliation process and procedures for requesting accommodations.</p>
  <ul>
@@ -151,8 +202,10 @@
  <p>Current SDS affiliated students should request accommodations according to SDS procedure. You are strongly encouraged to request and discuss your accommodations needs during the <strong>first 1–2 weeks of the semester</strong>.</p>
  <p class="muted">Miami University's recommended statement — <a href="https://miamioh.edu/academic-programs/resources-services/student-disability-services/faculty-tools/syllabus-statements.html">Student Disability Services syllabus statements</a>.</p>
 </div>
+</details>
 
-<h3>Title IX, and what I am required to report</h3>
+<details class="part">
+<summary><h3>Title IX, and what I am required to report</h3></summary>
 <div class="callout">
  <p>Reflective writing and conversations in this course sometimes touch on personal experience. There is one limit on confidentiality that I cannot set aside, and you should know about it in advance rather than afterwards.</p>
  <p><strong>I am a mandatory reporter.</strong> If you write or speak about having experienced sexual violence — including rape, sexual assault, dating violence, domestic violence, or stalking — and indicate that it happened while you were a Miami student, Miami requires me as a faculty member to report it to the University's Title IX office. I cannot promise confidentiality, and I must pass on relevant details, including names, if I know them. Someone from the University will then contact you about accommodations, support services, and your options for holding the person who harmed you accountable. You are not obliged to respond to them or to take any further step.</p>
@@ -170,23 +223,35 @@
  <p><strong>What Title IX is.</strong> Title IX makes violence, harassment, and discrimination based on sex and gender civil-rights offenses, subject to the same accountability and the same support as offenses against other protected categories such as race or national origin. Miami University prohibits sex discrimination and sexual misconduct, including harassment, domestic and dating violence, sexual assault, and stalking.</p>
  <p class="muted">Contacts verified against <a href="https://miamioh.edu/life-at-miami/university-safety/sexual-assault-misconduct-harassment/about/title-ix-statement.html">Miami's Title IX statement</a> and <a href="https://miamioh.edu/campus-safety/sexual-assault/happens-to-you/index.html">University Safety's resource page</a>, July 2026.</p>
 </div>
+</details>
 
-<h3>Academic integrity</h3>
+<details class="part">
+<summary><h3>Academic integrity</h3></summary>
 <p>Your work should reflect honesty and respect for learning. Cheating, plagiarism, fabrication, unauthorized collaboration, or misrepresentation are prohibited and handled under Miami University's Academic Integrity Policy. Cite all sources you use, <strong>including AI assistance</strong>.</p>
+</details>
 
-<h3>Privacy (FERPA)</h3>
+<details class="part">
+<summary><h3>Privacy (FERPA)</h3></summary>
 <div class="callout">
  <p>Everything on this public site is <strong>de-identified</strong> — no student names, work, or grades. In your own assignments, use <strong>pseudonyms</strong> and remove identifying details from any student work — in text, image, audio, or video — before it goes in.</p>
 </div>
+</details>
 
-<h3>Professional dispositions</h3>
+<details class="part">
+<summary><h3>Professional dispositions</h3></summary>
 <p>As a candidate for teaching licensure, you are expected to meet professional standards of practice: demonstrating commitment and responsibility, building respectful professional relationships, and engaging in critical, reflective practice.</p>
+</details>
 
-<h3>Attendance</h3>
+<details class="part">
+<summary><h3>Attendance</h3></summary>
 <p>This is a Block course; participation in each element of the block is contingent on the others. Missing more than one seminar or more than three field-placement days — made up or not — can result in a Statement of Concern and may result in being dropped from all courses in the block.</p>
 <p>Three required <strong>Block 2 seminars</strong> meet via Zoom (Field Placement Expectations · Block 3 overview · Student Teaching). Dates and the join link will be <strong>announced in class</strong>.</p>
+</details>
 
-<h2 id="support">Student support</h2>
+</details>
+
+<details class="sect">
+<summary><h2 id="support">Student support</h2></summary>
 <ul>
  <li><strong><a href="http://miamioh.edu/howe/">Howe Writing Center</a></strong> — free, individualized writing help at any stage. (You may take a draft here as your Review &amp; Reflection read.)</li>
  <li><strong><a href="https://miamioh.edu/student-life/rinella-learning-center/">Rinella Learning Center</a></strong> — academic counseling, tutoring, and supplemental instruction.</li>
@@ -194,8 +259,10 @@
  <li><strong><a href="https://miamioh.edu/life-at-miami/health-well-being/student-counseling-service/">Student Counseling Service</a></strong> — therapy, workshops, and wellness programming.</li>
  <li><strong><a href="http://miamioh.edu/student-life/student-wellness/">Office of Student Wellness</a></strong> — health and wellness education and resources.</li>
 </ul>
+</details>
 
-<h2 id="tools">Course tools</h2>
+<details class="sect">
+<summary><h2 id="tools">Course tools</h2></summary>
 <p>Small, self-contained apps we use through the semester. Most run in any browser and record your work so you can replay your own reasoning.</p>
 <ul>
  <li><strong><a href="https://ohiomathteacher.github.io/journaler/">Journaler</a></strong> — our reading-and-writing app: read closely, make margin notes, and keep your dated weekly Reading Journal (Act I).</li>
@@ -204,10 +271,85 @@
  <li><strong><a href="pentomino-builder/pentomino-builder.html">Pentomino Builder</a></strong> — build differentiated pentomino tasks tagged by Depth of Knowledge (Week 4).</li>
  <li><strong><a href="week-3-geometry-van-hiele/nvoke.html">nVoke</a></strong> — flash-and-respond "what do you see?" (Week 3).</li>
 </ul>
+</details>
 
 <footer>
+ <p id="stamp"><strong>Last updated: 31 July 2026, 1:22 p.m. ET.</strong> If what you are reading differs from what your instructor is showing in class, say so — one of us is on a cached copy. A hard refresh (Ctrl+Shift+R, or ⌘+Shift+R on a Mac) fetches the current version.</p>
  © 2026 Michael Todd Edwards. Materials licensed under AGPL-3.0 with the Commons Clause (source-available; not for sale) — see <a href="LICENSE">LICENSE</a>. Public and FERPA-safe; planning docs live in a separate private repository.
 </footer>
 
+<script>
+/* Accordion support. The page still works with scripting off: each section opens
+   on click and the nav anchors still scroll. This only removes the sharp edges.
+     - a nav link (or an inbound #hash) must OPEN the section it points at,
+       otherwise every link in the nav bar lands on a closed box;
+     - find-in-page cannot reach inside a collapsed section in every browser
+       (Firefox is the weak one), so "Expand all" exists — and it is revealed
+       only when scripting is available, since it does nothing without it;
+     - printing must show everything. A printed syllabus with its sections
+       collapsed is a blank syllabus. */
+(function () {
+  var secs = [].slice.call(document.querySelectorAll('details.sect, details.part'));
+  /* Captured BEFORE anything below can open a section from a #hash, so the
+     pinned set is the page's authored default rather than wherever a link left it. */
+  var pinned = [].slice.call(document.querySelectorAll('details.sect[open]'));
+  if (!secs.length) return;
+
+  function reveal(hash) {
+    if (!hash || hash === '#') return;
+    var t;
+    try { t = document.querySelector(hash); } catch (e) { return; }
+    if (!t) return;
+    var d = t.closest ? t.closest('details') : null, moved = false;
+    while (d) {                                  // panels nest, so open the whole chain
+      if (!d.open) { d.open = true; moved = true; }
+      d = d.parentElement ? d.parentElement.closest('details') : null;
+    }
+    if (moved) setTimeout(function () { t.scrollIntoView(); }, 0);   // re-aim once expanded
+  }
+
+  [].forEach.call(document.querySelectorAll('a[href^="#"]'), function (a) {
+    a.addEventListener('click', function () { reveal(a.getAttribute('href')); });
+  });
+  window.addEventListener('hashchange', function () { reveal(location.hash); });
+  reveal(location.hash);
+
+  var btn = document.getElementById('toggleAll');
+  if (btn) {
+    btn.hidden = false;
+    /* Icon-only, so the label lives in title + aria-label. Both must track the
+       state or the tooltip lies about what the next click will do. */
+    var sync = function () {
+      var willExpand = secs.some(function (d) { return !d.open; });
+      var label = willExpand ? 'Expand every section' : 'Collapse to the default view';
+      btn.textContent = willExpand ? '⊞' : '⊟';
+      btn.title = label;
+      btn.setAttribute('aria-label', label);
+    };
+    /* Collapsing returns the page to its DEFAULT state rather than closing
+       everything. Logistics and Policies are pinned open on purpose, and a
+       fully-closed page hides the accessibility and Title IX headings — which
+       is exactly what we decided must never happen. It also keeps the section
+       sub-headings (Policies, Schedule) readable as an index of what is there. */
+    btn.addEventListener('click', function () {
+      var expand = secs.some(function (d) { return !d.open; });
+      secs.forEach(function (d) { d.open = expand || pinned.indexOf(d) > -1; });
+      sync();
+    });
+    secs.forEach(function (d) { d.addEventListener('toggle', sync); });
+    sync();
+  }
+
+  var before = null;
+  window.addEventListener('beforeprint', function () {
+    before = secs.map(function (d) { return d.open; });
+    secs.forEach(function (d) { d.open = true; });
+  });
+  window.addEventListener('afterprint', function () {
+    if (before) secs.forEach(function (d, i) { d.open = before[i]; });
+    before = null;
+  });
+})();
+</script>
 </body>
 </html>
