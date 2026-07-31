@@ -5,6 +5,11 @@ Public, student-facing course materials for **TCE 318P** at Miami University.
 De-identified and **FERPA-safe**: no student names, work, or grades live here —
 those stay in Canvas. Design and planning docs live in a separate private repo.
 
+**Course home → https://ohiomathteacher.github.io/tce318p-fa26/**
+
+That link is the syllabus: schedule, deliverables, grading scale, and policies.
+What you are reading now is only the source repository behind it.
+
 ## Applets
 
 Every app we build for the course. All are self-contained, run in any modern
