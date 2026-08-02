@@ -27,6 +27,22 @@ Click **Launch** to open one.
 
 *Journaler is a shared reading app in its own repo ([OhioMathTeacher/journaler](https://github.com/OhioMathTeacher/journaler)), reused across courses, so it launches from its own site rather than this one.*
 
+## Alkimi agents (Weeks 7–10)
+
+Weeks 7–10 are the one stretch of the course where a genAI tool is part of the
+assignment rather than optional. Each week has a critic configured against that
+week's rubric — for the research question, the rich task, the routine, and the whole
+investigation plan.
+
+They are **critics, not designers**: each is built to refuse to write the question,
+task, routine, or lesson, and each expects the human read to have happened first.
+Everything students bring them is de-identified. See
+[Working with AI](https://ohiomathteacher.github.io/tce318p-fa26/#ai) in the syllabus
+for the student-facing rules.
+
+Access is by invitation to the course workspace; launch links live in Canvas
+alongside each assignment.
+
 ## What's here
 
 - **[`metacog-suite/`](metacog-suite/)** — the metacognitive math-puzzle apps:
