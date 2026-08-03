@@ -27,6 +27,18 @@ Click **Launch** to open one.
 
 *Journaler is a shared reading app in its own repo ([OhioMathTeacher/journaler](https://github.com/OhioMathTeacher/journaler)), reused across courses, so it launches from its own site rather than this one.*
 
+### What you need
+
+Any current browser works, including Chrome, Edge, Firefox, and Safari, on macOS,
+Windows, Linux, or a Chromebook. Nothing to install, no account to create.
+
+**We recommend writing on a laptop or desktop.** You turn in the Reading Journal by
+printing it to PDF from your browser, and phones and tablets handle printing
+inconsistently.
+
+Journaler also works on an iPad. We recommend testing Journaler early and getting in the
+habit of using it on the same device each week.
+
 ## Alkimi agents (Weeks 7–10)
 
 Weeks 7–10 are the one stretch of the course where a genAI tool is part of the
