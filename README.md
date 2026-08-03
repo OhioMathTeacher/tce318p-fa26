@@ -7,9 +7,6 @@ those stay in Canvas. Design and planning docs live in a separate private repo.
 
 **Course home → https://ohiomathteacher.github.io/tce318p-fa26/**
 
-That link is the syllabus: schedule, deliverables, grading scale, and policies.
-What you are reading now is only the source repository behind it.
-
 ## Applets
 
 Every app we build for the course. All are self-contained, run in any modern
@@ -68,29 +65,54 @@ alongside each assignment.
   packets, and play in-app). Used in Week 4 (Differentiation &amp; Measurement).
   → https://ohiomathteacher.github.io/tce318p-fa26/pentomino-builder/pentomino-builder.html
 
-- **[`week-1-reasoning-puzzles/`](week-1-reasoning-puzzles/)** — Week 1 (Reasoning
-  Puzzles): the Tuesday and Thursday day-outlines, the Solution Report and
-  Thinking-Analysis Report templates, and alias links to the apps above.
+**All thirteen week folders are here.** Each holds that week's Tuesday and Thursday
+day-outlines plus its assignments. There is no `week-12` or `week-14` folder: Week 12 is a
+field week with no seminar, and Week 14 is Thanksgiving.
 
-- **[`week-2-listening-questioning/`](week-2-listening-questioning/)** — Week 2
-  (Listening &amp; Questioning): the Tuesday and Thursday day-outlines, the
-  Thinker-Doer task handout, the MQR student-work analysis, the QFT form, and
-  the Solution Report #2 guideline.
+**Act I — Foundations (Weeks 1–5).** Every week carries a **Pedagogical Excursion** (that
+week's graded assignment) and a **Reading Homework** sheet naming the week's article.
 
-- **[`week-3-geometry-van-hiele/`](week-3-geometry-van-hiele/)** — Week 3 (Geometry
-  &amp; van Hiele): the Tuesday and Thursday day-outlines, the Solution Report #3
-  (classifying figures), the Diagnostic Study take-home, the QFT form, and
-  **nVoke** — a flash-and-respond "what do you see?" app with a built-in van Hiele
-  pack and `.json` export/import.
+- **[`week-1-reasoning-puzzles/`](week-1-reasoning-puzzles/)** — *Analyzing Your Own Thinking.*
+  Plus **The Reading Journal** guidelines, the *Three Reasoning Puzzles* Tuesday handout, and
+  local copies of Metadoku, Metaplete and Metagons.
+- **[`week-2-listening-questioning/`](week-2-listening-questioning/)** — *Diagnosing a Subtraction
+  Error.* Plus the Thinker-Doer Blue Task and the Hundred Chart Challenge cards.
+- **[`week-3-geometry-van-hiele/`](week-3-geometry-van-hiele/)** — *Pose, Listen, Locate.*
+  Plus **nVoke**.
   → https://ohiomathteacher.github.io/tce318p-fa26/week-3-geometry-van-hiele/nvoke.html
+- **[`week-4-pentominoes-differentiate-dok/`](week-4-pentominoes-differentiate-dok/)** —
+  *Differentiate: A Question for Every Learner*, built in the Pentomino Builder across **Depth of
+  Knowledge** levels.
+- **[`week-5-assessment-rubrics/`](week-5-assessment-rubrics/)** — *Reading a Learner with a
+  Rubric.* Plus the Tuesday handout.
 
-- **[`week-4-pentominoes-differentiate-dok/`](week-4-pentominoes-differentiate-dok/)** — Week 4
-  (Differentiation &amp; Measurement): the Tuesday and Thursday day-outlines, the Week 4 Reading
-  Homework (Edwards &amp; Simpson), and Pedagogical Excursion #4 — building differentiated
-  pentomino tasks across **Depth of Knowledge** levels in the **Pentomino Builder** (in the
-  Applets table above).
+**Act II — Build the investigation (Weeks 6–10).**
 
-More weeks will be added here as the semester unfolds.
+- **[`week-6-field-dip/`](week-6-field-dip/)** — *Concept Profile — Field Dip.* A field week, so
+  no day-outlines.
+- **[`week-7-research-questions/`](week-7-research-questions/)** — *Research Question: Building
+  Your Inquiry*, and the **Research Question Studio**.
+- **[`week-8-rich-tasks/`](week-8-rich-tasks/)** — *Rich Task: Making Understanding Visible*,
+  the *Question-Strengthening* practice, and its slides.
+- **[`week-9-math-routines/`](week-9-math-routines/)** — *Math Routine: Opening Student Thinking*,
+  and its slides.
+- **[`week-10-investigation-plan/`](week-10-investigation-plan/)** — *Investigation Plan: The
+  Lesson That Answers Your Question*, with the 3-Pager template and a worked sample, the
+  whole-instrument peer-review sheet, and *Teaching Your Lesson in the Field.*
+
+**Act III — Field and report (Weeks 11–15).**
+
+- **[`week-11-field-consultation/`](week-11-field-consultation/)** — *Field Consultation.*
+  Weeks 11–12 are in the field, so no day-outlines.
+- **[`week-13-final-report/`](week-13-final-report/)** — the *Final Report*, *Writing Up Your
+  Data*, and *Your Rough Draft* (a recommended, not-collected writing task over the break).
+- **[`week-15-review-and-share/`](week-15-review-and-share/)** — *Review &amp; Reflection.*
+
+## What is *not* here
+
+**Course readings.** The weekly articles are NCTM journal pieces reached through JSTOR with your
+Miami library login — they are linked from Canvas and from each week's Reading Homework sheet,
+never hosted here. There is no textbook to buy.
 
 ## License
 
