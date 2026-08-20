@@ -237,7 +237,7 @@
 
   <div id="pdfWarn" class="pdfwarn" style="display:none;"></div>
 
-  <!-- tab bar -->
+  
   <div class="tabs" id="tabs">
     <button class="tab" data-step="0"><span class="n">1</span><span class="lbl">The Concept</span></button>
     <button class="tab" data-step="1"><span class="n">2</span><span class="lbl">Collected work</span></button>
@@ -246,7 +246,7 @@
     <button class="tab" data-step="4"><span class="n">5</span><span class="lbl">Hand off</span></button>
   </div>
 
-  <!-- ===== STEP 1: THE CONCEPT ===== -->
+  
   <section class="panel" data-step="0">
     <div class="card">
       <h2>1 · Your focus concept</h2>
@@ -282,7 +282,7 @@
     </div>
   </section>
 
-  <!-- ===== STEP 2: COLLECTED WORK ===== -->
+  
   <section class="panel" data-step="1">
     <div class="card">
       <h2>2 · Your QFocus — the work you collected</h2>
@@ -306,7 +306,7 @@
     </div>
   </section>
 
-  <!-- ===== STEP 3: QUESTION STORM ===== -->
+  
   <section class="panel" data-step="2">
     <div class="card">
       <h2>3 · Brainstorm questions about your work samples</h2>
@@ -331,7 +331,7 @@
     </div>
   </section>
 
-  <!-- ===== STEP 4: CHECK NAMES ===== -->
+  
   <section class="panel" data-step="3">
     <div class="card">
       <h2>4 · Check for names</h2>
@@ -349,7 +349,7 @@
     </div>
   </section>
 
-  <!-- ===== STEP 5: HAND OFF ===== -->
+  
   <section class="panel" data-step="4">
     <div class="card">
       <h2>5 · Hand off to the Research Question Mentor</h2>
@@ -369,7 +369,7 @@
     </div>
   </section>
 
-  <!-- PDF reader (local copy — no CDN, works offline once served). -->
+  
   <script type="module">
     try {
       const pdfjsLib = await import('./pdf.min.js');
@@ -378,7 +378,7 @@
     } catch (e) { console.warn('PDF support unavailable (open via a served URL, not file://):', e); }
   </script>
 
-  <!-- nav -->
+  
   <div class="nav">
     <button class="back" id="back">← Back</button>
     <button class="next" id="next">Next →</button>
