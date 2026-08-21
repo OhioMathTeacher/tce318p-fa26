@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 3 · Same &amp; Different (slides) — TCE 318P</title>
+
+<style>
+ :root{--red:#C41E3A;--ink:#1f2937;--muted:#6b7280;--blue:#1a5fb4;}
+ *{box-sizing:border-box;}
+ html,body{margin:0;height:100%;}
+ body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:#fff;}
+ .deck{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:4vh 4vw 9vh;}
+ .slide{display:none;width:100%;max-width:1100px;text-align:center;}
+ .slide.on{display:block;animation:fade .18s ease;}
+ @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+ .kick{font-size:clamp(15px,1.9vw,26px);font-weight:800;text-transform:uppercase;letter-spacing:.05em;
+   color:var(--red);margin-bottom:14px;}
+ h1{font-size:clamp(26px,4vw,54px);margin:0 0 14px;color:var(--blue);}
+ .slide.title p{font-size:clamp(15px,1.7vw,24px);color:var(--muted);max-width:760px;margin:0 auto;line-height:1.4;}
+ .fig{display:block;margin:0 auto;max-width:100%;max-height:78vh;height:auto;width:auto;}
+ .fig-cap{font-size:clamp(12px,1.3vw,18px);color:var(--muted);margin-top:10px;}
+ .bar{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;
+   gap:18px;padding:10px 14px;background:#fff;border-top:1px solid #e5e7eb;}
+ .bar button{font:inherit;font-size:15px;padding:6px 14px;border:1px solid #d1d5db;border-radius:7px;
+   background:#f9fafb;cursor:pointer;}
+ .count{font-size:14px;color:var(--muted);min-width:64px;text-align:center;}
+ @media print{.bar{display:none;} .slide{display:block;page-break-after:always;}}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+ <section class="slide title">
+  <div class="kick">Week 3 · Geometry talk</div>
+  <h1>Same &amp; Different</h1>
+  <p>Two figures at a time. What is the same? What is different? Tick marks are a clue, not an answer — make them say how they know.</p>
+ </section>
+
+ <section class="slide">
+  <img class="fig" src="samediff-1-square-rhombus.png" alt="A square and a rhombus, both with equal-side tick marks">
+  <p class="fig-cap">Square and rhombus</p>
+ </section>
+
+ <section class="slide">
+  <img class="fig" src="samediff-2-square-tilted-square.png" alt="A square and the same square tilted 45 degrees">
+  <p class="fig-cap">Square and tilted square</p>
+ </section>
+
+ <section class="slide">
+  <img class="fig" src="samediff-3-rectangle-parallelogram.png" alt="A rectangle and a parallelogram">
+  <p class="fig-cap">Rectangle and parallelogram</p>
+ </section>
+
+ <section class="slide">
+  <div class="kick">Before you move on</div>
+  <h1>Ask, never tell.</h1>
+  <p>Collect a few answers, then <em>“How do you know?”</em> The spread isn’t error — it’s level.
+     Keep your own notes on what you heard; you’ll need them when we name the van Hiele levels.</p>
+ </section>
+
+</div>
+
+<div class="bar">
+ <button id="prev">← Back</button>
+ <span class="count" id="count"></span>
+ <button id="next">Next →</button>
+</div>
+
+<script>
+"use strict";
+var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+var i = 0;
+function show(n){
+  i = Math.max(0, Math.min(slides.length - 1, n));
+  slides.forEach(function(s, k){ s.classList.toggle("on", k === i); });
+  document.getElementById("count").textContent = (i + 1) + " / " + slides.length;
+  document.getElementById("prev").style.visibility = i === 0 ? "hidden" : "visible";
+  document.getElementById("next").style.visibility = i === slides.length - 1 ? "hidden" : "visible";
+}
+document.getElementById("next").onclick = function(){ show(i + 1); };
+document.getElementById("prev").onclick = function(){ show(i - 1); };
+document.addEventListener("keydown", function(e){
+  if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") { e.preventDefault(); show(i + 1); }
+  else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); show(i - 1); }
+});
+show(0);
+</script>
+</body>
+</html>
