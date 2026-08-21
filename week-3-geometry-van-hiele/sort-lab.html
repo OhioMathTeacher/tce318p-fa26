@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sort Lab — sort them, and tell us your rule</title>
+<style>
+  :root{
+    --ground:#161616; --tray:#101010; --line:#2c2c2c;
+    --ink:#e8e6e1; --muted:#b9b5ad; --dim:#8d8981;
+    --teal:#0f6b52; --indigo:#443f9e; --rust:#8c3319;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{background:var(--ground);color:var(--ink);overflow:hidden;
+       display:flex;flex-direction:column;
+       font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
+
+  header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+         padding:10px 18px;border-bottom:1px solid var(--line);}
+  .ttl{font-size:19px;font-weight:800;letter-spacing:.3px;white-space:nowrap}
+  .prompt{font-size:15px;color:var(--muted)}
+  .prompt em{color:var(--dim)}
+  .spacer{flex:1 1 auto}
+
+  .sets{display:inline-flex;border:1px solid #3a3a3a;border-radius:10px;overflow:hidden}
+  .sets button{border:0;border-right:1px solid #3a3a3a;background:#1e1e1e;color:var(--muted);
+        font:inherit;font-size:14px;font-weight:600;padding:9px 15px;cursor:pointer}
+  .sets button:last-child{border-right:0}
+  .sets button.on{background:var(--ink);color:#161616}
+
+  .btn{border:1px solid #3a3a3a;background:#1e1e1e;color:var(--ink);border-radius:10px;
+       font:inherit;font-size:14px;font-weight:600;padding:9px 16px;cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:#6a6a6a}
+  .btn.go{background:var(--ink);color:#161616;border-color:var(--ink)}
+
+  #stage{flex:1 1 auto;display:block;width:100%;touch-action:none;user-select:none}
+  #stage text{user-select:none}
+  .obj{cursor:grab}
+  .hint{fill:#5a5650;font-size:13px}
+
+  #labelEdit{position:fixed;display:none;z-index:9;font:inherit;font-size:17px;font-weight:600;
+     text-align:center;padding:8px 12px;border-radius:9px;border:1px solid #6a6a6a;
+     background:#1e1e1e;color:var(--ink);}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="ttl">Sort Lab</span>
+  <span class="prompt">Sort these &mdash; and tell us your rule. <em>Then sort them a different way.</em></span>
+  <span class="spacer"></span>
+  <span class="sets" id="sets"></span>
+  <button class="btn" id="addOval">+ Group</button>
+  <button class="btn go" id="again">Sort a different way</button>
+</header>
+
+<svg id="stage" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" aria-label="Sorting board"></svg>
+
+<input id="labelEdit" type="text" autocomplete="off" spellcheck="false">
+
+<script>
+"use strict";
+
+/* ------------------------------------------------------------------ *
+ * Sort Lab — the third Week 3 geometry talk.
+ * WODB and Same & Different have public libraries; sorting does not.
+ * Firefox-safe: every SVG node is built with createElementNS. There is
+ * no innerHTML on an SVG node anywhere in this file.
+ * Nothing is saved, scored, or checked. Every defensible rule is right.
+ * ------------------------------------------------------------------ */
+
+var NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs){
+  var e = document.createElementNS(NS, tag);
+  if (attrs) for (var k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+
+var TEAL = "#0f6b52", INDIGO = "#443f9e", RUST = "#8c3319";
+var CYCLE = [TEAL, INDIGO, RUST];
+
+/* ---------- little geometry helpers ---------- */
+function P(a){
+  var s = [];
+  for (var i = 0; i < a.length; i++) s.push(a[i][0].toFixed(1) + "," + a[i][1].toFixed(1));
+  return s.join(" ");
+}
+function reg(n, r, rot){
+  var a = [];
+  for (var i = 0; i < n; i++){ var t = rot + i * 2 * Math.PI / n; a.push([r*Math.cos(t), r*Math.sin(t)]); }
+  return a;
+}
+function star(r1, r2){
+  var a = [];
+  for (var i = 0; i < 10; i++){ var r = (i % 2) ? r2 : r1, t = -Math.PI/2 + i*Math.PI/5;
+    a.push([r*Math.cos(t), r*Math.sin(t)]); }
+  return a;
+}
+/* part = [tag, attrs, textContent?]  —  fill is injected where marked */
+function poly(a){ return function(f){ return [["polygon", {points:P(a), fill:f}]]; }; }
+function prim(tag, attrs){
+  return function(f){
+    var o = {}; for (var k in attrs) o[k] = attrs[k];
+    o.fill = f; return [[tag, o]];
+  };
+}
+function fixed(parts){ return function(){ return parts; }; }
+
+/* ---------- the five object sets ---------- */
+
+/* TRIANGLES ★ — the Week 3 set. Labelled by letter, never by name:
+   naming a shape is the Level-0 move the talk is trying to get past. */
+var TRIANGLES = [
+  ["A", 70, 70, poly([[0,-34],[30,26],[-30,26]])],                 /* equilateral */
+  ["B", 72, 68, poly([[-34,30],[34,30],[-34,-30]])],               /* right */
+  ["C", 96, 52, poly([[-46,24],[20,24],[46,-16]])],                /* obtuse scalene */
+  ["D", 32, 88, poly([[0,-42],[12,40],[-12,40]])],                 /* tall and thin */
+  ["E", 60, 74, poly([[0,-36],[28,32],[-28,32]])],                 /* isosceles */
+  ["F", 70, 70, poly([[0,34],[30,-26],[-30,-26]])],                /* equilateral, inverted */
+  ["G", 72, 68, poly([[-34,30],[34,30],[34,-30]])],                /* right, rotated */
+  ["H", 42, 42, poly([[0,-20],[17,14],[-17,14]])],                 /* small equilateral */
+  ["I", 98, 34, poly([[-48,13],[48,13],[6,-13]])],                 /* very obtuse */
+  ["J", 80, 60, poly([[-38,26],[36,26],[-6,-28]])],                /* scalene */
+  ["K", 72, 64, poly([[-34,-28],[34,-28],[34,28]])],               /* right, angle top-right */
+  ["L", 98, 22, poly([[-48,8],[48,8],[48,-6]])]                    /* extreme sliver */
+];
+
+var SHAPES = [
+  ["A", 76, 70, poly([[0,-34],[33,26],[-33,26]])],
+  ["B", 68, 68, prim("rect", {x:-34, y:-34, width:68, height:68})],
+  ["C", 76, 76, prim("circle", {r:38})],
+  ["D", 92, 40, poly([[-45,16],[45,16],[45,-14]])],
+  ["E", 94, 54, prim("rect", {x:-47, y:-27, width:94, height:54})],
+  ["F", 80, 80, poly([[0,-40],[40,0],[0,40],[-40,0]])],
+  ["G", 80, 70, poly(reg(6, 40, 0))],
+  ["H", 68, 68, poly([[-34,34],[34,34],[-34,-34]])],
+  ["I", 92, 52, poly([[-45,25],[45,25],[26,-25],[-26,-25]])],
+  ["J", 94, 56, prim("ellipse", {rx:47, ry:28})],
+  ["K", 78, 76, poly(reg(5, 40, -Math.PI/2))],
+  ["L", 92, 58, poly([[-44,-11],[8,-11],[8,-28],[46,0],[8,28],[8,11],[-44,11]])],
+  ["M", 94, 52, poly([[-46,25],[28,25],[46,-25],[-28,-25]])],
+  ["N", 90, 48, fixed([["path", {d:"M -44 20 A 44 44 0 0 1 44 20 Z", fill:TEAL}]])],
+  ["O", 80, 78, poly(star(40, 16))],
+  ["P", 94, 72, poly([[-46,34],[46,34],[-46,-34]])]
+];
+/* N is the one shape whose fill is baked into a path; keep it in the cycle by hand */
+
+var LETTERS = "ABCDEHJKMOPSTVXZ".split("");
+
+var FOODS = [
+  ["Apple", 68, 72, fixed([
+    ["path", {d:"M0 -12 C 17 -29, 32 -9, 28 8 C 25 27, 10 33, 0 29 C -10 33, -25 27, -28 8 C -32 -9, -17 -29, 0 -12 Z", fill:"#c0392b"}],
+    ["rect", {x:-2.5, y:-31, width:5, height:16, rx:2, fill:"#6b4a2f"}],
+    ["ellipse", {cx:12, cy:-26, rx:11, ry:6, fill:"#3f8f4a", transform:"rotate(-22 12 -26)"}]
+  ])],
+  ["Banana", 68, 56, fixed([
+    ["path", {d:"M -31 8 C -29 -17, -6 -30, 21 -28 C 27 -28, 29 -22, 25 -19 C 4 -17, -15 -4, -17 15 C -19 23, -29 19, -31 8 Z", fill:"#e0bb3a"}]
+  ])],
+  ["Carrot", 40, 72, fixed([
+    ["polygon", {points:"0,34 -13,-9 13,-9", fill:"#d3641f"}],
+    ["polygon", {points:"0,-7 -17,-29 -5,-13 -2,-33 4,-13 17,-29", fill:"#3f8f4a"}]
+  ])],
+  ["Orange", 62, 66, fixed([
+    ["circle", {cy:4, r:29, fill:"#e2801e"}],
+    ["ellipse", {cx:9, cy:-24, rx:10, ry:5, fill:"#3f8f4a", transform:"rotate(-20 9 -24)"}]
+  ])],
+  ["Strawberry", 60, 68, fixed([
+    ["path", {d:"M0 32 C -22 19, -30 2, -26 -10 C -18 -24, 18 -24, 26 -10 C 30 2, 22 19, 0 32 Z", fill:"#cf2e3f"}],
+    ["polygon", {points:"-21,-11 -9,-22 0,-13 9,-22 21,-11 0,-4", fill:"#3f8f4a"}]
+  ])],
+  ["Tomato", 62, 66, fixed([
+    ["circle", {cy:5, r:28, fill:"#c62828"}],
+    ["polygon", {points:"-20,-14 -8,-20 0,-12 8,-20 20,-14 0,-6", fill:"#3f8f4a"}],
+    ["rect", {x:-2.5, y:-28, width:5, height:12, rx:2, fill:"#3f8f4a"}]
+  ])],
+  ["Egg", 46, 60, fixed([["ellipse", {cy:2, rx:22, ry:28, fill:"#f2e8d0"}]])],
+  ["Cheese", 72, 48, fixed([
+    ["polygon", {points:"-34,20 34,20 34,-6 -10,-22 -34,-6", fill:"#e8b33c"}],
+    ["circle", {cx:8, cy:6, r:6, fill:"#c08d1e"}],
+    ["circle", {cx:-16, cy:2, r:4, fill:"#c08d1e"}],
+    ["circle", {cx:22, cy:-2, r:3.5, fill:"#c08d1e"}]
+  ])],
+  ["Bread", 72, 52, fixed([
+    ["path", {d:"M-34 16 L-30 -6 C -27 -23, 27 -23, 30 -6 L34 16 Z", fill:"#c58a4a"}],
+    ["rect", {x:-34, y:12, width:68, height:10, rx:4, fill:"#a26b32"}]
+  ])],
+  ["Broccoli", 66, 70, fixed([
+    ["rect", {x:-7, y:0, width:14, height:32, rx:5, fill:"#7ba05b"}],
+    ["circle", {cx:-16, cy:-4, r:14, fill:"#2f7a3f"}],
+    ["circle", {cx:16, cy:-4, r:14, fill:"#2f7a3f"}],
+    ["circle", {cx:0, cy:-18, r:16, fill:"#3f8f4a"}],
+    ["circle", {cx:0, cy:-2, r:13, fill:"#3f8f4a"}]
+  ])],
+  ["Corn", 44, 72, fixed([
+    ["ellipse", {cy:0, rx:17, ry:33, fill:"#e8c33c"}],
+    ["path", {d:"M-16 8 C -32 2, -32 -20, -18 -29 L -12 -6 Z", fill:"#3f8f4a"}],
+    ["path", {d:"M16 8 C 32 2, 32 -20, 18 -29 L 12 -6 Z", fill:"#4f9f57"}]
+  ])],
+  ["Grapes", 62, 70, fixed([
+    ["rect", {x:-2.5, y:-34, width:5, height:14, rx:2, fill:"#6b4a2f"}],
+    ["circle", {cx:0, cy:-16, r:10, fill:"#6b3fa0"}],
+    ["circle", {cx:-13, cy:-2, r:10, fill:"#5c3590"}],
+    ["circle", {cx:13, cy:-2, r:10, fill:"#5c3590"}],
+    ["circle", {cx:0, cy:2, r:10, fill:"#7a4cb0"}],
+    ["circle", {cx:-8, cy:16, r:10, fill:"#6b3fa0"}],
+    ["circle", {cx:9, cy:16, r:10, fill:"#6b3fa0"}],
+    ["circle", {cx:0, cy:29, r:9, fill:"#5c3590"}]
+  ])]
+];
+
+var PEOPLE = [
+  ["Babe Ruth", "1895–1948"],       ["Cleopatra", "69–30 BCE"],
+  ["Jimi Hendrix", "1942–1970"],    ["Blackbeard", "c. 1680–1718"],
+  ["Marie Curie", "1867–1934"],     ["Serena Williams", "b. 1981"],
+  ["Elvis Presley", "1935–1977"],   ["Billy the Kid", "1859–1881"],
+  ["Leonardo da Vinci", "1452–1519"],["Rosa Parks", "1913–2005"],
+  ["Benedict Arnold", "1741–1801"], ["Muhammad Ali", "1942–2016"],
+  ["Albert Einstein", "1879–1955"], ["Dolly Parton", "b. 1946"],
+  ["Al Capone", "1899–1947"],       ["Jesse Owens", "1913–1980"],
+  ["William Shakespeare", "1564–1616"], ["Charlie Chaplin", "1889–1977"]
+];
+
+/* ---------- turn the raw tables into uniform object specs ---------- */
+function fromTable(rows){
+  return rows.map(function(r, i){
+    return {label:r[0], w:r[1], h:r[2], draw:r[3], fill:CYCLE[i % 3], showLabel:true};
+  });
+}
+function fromFoods(rows){
+  return rows.map(function(r){
+    return {label:r[0], w:r[1], h:r[2], draw:r[3], fill:null, showLabel:true};
+  });
+}
+function fromLetters(chars){
+  return chars.map(function(c, i){
+    var f = CYCLE[i % 3];
+    return {label:c, w:58, h:66, showLabel:false, fill:f, draw:function(fill){
+      return [["text", {x:0, y:0, dy:".34em", "text-anchor":"middle", "font-size":"62",
+                        "font-weight":"800", "font-family":"Georgia, 'Times New Roman', serif",
+                        fill:fill}, c]];
+    }};
+  });
+}
+function fromPeople(rows){
+  return rows.map(function(r){
+    return {label:r[0], w:190, h:58, showLabel:false, fill:null, draw:function(){
+      return [
+        ["rect", {x:-95, y:-29, width:190, height:58, rx:11, fill:"#1e1e1e",
+                  stroke:"#4a4a4a", "stroke-width":1.5}],
+        ["text", {x:0, y:-4, "text-anchor":"middle", "font-size":"17",
+                  "font-weight":"600", fill:"#f2f0eb"}, r[0]],
+        ["text", {x:0, y:16, "text-anchor":"middle", "font-size":"13", fill:"#a9a6a0"}, r[1]]
+      ];
+    }};
+  });
+}
+
+var SETS = [
+  {key:"triangles", name:"Triangles", scale:1.35, items:fromTable(TRIANGLES)},
+  {key:"shapes",    name:"Shapes",    scale:1.30, items:fromTable(SHAPES)},
+  {key:"letters",   name:"Letters",   scale:1.30, items:fromLetters(LETTERS)},
+  {key:"foods",     name:"Foods",     scale:1.30, items:fromFoods(FOODS)},
+  {key:"people",    name:"People",    scale:1.00, items:fromPeople(PEOPLE)}
+];
+
+/* ---------- stage ---------- */
+var stage = document.getElementById("stage");
+var chrome = el("g"), ovalLayer = el("g"), objLayer = el("g");
+stage.appendChild(chrome); stage.appendChild(ovalLayer); stage.appendChild(objLayer);
+
+var trayRect = el("rect", {fill:"#101010"});
+var trayEdge = el("line", {stroke:"#2c2c2c", "stroke-width":1});
+var trayHint = el("text", {class:"hint", x:18});
+trayHint.textContent = "Drag a piece up onto the board.";
+var emptyHint = el("text", {class:"hint", "text-anchor":"middle", "font-size":"17"});
+emptyHint.textContent = "Drag pieces up here \u00b7 press + Group to lay down a circle \u00b7 name your rule";
+chrome.appendChild(trayRect); chrome.appendChild(trayEdge);
+chrome.appendChild(trayHint); chrome.appendChild(emptyHint);
+
+var W = 1200, H = 700, trayTop = 520, trayScale = 1, canvasScale = 1.3;
+var objs = [], ovals = [], setKey = "triangles";
+var LABEL_GAP = 24;
+
+function clamp(v, lo, hi){ return v < lo ? lo : (v > hi ? hi : v); }
+function fullH(spec){ return spec.h + (spec.showLabel ? LABEL_GAP : 0); }
+/* distance from a piece's own origin down to the bottom of its label */
+function botOff(spec){ return spec.h / 2 + (spec.showLabel ? LABEL_GAP : 0); }
+
+/* ---------- build a set ---------- */
+function buildSet(key){
+  setKey = key;
+  while (objLayer.firstChild) objLayer.removeChild(objLayer.firstChild);
+  clearOvals();
+  objs = [];
+
+  var set = SETS.filter(function(s){ return s.key === key; })[0];
+  canvasScale = set.scale;
+  set.items.forEach(function(spec){
+    var g = el("g", {class:"obj"});
+    /* an invisible hit pad first, so slivers and thin letters are still easy to grab */
+    g.appendChild(el("rect", {x:-spec.w/2 - 6, y:-spec.h/2 - 6,
+                              width:spec.w + 12, height:fullH(spec) + 12,
+                              fill:"transparent"}));
+    spec.draw(spec.fill).forEach(function(p){
+      var e = el(p[0], p[1]);
+      if (p[2] != null) e.textContent = p[2];
+      g.appendChild(e);
+    });
+    if (spec.showLabel){
+      var t = el("text", {x:0, y:spec.h/2 + 18, "text-anchor":"middle",
+                          "font-size":"15", "font-weight":"600", fill:"#e8e6e1"});
+      t.textContent = spec.label;
+      g.appendChild(t);
+    }
+    var o = {g:g, spec:spec, x:0, y:0, inTray:true, home:{x:0, y:0}};
+    g.addEventListener("pointerdown", function(ev){ startObjDrag(o, ev); });
+    objLayer.appendChild(g);
+    objs.push(o);
+  });
+
+  var btns = document.getElementById("sets").children;
+  for (var i = 0; i < btns.length; i++)
+    btns[i].className = (btns[i].getAttribute("data-key") === key) ? "on" : "";
+
+  layout();
+}
+
+/* ---------- layout: tray slots along the bottom ---------- */
+function layout(){
+  var r = stage.getBoundingClientRect();
+  W = Math.max(320, Math.round(r.width));
+  H = Math.max(320, Math.round(r.height));
+  stage.setAttribute("viewBox", "0 0 " + W + " " + H);
+
+  var maxW = 1, maxH = 1;
+  objs.forEach(function(o){ maxW = Math.max(maxW, o.spec.w); maxH = Math.max(maxH, fullH(o.spec)); });
+
+  /* shrink the tray copies until the strip fits in roughly a third of the board */
+  var s = 1, cols = 1, rows = 1, sw = 0, sh = 0, trayH = 0, cap = Math.max(160, H * 0.34);
+  while (true){
+    sw = maxW * s + 18; sh = maxH * s + 12;
+    cols = Math.max(1, Math.floor((W - 36) / sw));
+    rows = Math.ceil(objs.length / cols);
+    trayH = rows * sh + 26;
+    if (trayH <= cap || s <= 0.5) break;
+    s -= 0.05;
+  }
+  trayScale = s;
+  trayTop = H - trayH;
+
+  trayRect.setAttribute("x", 0); trayRect.setAttribute("y", trayTop);
+  trayRect.setAttribute("width", W); trayRect.setAttribute("height", trayH);
+  trayEdge.setAttribute("x1", 0); trayEdge.setAttribute("x2", W);
+  trayEdge.setAttribute("y1", trayTop); trayEdge.setAttribute("y2", trayTop);
+  trayHint.setAttribute("y", trayTop - 10);
+  emptyHint.setAttribute("x", W / 2);
+  emptyHint.setAttribute("y", trayTop / 2);
+  showEmptyHint();
+
+  var gridW = cols * sw;
+  var x0 = (W - gridW) / 2 + sw / 2;
+  var rowBottom = trayTop + 16 + maxH * s;
+  objs.forEach(function(o, i){
+    o.home = {x:x0 + (i % cols) * sw,
+              y:rowBottom + Math.floor(i / cols) * sh - botOff(o.spec) * s};
+    if (o.inTray){ o.x = o.home.x; o.y = o.home.y; }
+    else { o.x = clamp(o.x, 30, W - 30); o.y = clamp(o.y, 30, trayTop - 30); }
+    place(o);
+  });
+
+  ovals.forEach(drawOval);
+}
+
+function showEmptyHint(){
+  var bare = ovals.length === 0 && objs.every(function(o){ return o.inTray; });
+  emptyHint.setAttribute("display", bare ? "inline" : "none");
+}
+
+function place(o){
+  var s = o.inTray ? trayScale : canvasScale;
+  o.g.setAttribute("transform", "translate(" + o.x.toFixed(1) + "," + o.y.toFixed(1) + ") scale(" + s.toFixed(3) + ")");
+}
+
+/* ---------- ovals ---------- */
+function addOval(){
+  var n = ovals.length;
+  var rx = Math.min(170, W * 0.18), ry = Math.min(125, trayTop * 0.22);
+  var ov = {
+    cx: clamp(W * 0.22 + (n % 3) * W * 0.27 + (n > 2 ? 40 : 0), rx + 10, W - rx - 10),
+    cy: clamp(trayTop * 0.34 + Math.floor(n / 3) * trayTop * 0.34, ry + 38, trayTop - ry - 10),
+    rx: rx, ry: ry, label:"Name this group"
+  };
+  ov.g = el("g");
+  ov.body  = el("ellipse", {fill:"rgba(232,230,225,0.10)", stroke:"rgba(232,230,225,0.55)",
+                            "stroke-width":2, cursor:"move"});
+  ov.text  = el("text", {"text-anchor":"middle", "font-size":"18", "font-weight":"700",
+                         fill:"#e8e6e1", cursor:"text"});
+  ov.hx  = handle(); ov.hy = handle(); ov.hxy = handle();
+  ov.del = el("circle", {r:12, fill:"#2a2a2a", stroke:"#6a6a6a", "stroke-width":1.5, cursor:"pointer"});
+  ov.delX = el("text", {"text-anchor":"middle", dy:".33em", "font-size":"15",
+                        "font-weight":"700", fill:"#c9c5be", "pointer-events":"none"});
+  ov.delX.textContent = "×";
+
+  ov.g.appendChild(ov.body);
+  ov.g.appendChild(ov.text);
+  ov.g.appendChild(ov.hx); ov.g.appendChild(ov.hy); ov.g.appendChild(ov.hxy);
+  ov.g.appendChild(ov.del); ov.g.appendChild(ov.delX);
+  ovalLayer.appendChild(ov.g);
+
+  ov.body.addEventListener("pointerdown", function(ev){ startOvalDrag(ov, ev, "move"); });
+  ov.hx .addEventListener("pointerdown", function(ev){ startOvalDrag(ov, ev, "x"); });
+  ov.hy .addEventListener("pointerdown", function(ev){ startOvalDrag(ov, ev, "y"); });
+  ov.hxy.addEventListener("pointerdown", function(ev){ startOvalDrag(ov, ev, "xy"); });
+  ov.del.addEventListener("pointerdown", function(ev){ ev.stopPropagation(); });
+  ov.del.addEventListener("click", function(){ removeOval(ov); });
+  ov.text.addEventListener("pointerdown", function(ev){ ev.stopPropagation(); });
+  ov.text.addEventListener("click", function(){ editLabel(ov); });
+
+  ovals.push(ov);
+  drawOval(ov);
+  showEmptyHint();
+}
+function handle(){
+  return el("rect", {width:16, height:16, rx:3, fill:"#e8e6e1", stroke:"#161616",
+                     "stroke-width":1.5, cursor:"pointer"});
+}
+function drawOval(ov){
+  ov.rx = clamp(ov.rx, 55, W / 2 - 20);
+  ov.ry = clamp(ov.ry, 45, Math.max(50, (trayTop - 60) / 2));
+  ov.cx = clamp(ov.cx, ov.rx + 8, W - ov.rx - 8);
+  ov.cy = clamp(ov.cy, ov.ry + 36, trayTop - ov.ry - 8);
+
+  ov.g.setAttribute("transform", "translate(" + ov.cx.toFixed(1) + "," + ov.cy.toFixed(1) + ")");
+  ov.body.setAttribute("rx", ov.rx); ov.body.setAttribute("ry", ov.ry);
+  ov.text.setAttribute("x", 0); ov.text.setAttribute("y", -ov.ry - 14);
+  ov.text.textContent = ov.label;
+
+  var dx = ov.rx * 0.7071, dy = ov.ry * 0.7071;
+  ov.hx .setAttribute("x", ov.rx - 8); ov.hx .setAttribute("y", -8);
+  ov.hy .setAttribute("x", -8);        ov.hy .setAttribute("y", ov.ry - 8);
+  ov.hxy.setAttribute("x", dx - 8);    ov.hxy.setAttribute("y", dy - 8);
+  ov.del.setAttribute("cx", dx);       ov.del.setAttribute("cy", -dy);
+  ov.delX.setAttribute("x", dx);       ov.delX.setAttribute("y", -dy);
+}
+function removeOval(ov){
+  if (ov.g.parentNode) ov.g.parentNode.removeChild(ov.g);
+  ovals = ovals.filter(function(o){ return o !== ov; });
+  showEmptyHint();
+}
+function clearOvals(){
+  ovals.forEach(function(ov){ if (ov.g.parentNode) ov.g.parentNode.removeChild(ov.g); });
+  ovals = [];
+  document.getElementById("labelEdit").style.display = "none";
+}
+
+/* ---------- label editing (an HTML input over the board) ---------- */
+function editLabel(ov){
+  var inp = document.getElementById("labelEdit");
+  var r = stage.getBoundingClientRect();
+  var done = false;
+  inp.value = (ov.label === "Name this group") ? "" : ov.label;
+  inp.placeholder = "your rule for this group";
+  inp.style.width = "280px";
+  inp.style.left = (r.left + ov.cx - 140) + "px";
+  inp.style.top  = (r.top + ov.cy - ov.ry - 42) + "px";
+  inp.style.display = "block";
+  inp.focus(); inp.select();
+
+  function commit(){
+    if (done) return;
+    done = true;
+    ov.label = inp.value.trim() || "Name this group";
+    drawOval(ov);
+    inp.style.display = "none";
+    inp.onblur = null; inp.onkeydown = null;
+  }
+  inp.onkeydown = function(e){
+    if (e.key === "Enter"){ e.preventDefault(); commit(); }
+    else if (e.key === "Escape"){ done = true; inp.style.display = "none"; inp.onblur = null; }
+  };
+  inp.onblur = commit;
+}
+
+/* ---------- dragging ---------- */
+var drag = null;
+function pt(ev){
+  var r = stage.getBoundingClientRect();
+  return {x:ev.clientX - r.left, y:ev.clientY - r.top};
+}
+function startObjDrag(o, ev){
+  ev.preventDefault(); ev.stopPropagation();
+  var p = pt(ev);
+  objLayer.appendChild(o.g);                 /* the piece you touch comes to the front */
+  var dx, dy;
+  if (o.inTray){                             /* lift it out of the tray at full size */
+    o.inTray = false; o.x = p.x; o.y = p.y; dx = 0; dy = 0; place(o); showEmptyHint();
+  } else { dx = o.x - p.x; dy = o.y - p.y; }
+  drag = {kind:"obj", o:o, dx:dx, dy:dy, id:ev.pointerId};
+  try { stage.setPointerCapture(ev.pointerId); } catch (e) {}
+}
+function startOvalDrag(ov, ev, mode){
+  ev.preventDefault(); ev.stopPropagation();
+  var p = pt(ev);
+  ovalLayer.appendChild(ov.g);
+  drag = {kind:"oval", ov:ov, mode:mode, dx:ov.cx - p.x, dy:ov.cy - p.y, id:ev.pointerId};
+  try { stage.setPointerCapture(ev.pointerId); } catch (e) {}
+}
+stage.addEventListener("pointermove", function(ev){
+  if (!drag || ev.pointerId !== drag.id) return;
+  var p = pt(ev);
+  if (drag.kind === "obj"){
+    var o = drag.o;
+    o.x = clamp(p.x + drag.dx, 20, W - 20);
+    o.y = clamp(p.y + drag.dy, 20, H - 20);
+    place(o);
+  } else {
+    var ov = drag.ov;
+    if (drag.mode === "move"){ ov.cx = p.x + drag.dx; ov.cy = p.y + drag.dy; }
+    if (drag.mode === "x"  || drag.mode === "xy") ov.rx = Math.abs(p.x - ov.cx);
+    if (drag.mode === "y"  || drag.mode === "xy") ov.ry = Math.abs(p.y - ov.cy);
+    drawOval(ov);
+  }
+});
+function endDrag(ev){
+  if (!drag || ev.pointerId !== drag.id) return;
+  if (drag.kind === "obj"){
+    var o = drag.o;
+    if (o.y > trayTop){ o.inTray = true; o.x = o.home.x; o.y = o.home.y; place(o); }
+    showEmptyHint();
+  }
+  drag = null;
+  try { stage.releasePointerCapture(ev.pointerId); } catch (e) {}
+}
+stage.addEventListener("pointerup", endDrag);
+stage.addEventListener("pointercancel", endDrag);
+
+/* ---------- controls ---------- */
+var setsBar = document.getElementById("sets");
+SETS.forEach(function(s){
+  var b = document.createElement("button");
+  b.textContent = s.name;
+  b.setAttribute("data-key", s.key);
+  b.onclick = function(){ buildSet(s.key); };
+  setsBar.appendChild(b);
+});
+document.getElementById("addOval").onclick = addOval;
+document.getElementById("again").onclick = function(){
+  clearOvals();
+  objs.forEach(function(o){ o.inTray = true; });
+  layout();
+};
+
+var rt;
+window.addEventListener("resize", function(){
+  clearTimeout(rt);
+  rt = setTimeout(layout, 80);
+});
+
+buildSet("triangles");
+</script>
+</body>
+</html>

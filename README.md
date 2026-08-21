@@ -19,6 +19,7 @@ Click **Launch** to open one.
 | **Metaplete** | delete-to-the-target puzzle with playback | [Launch](https://ohiomathteacher.github.io/tce318p-fa26/metacog-suite/metaplete.html) |
 | **Metagons** | Arithmagons with playback | [Launch](https://ohiomathteacher.github.io/tce318p-fa26/metacog-suite/metagons.html) |
 | **nVoke** | flash-and-respond "what do you see?" — built-in van Hiele pack, `.json` export/import | [Launch](https://ohiomathteacher.github.io/tce318p-fa26/week-3-geometry-van-hiele/nvoke.html) |
+| **Sort Lab** | drag pieces into circles you draw, name your rule, then sort a different way — five object sets | [Launch](https://ohiomathteacher.github.io/tce318p-fa26/week-3-geometry-van-hiele/sort-lab.html) |
 | **Pentomino Builder** | teacher task-creation — build framed pentomino puzzles, tag by DOK, print differentiated packets, and play in-app with a downloadable play report | [Launch](https://ohiomathteacher.github.io/tce318p-fa26/pentomino-builder/pentomino-builder.html) |
 | **Journaler** | close-read the weekly article, make margin notes, and keep your dated Reading Journal — with a Todd-in-a-Can chat and a printable journal (Act I) | [Launch](https://ohiomathteacher.github.io/journaler/) |
 
@@ -78,7 +79,7 @@ week's graded assignment) and a **Reading Homework** sheet naming the week's art
 - **[`week-2-listening-questioning/`](week-2-listening-questioning/)** — *Diagnosing a Subtraction
   Error.* Plus the Thinker-Doer Blue Task and the Hundred Chart Challenge cards.
 - **[`week-3-geometry-van-hiele/`](week-3-geometry-van-hiele/)** — *Pose, Listen, Locate.*
-  Plus **nVoke**.
+  Plus **nVoke** and **Sort Lab**.
   → https://ohiomathteacher.github.io/tce318p-fa26/week-3-geometry-van-hiele/nvoke.html
 - **[`week-4-pentominoes-differentiate-dok/`](week-4-pentominoes-differentiate-dok/)** —
   *Differentiate: A Question for Every Learner*, built in the Pentomino Builder across **Depth of
