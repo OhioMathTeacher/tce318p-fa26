@@ -19,7 +19,32 @@
 
   header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
          padding:10px 16px;border-bottom:1px solid var(--line);}
-  .ttl{font-size:19px;font-weight:800;letter-spacing:.3px;white-space:nowrap}
+  .ttl{font-size:19px;font-weight:800;letter-spacing:.3px;white-space:nowrap;
+       border:0;background:none;color:var(--ink);font-family:inherit;padding:0;
+       cursor:pointer;border-radius:6px}
+  .ttl:hover{text-decoration:underline;text-underline-offset:4px}
+  .ttl:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+
+  /* About dialog — opened by clicking the wordmark. Click the backdrop,
+     press Escape, or hit the X to dismiss. */
+  #about{position:fixed;inset:0;z-index:70;display:flex;align-items:center;
+         justify-content:center;padding:24px;background:rgba(0,0,0,.72)}
+  #about[hidden]{display:none}
+  #about .card{position:relative;width:100%;max-width:400px;text-align:center;
+       background:var(--tray);border:1px solid var(--line);border-radius:22px;
+       padding:34px 28px 26px;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+  #about .x{position:absolute;right:12px;top:12px;width:34px;height:34px;
+       border:1px solid var(--line);background:#1e1e1e;color:var(--muted);
+       border-radius:50%;font:inherit;font-size:19px;line-height:1;cursor:pointer}
+  #about .x:hover{border-color:#6a6a6a;color:var(--ink)}
+  #about .mark{font-size:46px;line-height:1}
+  #about h2{margin:12px 0 0;font-size:25px;font-weight:800;letter-spacing:.3px}
+  #about .tag{margin:8px 0 0;color:var(--muted);font-size:15px}
+  #about .gh{display:inline-block;margin-top:20px;padding:9px 20px;
+       border:1px solid #3a3a3a;border-radius:999px;color:var(--ink);
+       text-decoration:none;font:inherit;font-size:14px;font-weight:600}
+  #about .gh:hover{border-color:#6a6a6a;background:#1e1e1e}
+  #about .build{margin:18px 0 0;font-size:12px;letter-spacing:.4px;color:var(--dim)}
   .prompt em{color:var(--dim)}
   .spacer{flex:1 1 auto}
 
@@ -58,7 +83,7 @@
 <body>
 
 <header>
-  <span class="ttl" id="ttl">Sort Lab</span>
+  <button class="ttl" id="ttl">Sort Lab</button>
   <span class="spacer"></span>
   <span class="sets" id="sets"></span>
   <span class="tools" id="tools">
@@ -76,6 +101,18 @@
 
 <input id="labelEdit" type="text" autocomplete="off" spellcheck="false">
 <div id="info"></div>
+
+<div id="about" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="abTtl">
+    <button class="x" id="abX">&times;</button>
+    <div class="mark">🗂️</div>
+    <h2 id="abTtl">Sort Lab</h2>
+    <p class="tag" id="abTag"></p>
+    <a class="gh" id="abGh" href="https://github.com/ohiomathteacher/tce318p-fa26"
+       target="_blank" rel="noreferrer"></a>
+    <p class="build" id="abBuild"></p>
+  </div>
+</div>
 
 <script>
 "use strict";
@@ -96,9 +133,15 @@ function el(tag, attrs){
 }
 
 var LANGS = ["en", "es", "zh"];
+var BUILD = { version: "1.0", date: "2026-08-21" };
+
 var LANGI = 0;                          /* index into every [en, es, zh] triple */
 var T = {
   title:      ["Sort Lab", "Clasificación", "分类实验室"],
+  about:      ["About Sort Lab", "Acerca de Clasificación", "关于分类实验室"],
+  github:     ["View on GitHub", "Ver en GitHub", "在 GitHub 上查看"],
+  close:      ["Close", "Cerrar", "关闭"],
+  vers:       ["Version", "Versión", "版本"],
   prompt:     ["Sort these — and tell us your rule.",
                "Clasifícalos — y dinos tu regla.",
                "把它们分类 —— 并说出你的规则。"],
@@ -856,6 +899,15 @@ function applyLang(){
     if (o.glyphNode) o.glyphNode.textContent = lbl(o.spec.label);
   });
   ovals.forEach(function(ov){ if (!ov.named){ ov.label = t("groupName"); drawOval(ov); } });
+  var ttlEl = document.getElementById("ttl");
+  ttlEl.setAttribute("title", t("about"));
+  ttlEl.setAttribute("aria-label", t("about"));
+  document.getElementById("abTtl").textContent = t("title");
+  document.getElementById("abTag").textContent = t("prompt");
+  document.getElementById("abGh").textContent  = t("github");
+  document.getElementById("abX").setAttribute("aria-label", t("close"));
+  document.getElementById("abBuild").textContent =
+    t("vers") + " " + BUILD.version + " \u00b7 " + BUILD.date;
   showEmptyHint();
 }
 function setLang(i){
@@ -885,7 +937,15 @@ document.getElementById("turnL").onclick = function(){ turnActive(-15); };
 document.getElementById("turnR").onclick = function(){ turnActive(15); };
 document.getElementById("flipH").onclick = function(){ flipActive("h"); };
 document.getElementById("flipV").onclick = function(){ flipActive("v"); };
+var aboutBox = document.getElementById("about");
+function openAbout(){ aboutBox.hidden = false; document.getElementById("abX").focus(); }
+function closeAbout(){ aboutBox.hidden = true; document.getElementById("ttl").focus(); }
+document.getElementById("ttl").onclick = openAbout;
+document.getElementById("abX").onclick = closeAbout;
+aboutBox.onclick = function(e){ if (e.target === aboutBox) closeAbout(); };
+
 document.addEventListener("keydown", function(e){
+  if (!aboutBox.hidden){ if (e.key === "Escape") closeAbout(); return; }
   if (e.target && e.target.id === "labelEdit") return;
   var k = e.key;
   if (k === "[") turnActive(-15);
