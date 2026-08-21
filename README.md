@@ -19,7 +19,7 @@ Click **Launch** to open one.
 | **Metaplete** | delete-to-the-target puzzle with playback | [Launch](https://ohiomathteacher.github.io/tce318p-fa26/metacog-suite/metaplete.html) |
 | **Metagons** | Arithmagons with playback | [Launch](https://ohiomathteacher.github.io/tce318p-fa26/metacog-suite/metagons.html) |
 | **nVoke** | flash-and-respond "what do you see?" — built-in van Hiele pack, `.json` export/import | [Launch](https://ohiomathteacher.github.io/tce318p-fa26/week-3-geometry-van-hiele/nvoke.html) |
-| **Sort Lab** | drag pieces into circles you draw, name your rule, then sort a different way — five object sets | [Launch](https://ohiomathteacher.github.io/tce318p-fa26/week-3-geometry-van-hiele/sort-lab.html) |
+| **Sort Lab** | drag pieces into circles you draw, name your rule, then sort a different way — six object sets, in English, Spanish or Chinese | [Launch](https://ohiomathteacher.github.io/tce318p-fa26/week-3-geometry-van-hiele/sort-lab.html) |
 | **Pentomino Builder** | teacher task-creation — build framed pentomino puzzles, tag by DOK, print differentiated packets, and play in-app with a downloadable play report | [Launch](https://ohiomathteacher.github.io/tce318p-fa26/pentomino-builder/pentomino-builder.html) |
 | **Journaler** | close-read the weekly article, make margin notes, and keep your dated Reading Journal — with a Todd-in-a-Can chat and a printable journal (Act I) | [Launch](https://ohiomathteacher.github.io/journaler/) |
 
