@@ -66,7 +66,7 @@ alongside each assignment.
   packets, and play in-app). Used in Week 4 (Differentiation &amp; Measurement).
   → https://ohiomathteacher.github.io/tce318p-fa26/pentomino-builder/pentomino-builder.html
 
-**All thirteen week folders are here.** Each holds that week's Tuesday and Thursday
+**All thirteen week folders are here.** Each holds that week's first-session and second-session
 day-outlines plus its assignments. There is no `week-12` or `week-14` folder: Week 12 is a
 field week with no seminar, and Week 14 is Thanksgiving.
 
@@ -74,7 +74,7 @@ field week with no seminar, and Week 14 is Thanksgiving.
 week's graded assignment) and a **Reading Homework** sheet naming the week's article.
 
 - **[`week-1-reasoning-puzzles/`](week-1-reasoning-puzzles/)** — *Analyzing Your Own Thinking.*
-  Plus **The Reading Journal** guidelines, the *Three Reasoning Puzzles* Tuesday handout, and
+  Plus **The Reading Journal** guidelines, the *Three Reasoning Puzzles* Studio handout, and
   local copies of Metadoku, Metaplete and Metagons.
 - **[`week-2-listening-questioning/`](week-2-listening-questioning/)** — *Diagnosing a Subtraction
   Error.* Plus the Thinker-Doer Blue Task and the Hundred Chart Challenge cards.
@@ -85,7 +85,7 @@ week's graded assignment) and a **Reading Homework** sheet naming the week's art
   *Differentiate: A Question for Every Learner*, built in the Pentomino Builder across **Depth of
   Knowledge** levels.
 - **[`week-5-assessment-rubrics/`](week-5-assessment-rubrics/)** — *Reading a Learner with a
-  Rubric.* Plus the Tuesday handout.
+  Rubric.* Plus the Studio handout.
 
 **Act II — Build the investigation (Weeks 6–10).**
 

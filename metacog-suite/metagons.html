@@ -80,7 +80,7 @@
   <label><input type="checkbox" id="hints" checked>Allow hints</label>
   <label><input type="checkbox" id="showTimer">Show timer</label>
   <button id="new">New puzzle</button>
-  <button id="graded" style="background:#c1121f;color:#fff;font-weight:700;" title="Load the Tuesday board — the same puzzle you solved on paper in class">Tuesday Puzzle</button>
+  <button id="graded" style="background:#c1121f;color:#fff;font-weight:700;" title="Load the Studio board — the same puzzle you solved on paper in class">Studio Puzzle</button>
  </div>
 </div>
 
@@ -380,7 +380,7 @@ const Game = {
     const g=CURATED;
     this.n=g.n; $('size').value=String(g.n);
     this.loadPuzzle({verts:g.verts.slice(),edges:g.edges.slice()});
-    this.msg('Tuesday Puzzle loaded — the same board from class. Fill the circles, then Review your thinking.');
+    this.msg('Studio Puzzle loaded — the same board from class. Fill the circles, then Review your thinking.');
   },
   // Dev helper: click "New puzzle" until you like a board, then run
   // Game.exportPuzzle() in the console to copy the literal to freeze as CURATED.
