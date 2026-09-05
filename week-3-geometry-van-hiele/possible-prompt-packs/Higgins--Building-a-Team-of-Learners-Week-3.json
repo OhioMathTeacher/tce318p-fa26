@@ -30,7 +30,7 @@
           "color": "gray"
         }
       ],
-      "prompt": "Which one doesn't belong? Say how you know — then find a reason a different one doesn't belong either."
+      "prompt": "Which one doesn't belong? Say how you know."
     },
     {
       "id": "same-diff-2",

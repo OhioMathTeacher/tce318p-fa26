@@ -437,7 +437,7 @@ const GEOMETRY_PACK = {
        {ref:"tri-equilateral", rotate:0, color:"gray"},
        {ref:"circle-sm", rotate:0, color:"gray"}
      ],
-     prompt:"Which one doesn't belong? Say how you know — then find a reason a different one doesn't belong either."},
+     prompt:"Which one doesn't belong? Say how you know."},
 
     /* 2 — “if you trace a circle you can keep tracing it to infinity” (Higgins, p. 492) */
     {id:"same-diff-2", template:"same-diff",
@@ -724,12 +724,16 @@ const GROUP_ORDER=["Dot patterns","Ten-frames","Quadrilaterals","Triangles","Man
 const LIB=Object.fromEntries(CARD_LIBRARY.map(c=>[c.id,c]));
 
 /* ---- templates: arrange cards into an image set ---- */
+/* `sub` is the small line under the question. It is not the same sentence everywhere:
+   "How do you know?" asks you to warrant a claim, which only makes sense once you have
+   made one. Same & Different asks for observations, and the sort card already asks for
+   the rule, so neither wants it. */
 const TEMPLATES={
-  wodb:{label:"Which One Doesn't Belong?", max:4, prompt:"Which one doesn't belong — and how do you know?"},
-  "same-diff":{label:"Same & Different", max:2, prompt:"What's the same? What's different?"},
-  sort:{label:"Sort", max:9, prompt:"Sort these and state your rule."},
-  ispy:{label:"I Spy", max:24, prompt:"I spy a shape that… (name a property)"},
-  single:{label:"Single card", max:1, prompt:"What do you see? · How do you know?"}
+  wodb:{label:"Which One Doesn't Belong?", max:4, prompt:"Which one doesn't belong? Say how you know.", sub:"How do you know?"},
+  "same-diff":{label:"Same & Different", max:2, prompt:"What's the same? What's different?", sub:"Explain what you see."},
+  sort:{label:"Sort", max:9, prompt:"Sort these and state your rule.", sub:""},
+  ispy:{label:"I Spy", max:24, prompt:"I spy a shape that… (name a property)", sub:"How do you know it fits?"},
+  single:{label:"Single card", max:1, prompt:"What do you see? · How do you know?", sub:"How do you know?"}
 };
 function posLabel(t,x,y){
   return `<text x="${x}" y="${y}" font-size="0.46" font-weight="800" fill="#98a2b3" font-family="Inter,system-ui,sans-serif">${t}</text>`;
@@ -1249,7 +1253,13 @@ function adjFlash(d){
 }
 function questionFor(c){ return c.prompt || ses.pack.prompt || "What do you see?"; }
 /* don't repeat "How do you know?" underneath when the question already says it */
-function subFor(c){ return /how do you know/i.test(questionFor(c)) ? "" : "How do you know?"; }
+function subFor(c){
+  const t=TEMPLATES[c.template], sub = t && t.sub!==undefined ? t.sub : "How do you know?";
+  if(!sub) return "";
+  /* don't echo a follow-up the question already asks */
+  const q=questionFor(c).toLowerCase(), key=sub.toLowerCase().replace(/[?.]/g,"");
+  return q.includes(key) || /how (do )?you know|why or why not/i.test(q) ? "" : sub;
+}
 /* Every card names its question BEFORE anything is shown. Geometry cards then stay
    on screen while the Doer reasons; only dot / ten-frame cards flash and hide. */
 function showCard(){
