@@ -1,0 +1,146 @@
+{
+  "packFormat": "provoke-cards/v1",
+  "name": "Higgins--Building a Team of Learners (Week 3)",
+  "mode": "see",
+  "builtWith": "builder",
+  "prompt": "What did you see? · How do you know?",
+  "cards": [
+    {
+      "id": "wodb-1",
+      "template": "wodb",
+      "members": [
+        {
+          "ref": "square",
+          "rotate": 0,
+          "color": "gray"
+        },
+        {
+          "ref": "rect-wide",
+          "rotate": 0,
+          "color": "gray"
+        },
+        {
+          "ref": "tri-equilateral",
+          "rotate": 0,
+          "color": "gray"
+        },
+        {
+          "ref": "circle-sm",
+          "rotate": 0,
+          "color": "gray"
+        }
+      ],
+      "prompt": "Which one doesn't belong? Say how you know — then find a reason a different one doesn't belong either."
+    },
+    {
+      "id": "same-diff-2",
+      "template": "same-diff",
+      "members": [
+        {
+          "ref": "circle-lg",
+          "rotate": 0,
+          "color": "gray"
+        },
+        {
+          "ref": "oval",
+          "rotate": 0,
+          "color": "gray"
+        }
+      ],
+      "prompt": "What's the same? What's different?"
+    },
+    {
+      "id": "same-diff-3",
+      "template": "same-diff",
+      "members": [
+        {
+          "ref": "square",
+          "rotate": 0,
+          "color": "gray"
+        },
+        {
+          "ref": "rect-wide",
+          "rotate": 0,
+          "color": "gray"
+        }
+      ],
+      "prompt": "What's the same? What's different?"
+    },
+    {
+      "id": "single-4",
+      "template": "single",
+      "members": [
+        {
+          "ref": "square",
+          "rotate": 45,
+          "color": "red"
+        }
+      ],
+      "prompt": "What shape is this? How do you know?"
+    },
+    {
+      "id": "single-5",
+      "template": "single",
+      "members": [
+        {
+          "ref": "spiral",
+          "rotate": 0,
+          "color": "gray"
+        }
+      ],
+      "prompt": "Is this a shape? Why or why not?"
+    },
+    {
+      "id": "sort-6",
+      "template": "sort",
+      "members": [
+        {
+          "ref": "square",
+          "rotate": 0,
+          "color": "gray"
+        },
+        {
+          "ref": "rect-wide",
+          "rotate": 0,
+          "color": "gray"
+        },
+        {
+          "ref": "hexagon",
+          "rotate": 0,
+          "color": "gray"
+        },
+        {
+          "ref": "tri-equilateral",
+          "rotate": 0,
+          "color": "gray"
+        },
+        {
+          "ref": "circle-lg",
+          "rotate": 0,
+          "color": "gray"
+        },
+        {
+          "ref": "oval",
+          "rotate": 0,
+          "color": "gray"
+        },
+        {
+          "ref": "crescent",
+          "rotate": 0,
+          "color": "gray"
+        },
+        {
+          "ref": "star5",
+          "rotate": 0,
+          "color": "gray"
+        },
+        {
+          "ref": "spiral",
+          "rotate": 0,
+          "color": "gray"
+        }
+      ],
+      "prompt": "Put these into groups that belong together. What is your rule — and can you sort them a different way?"
+    }
+  ]
+}

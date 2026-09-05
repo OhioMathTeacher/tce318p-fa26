@@ -37,9 +37,10 @@
   button:disabled{opacity:.45;cursor:default}
   /* stage */
   #stage{display:none;position:fixed;inset:0;background:var(--ground);z-index:20;
-        flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
-  #stageTop{position:absolute;top:16px;left:0;right:0;display:flex;justify-content:space-between;
-        padding:0 22px;color:var(--muted);font-size:13px;font-weight:600}
+        flex-direction:column;align-items:stretch;justify-content:flex-start;text-align:center;
+        padding:0;overflow:hidden}
+  #stageTop{flex:none;display:flex;justify-content:space-between;align-items:center;
+        padding:14px 22px 4px;color:var(--muted);font-size:13px;font-weight:600}
   #endBtn{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:8px;
         padding:4px 9px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;margin-left:8px}
   #endBtn:hover{border-color:var(--mark);color:var(--mark)}
@@ -47,14 +48,21 @@
   .fadj{background:#fff;border:1px solid var(--line);color:var(--outline);border-radius:6px;width:24px;height:24px;font:inherit;font-weight:700;cursor:pointer;line-height:1}
   .fadj:hover{border-color:var(--outline)}
   #bar{position:absolute;top:0;left:0;height:5px;background:var(--outline);width:0%}
-  #stageBody{display:flex;flex-direction:column;align-items:center;width:100%}
+  #stageBody{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;
+        justify-content:flex-start;width:100%;padding:4px 24px 22px;overflow-y:auto}
+  /* centres the card, but lets the top stay reachable when it overflows —
+     a plain justify-content:center clips whatever spills above the fold */
+  #stageBody::before,#stageBody::after{content:"";margin:auto;flex:none}
   .figbox{width:min(70vw,520px);height:min(70vw,520px);max-height:66vh;display:flex;align-items:center;justify-content:center}
-  .figbox svg,.figbox img{max-width:100%;max-height:52vh;border-radius:8px}
+  /* bound the figure by its box, not just the viewport — a flex-shrunk .figbox
+     otherwise lets the SVG spill out and paint over the question above it */
+  .figbox{overflow:hidden}
+  .figbox svg,.figbox img{max-width:100%;max-height:100%;border-radius:8px}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px}
   .gcell{position:relative}
   .gcell .lab{position:absolute;top:-6px;left:2px;font-weight:800;color:var(--ink)}
   .count{font-size:120px;font-weight:800;color:var(--outline)}
-  .prompt{font-size:38px;font-weight:800;color:var(--outline);line-height:1.2}
+  .prompt{font-size:38px;font-weight:800;color:var(--outline);line-height:1.2;max-width:900px}
   .promptSub{font-size:18px;color:var(--muted);margin-top:10px}
   .stageInput{width:min(90vw,620px);margin-top:22px}
   .cap{font-size:20px;font-weight:700;color:var(--ink);margin-top:16px}
@@ -113,7 +121,7 @@
   .board{display:grid;gap:8px;width:100%;max-width:340px}
   .board.wodb{grid-template-columns:1fr 1fr}
   .board.sort{grid-template-columns:1fr 1fr 1fr;max-width:340px}
-  .board.samediff{grid-template-columns:repeat(4,1fr);max-width:100%}
+  .board.samediff{grid-template-columns:repeat(2,1fr);max-width:340px}
   .cell2{aspect-ratio:1;border:2px dashed #cfd6e0;border-radius:12px;display:flex;align-items:center;justify-content:center;
     cursor:pointer;background:#fff;position:relative;transition:border-color .1s,box-shadow .1s}
   .cell2.filled{border-style:solid;border-color:var(--line)}
@@ -283,9 +291,9 @@
   <div class="card bhead">
     <div class="brow">
       <div class="bname"><label>Prompt pack name</label><input id="presName" type="text" placeholder="Type a name for your prompt pack…"></div>
-      <button class="ghost" id="newPres" title="Start a brand-new, empty prompt pack.">＋ New</button>
-      <button class="primary" id="savePres" title="Save this prompt pack so you can pose it in Handoff.">💾 Save</button>
-      <button class="ghost" id="exportPres" title="Download this prompt pack as a .json file — this is what you submit for Pedagogical Excursion #3.">⬇ Export for submission</button>
+      <button class="ghost" id="newPres" title="Clear the builder and start a brand-new, empty prompt pack. Anything unsaved is lost.">＋ New pack</button>
+      <button class="primary" id="savePres" title="Keep this pack on this device so you can pose it in Handoff. Save before you leave the Build tab.">💾 Save pack</button>
+      <button class="ghost" id="exportPres" title="Download the pack itself as a .json file — the task, not anyone's answers. Use it to hand your pack to someone else, or to submit alongside your write-up.">⬇ Export pack (.json)</button>
     </div>
     <div class="striplabel">🖐 Your cards — <b>drag</b> to reorder · <b>click</b> a card to edit</div>
     <div class="setlist" id="setList"></div>
@@ -308,7 +316,7 @@
       <div class="canvasWrap" id="canvasWrap"></div>
       <div class="stagefoot">
         <input id="setPrompt" type="text" placeholder="Question your partner will see (optional)…">
-        <button class="ghost" id="addSet">＋ Add card</button>
+        <button class="ghost" id="addSet" title="Add what you have built on the canvas to the pack as one card. Build another after it.">＋ Add card</button>
       </div>
     </div>
   </div>
@@ -415,42 +423,67 @@ const LEVELS_NOTE="The levels are sequential, invariant and hierarchical \u2014 
 const GEOMETRY_PACK = {
   packFormat:"provoke-cards/v1", name:"van Hiele Geometry", builtIn:true, mode:"see", builtWith:"builder",
   prompt:"What did you see? · How do you know?", levels:"vanhiele",
-  /* Built to follow the argument Higgins's second graders have (TCM 19(8), pp. 491-492):
-     is a circle a shape? The answer turns on whether "shape" means corners and straight
-     sides — which is the Level 1 / Level 2 / Level 3 boundary, in the children's own words. */
+  /* Follows the argument Higgins's second graders have (TCM 19(8), pp. 491-492): is a
+     circle a shape? The answer turns on whether "shape" means corners and straight sides,
+     which is exactly the Level 1 / Level 2 / Level 3 boundary, in the children's own words.
+     Greyscale on purpose: colour is the attribute Higgins found students reach for first,
+     and it sits nowhere on the van Hiele ladder. */
   cards:[
-    /* 1 — Higgins's opening move: what do you know about shapes? The rule is the diagnosis. */
-    {id:"sort-1", template:"sort",
-     members:[{ref:"square"},{ref:"rect-wide"},{ref:"tri-equilateral"},
-              {ref:"hexagon"},{ref:"circle-lg"},{ref:"oval"},
-              {ref:"crescent"},{ref:"star5"},{ref:"spiral"}].map(m=>({...m,rotate:0,color:"gray"})),
-     prompt:"Put these into groups. What is your rule?"},
+    /* 1 — the disequilibrium. The first answer is nearly free; the second costs a property. */
+    {id:"wodb-1", template:"wodb",
+     members:[
+       {ref:"square", rotate:0, color:"gray"},
+       {ref:"rect-wide", rotate:0, color:"gray"},
+       {ref:"tri-equilateral", rotate:0, color:"gray"},
+       {ref:"circle-sm", rotate:0, color:"gray"}
+     ],
+     prompt:"Which one doesn't belong? Say how you know — then find a reason a different one doesn't belong either."},
 
-    /* 2 — the disequilibrium in one card: someone will say "the circle, it has no corners" */
-    {id:"wodb-2", template:"wodb",
-     members:[{ref:"square"},{ref:"rect-wide"},{ref:"tri-equilateral"},{ref:"circle-lg"}]
-       .map(m=>({...m,rotate:0,color:"gray"})),
-     prompt:"Which one doesn't belong — and how do you know?"},
-
-    /* 3 — Higgins's actual question, asked straight. A spiral is not even closed. */
-    {id:"single-3", template:"single",
-     members:[{ref:"spiral", rotate:0, color:"gray"}],
-     prompt:"Is this a shape? How do you know?"},
-
-    /* 4 — "if you trace a circle you can keep tracing it to infinity" (p. 492) */
-    {id:"same-diff-4", template:"same-diff",
-     members:[{ref:"circle-lg", rotate:0, color:"gray"},{ref:"oval", rotate:0, color:"gray"}],
+    /* 2 — “if you trace a circle you can keep tracing it to infinity” (Higgins, p. 492) */
+    {id:"same-diff-2", template:"same-diff",
+     members:[
+       {ref:"circle-lg", rotate:0, color:"gray"},
+       {ref:"oval", rotate:0, color:"gray"}
+     ],
      prompt:"What's the same? What's different?"},
 
-    /* 5 — class inclusion. Higgins's *teachers* split on this one (p. 494). */
-    {id:"same-diff-5", template:"same-diff",
-     members:[{ref:"square", rotate:0, color:"gray"},{ref:"rect-wide", rotate:0, color:"gray"}],
+    /* 3 — class inclusion. Higgins's *teachers* split on this one (p. 494). */
+    {id:"same-diff-3", template:"same-diff",
+     members:[
+       {ref:"square", rotate:0, color:"gray"},
+       {ref:"rect-wide", rotate:0, color:"gray"}
+     ],
      prompt:"What's the same? What's different?"},
 
-    /* 6 — the diamond. Same figure, turned: Level 1 reads the orientation, Level 2 the properties. */
-    {id:"single-6", template:"single",
-     members:[{ref:"square", rotate:45, color:"gray"}],
-     prompt:"What do you see? How do you know?"}
+    /* 4 — the diamond. “What shape is this?” asks for the name, which is the Level 1 tell. */
+    {id:"single-4", template:"single",
+     members:[
+       {ref:"square", rotate:45, color:"red"}
+     ],
+     prompt:"What shape is this? How do you know?"},
+
+    /* 5 — Higgins's question, asked straight, of a figure that is not even closed. */
+    {id:"single-5", template:"single",
+     members:[
+       {ref:"spiral", rotate:0, color:"gray"}
+     ],
+     prompt:"Is this a shape? Why or why not?"},
+
+    /* 6 — her opening move. The stated rule is the diagnosis; a second rule is the level. */
+    {id:"sort-6", template:"sort",
+     members:[
+       {ref:"square", rotate:0, color:"gray"},
+       {ref:"rect-wide", rotate:0, color:"gray"},
+       {ref:"hexagon", rotate:0, color:"gray"},
+       {ref:"tri-equilateral", rotate:0, color:"gray"},
+       {ref:"circle-lg", rotate:0, color:"gray"},
+       {ref:"oval", rotate:0, color:"gray"},
+       {ref:"crescent", rotate:0, color:"gray"},
+       {ref:"star5", rotate:0, color:"gray"},
+       {ref:"spiral", rotate:0, color:"gray"}
+     ],
+     prompt:"Put these into groups that belong together. What is your rule — and can you sort them a different way?"}
+
   ]
 };
 
@@ -1247,7 +1280,7 @@ function answerPhase(){
     `<div class="figbox" style="max-height:${many?52:44}vh">${cardVisual(c, many?460:340)}</div>`;
   if(ses.mode==="presentation"){
     stageEl("stageBody").innerHTML=`
-      <div class="prompt">${escapeHtml(questionFor(c))}</div>
+      <div class="prompt" style="font-size:${questionFor(c).length>70?28:38}px">${escapeHtml(questionFor(c))}</div>
       <div class="promptSub">${subFor(c)}</div>
       ${figure}
       <div class="stageBtns">
@@ -1260,7 +1293,7 @@ function answerPhase(){
   }
   const draft=ses.draft||""; ses.draft="";
   stageEl("stageBody").innerHTML=`
-    <div class="prompt" style="font-size:30px">${escapeHtml(questionFor(c))}</div>
+    <div class="prompt" style="font-size:${questionFor(c).length>70?23:30}px">${escapeHtml(questionFor(c))}</div>
     <div class="promptSub">${subFor(c)}</div>
     ${figure}
     <div class="stageInput"><textarea id="resp" placeholder="What you see — and how you know…">${escapeHtml(draft)}</textarea></div>
@@ -1402,8 +1435,8 @@ function renderOneAnalysis(el,t){
     <input id="thinkerName" type="text" placeholder="Your name" value="${escapeHtml(t.thinker||"")}">
 
     <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
-      <button class="primary" id="saveAn">💾 Save analysis</button>
-      <button class="ghost" id="exportPDF">📄 Export PDF</button>
+      <button class="primary" id="saveAn" title="Keep your levels, quoted evidence and next experience on this device. You can come back and finish later.">💾 Save analysis</button>
+      <button class="ghost" id="exportPDF" title="Print or save the evidence for Pedagogical Excursion #3 — your partner's answers in their own words, the level you located, and what you would offer next.">📄 Export PDF for submission</button>
     </div>
     <div class="locate" style="margin-top:14px">${LEVELS_NOTE}</div>
   </div>`;
