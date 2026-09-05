@@ -1387,6 +1387,29 @@ async function finish(){
   }
 }
 
+/* Browser confirm() only ever offers OK and Cancel, and "OK" reads as agreement
+   with whatever the sentence said last. Name the buttons after the actions. */
+function ask({title, body, go, stay}){
+  return new Promise(res=>{
+    const wrap=document.createElement("div");
+    wrap.className="modal askbox";   /* askbox: the dot editor is also a .modal */
+    wrap.id="askDialog";
+    wrap.innerHTML=`<div class="modalbox" style="max-width:520px">
+      <div class="modalhd">${escapeHtml(title)}</div>
+      <div style="font-size:14.5px;line-height:1.5;white-space:pre-line;margin:12px 0 20px">${escapeHtml(body)}</div>
+      <div class="defoot">
+        ${go?`<button class="ghost" data-a="go">${escapeHtml(go)}</button>`:""}
+        <button class="primary" data-a="stay">${escapeHtml(stay)}</button>
+      </div></div>`;
+    document.body.appendChild(wrap);
+    const done=v=>{ wrap.remove(); res(v); };
+    const g=wrap.querySelector('[data-a="go"]'); if(g) g.onclick=()=>done(true);
+    wrap.querySelector('[data-a="stay"]').onclick=()=>done(false);
+    wrap.onclick=e=>{ if(e.target===wrap) done(false); };
+    wrap.querySelector('[data-a="stay"]').focus();
+  });
+}
+
 /* ================= phase 3 · ANALYZE ================= */
 let an={id:null};
 /* transcripts of the same pack look identical without this */
@@ -1518,19 +1541,27 @@ function renderOneAnalysis(el,t){
         : "Analysis saved.");
     renderAnalyze();
   };
-  el.querySelector("#exportPDF").onclick=()=>{
+  el.querySelector("#exportPDF").onclick=async()=>{
     collect();
     /* stop before the PDF exists, not after — the PDF is the evidence they hand in */
     if(!t.claims.length){
-      alert("Make sure to select a level first.\n\nClick one of the three levels above, then click the answers that show it. A transcript with no level located is not a diagnosis.");
+      await ask({title:"Select a level first",
+        body:"Click one of the three levels above, then click the answers that show it.\n\nA transcript with no level located is not a diagnosis.",
+        go:"", stay:"Continue editing"});
       return;
     }
     const bare=t.claims.filter(c=>!c.evidence.length);
     if(bare.length){
       const names=bare.map(c=>levelOf(c.level).name).join(" and ");
-      if(!confirm(`Make sure to select the responses that support your conclusion.\n\n${names} ${bare.length===1?"has":"have"} no quoted evidence, so the PDF will say "nothing quoted yet" there.\n\nGo back and click the answers, or export anyway?`)) return;
+      if(!await ask({title:"Select the responses that support your conclusion",
+        body:`${names} ${bare.length===1?"has":"have"} no quoted evidence.\n\nClick the answers below that show this level — the quote is the diagnosis.`,
+        go:"Export PDF anyway", stay:"Continue editing"})) return;
     }
-    if(!t.next.trim() && !confirm("You have not said what you would offer this learner next.\n\nExport anyway?")) return;
+    if(!t.next.trim()){
+      if(!await ask({title:"You have not said what to offer next",
+        body:"Locating the level is half of it. The other half is what you would put in front of this learner, pitched at where they are.",
+        go:"Export PDF anyway", stay:"Continue editing"})) return;
+    }
     tsPut(t); exportPDF(t);
   };
 }
@@ -1565,16 +1596,25 @@ Everything stayed on the Thinker's device; this was exported deliberately.</p>
 <h3>What I would offer next</h3><div class="meta">${escapeHtml(t.next)||"(not written)"}</div>
 <h3>The Doer's answers, in full</h3>${rows}
 </body></html>`;
-  const w=window.open("","_blank");
-  if(!w){
-    const blob=new Blob([doc],{type:"text/html"});
-    const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
-    a.download=(t.packName.replace(/[^a-z0-9\-_]+/gi,"-")||"nvoke")+"-transcript.html";
-    document.body.appendChild(a); a.click(); a.remove();
-    toast("Pop-up blocked — downloaded the page instead. Open it and print to PDF.");
-    return;
+  /* Printed from a hidden iframe rather than a new window: pop-up blockers cannot
+     stop it, and nobody ends up with a stray .html file they have to open by hand. */
+  const old=document.getElementById("printFrame"); if(old) old.remove();
+  const f=document.createElement("iframe");
+  f.id="printFrame";
+  f.setAttribute("aria-hidden","true");
+  f.style.cssText="position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
+  document.body.appendChild(f);
+  try{
+    const d=f.contentWindow.document;
+    d.open(); d.write(doc); d.close();
+    setTimeout(()=>{
+      try{ f.contentWindow.focus(); f.contentWindow.print(); }
+      catch(e){ console.warn("print failed",e); toast("Your browser would not open the print dialog."); }
+    }, 400);
+  }catch(e){
+    console.warn("print frame failed",e);
+    toast("Could not build the printable page.");
   }
-  w.document.write(doc); w.document.close(); w.focus(); setTimeout(()=>w.print(),350);
 }
 
 function escapeHtml(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
