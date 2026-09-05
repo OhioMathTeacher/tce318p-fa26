@@ -11,13 +11,21 @@
  h1{font-size:22px;margin:0 0 2px;} .sub{color:#6b7280;font-size:13px;margin-bottom:16px;}
  .goals{background:#e7f3ff;padding:12px 16px;border-radius:6px;margin:12px 0;}
  .block{padding:14px 16px;margin:14px 0;border-left:4px solid var(--red);border-radius:2px;}
- .b-set{background:#e8dcf0;} .b-share{background:#ffe8d6;} .b-work{background:#d6f0e8;} .b-early{background:#ffe8d6;}
+ .b-set{background:#e8dcf0;} .b-share{background:#ffe8d6;} .b-work{background:#d6f0e8;}
  .block h2{font-size:15px;margin:0 0 8px;} .block .time{font-weight:400;color:#6b7280;}
  .purpose{font-style:italic;color:#374151;margin:8px 0 0;}
  .tag{background:#fff3a8;padding:1px 4px;border-radius:3px;font-weight:600;}
  ul{margin:6px 0;padding-left:20px;} li{margin:3px 0;}
  .wrap{background:#fff3cd;padding:14px 16px;border-radius:6px;margin-top:22px;}
  a{color:#2563eb;}
+ summary{list-style:none;cursor:pointer;}
+ summary::-webkit-details-marker{display:none;} summary::marker{content:"";}
+ .block>summary h2{margin:0;} .block[open]>summary h2{margin:0 0 8px;}
+ .block>summary h2::after{content:"\25B8";float:right;color:#6b7280;font-weight:400;}
+ .block[open]>summary h2::after{content:"\25BE";}
+ .block>summary:focus-visible{outline:2px solid var(--red);outline-offset:3px;}
+ #toggleAll{display:none;font-size:12px;color:#6b7280;background:none;border:1px solid #d1d5db;border-radius:4px;padding:3px 9px;cursor:pointer;margin:0 0 4px;}
+ @media print{.block>summary h2::after{content:"";} #toggleAll{display:none!important;}}
  .canvas-note{font-size:12px;color:#9ca3af;border-top:1px solid #e5e7eb;margin-top:26px;padding-top:10px;}
  .home{display:inline-block;margin:0 0 10px;font-size:12px;color:#6b7280;text-decoration:none;}
  .home:hover{color:#2563eb;text-decoration:underline;}
@@ -29,10 +37,12 @@
 <h1>Week 3 · First session — Studio</h1>
 <div class="sub">Geometry, 2.G / 3.G attributes · <em>Poser</em> · the same figure, seen different ways</div>
 
-<div class="goals"><strong>Today's goals:</strong> Run your Excursion rationale past genAI — together, in the room — then live three <strong>What Do You See? / How Do You Know?</strong> geometry talks. Feel how one figure gets seen many ways — <em>"diamond," "rhombus," "parallelogram"</em> — and that the spread isn't error, it's real. We name what it is next class; today you just live it.</div>
+<div class="goals"><strong>Today's goals:</strong> Feel how one figure gets seen many ways — <em>"diamond," "rhombus," "parallelogram"</em> — and that the spread isn't error, it's real. <strong>We name what it is next class; today you just live it.</strong></div>
 
-<div class="block b-share">
- <h2>1 · Your five questions, read back to you <span class="time">(~20 min)</span></h2>
+<button id="toggleAll" type="button">Expand all</button>
+
+<details class="block b-share">
+ <summary><h2>1 · Your five questions, read back to you <span class="time">(~20 min)</span></h2></summary>
  <ul>
   <li><strong>I hand back Pedagogical Excursion 2.</strong> Photograph <strong>only question 2 — your five questions.</strong> Not the whole sheet: my marks are on it, and a model that can see a grade starts agreeing with the grade instead of reading your work.</li>
  </ul>
@@ -42,24 +52,18 @@
   <li>Now finish the move: <strong>pick the one question you'd open with, and say in a sentence why it fits <em>this</em> child</strong> — this misconception, not a general prompt.</li>
   <li>Around the room — where did genAI help, and where did it miss?</li>
  </ul>
- <p class="purpose">Purpose: you spend the next hour running routines and asking the room <em>&ldquo;How do you know?&rdquo;</em> Getting your own questioning read back to you first is the shortest route to hearing yourself do it — and doing it together lets us compare what it told each of us, which is the part that teaches.</p>
-</div>
+</details>
 
-<div class="block b-work">
- <h2>2 · Three geometry talks — you present <span class="time">(~60 min · ~20 each)</span></h2>
+<details class="block b-work">
+ <summary><h2>2 · Three geometry talks — you present <span class="time">(~60 min · ~20 each)</span></h2></summary>
  <ul>
-  <li>We run each routine together — flash a figure, <strong>"What do you see?"</strong>, collect a few, then <strong>"How do you know?"</strong> Ask, never tell.</li>
+  <li>We run each routine together — put a figure up, <strong>"What do you see?"</strong>, collect a few, then <strong>"How do you know?"</strong> Ask, never tell.</li>
   <li><span class="tag">WODB</span> <strong>Which One Doesn't Belong?</strong> — four figures; pick one that doesn't belong and defend it (every figure can be defended). Pick a set from <a href="https://talkingmathwithkids.com/wodb">Which One Doesn't Belong?</a>.</li>
   <li><span class="tag">Same &amp; Different</span> — two figures; say what's the same and what's different. Pick a pair from <a href="https://www.samebutdifferentmath.com/geometry">Same But Different — Geometry</a> (28 pairs, each with a full-size view for projecting).</li>
-  <li><span class="tag">Sort</span> — a handful of figures; group them and <strong>state your rule</strong>, then sort them a different way. Run it in <a href="sort-lab.html">Sort Lab</a> — drag the pieces into circles you draw and name, and turn or flip them to test whether your rule survives. Start with <strong>Triangles</strong> (none of them sits on a flat base, on purpose). Then try <strong>Characters</strong>: you can't name what you can't read, so the only way in is properties. Shapes, Letters, Foods and People are there too, and the whole board runs in English, Spanish or Chinese.</li>
+  <li><span class="tag">Sort</span> — a handful of figures; group them and <strong>state your rule</strong>, then sort them a different way. Run it in <a href="sort-lab.html">Sort Lab</a>: start with <strong>Triangles</strong> (none of them sits on a flat base, on purpose), then <strong>Characters</strong> — you can't name what you can't read, so the only way in is properties.</li>
  </ul>
- <p class="purpose">Purpose: three routines keep the demand varied, but all surface the same thing — how differently people see the same form.</p>
-</div>
+</details>
 
-<div class="block b-early">
- <h2>If you finish early</h2>
- <ul><li>Take one figure we ran and find a <em>reason to include it</em> that no one gave. How many honestly-different "sees" can one figure hold?</li></ul>
-</div>
 
 <div class="wrap">
  <strong>Wrap-up &amp; looking ahead:</strong>
@@ -70,5 +74,34 @@
 
 <p class="canvas-note">The submission dropbox and due dates are in <strong>Canvas</strong>, below the link to this outline. This page is the lesson outline only — no names, no grades.</p>
 </main>
+
+<script>
+/* Sections start closed so the page reads as an agenda. Two sharp edges to remove:
+   find-in-page cannot reach inside a collapsed <details> in every browser, so
+   "Expand all" exists — revealed only when scripting is on, since it does nothing
+   without it; and printing must show everything, or the printout is a list of titles. */
+(function(){
+  var secs=[].slice.call(document.querySelectorAll('details.block'));
+  if(!secs.length) return;
+  var btn=document.getElementById('toggleAll');
+  if(btn){
+    btn.style.display='inline-block';
+    btn.addEventListener('click',function(){
+      var open=secs.some(function(d){return !d.open;});
+      secs.forEach(function(d){d.open=open;});
+      btn.textContent=open?'Collapse all':'Expand all';
+    });
+  }
+  var before=null;
+  window.addEventListener('beforeprint',function(){
+    before=secs.map(function(d){return d.open;});
+    secs.forEach(function(d){d.open=true;});
+  });
+  window.addEventListener('afterprint',function(){
+    if(before) secs.forEach(function(d,i){d.open=before[i];});
+    before=null;
+  });
+})();
+</script>
 </body>
 </html>
