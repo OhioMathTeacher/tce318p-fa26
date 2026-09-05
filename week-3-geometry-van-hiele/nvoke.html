@@ -47,6 +47,7 @@
   .fadj{background:#fff;border:1px solid var(--line);color:var(--outline);border-radius:6px;width:24px;height:24px;font:inherit;font-weight:700;cursor:pointer;line-height:1}
   .fadj:hover{border-color:var(--outline)}
   #bar{position:absolute;top:0;left:0;height:5px;background:var(--outline);width:0%}
+  #stageBody{display:flex;flex-direction:column;align-items:center;width:100%}
   .figbox{width:min(70vw,520px);height:min(70vw,520px);max-height:66vh;display:flex;align-items:center;justify-content:center}
   .figbox svg,.figbox img{max-width:100%;max-height:60vh;border-radius:8px}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px}
@@ -186,83 +187,116 @@
   .degrid.tf .decell{border-radius:7px}
   .depreview{width:200px;height:200px;border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--ground)}
   .defoot{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+
+  /* ===== phase header + routine drawer ===== */
+  #apphdr{padding-bottom:0}
+  #builder,#handoff,#analyze{padding-top:8px}
+  .hdrbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .drawerToggle{border:2px solid var(--outline);background:#fff;color:var(--outline);border-radius:11px;
+    padding:9px 15px;font:inherit;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px}
+  .drawerToggle:hover{background:#eef4fc}
+  .phasebar{display:inline-flex;gap:0;margin:2px 0 4px;border:2px solid var(--outline);border-radius:12px;overflow:hidden}
+  .phase{border:0;border-right:2px solid var(--outline);background:#fff;color:var(--outline);
+    padding:10px 20px;font:inherit;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px}
+  .phase:last-child{border-right:0}
+  .phase.on{background:var(--outline);color:#fff}
+  .phase .pnum{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
+    border-radius:50%;background:currentColor;font-size:11px;font-weight:800;flex:none}
+  .phase .pnum b{color:#fff}
+  .phase.on .pnum b{color:var(--outline)}
+  .phase:disabled{opacity:.4;cursor:not-allowed}
+  #drawer{position:fixed;top:0;left:0;bottom:0;width:min(420px,92vw);background:#fff;z-index:40;
+    border-right:1px solid var(--line);box-shadow:6px 0 26px #0002;transform:translateX(-102%);
+    transition:transform .22s ease;overflow-y:auto;padding:18px 18px 40px}
+  #drawer.open{transform:translateX(0)}
+  #drawerBack{position:fixed;inset:0;background:#0004;z-index:39;display:none}
+  #drawerBack.open{display:block}
+  .drawerHd{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+  .drawerHd h2{font-size:19px;margin:0;color:var(--outline)}
+  .drow{border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:10px;display:flex;gap:11px;align-items:center}
+  .drow .dthumb{width:66px;height:66px;flex:none;display:flex;align-items:center;justify-content:center;
+    background:var(--ground);border-radius:9px;overflow:hidden}
+  .drow .dthumb svg,.drow .dthumb img{max-width:62px;max-height:62px}
+  .drow .dmeta{flex:1;min-width:0}
+  .drow .dname{font-weight:700;font-size:14px}
+  .drow .dsub{font-size:11.5px;color:var(--muted)}
+  .drow .dacts{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+  .drow .dacts .tbtn{padding:3px 9px;font-size:11.5px;border-width:1px}
+  /* ===== analyze phase ===== */
+  .tscript{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:10px;
+    display:flex;gap:12px;align-items:center;cursor:pointer;background:#fff}
+  .tscript:hover{border-color:var(--outline)}
+  .tscript.done{background:#f3f9f3;border-color:#bcd9bd}
+  .anrow{display:flex;gap:12px;align-items:flex-start;padding:9px 10px;border:1px solid var(--line);
+    border-radius:10px;margin-top:7px;background:#fff;cursor:pointer}
+  .anrow:hover{border-color:var(--outline)}
+  .anrow.picked{border-color:var(--outline);background:#eef4fc;box-shadow:0 0 0 2px #5590e033}
+  .anrow .abox{flex:none;width:20px;height:20px;border:2px solid var(--line);border-radius:5px;
+    display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:13px;margin-top:2px}
+  .anrow.picked .abox{background:var(--outline);border-color:var(--outline)}
+  .anrow .athumb{width:54px;height:54px;flex:none;display:flex;align-items:center;justify-content:center}
+  .anrow .athumb svg,.anrow .athumb img{max-width:54px;max-height:54px}
+  .anrow .asaid{flex:1;font-size:14px;min-width:0}
+  .anrow .anum{font-weight:800;color:var(--muted);font-size:12px}
+  .lvlpick{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 4px}
+  .lvlbtn{border:2px solid var(--line);background:#fff;border-radius:12px;padding:9px 14px;font:inherit;
+    font-weight:700;cursor:pointer;text-align:left;color:var(--ink);max-width:250px}
+  .lvlbtn:hover{border-color:var(--outline)}
+  .lvlbtn.on{border-color:var(--outline);background:#eef4fc}
+  .lvlbtn .lname{display:block;font-size:14px;color:var(--outline)}
+  .lvlbtn .ldesc{display:block;font-size:11.5px;color:var(--muted);font-weight:400;margin-top:3px;line-height:1.35}
+  .claimcard{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:12px;background:#fff}
+  .claimhd{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .locate{background:#f5f8fc;border-radius:10px;padding:10px 13px;font-size:13px;margin:10px 0}
+  .stepnote{font-size:13px;color:var(--muted);margin:2px 0 12px}
+  .handback{font-size:30px;font-weight:800;color:var(--outline);line-height:1.25}
 </style>
 </head>
 <body>
 <div class="wrap wide" id="apphdr">
-  <h1>nVoke <small>build it · see it · say it</small></h1>
-  <div class="tabs">
-    <button class="tab on" data-tab="library">📚 Library</button>
-    <button class="tab" data-tab="builder">🛠 Builder</button>
-    <button class="tab" data-tab="player">▶ Player</button>
+  <div class="hdrbar">
+    <button class="drawerToggle" id="drawerToggle" title="Open your prompt packs — the ready-made ones and any you have built or imported.">📚 <span>Prompt packs</span></button>
+    <h1>nVoke <small>build it · pose it · read it</small></h1>
+  </div>
+  <div class="phasebar" id="phasebar">
+    <button class="phase on" data-phase="build" title="Phase 1 — Build. Make the prompt pack you will pose: pick a layout, drag in shapes, write the question.">
+      <span class="pnum"><b>1</b></span> Build</button>
+    <button class="phase" data-phase="handoff" title="Phase 2 — Handoff. Give your laptop to your partner. They answer; you sit beside them and ask, never tell.">
+      <span class="pnum"><b>2</b></span> Handoff</button>
+    <button class="phase" data-phase="analyze" title="Phase 3 — Analyze. Read your partner's answers through the van Hiele levels and decide what to offer them next.">
+      <span class="pnum"><b>3</b></span> Analyze</button>
   </div>
 </div>
 
-<div class="wrap panel" id="setup" style="display:none">
-  <div class="ferpa">🔒 Everything stays on this device — no image or response is ever uploaded.</div>
-
-  <div class="card">
-    <label>Pack</label>
-    <div class="row">
-      <div><select id="packSel"></select></div>
-      <div style="flex:none">
-        <button class="ghost" id="loadBtn">Load pack / images…</button>
-        <input id="fileIn" type="file" multiple accept=".json,image/*" style="display:none">
-      </div>
-    </div>
-    <div class="hint" id="packInfo"></div>
-
-    <label>Mode</label>
-    <div class="seg" id="modeSeg">
-      <button data-mode="presentation" class="on">Presentation</button>
-      <button data-mode="diagnostic">Diagnostic</button>
-    </div>
-    <div class="hint" id="modeHint"></div>
-
-    <div class="row" style="margin-top:8px">
-      <div>
-        <label>Flash time: <span id="flashLbl">1s</span></label>
-        <input type="range" id="flash" min="1" max="5" step="1" value="1">
-      </div>
-      <div style="flex:none">
-        <label>Order</label>
-        <div class="seg" id="orderSeg">
-          <button data-order="as" class="on">As-is</button>
-          <button data-order="shuffle">Shuffle</button>
-        </div>
-      </div>
-      <div style="flex:none">
-        <label>Hide after flash</label>
-        <div class="seg" id="hideSeg">
-          <button data-hide="1" class="on">Yes</button>
-          <button data-hide="0">No</button>
-        </div>
-      </div>
-    </div>
-    <div style="margin-top:20px"><button class="primary" id="startBtn">Start ▶</button></div>
-  </div>
-  <div class="small">Built-in <b>van Hiele geometry</b> pack renders as crisp shapes (no image files). Your own packs = a
-    <code>.json</code> pack, or just image files whose <b>filenames are the answers</b> (→ a name quiz in Diagnostic mode).</div>
+<!-- prompt pack drawer -->
+<div id="drawerBack"></div>
+<div id="drawer">
+  <div class="drawerHd"><h2>📚 Prompt packs</h2><button class="tbtn" id="drawerClose">✕</button></div>
+  <div class="small">Ready-made packs and any you have built. Click <b>Use</b> to load one into whatever phase you are in.</div>
+  <div style="margin:12px 0 2px"><button class="ghost" id="importLib" style="width:100%" title="Load a prompt pack (.json) a classmate exported, or image files from your computer.">⬆ Import a prompt pack (.json)…</button>
+    <input id="fileIn" type="file" multiple accept=".json,image/*" style="display:none"></div>
+  <div id="drawerList"></div>
 </div>
 
-<!-- builder -->
-<div class="wrap panel wide" id="builder" style="display:none">
+<!-- ===== phase 1 · BUILD ===== -->
+<div class="wrap panel wide" id="builder">
   <div class="card bhead">
     <div class="brow">
-      <div class="bname"><label>Presentation</label><input id="presName" type="text" value="My presentation"></div>
-      <button class="ghost" id="newPres">＋ New</button>
-      <button class="primary" id="savePres">💾 Save to Library</button>
+      <div class="bname"><label>Prompt pack name</label><input id="presName" type="text" placeholder="Type a name for your prompt pack…"></div>
+      <button class="ghost" id="newPres" title="Start a brand-new, empty prompt pack.">＋ New</button>
+      <button class="primary" id="savePres" title="Save this prompt pack so you can pose it in Handoff.">💾 Save</button>
+      <button class="ghost" id="exportPres" title="Download this prompt pack as a .json file — this is what you submit for Pedagogical Excursion #3.">⬇ Export for submission</button>
     </div>
-    <div class="striplabel">🖐 Your slides — <b>drag</b> to reorder · <b>click</b> a slide to edit</div>
+    <div class="striplabel">🖐 Your cards — <b>drag</b> to reorder · <b>click</b> a card to edit</div>
     <div class="setlist" id="setList"></div>
   </div>
   <div class="studio">
     <div class="rail" id="tplRail">
-      <button class="railbtn on" data-tpl="wodb"><svg viewBox="0 0 36 36" fill="currentColor"><rect x="4" y="4" width="12" height="12" rx="2"/><rect x="20" y="4" width="12" height="12" rx="2"/><rect x="4" y="20" width="12" height="12" rx="2"/><rect x="20" y="20" width="12" height="12" rx="2"/></svg><span>WODB</span></button>
-      <button class="railbtn" data-tpl="same-diff"><svg viewBox="0 0 36 36" fill="currentColor"><rect x="3" y="11" width="13" height="14" rx="2"/><rect x="20" y="11" width="13" height="14" rx="2"/></svg><span>Same&amp;Diff</span></button>
-      <button class="railbtn" data-tpl="sort"><svg viewBox="0 0 36 36" fill="currentColor"><rect x="4" y="4" width="8" height="8" rx="1.5"/><rect x="14" y="4" width="8" height="8" rx="1.5"/><rect x="24" y="4" width="8" height="8" rx="1.5"/><rect x="4" y="14" width="8" height="8" rx="1.5"/><rect x="14" y="14" width="8" height="8" rx="1.5"/><rect x="24" y="14" width="8" height="8" rx="1.5"/><rect x="4" y="24" width="8" height="8" rx="1.5"/><rect x="14" y="24" width="8" height="8" rx="1.5"/><rect x="24" y="24" width="8" height="8" rx="1.5"/></svg><span>Sort</span></button>
-      <button class="railbtn" data-tpl="ispy"><svg viewBox="0 0 36 36" fill="currentColor"><circle cx="9" cy="11" r="5"/><rect x="19" y="5" width="10" height="10" rx="1.5"/><path d="M17 31 L10 20 L24 20 Z"/><circle cx="27" cy="26" r="4"/></svg><span>I Spy</span></button>
-      <button class="railbtn" data-tpl="single"><svg viewBox="0 0 36 36" fill="currentColor"><rect x="8" y="8" width="20" height="20" rx="3"/></svg><span>Single</span></button>
+      <button class="railbtn on" data-tpl="wodb" title="Which One Doesn't Belong? — four figures, and every one of them can be argued out. Shows you which property a person is reasoning from. Holds up to 4."><svg viewBox="0 0 36 36" fill="currentColor"><rect x="4" y="4" width="12" height="12" rx="2"/><rect x="20" y="4" width="12" height="12" rx="2"/><rect x="4" y="20" width="12" height="12" rx="2"/><rect x="20" y="20" width="12" height="12" rx="2"/></svg><span>WODB</span></button>
+      <button class="railbtn" data-tpl="same-diff" title="Same &amp; Different — two figures side by side. Name what holds and what changes; pushes past the label toward properties. Holds 2."><svg viewBox="0 0 36 36" fill="currentColor"><rect x="3" y="11" width="13" height="14" rx="2"/><rect x="20" y="11" width="13" height="14" rx="2"/></svg><span>Same&amp;Diff</span></button>
+      <button class="railbtn" data-tpl="sort" title="Sort — a handful of figures. Group them and state the rule, then regroup a different way. The rule is the diagnosis. Holds up to 9."><svg viewBox="0 0 36 36" fill="currentColor"><rect x="4" y="4" width="8" height="8" rx="1.5"/><rect x="14" y="4" width="8" height="8" rx="1.5"/><rect x="24" y="4" width="8" height="8" rx="1.5"/><rect x="4" y="14" width="8" height="8" rx="1.5"/><rect x="14" y="14" width="8" height="8" rx="1.5"/><rect x="24" y="14" width="8" height="8" rx="1.5"/><rect x="4" y="24" width="8" height="8" rx="1.5"/><rect x="14" y="24" width="8" height="8" rx="1.5"/><rect x="24" y="24" width="8" height="8" rx="1.5"/></svg><span>Sort</span></button>
+      <button class="railbtn" data-tpl="ispy" title="I Spy — a field of figures. Name a property and let them find everything that fits. Holds up to 24."><svg viewBox="0 0 36 36" fill="currentColor"><circle cx="9" cy="11" r="5"/><rect x="19" y="5" width="10" height="10" rx="1.5"/><path d="M17 31 L10 20 L24 20 Z"/><circle cx="27" cy="26" r="4"/></svg><span>I Spy</span></button>
+      <button class="railbtn" data-tpl="single" title="Single — one figure, asked wide open: what do you see, and how do you know? Holds 1."><svg viewBox="0 0 36 36" fill="currentColor"><rect x="8" y="8" width="20" height="20" rx="3"/></svg><span>Single</span></button>
     </div>
     <div class="cardspanel">
       <input id="cardSearch" class="cardsearch" type="text" placeholder="Search shapes…">
@@ -273,22 +307,58 @@
       <div class="toolstrip" id="toolStrip" style="display:none"></div>
       <div class="canvasWrap" id="canvasWrap"></div>
       <div class="stagefoot">
-        <input id="setPrompt" type="text" placeholder="Prompt shown after the flash (optional)…">
-        <button class="ghost" id="addSet">＋ Add image set to presentation</button>
+        <input id="setPrompt" type="text" placeholder="Question your partner will see (optional)…">
+        <button class="ghost" id="addSet">＋ Add card</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- presentation library -->
-<div class="wrap panel wide" id="library">
+<!-- ===== phase 2 · HANDOFF ===== -->
+<div class="wrap panel" id="handoff" style="display:none">
+  <div class="ferpa">🔒 Everything stays on this device — nothing is ever uploaded.</div>
   <div class="card">
-    <label>Presentation Library</label>
-    <div class="hint">Click a presentation to <b>edit</b> it (built-ins: <b>Copy</b> first) · <b>▶ Play</b> to run it · <b>⬇ Export</b> a <code>.json</code> you can share · <b>Copy</b> / <b>Delete</b> below each.</div>
-    <div style="margin:10px 0 4px"><button class="ghost" id="importLib">⬆ Import routine (.json)…</button></div>
-    <div class="libraryGrid" id="libraryGrid"></div>
+    <label>Prompt pack</label>
+    <div class="row">
+      <div><select id="packSel"></select></div>
+      <div style="flex:none"><button class="ghost" id="loadBtn" title="Load a prompt pack (.json) or image files from your computer.">Load from a file…</button></div>
+    </div>
+    <div class="hint" id="packInfo"></div>
+
+    <label>Who is taking this?</label>
+    <div class="seg" id="modeSeg">
+      <button data-mode="diagnostic" class="on">One person · answers are kept</button>
+      <button data-mode="presentation">The whole room · nothing kept</button>
+    </div>
+    <div class="hint" id="modeHint"></div>
+
+    <div class="row" style="margin-top:14px">
+      <div style="flex:none">
+        <label>Order</label>
+        <div class="seg" id="orderSeg">
+          <button data-order="as" class="on">As-is</button>
+          <button data-order="shuffle">Shuffle</button>
+        </div>
+      </div>
+      <div id="flashWrap" style="display:none">
+        <label>Flash time: <span id="flashLbl">1s</span></label>
+        <input type="range" id="flash" min="1" max="5" step="1" value="1">
+        <div class="hint">Only the dot and ten-frame cards flash. Geometry cards stay on screen while your partner thinks.</div>
+      </div>
+    </div>
+
+    <div id="doerNameWrap" style="margin-top:6px">
+      <label>Label for this transcript <span style="font-weight:400;color:var(--muted)">— optional, no full names</span></label>
+      <input id="doerLabel" type="text" placeholder="e.g. Doer · my partner, or Doer · age 8">
+    </div>
+
+    <div class="locate" id="handoffNote"></div>
+    <div style="margin-top:14px"><button class="primary" id="startBtn">Hand it over ▶</button></div>
   </div>
 </div>
+
+<!-- ===== phase 3 · ANALYZE ===== -->
+<div class="wrap panel" id="analyze" style="display:none"></div>
 
 <!-- dot-pattern editor -->
 <div id="dotEditor" class="modal" style="display:none">
@@ -320,10 +390,27 @@
 <script>
 const OUTLINE="#1a1a1a", FILL="#e9e9e9", MARK="#c62828";
 
+/* ================= van Hiele levels (reference only — the app never assigns one) ================= */
+const VAN_HIELE=[
+ {n:0, name:"Level 0 · Visualization",
+  short:"names by how it looks",
+  desc:"Names the whole shape by its look or its orientation — \u201ca diamond,\u201d \u201ca door.\u201d A square and a rectangle feel like separate things.",
+  example:"\u201cIt\u2019s a diamond.\u201d"},
+ {n:1, name:"Level 1 · Analysis",
+  short:"reasons from properties",
+  desc:"Reasons from properties and parts \u2014 \u201cfour equal sides,\u201d \u201cstraight sides, closed\u201d \u2014 but still treats the classes as separate things.",
+  example:"\u201cFour equal sides and square corners.\u201d"},
+ {n:2, name:"Level 2 · Informal deduction",
+  short:"relates the classes",
+  desc:"Relates properties to one another and uses class inclusion \u2014 one kind of shape can be a special case of another.",
+  example:"\u201cA square is a special rectangle.\u201d"}
+];
+const LEVELS_NOTE="Levels are sequential and experience-driven, not age-based. You locate a level in order to offer the right next experience \u2014 locate, don\u2019t rank.";
+
 /* ================= built-in geometry pack ================= */
 const GEOMETRY_PACK = {
   packFormat:"provoke-cards/v1", name:"van Hiele Geometry", builtIn:true, mode:"see", builtWith:"builder",
-  prompt:"What did you see? · How do you know?",
+  prompt:"What did you see? · How do you know?", levels:"vanhiele",
   cards:[
     {id:"single-1", template:"single",
      members:[{ref:"square", rotate:0, color:"gray"}],
@@ -350,10 +437,13 @@ const GEOMETRY_PACK = {
      prompt:"Which one doesn't belong — and how do you know?"},
     {id:"same-diff-6", template:"same-diff",
      members:[
-       {ref:"star5", rotate:0, color:"gray"},
-       {ref:"hexagon", rotate:0, color:"gray"},
-       {ref:"crescent", rotate:0, color:"gray"},
-       {ref:"heart", rotate:0, color:"gray"}],
+       {ref:"square", rotate:0, color:"gray"},
+       {ref:"square", rotate:45, color:"gray"}],
+     prompt:"What's the same? What's different?"},
+    {id:"same-diff-7", template:"same-diff",
+     members:[
+       {ref:"rect-wide", rotate:0, color:"gray"},
+       {ref:"parallelogram", rotate:0, color:"gray"}],
      prompt:"What's the same? What's different?"}
   ]
 };
@@ -597,11 +687,14 @@ const LIB=Object.fromEntries(CARD_LIBRARY.map(c=>[c.id,c]));
 /* ---- templates: arrange cards into an image set ---- */
 const TEMPLATES={
   wodb:{label:"Which One Doesn't Belong?", max:4, prompt:"Which one doesn't belong — and how do you know?"},
-  "same-diff":{label:"Same & Different", max:4, prompt:"What's the same? What's different?"},
+  "same-diff":{label:"Same & Different", max:2, prompt:"What's the same? What's different?"},
   sort:{label:"Sort", max:9, prompt:"Sort these and state your rule."},
   ispy:{label:"I Spy", max:24, prompt:"I spy a shape that… (name a property)"},
   single:{label:"Single card", max:1, prompt:"What do you see? · How do you know?"}
 };
+function posLabel(t,x,y){
+  return `<text x="${x}" y="${y}" font-size="0.46" font-weight="800" fill="#98a2b3" font-family="Inter,system-ui,sans-serif">${t}</text>`;
+}
 function memberFig(m){return m.figure||(LIB[m.ref]&&LIB[m.ref].figure)||null;}
 function placeMember(m,cx,cy,s){
   const fig=memberFig(m); if(!fig) return "";
@@ -623,16 +716,21 @@ function imageSetSVG(set,px=520){
   if(T==="wodb"){
     const c=[[-1.75,-1.75],[1.75,-1.75],[-1.75,1.75],[1.75,1.75]];
     const g=`<line x1="0" y1="-3.7" x2="0" y2="3.7" stroke="#cfcfcf" stroke-width="0.05"/><line x1="-3.7" y1="0" x2="3.7" y2="0" stroke="#cfcfcf" stroke-width="0.05"/>`;
-    return svg("-3.7 -3.7 7.4 7.4",px,px, g+M.slice(0,4).map((m,i)=>placeMember(m,c[i][0],c[i][1],0.92)).join(""));
+    const lab=M.slice(0,4).map((m,i)=>posLabel("ABCD"[i], c[i][0]-1.42, c[i][1]-1.18)).join("");
+    return svg("-3.7 -3.7 7.4 7.4",px,px, g+M.slice(0,4).map((m,i)=>placeMember(m,c[i][0],c[i][1],0.92)).join("")+lab);
   }
   if(T==="same-diff"){
-    const n=Math.min(Math.max(M.length,1),4), gap=3.4, W=n*gap;
-    return svg(`${-W/2} -1.9 ${W} 3.8`, px, Math.round(px*3.8/W), M.slice(0,4).map((m,i)=>placeMember(m,(i-(n-1)/2)*gap,0,1.05)).join(""));
+    const n=Math.min(Math.max(M.length,1),2), gap=3.4, W=n*gap;
+    const body=M.slice(0,2).map((m,i)=>placeMember(m,(i-(n-1)/2)*gap,0,1.05)).join("");
+    const lab=M.slice(0,2).map((m,i)=>posLabel("AB"[i], (i-(n-1)/2)*gap-1.35, -1.45)).join("");
+    return svg(`${-W/2} -1.9 ${W} 3.8`, px, Math.round(px*3.8/W), body+lab);
   }
   if(T==="sort"){
-    const gap=2.5, out=[];
-    for(let i=0;i<Math.min(M.length,9);i++){const c=i%3,r=Math.floor(i/3);out.push(placeMember(M[i],(c-1)*gap,(r-1)*gap,0.72));}
-    return svg("-3.9 -3.9 7.8 7.8",px,px,out.join(""));
+    const gap=2.5, out=[], lab=[];
+    for(let i=0;i<Math.min(M.length,9);i++){const c=i%3,r=Math.floor(i/3);
+      out.push(placeMember(M[i],(c-1)*gap,(r-1)*gap,0.72));
+      lab.push(posLabel(String(i+1),(c-1)*gap-0.98,(r-1)*gap-0.82));}
+    return svg("-3.9 -3.9 7.8 7.8",px,px,out.join("")+lab.join(""));
   }
   const L=scatterLayout(M.length), places=set.layout||L.places;
   const body=M.slice(0,places.length).map((m,i)=>{const p=places[i];
@@ -684,32 +782,45 @@ function idbDel(k){return idb().then(db=>new Promise((res,rej)=>{const t=db.tran
   t.objectStore(STORE).delete(k);t.oncomplete=res;t.onerror=()=>rej(t.error);}));}
 
 /* ================= state ================= */
-let PACKS={}; // name -> pack
-let cfg={packName:GEOMETRY_PACK.name, mode:"presentation", flash:1, order:"as", hide:true};
+let PACKS={}; // name -> prompt pack
+let TRANSCRIPTS=[]; // saved Doer runs, newest first
+let cfg={packName:GEOMETRY_PACK.name, mode:"diagnostic", flash:1, order:"as", hide:true, doerLabel:""};
+let phase="build";
 
 async function init(){
   PACKS[GEOMETRY_PACK.name]=GEOMETRY_PACK;
   PACKS[TEN_FRAMES_PACK.name]=TEN_FRAMES_PACK;
   PACKS[DOT_PATTERNS_PACK.name]=DOT_PATTERNS_PACK;
-  refreshPackSel(); wireUI(); updateHints(); initBuilder(); renderLibrary();
-  try{ for(const k of await idbKeys()){ const p=await idbGet(k); if(p&&p.cards) PACKS[p.name||k]=p; } refreshPackSel(); renderLibrary(); }
-  catch(err){ console.warn("persisted packs unavailable:",err); }
+  refreshPackSel(); wireUI(); updateHints(); initBuilder(); renderDrawer();
+  try{
+    for(const k of await idbKeys()){ const p=await idbGet(k); if(p&&p.cards) PACKS[p.name||k]=p; }
+    TRANSCRIPTS=await tsAll();
+    refreshPackSel(); renderDrawer(); renderAnalyze();
+  }catch(err){ console.warn("persisted data unavailable:",err); }
 }
 function refreshPackSel(){
   const sel=document.getElementById("packSel");
-  sel.innerHTML=Object.keys(PACKS).map(n=>`<option ${n===cfg.packName?"selected":""}>${n}</option>`).join("");
+  sel.innerHTML=Object.keys(PACKS).map(n=>`<option ${n===cfg.packName?"selected":""}>${escapeHtml(n)}</option>`).join("");
 }
-function curPack(){return PACKS[cfg.packName];}
-function packHasLookFors(p){return p.cards.some(c=>c.lookFors);}
-function packHasAnswers(p){return p.mode==="name"||p.cards.some(c=>c.answer);}
+function curPack(){return PACKS[cfg.packName]||GEOMETRY_PACK;}
+/* a card flashes only if it is a subitizing card; geometry stays on screen */
+function isFlashCard(c){
+  const f=c&&c.figure;
+  return !!(f&&(f.type==="tenframe"||f.type==="dots"||f.kind==="tenframe"||f.kind==="dots"));
+}
+function packHasFlash(p){return (p.cards||[]).some(isFlashCard);}
 function updateHints(){
   const p=curPack();
   document.getElementById("packInfo").textContent=
-    `${p.cards.length} cards · ${packHasAnswers(p)?"name quiz (answers)":"free response"}`;
+    `${p.cards.length} card${p.cards.length===1?"":"s"}${packHasFlash(p)?" · includes flash cards":""}`;
   document.getElementById("modeHint").textContent = cfg.mode==="presentation"
-    ? "Project & discuss. Flash each image, then a “What did you see?” slide. Nothing is captured."
-    : (packHasAnswers(p) ? "You type the answer after each flash → checked → streak."
-       : "You type what you saw; at the end you review all your responses and decide the patterns yourself — then export a PDF to share.");
+    ? "Projected for a group. The question comes up, you talk it through together, and nothing is written down."
+    : "Your partner answers on this device, one card at a time. Their answers are saved here for you to read in Analyze.";
+  document.getElementById("flashWrap").style.display = packHasFlash(p) ? "" : "none";
+  document.getElementById("doerNameWrap").style.display = cfg.mode==="presentation" ? "none" : "";
+  document.getElementById("handoffNote").innerHTML = cfg.mode==="presentation"
+    ? "<b>You drive.</b> Put it on the projector and run the cards for the room."
+    : "<b>Hand your laptop to your partner.</b> Sit beside them. Ask <i>“How do you know?”</i> — ask, never tell. They type; you listen.";
 }
 
 /* ================= UI wiring ================= */
@@ -717,23 +828,54 @@ function wireUI(){
   const $=id=>document.getElementById(id);
   $("packSel").onchange=e=>{cfg.packName=e.target.value;updateHints();};
   $("flash").oninput=e=>{cfg.flash=+e.target.value;$("flashLbl").textContent=cfg.flash+"s";};
+  $("doerLabel").oninput=e=>{cfg.doerLabel=e.target.value;};
   segWire("modeSeg","mode",v=>{cfg.mode=v;updateHints();});
   segWire("orderSeg","order",v=>cfg.order=v);
-  segWire("hideSeg","hide",v=>cfg.hide=(v==="1"));
   $("loadBtn").onclick=()=>$("fileIn").click();
-  { const il=$("importLib"); if(il) il.onclick=()=>$("fileIn").click(); }
+  $("importLib").onclick=()=>$("fileIn").click();
   $("fileIn").onchange=onFiles;
   $("startBtn").onclick=startRun;
-  document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+  document.querySelectorAll(".phase").forEach(b=>b.onclick=()=>switchPhase(b.dataset.phase));
+  $("drawerToggle").onclick=()=>toggleDrawer(true);
+  $("drawerClose").onclick=()=>toggleDrawer(false);
+  $("drawerBack").onclick=()=>toggleDrawer(false);
+  $("exportPres").onclick=()=>{
+    const n=(document.getElementById("presName").value||"").trim();
+    if(!n||!PACKS[n]){toast("Save your prompt pack first, then export it.");return;}
+    exportPresentation(n);
+  };
 }
-function switchTab(t){
-  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.tab===t));
-  document.getElementById("setup").style.display=t==="player"?"block":"none";
-  document.getElementById("builder").style.display=t==="builder"?"block":"none";
-  document.getElementById("library").style.display=t==="library"?"block":"none";
-  if(t==="library") renderLibrary();
+function toggleDrawer(open){
+  document.getElementById("drawer").classList.toggle("open",open);
+  document.getElementById("drawerBack").classList.toggle("open",open);
+  if(open) renderDrawer();
+}
+function switchPhase(t){
+  phase=t;
+  document.querySelectorAll(".phase").forEach(b=>b.classList.toggle("on",b.dataset.phase===t));
+  document.getElementById("builder").style.display=t==="build"?"block":"none";
+  document.getElementById("handoff").style.display=t==="handoff"?"block":"none";
+  document.getElementById("analyze").style.display=t==="analyze"?"block":"none";
+  if(t==="handoff"){ refreshPackSel(); updateHints(); }
+  if(t==="analyze") renderAnalyze();
+  toggleDrawer(false);
   window.scrollTo(0,0);
 }
+
+/* ================= transcript store ================= */
+const TDBN="nvoke-transcripts";
+function tdb(){return new Promise((res,rej)=>{const r=indexedDB.open(TDBN,1);
+  r.onupgradeneeded=()=>r.result.createObjectStore("runs",{keyPath:"id"});
+  r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+function tsPut(v){return tdb().then(db=>new Promise((res,rej)=>{const t=db.transaction("runs","readwrite");
+  t.objectStore("runs").put(v);t.oncomplete=res;t.onerror=()=>rej(t.error);}));}
+function tsAll(){return tdb().then(db=>new Promise(res=>{const t=db.transaction("runs","readonly");
+  const q=t.objectStore("runs").getAll();q.onsuccess=()=>res((q.result||[]).sort((a,b)=>b.at-a.at));q.onerror=()=>res([]);}))
+  .catch(()=>[]);}
+function tsDel(id){return tdb().then(db=>new Promise((res,rej)=>{const t=db.transaction("runs","readwrite");
+  t.objectStore("runs").delete(id);t.oncomplete=res;t.onerror=()=>rej(t.error);}));}
+
+
 function toast(t){let el=document.getElementById("toast");el.textContent=t;el.style.opacity="1";clearTimeout(el._t);el._t=setTimeout(()=>el.style.opacity="0",2800);}
 
 /* ================= BUILDER ================= */
@@ -757,7 +899,7 @@ function initBuilder(){
   document.getElementById("setPrompt").oninput=e=>builder.cur.prompt=e.target.value;
 }
 function renderTplHint(){const t=TEMPLATES[builder.cur.template];
-  document.getElementById("tplHint").textContent=`${t.label} · up to ${t.max} card${t.max===1?'':'s'} · after the flash: “${t.prompt}”`;}
+  document.getElementById("tplHint").textContent=`${t.label} · holds ${t.max===1?"1 shape":"up to "+t.max+" shapes"} · your partner is asked: “${t.prompt}”`;}
 function renderLibGrid(q){
   const groups={};
   CARD_LIBRARY.forEach(c=>{ if(q && !c.label.toLowerCase().includes(q) && !c.group.toLowerCase().includes(q)) return;
@@ -767,7 +909,7 @@ function renderLibGrid(q){
   const keys=Object.keys(groups).sort((a,b)=>gi(a)-gi(b));
   const mk={"Dot patterns":"dots","Ten-frames":"tenframe"};
   el.innerHTML=keys.length ? keys.map(g=>
-    `<div class="ghdr">${g}${mk[g]?` <button class="tbtn mkbtn" data-make="${mk[g]}">✏️ Make</button>`:``}</div>`
+    `<div class="ghdr">${g}${mk[g]?` <button class="tbtn mkbtn" data-make="${mk[g]}" title="${mk[g]==="dots"?"Draw your own dot arrangement — click cells to place dots, and mark some red to show a grouping.":"Fill your own ten-frame — click cells to add or remove counters."}">✏️ Make</button>`:``}</div>`
     +groups[g].map(c=>`<div class="lc" data-id="${c.id}" title="${c.label}">${atomSVG(c.figure,46)}</div>`).join("")).join("")
     : `<div class="small" style="padding:8px">No shapes match “${q}”.</div>`;
   el.querySelectorAll(".lc").forEach(d=>d.onclick=()=>addCard(d.dataset.id));
@@ -864,12 +1006,12 @@ function addSet(){
   if(!cur.members.length){toast("Add some cards first.");return;}
   const set={template:cur.template, members:cur.members.map(m=>Object.assign({},m)), prompt:cur.prompt||""};
   if(cur.template==="ispy") set.layout=scatterLayout(set.members.length).places;
-  if(builder.editing>=0 && builder.editing<builder.sets.length){ builder.sets[builder.editing]=set; toast("Image set updated."); }
-  else { builder.sets.push(set); toast("Image set added — build another, or Save to Library."); }
+  if(builder.editing>=0 && builder.editing<builder.sets.length){ builder.sets[builder.editing]=set; toast("Card updated."); }
+  else { builder.sets.push(set); toast("Card added — build another, or Save your pack."); }
   builder.editing=-1;
   builder.cur={template:cur.template, members:[], prompt:""}; builder.sel=-1;
   document.getElementById("setPrompt").value="";
-  document.getElementById("addSet").textContent="＋ Add image set to presentation";
+  document.getElementById("addSet").textContent="＋ Add card";
   renderCanvas(); renderTool(); renderSetList();
 }
 function editImageSet(i){
@@ -878,21 +1020,21 @@ function editImageSet(i){
   builder.editing=i; builder.sel=-1;
   document.getElementById("setPrompt").value=s.prompt||"";
   document.querySelectorAll("#tplRail .railbtn").forEach(x=>x.classList.toggle("on",x.dataset.tpl===s.template));
-  document.getElementById("addSet").textContent="✔ Update image set";
+  document.getElementById("addSet").textContent="✔ Update card";
   renderTplHint(); renderCanvas(); renderTool(); renderSetList();
-  toast("Editing this image set — change it, then Update.");
+  toast("Editing this card — change it, then Update.");
 }
 function newPresentation(){
   builder.sets=[]; builder.cur={template:"wodb", members:[], prompt:""}; builder.sel=-1; builder.editing=-1; builder.origName=null;
-  document.getElementById("presName").value="My presentation";
+  document.getElementById("presName").value="";
   document.getElementById("setPrompt").value="";
-  document.getElementById("addSet").textContent="＋ Add image set to presentation";
+  document.getElementById("addSet").textContent="＋ Add card";
   document.querySelectorAll("#tplRail .railbtn").forEach(x=>x.classList.toggle("on",x.dataset.tpl==="wodb"));
-  renderTplHint(); renderCanvas(); renderTool(); renderSetList(); toast("Started a new presentation.");
+  renderTplHint(); renderCanvas(); renderTool(); renderSetList(); toast("Started a new prompt pack.");
 }
 function renderSetList(){
   const el=document.getElementById("setList");
-  if(!builder.sets.length){el.innerHTML=`<span class="small">No image sets yet — build one below, then <b>＋ Add image set</b>. Click a saved one to edit it · drag to reorder.</span>`;return;}
+  if(!builder.sets.length){el.innerHTML=`<span class="small">No cards yet — build one below, then <b>＋ Add card</b>. Click a saved one to edit it · drag to reorder.</span>`;return;}
   el.innerHTML=builder.sets.map((s,i)=>
     `<div class="sitem ${i===builder.editing?'editing':''}" draggable="true" data-i="${i}" title="Drag to reorder · click to edit">`
     +`<span class="grip">⠿</span>`
@@ -906,7 +1048,7 @@ function renderSetList(){
     it.querySelector(".sthumb").onclick=()=>editImageSet(i);
     it.querySelector(".x").onclick=ev=>{ ev.stopPropagation();
       builder.sets.splice(i,1);
-      if(builder.editing===i){ builder.editing=-1; document.getElementById("addSet").textContent="＋ Add image set to presentation"; }
+      if(builder.editing===i){ builder.editing=-1; document.getElementById("addSet").textContent="＋ Add card"; }
       else if(builder.editing>i) builder.editing--;
       renderSetList(); };
     it.ondragstart=e=>{ builder.dragFrom=i; builder.dropTo=null; e.dataTransfer.effectAllowed="move"; e.dataTransfer.setData("text/plain",String(i)); it.classList.add("dragging"); };
@@ -924,40 +1066,41 @@ function renderSetList(){
   });
 }
 async function savePresentation(){
-  if(!builder.sets.length){toast("Add at least one image set first.");return;}
-  const name=(document.getElementById("presName").value||"My presentation").trim();
+  if(!builder.sets.length){toast("Add at least one card first.");return;}
+  let name=(document.getElementById("presName").value||"").trim();
+  if(!name){toast("Give your prompt pack a name first.");document.getElementById("presName").focus();return;}
+  if((PACKS[name]||{}).builtIn){ toast(`“${name}” is a built-in pack — pick a different name.`); return; }
   const pack={packFormat:"provoke-cards/v1", name, mode:"see", builtWith:"builder",
     prompt:"What did you see? · How do you know?",
     cards:builder.sets.map((s,i)=>({id:`${s.template}-${i+1}`, template:s.template,
       members:s.members, layout:s.layout, prompt:s.prompt||TEMPLATES[s.template].prompt}))};
-  // if this was opened from an existing presentation and the name changed, replace (don't duplicate)
   if(builder.origName && builder.origName!==name && !(PACKS[builder.origName]||{}).builtIn){
     delete PACKS[builder.origName]; try{ await idbDel(builder.origName); }catch(e){}
   }
   PACKS[name]=pack; cfg.packName=name; builder.origName=name;
   try{ await idbPut(name,pack); }catch(err){ console.warn("persist failed",err); }
-  refreshPackSel(); updateHints(); renderLibrary(); switchTab("library");
-  toast(`Saved “${name}” to your Library.`);
+  refreshPackSel(); updateHints(); renderDrawer();
+  toast(`Saved “${name}”. Go to Handoff when you are ready to pose it.`);
 }
-/* ---- Presentation Library ---- */
-function renderLibrary(){
-  const el=document.getElementById("libraryGrid"); if(!el) return;
+/* ---- prompt pack drawer ---- */
+function renderDrawer(){
+  const el=document.getElementById("drawerList"); if(!el) return;
   const names=Object.keys(PACKS);
-  if(!names.length){ el.innerHTML=`<div class="small">No presentations yet — build one in the Builder.</div>`; return; }
   el.innerHTML=names.map(n=>{
     const p=PACKS[n], first=p.cards[0], editable=!p.builtIn;
-    return `<div class="pcard"><div class="pthumb ${editable?'':'noedit'}" ${editable?`data-editthumb="${encodeURIComponent(n)}"`:''} title="${editable?'Click to edit':'Built-in — Copy it to edit'}">${first?cardVisual(first,150):""}</div>`
-      +`<div><div class="pname">${n}</div><div class="pcount">${p.cards.length} image set${p.cards.length!==1?'s':''}${p.builtIn?' · built-in':''}</div></div>`
-      +`<div class="pacts"><button class="tbtn" data-play2="${encodeURIComponent(n)}">▶ Play</button>`
-      +(editable?`<button class="tbtn" data-edit="${encodeURIComponent(n)}">✎ Edit</button>`:``)
-      +`<button class="tbtn" data-copy="${encodeURIComponent(n)}">⧉ Copy</button>`
-      +`<button class="tbtn" data-export="${encodeURIComponent(n)}">⬇ Export</button>`
+    return `<div class="drow"><div class="dthumb">${first?cardVisual(first,62):""}</div>`
+      +`<div class="dmeta"><div class="dname">${escapeHtml(n)}</div>`
+      +`<div class="dsub">${p.cards.length} card${p.cards.length!==1?'s':''}${p.builtIn?' · built-in':''}</div>`
+      +`<div class="dacts">`
+      +`<button class="tbtn" data-use="${encodeURIComponent(n)}" title="Load this pack and go to Handoff.">Use ▶</button>`
+      +(editable?`<button class="tbtn" data-edit="${encodeURIComponent(n)}" title="Open this pack in Build.">✎ Edit</button>`:``)
+      +`<button class="tbtn" data-copy="${encodeURIComponent(n)}" title="Make an editable copy.">⧉ Copy</button>`
+      +`<button class="tbtn" data-export="${encodeURIComponent(n)}" title="Download as .json — this is what you submit.">⬇ Export</button>`
       +(p.builtIn?``:`<button class="tbtn" data-del="${encodeURIComponent(n)}">🗑</button>`)
-      +`</div></div>`;
+      +`</div></div></div>`;
   }).join("");
-  const dec=s=>decodeURIComponent(s);
-  el.querySelectorAll("[data-editthumb]").forEach(b=>b.onclick=()=>editPresentation(dec(b.dataset.editthumb)));
-  el.querySelectorAll("[data-play2]").forEach(b=>b.onclick=()=>playPresentation(dec(b.dataset.play2)));
+  const dec=x=>decodeURIComponent(x);
+  el.querySelectorAll("[data-use]").forEach(b=>b.onclick=()=>usePack(dec(b.dataset.use)));
   el.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editPresentation(dec(b.dataset.edit)));
   el.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>copyPresentation(dec(b.dataset.copy)));
   el.querySelectorAll("[data-export]").forEach(b=>b.onclick=()=>exportPresentation(dec(b.dataset.export)));
@@ -967,22 +1110,24 @@ function exportPresentation(name){
   const p=PACKS[name]; if(!p) return;
   const blob=new Blob([JSON.stringify(p,null,2)],{type:"application/json"});
   const url=URL.createObjectURL(blob);
-  const safe=(name.replace(/[^a-z0-9\-_]+/gi,"-").replace(/^-+|-+$/g,"")||"routine")+".json";
+  const safe=(name.replace(/[^a-z0-9\-_]+/gi,"-").replace(/^-+|-+$/g,"")||"prompt-pack")+".json";
   const a=document.createElement("a"); a.href=url; a.download=safe;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),1500);
   toast(`Exported “${name}” as ${safe}`);
 }
-function playPresentation(name){ if(!PACKS[name])return; cfg.packName=name; refreshPackSel(); updateHints(); switchTab("player"); }
+function usePack(name){ if(!PACKS[name])return; cfg.packName=name; cfg.mode="diagnostic";
+  document.querySelectorAll("#modeSeg button").forEach(b=>b.classList.toggle("on",b.dataset.mode==="diagnostic"));
+  refreshPackSel(); updateHints(); switchPhase("handoff"); }
 function editPresentation(name){
   const p=PACKS[name]; if(!p) return;
   builder.sets=p.cards.map(cardToImageSet);
   builder.cur={template:"wodb", members:[], prompt:""}; builder.sel=-1; builder.editing=-1; builder.origName=name;
-  document.getElementById("addSet").textContent="＋ Add image set to presentation";
+  document.getElementById("addSet").textContent="＋ Add card";
   document.getElementById("presName").value=name;
   document.querySelectorAll("#tplRail .railbtn").forEach(x=>x.classList.toggle("on",x.dataset.tpl==="wodb"));
-  renderTplHint(); renderCanvas(); renderTool(); renderSetList(); switchTab("builder");
-  toast(`Editing “${name}” — Save to Library keeps the same name (overwrites).`);
+  renderTplHint(); renderCanvas(); renderTool(); renderSetList(); switchPhase("build");
+  toast(`Editing “${name}” — Save keeps the same name.`);
 }
 async function copyPresentation(name){
   const p=PACKS[name]; if(!p) return;
@@ -992,14 +1137,15 @@ async function copyPresentation(name){
     prompt:p.prompt||"What did you see? · How do you know?",
     cards:sets.map((s,idx)=>({id:`${s.template}-${idx+1}`, template:s.template, members:s.members, layout:s.layout, prompt:s.prompt||TEMPLATES[s.template].prompt}))};
   PACKS[nn]=clone; try{ await idbPut(nn,clone); }catch(e){}
-  refreshPackSel(); renderLibrary(); toast(`Copied to “${nn}” — now editable in the Builder.`);
+  refreshPackSel(); renderDrawer(); toast(`Copied to “${nn}” — now editable in Build.`);
 }
 async function deletePresentation(name){
   if(!confirm(`Delete “${name}”? This cannot be undone.`)) return;
   delete PACKS[name]; try{ await idbDel(name); }catch(e){}
   if(cfg.packName===name) cfg.packName=GEOMETRY_PACK.name;
-  refreshPackSel(); updateHints(); renderLibrary(); toast(`Deleted “${name}”.`);
+  refreshPackSel(); updateHints(); renderDrawer(); toast(`Deleted “${name}”.`);
 }
+
 function segWire(id,key,cb){const el=document.getElementById(id);
   el.querySelectorAll("button").forEach(b=>b.onclick=()=>{
     el.querySelectorAll("button").forEach(x=>x.classList.remove("on"));b.classList.add("on");
@@ -1015,203 +1161,316 @@ async function onFiles(e){
     const imgs=files.filter(f=>f.type.startsWith("image/"));
     if(!imgs.length){alert("Select a .json pack or image files.");return;}
     const cards=[];
-    for(const f of imgs){ cards.push({id:f.name, image:await toDataURL(f), answer:f.name.replace(/\.[^.]+$/,"")}); }
-    pack={packFormat:"provoke-cards/v1", name:prompt("Name this pack:", "My images")||"My images",
-          mode:"name", prompt:"Who is this?", cards};
+    for(const f of imgs){ cards.push({id:f.name, image:await toDataURL(f),
+      prompt:"What do you see? · How do you know?"}); }
+    pack={packFormat:"provoke-cards/v1", name:prompt("Name this prompt pack:", "My images")||"My images",
+          mode:"see", prompt:"What do you see? · How do you know?", cards};
   }
   PACKS[pack.name]=pack; cfg.packName=pack.name;
   try{ await idbPut(pack.name,pack); }catch(err){ console.warn("persist failed",err); }
-  refreshPackSel(); updateHints(); renderLibrary();
-  toast(`Imported “${pack.name}” into your Library.`);
+  refreshPackSel(); updateHints(); renderDrawer();
+  toast(`Imported “${pack.name}” into your prompt packs.`);
   e.target.value="";
 }
 const toDataURL=f=>new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f);});
 
 /* ================= run ================= */
 let ses=null;
+function lockChrome(on){
+  document.getElementById("apphdr").style.display = on ? "none" : "";
+  if(on) toggleDrawer(false);
+}
 function startRun(){
   const p=curPack();
   let idx=p.cards.map((_,i)=>i);
   if(cfg.order==="shuffle") for(let i=idx.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]];}
-  ses={pack:p, mode:cfg.mode, flashMs:cfg.flash*1000, hide:cfg.hide, order:idx, i:0, responses:[]};
-  document.getElementById("setup").style.display="none";
+  ses={pack:p, mode:cfg.mode, flashMs:cfg.flash*1000, order:idx, i:0, responses:[],
+       doerLabel:(cfg.doerLabel||"").trim(), startedAt:Date.now()};
+  document.getElementById("handoff").style.display="none";
   document.getElementById("report").style.display="none";
   document.getElementById("stage").style.display="flex";
-  document.getElementById("endBtn").onclick=endRun;
-  flashCard();
+  lockChrome(true);
+  document.getElementById("endBtn").onclick=()=>{
+    if(confirm("End this run? Anything typed so far will be lost.")) endRun();
+  };
+  showCard();
 }
 function stageEl(id){return document.getElementById(id);}
+function curCard(){return ses.pack.cards[ses.order[ses.i]];}
 function renderFlashCtl(){
+  const el=stageEl("stFlash");
+  if(!isFlashCard(curCard())){ el.innerHTML=""; return; }
   const s=Math.round(ses.flashMs/1000);
-  stageEl("stFlash").innerHTML=`⏱ <button class="fadj" id="fdn">−</button> <b>${s}s</b> <button class="fadj" id="fup">＋</button>`;
+  el.innerHTML=`⏱ <button class="fadj" id="fdn">−</button> <b>${s}s</b> <button class="fadj" id="fup">＋</button>`;
   stageEl("fdn").onclick=()=>adjFlash(-1);
   stageEl("fup").onclick=()=>adjFlash(1);
 }
 function adjFlash(d){
   let s=Math.round(ses.flashMs/1000)+d; s=Math.max(1,Math.min(5,s)); ses.flashMs=s*1000; renderFlashCtl();
 }
-function flashCard(){
-  const c=ses.pack.cards[ses.order[ses.i]];
+function questionFor(c){ return c.prompt || ses.pack.prompt || "What do you see?"; }
+/* don't repeat "How do you know?" underneath when the question already says it */
+function subFor(c){ return /how do you know/i.test(questionFor(c)) ? "" : "How do you know?"; }
+/* Every card names its question BEFORE anything is shown. Geometry cards then stay
+   on screen while the Doer reasons; only dot / ten-frame cards flash and hide. */
+function showCard(){
+  const c=curCard();
   stageEl("stCount").textContent=`${ses.i+1} / ${ses.order.length}`;
   stageEl("stName").textContent=ses.pack.name;
   renderFlashCtl();
-  stageEl("stageBody").innerHTML=`<div class="figbox">${cardVisual(c)}</div>`;
-  // timer bar
+  clearTimeout(ses.t);
+  if(isFlashCard(c)) flashPhase(); else steadyPhase();
+}
+function flashPhase(){
+  const c=curCard();
+  stageEl("stageBody").innerHTML=
+    `<div class="prompt" style="font-size:26px">${escapeHtml(questionFor(c))}</div>
+     <div class="figbox">${cardVisual(c)}</div>`;
   const bar=stageEl("bar"); bar.style.transition="none"; bar.style.width="100%";
   requestAnimationFrame(()=>{bar.style.transition=`width ${ses.flashMs}ms linear`; bar.style.width="0%";});
-  clearTimeout(ses.t);
-  ses.t=setTimeout(promptPhase, ses.flashMs);
+  ses.t=setTimeout(answerPhase, ses.flashMs);
 }
-function promptPhase(){
-  const c=ses.pack.cards[ses.order[ses.i]];
-  const showImg = !ses.hide;
-  const visual = showImg?`<div class="figbox" style="max-height:34vh">${cardVisual(c,220)}</div>`:"";
+function steadyPhase(){ answerPhase(); }
+function answerPhase(){
+  const c=curCard(), flash=isFlashCard(c);
+  const bar=stageEl("bar"); bar.style.transition="none"; bar.style.width="0%";
+  const figure = flash ? "" : `<div class="figbox" style="max-height:44vh">${cardVisual(c,300)}</div>`;
   if(ses.mode==="presentation"){
-    stageEl("stageBody").innerHTML=`${visual}
-      <div class="prompt">${c.prompt||"What did you see?"}</div>
-      <div class="promptSub">How do you know?</div>
+    stageEl("stageBody").innerHTML=`
+      <div class="prompt">${escapeHtml(questionFor(c))}</div>
+      <div class="promptSub">${subFor(c)}</div>
+      ${figure}
       <div class="stageBtns">
-        ${ses.hide?'<button class="ghost" id="peek">👁 Show it again</button>':""}
+        ${flash?'<button class="ghost" id="look">👁 Show it again</button>':""}
         <button class="primary" id="next">${ses.i+1<ses.order.length?"Next ▶":"Finish"}</button>
       </div>`;
-    if(ses.hide) stageEl("peek").onclick=()=>{
-      stageEl("stageBody").querySelector(".prompt").insertAdjacentHTML("beforebegin",
-        `<div class="figbox" style="max-height:34vh">${cardVisual(c,220)}</div>`);
-      stageEl("peek").remove();
-    };
+    if(flash) stageEl("look").onclick=peek;
     stageEl("next").onclick=advance;
-  } else {
-    const ans = packHasAnswers(ses.pack);
-    const draft = ses.draft||""; ses.draft="";
-    stageEl("stageBody").innerHTML=`${visual}
-      <div class="prompt" style="font-size:30px">${ans?"Who / what is it?":(c.prompt||"What did you see?")}</div>
-      <div class="promptSub">${ans?"":"How do you know?"}</div>
-      <div class="stageInput"><textarea id="resp" placeholder="Type what you saw…">${escapeHtml(draft)}</textarea></div>
-      <div class="stageBtns">
-        <button class="ghost" id="look">👁 Look again</button>
-        <button class="primary" id="next">${ses.i+1<ses.order.length?"Submit ▶":"Submit & finish"}</button></div>`;
-    const ta=stageEl("resp"); ta.focus();
-    stageEl("look").onclick=reflash;
-    stageEl("next").onclick=()=>{ ses.responses[ses.i]=ta.value.trim(); advance(); };
-    ta.onkeydown=ev=>{ if(ev.key==="Enter"&&(ev.metaKey||ev.ctrlKey)){ses.responses[ses.i]=ta.value.trim();advance();} };
+    return;
   }
+  const draft=ses.draft||""; ses.draft="";
+  stageEl("stageBody").innerHTML=`
+    <div class="prompt" style="font-size:30px">${escapeHtml(questionFor(c))}</div>
+    <div class="promptSub">${subFor(c)}</div>
+    ${figure}
+    <div class="stageInput"><textarea id="resp" placeholder="What you see — and how you know…">${escapeHtml(draft)}</textarea></div>
+    <div class="stageBtns">
+      ${flash?'<button class="ghost" id="look">👁 Look again</button>':""}
+      <button class="primary" id="next">${ses.i+1<ses.order.length?"Next ▶":"Finish"}</button>
+    </div>`;
+  const ta=stageEl("resp"); ta.focus();
+  if(flash) stageEl("look").onclick=()=>{ses.draft=ta.value; peek();};
+  stageEl("next").onclick=()=>{ ses.responses[ses.i]=ta.value.trim(); advance(); };
+  ta.onkeydown=ev=>{ if(ev.key==="Enter"&&(ev.metaKey||ev.ctrlKey)){ses.responses[ses.i]=ta.value.trim();advance();} };
+}
+/* "Look again" is not timed — it stays until you dismiss it */
+function peek(){
+  const c=curCard();
+  stageEl("stageBody").innerHTML=
+    `<div class="prompt" style="font-size:26px">${escapeHtml(questionFor(c))}</div>
+     <div class="figbox">${cardVisual(c)}</div>
+     <div class="stageBtns"><button class="primary" id="backToAns">◀ Back to my answer</button></div>`;
+  stageEl("backToAns").onclick=answerPhase;
 }
 function advance(){
-  if(ses.i+1<ses.order.length){ ses.i++; flashCard(); }
+  if(ses.i+1<ses.order.length){ ses.i++; showCard(); }
   else finish();
-}
-function reflash(){
-  const c=ses.pack.cards[ses.order[ses.i]];
-  const ta=document.getElementById("resp"); if(ta) ses.draft=ta.value;
-  stageEl("stageBody").innerHTML=`<div class="figbox">${cardVisual(c)}</div>`;
-  const bar=stageEl("bar"); bar.style.transition="none"; bar.style.width="100%";
-  requestAnimationFrame(()=>{bar.style.transition=`width ${ses.flashMs}ms linear`; bar.style.width="0%";});
-  clearTimeout(ses.t); ses.t=setTimeout(promptPhase, ses.flashMs);
 }
 function endRun(){
   if(ses) clearTimeout(ses.t);
+  ses=null;
+  lockChrome(false);
   document.getElementById("stage").style.display="none";
   document.getElementById("report").style.display="none";
-  document.getElementById("setup").style.display="block";
-  window.scrollTo(0,0);
+  switchPhase("handoff");
 }
-function finish(){
+async function finish(){
+  clearTimeout(ses.t);
   document.getElementById("stage").style.display="none";
   const rep=document.getElementById("report"); rep.style.display="block";
-  if(ses.mode==="presentation") rep.innerHTML=doneCard("Presentation complete — nothing was captured.");
-  else if(packHasAnswers(ses.pack)) rep.innerHTML=quizReport();
-  else { rep.innerHTML=responsesReport(); wireDiag(); }
-  const again=rep.querySelector("#again"); if(again) again.onclick=backToStart;
-}
-function backToStart(){
-  document.getElementById("report").style.display="none";
-  document.getElementById("setup").style.display="block";
-  window.scrollTo(0,0);
-}
-function doneCard(msg){
-  return `<div class="card"><h1>Done</h1><p style="font-size:16px">${msg}</p>
-    <button class="primary" id="again">◀ Back to start</button></div>`;
-}
-/* ---- diagnostic: van Hiele ---- */
-function detectLevel(text,lookFors){
-  const t=(text||"").toLowerCase(); let hi=-1, hits=[];
-  for(const L of [0,1,2]){ for(const ph of (lookFors?.[L]||[])){ if(t.includes(ph)){ hits.push(L); if(L>hi)hi=L; break; } } }
-  return {hi, hits};
-}
-function responsesReport(){
-  const rows=ses.order.map((ci,k)=>{const c=ses.pack.cards[ci];
-    return `<div class="rrow"><div class="thumb">${cardVisual(c,64)}</div>
-      <div class="said"><b>${k+1}.</b> <i>“${escapeHtml(ses.responses[k]||"(blank)")}”</i></div></div>`;}).join("");
-  return `<div class="card">
-    <h1>Look back at what you saw</h1>
-    <p style="font-size:15px">Here's everything you said, all at once. <b>You</b> decide what the patterns are.</p>
-    ${rows}
-    <label style="font-weight:700;margin-top:18px;display:block">Looking across <i>all</i> your responses — what do you see?</label>
-    <textarea id="metaReflect" placeholder="Patterns, surprises, what stands out to you…"></textarea>
-    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
-      <button class="primary" id="again">◀ Run again</button>
-      <button class="ghost" id="exportPDF">📄 Export PDF (for a classmate or AI)</button>
-      <button class="ghost" id="copyAI">📋 Copy as text</button>
-    </div>
+  if(ses.mode==="presentation"){
+    lockChrome(false);
+    rep.innerHTML=`<div class="card"><h1>Done</h1>
+      <p style="font-size:16px">Nothing was written down — that talk stays in the room.</p>
+      <button class="primary" id="again">◀ Back</button></div>`;
+    rep.querySelector("#again").onclick=()=>{rep.style.display="none";switchPhase("handoff");};
+    return;
+  }
+  const rec={ id:"t"+ses.startedAt, at:ses.startedAt, packName:ses.pack.name,
+    doerLabel:ses.doerLabel||"", thinker:"",
+    cards:ses.order.map(ci=>ses.pack.cards[ci]),
+    responses:ses.order.map((_,k)=>ses.responses[k]||""),
+    claims:[], next:"", done:false };
+  ses=null;
+  /* The Doer never analyses. Dead end: hand the laptop back.
+     Painted first, saved after — the Doer never waits on a disk write. */
+  rep.innerHTML=`<div class="card" style="text-align:center;padding:44px 22px">
+    <div class="handback">Thank you — please hand the laptop back.</div>
+    <p style="font-size:15px;color:var(--muted);margin-top:14px">
+      Your answers are saved on this device for your partner to read. You are done.</p>
+    <div style="margin-top:22px"><button class="ghost" id="owner">I am the owner of this laptop ▶</button></div>
   </div>`;
+  rep.querySelector("#owner").onclick=()=>{
+    rep.style.display="none"; lockChrome(false); switchPhase("analyze");
+  };
+  try{ await tsPut(rec); TRANSCRIPTS=await tsAll(); }
+  catch(e){
+    console.warn("transcript save failed",e);
+    const w=rep.querySelector(".handback");
+    if(w) w.insertAdjacentHTML("afterend",
+      `<p style="color:var(--mark);font-weight:700;margin-top:12px">This browser would not save the transcript. Do not close the tab — call your instructor over.</p>`);
+  }
 }
-function exportPDF(){
-  const p=ses.pack;
-  const meta=(document.getElementById("metaReflect")||{}).value||"";
-  const rows=ses.order.map((ci,k)=>{const c=p.cards[ci];
-    return `<div class="pr"><div class="pi">${cardVisual(c,120)}</div><div class="pt"><b>${k+1}.</b> “${escapeHtml(ses.responses[k]||"")}”</div></div>`;}).join("");
-  const doc=`<!doctype html><html><head><meta charset="utf-8"><title>nVoke — ${p.name}</title>
+
+/* ================= phase 3 · ANALYZE ================= */
+let an={id:null};
+function renderAnalyze(){
+  const el=document.getElementById("analyze"); if(!el) return;
+  if(an.id){ const t=TRANSCRIPTS.find(x=>x.id===an.id); if(t){ renderOneAnalysis(el,t); return; } an.id=null; }
+  if(!TRANSCRIPTS.length){
+    el.innerHTML=`<div class="card"><h1>Analyze</h1>
+      <p class="stepnote">Nothing to read yet. Build a prompt pack, hand your laptop to your partner in <b>Handoff</b>, and their answers will land here.</p>
+      <div class="locate">${LEVELS_NOTE}</div></div>`;
+    return;
+  }
+  el.innerHTML=`<div class="card"><h1>Analyze</h1>
+    <p class="stepnote">Each transcript below is what one partner typed on this laptop. Read the reasoning, not the label.</p>
+    ${TRANSCRIPTS.map(t=>`<div class="tscript ${t.done?"done":""}" data-open="${t.id}">
+      <div style="flex:1">
+        <div style="font-weight:700">${escapeHtml(t.doerLabel||"Doer")} · ${escapeHtml(t.packName)}</div>
+        <div class="small">${t.responses.length} answer${t.responses.length===1?"":"s"}${t.done?" · analysis written":" · not analysed yet"}</div>
+      </div>
+      <button class="tbtn">${t.done?"Review":"Analyze ▶"}</button>
+      <button class="tbtn" data-drop="${t.id}" title="Delete this transcript">🗑</button>
+    </div>`).join("")}
+    <div class="locate" style="margin-top:16px">${LEVELS_NOTE}</div></div>`;
+  el.querySelectorAll("[data-open]").forEach(d=>d.onclick=ev=>{
+    if(ev.target.dataset.drop) return;
+    an.id=d.dataset.open; renderAnalyze();
+  });
+  el.querySelectorAll("[data-drop]").forEach(b=>b.onclick=async ev=>{
+    ev.stopPropagation();
+    if(!confirm("Delete this transcript?")) return;
+    await tsDel(b.dataset.drop); TRANSCRIPTS=await tsAll(); renderAnalyze();
+  });
+}
+function renderOneAnalysis(el,t){
+  const rows=t.responses.map((r,k)=>{
+    const claimed=t.claims.find(c=>c.evidence.includes(k));
+    return `<div class="anrow ${claimed?"picked":""}" data-ev="${k}">
+      <div class="abox">${claimed?"✓":""}</div>
+      <div class="athumb">${cardVisual(t.cards[k],54)}</div>
+      <div class="asaid"><span class="anum">${k+1}.</span> <i>“${escapeHtml(r||"(blank)")}”</i>
+      ${claimed?`<div class="small">evidence for Level ${claimed.level}</div>`:""}</div>
+    </div>`;}).join("");
+  const claims=t.claims.map((c,ci)=>{
+    const L=VAN_HIELE[c.level];
+    return `<div class="claimcard">
+      <div class="claimhd"><b>${L.name}</b><button class="tbtn" data-unclaim="${ci}">remove</button></div>
+      <div class="small">${L.desc}</div>
+      <div style="margin-top:8px;font-size:13px">${c.evidence.length
+        ? c.evidence.map(i=>`<div>• <i>“${escapeHtml(t.responses[i]||"")}”</i> <span class="small">(card ${i+1})</span></div>`).join("")
+        : `<span class="small">No evidence attached yet — click answers below to attach them.</span>`}</div>
+    </div>`;}).join("");
+  el.innerHTML=`<div class="card">
+    <div class="claimhd"><h1 style="margin:0">${escapeHtml(t.doerLabel||"Doer")} · ${escapeHtml(t.packName)}</h1>
+      <button class="tbtn" id="backList">◀ All transcripts</button></div>
+    <p class="stepnote">You are the <b>Thinker</b>. Locate where your partner is — then decide what to offer next. Locate, don’t rank.</p>
+
+    <label>1 · Which levels do you see most clearly?</label>
+    <div class="lvlpick">${VAN_HIELE.map(L=>`<button class="lvlbtn ${t.claims.some(c=>c.level===L.n)?"on":""}" data-lvl="${L.n}">
+      <span class="lname">${L.name}</span><span class="ldesc">${L.desc}<br><b>e.g.</b> ${L.example}</span></button>`).join("")}</div>
+    ${claims||`<div class="small">Pick a level above to start a claim.</div>`}
+
+    <label style="margin-top:18px">2 · What is your evidence? <span style="font-weight:400;color:var(--muted)">— click an answer to attach it to your most recent claim</span></label>
+    ${rows}
+
+    <label style="margin-top:18px">3 · What would you engage your partner in next?</label>
+    <textarea id="nextExp" placeholder="Pitch it at the level you just located — an experience aimed above where they are only gets memorised…">${escapeHtml(t.next||"")}</textarea>
+
+    <label style="margin-top:14px">Your name <span style="font-weight:400;color:var(--muted)">— you did this analysis</span></label>
+    <input id="thinkerName" type="text" placeholder="Your name" value="${escapeHtml(t.thinker||"")}">
+
+    <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="primary" id="saveAn">💾 Save analysis</button>
+      <button class="ghost" id="exportPDF">📄 Export PDF</button>
+    </div>
+    <div class="locate" style="margin-top:14px">${LEVELS_NOTE}</div>
+  </div>`;
+  el.querySelector("#backList").onclick=()=>{an.id=null;renderAnalyze();};
+  el.querySelectorAll("[data-lvl]").forEach(b=>b.onclick=async()=>{
+    const n=+b.dataset.lvl;
+    if(!t.claims.some(c=>c.level===n)) t.claims.push({level:n,evidence:[]});
+    await tsPut(t); TRANSCRIPTS=await tsAll(); an.id=t.id; renderAnalyze();
+  });
+  el.querySelectorAll("[data-unclaim]").forEach(b=>b.onclick=async()=>{
+    t.claims.splice(+b.dataset.unclaim,1);
+    await tsPut(t); TRANSCRIPTS=await tsAll(); renderAnalyze();
+  });
+  el.querySelectorAll("[data-ev]").forEach(d=>d.onclick=async()=>{
+    if(!t.claims.length){ toast("Pick a level first, then attach evidence to it."); return; }
+    const k=+d.dataset.ev, c=t.claims[t.claims.length-1];
+    const at=c.evidence.indexOf(k);
+    if(at>=0) c.evidence.splice(at,1);
+    else { t.claims.forEach(x=>{const j=x.evidence.indexOf(k); if(j>=0) x.evidence.splice(j,1);}); c.evidence.push(k); }
+    await tsPut(t); TRANSCRIPTS=await tsAll(); renderAnalyze();
+  });
+  el.querySelector("#saveAn").onclick=async()=>{
+    t.next=el.querySelector("#nextExp").value;
+    t.thinker=el.querySelector("#thinkerName").value.trim();
+    t.done=!!(t.claims.length && t.next.trim());
+    await tsPut(t); TRANSCRIPTS=await tsAll();
+    toast(t.done?"Analysis saved.":"Saved — add a level and a next experience to finish it.");
+    renderAnalyze();
+  };
+  el.querySelector("#exportPDF").onclick=()=>{
+    t.next=el.querySelector("#nextExp").value;
+    t.thinker=el.querySelector("#thinkerName").value.trim();
+    tsPut(t); exportPDF(t);
+  };
+}
+function exportPDF(t){
+  const rows=t.responses.map((r,k)=>{
+    const claimed=t.claims.find(c=>c.evidence.includes(k));
+    return `<div class="pr"><div class="pi">${cardVisual(t.cards[k],110)}</div>
+      <div class="pt"><b>${k+1}.</b> “${escapeHtml(r||"")}”${claimed?`<br><span class="ev">cited as evidence for ${VAN_HIELE[claimed.level].name}</span>`:""}</div></div>`;}).join("");
+  const claims=t.claims.length? t.claims.map(c=>{
+    const L=VAN_HIELE[c.level];
+    return `<div class="cl"><b>${L.name}</b> — ${L.short}
+      <ul>${c.evidence.length?c.evidence.map(i=>`<li>“${escapeHtml(t.responses[i]||"")}” <i>(card ${i+1})</i></li>`).join(""):"<li><i>no evidence attached</i></li>"}</ul></div>`;
+    }).join("") : "<p><i>No level located.</i></p>";
+  const doc=`<!doctype html><html><head><meta charset="utf-8"><title>nVoke — ${escapeHtml(t.packName)}</title>
 <style>body{font-family:Inter,system-ui,sans-serif;color:#1a2b4a;max-width:720px;margin:24px auto;padding:0 16px}
 h1{color:#1F4E96;margin-bottom:2px}h3{color:#1F4E96;margin-top:22px}
 .pr{display:flex;gap:14px;align-items:center;border-top:1px solid #e5e5e5;padding:8px 0}
-.pi svg,.pi img{max-width:110px;max-height:110px}.pt{font-size:14px}
-.meta{background:#f5f8fc;border-radius:8px;padding:12px;font-size:14px;white-space:pre-wrap}</style>
+.pi svg,.pi img{max-width:105px;max-height:105px}.pt{font-size:14px}
+.ev{font-size:12px;color:#1F4E96;font-weight:700}
+.cl{background:#f5f8fc;border-radius:8px;padding:10px 14px;margin:8px 0;font-size:14px}
+.cl ul{margin:6px 0 0}
+.meta{background:#f5f8fc;border-radius:8px;padding:12px;font-size:14px;white-space:pre-wrap}
+.note{font-size:12px;color:#666}
+@media print{body{margin:0}}</style>
 </head><body>
-<h1>nVoke — ${p.name}</h1>
-<p style="font-size:12.5px;color:#666">What I saw, and what I see across my own responses. (Everything stayed on my device; I chose to export this to share.)</p>
-<h3>Looking across all my responses, what do I see?</h3>
-<div class="meta">${escapeHtml(meta)||"(not written)"}</div>
-<h3>My responses</h3>${rows}
+<h1>nVoke — ${escapeHtml(t.packName)}</h1>
+<p class="note"><b>Doer:</b> ${escapeHtml(t.doerLabel||"anonymous")} — these are the Doer's own words.<br>
+<b>Thinker:</b> ${escapeHtml(t.thinker||"(unsigned)")} — posed the pack and wrote the analysis below.<br>
+Everything stayed on the Thinker's device; this was exported deliberately.</p>
+<h3>Locate the level, with evidence</h3>${claims}
+<h3>What I would offer next</h3><div class="meta">${escapeHtml(t.next)||"(not written)"}</div>
+<h3>The Doer's answers, in full</h3>${rows}
 </body></html>`;
   const w=window.open("","_blank");
-  if(!w){ alert("Allow pop-ups to export, or use your browser's Print → Save as PDF."); return; }
+  if(!w){
+    const blob=new Blob([doc],{type:"text/html"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+    a.download=(t.packName.replace(/[^a-z0-9\-_]+/gi,"-")||"nvoke")+"-transcript.html";
+    document.body.appendChild(a); a.click(); a.remove();
+    toast("Pop-up blocked — downloaded the page instead. Open it and print to PDF.");
+    return;
+  }
   w.document.write(doc); w.document.close(); w.focus(); setTimeout(()=>w.print(),350);
 }
-function wireDiag(){
-  const rep=document.getElementById("report");
-  const ex=rep.querySelector("#exportPDF"); if(ex) ex.onclick=exportPDF;
-  const copy=rep.querySelector("#copyAI");
-  if(copy) copy.onclick=()=>{
-    const meta=(document.getElementById("metaReflect")||{}).value||"";
-    let txt=`I did a "${ses.pack.name}" seeing activity — for each image I typed what I saw.\n\nMy responses:\n`;
-    ses.order.forEach((ci,k)=>{txt+=`${k+1}. ${ses.responses[k]||"(blank)"}\n`;});
-    txt+=`\nLooking across them all, what I see: ${meta||"(not written)"}\n\nWhat patterns do you notice?`;
-    navigator.clipboard.writeText(txt).then(()=>{copy.textContent="✓ Copied";},()=>{copy.textContent="(copy failed)";});
-  };
-}
-function quizReport(){
-  const p=ses.pack; let correct=0,best=0,streak=0,rows="";
-  ses.order.forEach((ci,k)=>{
-    const c=p.cards[ci], r=(ses.responses[k]||"").trim().toLowerCase();
-    const a=(c.answer||"").trim().toLowerCase();
-    const ok = a && (r===a || r===a.split(" ")[0] || a.split(" ")[0]===r);
-    if(ok){correct++;streak++;best=Math.max(best,streak);} else streak=0;
-    rows+=`<div class="rrow"><div class="thumb">${cardVisual(c,64)}</div>
-      <div class="said">you said <b>“${escapeHtml(ses.responses[k]||"")}”</b> · answer: <b>${escapeHtml(c.answer||"")}</b></div>
-      <div class="${ok?"ok":"no"}">${ok?"✓":"✗"}</div></div>`;
-  });
-  return `<div class="card"><h1>Quiz results</h1>
-    <p style="font-size:16px"><b>${correct} / ${ses.order.length}</b> correct · best streak <b>${best}</b></p>
-    ${rows}<div style="margin-top:16px"><button class="primary" id="again">◀ Run again</button></div></div>`;
-}
-function reflectionReport(){
-  const p=ses.pack; let rows="";
-  ses.order.forEach((ci,k)=>{const c=p.cards[ci];
-    rows+=`<div class="rrow"><div class="thumb">${cardVisual(c,64)}</div>
-      <div class="said"><i>“${escapeHtml(ses.responses[k]||"(blank)")}”</i></div></div>`;});
-  return `<div class="card"><h1>What you saw</h1><div class="small">No look-fors in this pack — here are your responses to reflect on.</div>
-    ${rows}<div style="margin-top:16px"><button class="primary" id="again">◀ Run again</button></div></div>`;
-}
+
 function escapeHtml(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 
 init();
