@@ -423,13 +423,14 @@ const LEVELS_NOTE="The levels are sequential, invariant and hierarchical \u2014 
 const GEOMETRY_PACK = {
   packFormat:"provoke-cards/v1", name:"van Hiele Geometry", builtIn:true, mode:"see", builtWith:"builder",
   prompt:"What did you see? · How do you know?", levels:"vanhiele",
-  /* Follows the argument Higgins's second graders have (TCM 19(8), pp. 491-492): is a
-     circle a shape? The answer turns on whether "shape" means corners and straight sides,
-     which is exactly the Level 1 / Level 2 / Level 3 boundary, in the children's own words.
-     Greyscale on purpose: colour is the attribute Higgins found students reach for first,
-     and it sits nowhere on the van Hiele ladder. */
+  /* Four cards, sized for a ten-minute pose. Between them they reach every level a
+     grade 2-4 learner will produce: the WODB pulls property talk out of an obvious
+     answer, square against rectangle is the class-inclusion probe Higgins's own
+     teachers split over (p. 494), the tilted square is the cheapest Level 1 read
+     there is, and the spiral asks her question outright — is this a shape?
+     Greyscale on purpose: Higgins found colour is what students reach for first,
+     and colour sits nowhere on the van Hiele ladder. */
   cards:[
-    /* 1 — the disequilibrium. The first answer is nearly free; the second costs a property. */
     {id:"wodb-1", template:"wodb",
      members:[
        {ref:"square", rotate:0, color:"gray"},
@@ -439,15 +440,6 @@ const GEOMETRY_PACK = {
      ],
      prompt:"Which one doesn't belong? Say how you know."},
 
-    /* 2 — “if you trace a circle you can keep tracing it to infinity” (Higgins, p. 492) */
-    {id:"same-diff-2", template:"same-diff",
-     members:[
-       {ref:"circle-lg", rotate:0, color:"gray"},
-       {ref:"oval", rotate:0, color:"gray"}
-     ],
-     prompt:"What's the same? What's different?"},
-
-    /* 3 — class inclusion. Higgins's *teachers* split on this one (p. 494). */
     {id:"same-diff-3", template:"same-diff",
      members:[
        {ref:"square", rotate:0, color:"gray"},
@@ -455,22 +447,35 @@ const GEOMETRY_PACK = {
      ],
      prompt:"What's the same? What's different?"},
 
-    /* 4 — the diamond. “What shape is this?” asks for the name, which is the Level 1 tell. */
     {id:"single-4", template:"single",
      members:[
        {ref:"square", rotate:45, color:"red"}
      ],
      prompt:"What shape is this? How do you know?"},
 
-    /* 5 — Higgins's question, asked straight, of a figure that is not even closed. */
     {id:"single-5", template:"single",
      members:[
        {ref:"spiral", rotate:0, color:"gray"}
      ],
-     prompt:"Is this a shape? Why or why not?"},
+     prompt:"Is this a shape? Why or why not?"}
+  ]
+};
 
-    /* 6 — anchored to shape 7, the crescent: curved like the circle and oval, but pointed
-       like the star. Whichever way they group it, the reason they give is the rule. */
+const CURVES_PACK = {
+  packFormat:"provoke-cards/v1", name:"van Hiele · Curves and Corners", builtIn:true, mode:"see", builtWith:"builder",
+  prompt:"What did you see? · How do you know?", levels:"vanhiele",
+  /* The curved family, for anyone who wants more than the four. One card asks you to
+     tell two curved figures apart; the other asks whether a curved figure belongs at
+     all. Shape 7 is the crescent — it curves like the circle and oval but comes to two
+     points like the star, so whether it "has corners" is genuinely undecidable. */
+  cards:[
+    {id:"same-diff-2", template:"same-diff",
+     members:[
+       {ref:"circle-lg", rotate:0, color:"gray"},
+       {ref:"oval", rotate:0, color:"gray"}
+     ],
+     prompt:"What's the same? What's different?"},
+
     {id:"sort-6", template:"sort",
      members:[
        {ref:"square", rotate:0, color:"gray"},
@@ -484,7 +489,6 @@ const GEOMETRY_PACK = {
        {ref:"spiral", rotate:0, color:"gray"}
      ],
      prompt:"Which, if any, of the following items belong with shape 7? Type their numbers below and explain why they belong together."}
-
   ]
 };
 
@@ -834,6 +838,7 @@ let phase="build";
 
 async function init(){
   PACKS[GEOMETRY_PACK.name]=GEOMETRY_PACK;
+  PACKS[CURVES_PACK.name]=CURVES_PACK;
   PACKS[TEN_FRAMES_PACK.name]=TEN_FRAMES_PACK;
   PACKS[DOT_PATTERNS_PACK.name]=DOT_PATTERNS_PACK;
   refreshPackSel(); wireUI(); updateHints(); initBuilder(); renderDrawer();
