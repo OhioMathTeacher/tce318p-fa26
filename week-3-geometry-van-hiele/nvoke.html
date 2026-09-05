@@ -246,6 +246,11 @@
   .anrow .athumb svg,.anrow .athumb img{max-width:54px;max-height:54px}
   .anrow .asaid{flex:1;font-size:14px;min-width:0}
   .anrow .anum{font-weight:800;color:var(--muted);font-size:12px}
+  .needs{color:var(--mark);font-weight:600;font-size:12.5px}
+  .inert{opacity:.42;pointer-events:none;filter:grayscale(.4)}
+  .whybox{min-height:56px;font-size:13px}
+  .anrow .abox{color:#fff}
+  .anrow:not(.picked) .abox{color:var(--muted);background:#fff}
   .lvlpick{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 4px}
   .lvlbtn{border:2px solid var(--line);background:#fff;border-radius:12px;padding:9px 14px;font:inherit;
     font-weight:700;cursor:pointer;text-align:left;color:var(--ink);max-width:250px}
@@ -1431,7 +1436,7 @@ function renderOneAnalysis(el,t){
   const rows=t.responses.map((r,k)=>{
     const claimed=t.claims.find(c=>c.evidence.includes(k));
     return `<div class="anrow ${claimed?"picked":""}" data-ev="${k}">
-      <div class="abox">${claimed?"✓":""}</div>
+      <div class="abox">${claimed?"✓":"+"}</div>
       <div class="athumb">${cardVisual(t.cards[k],54)}</div>
       <div class="asaid"><span class="anum">${k+1}.</span> <i>“${escapeHtml(r||"(blank)")}”</i>
       ${claimed?`<div class="small">evidence for Level ${claimed.level}</div>`:""}</div>
@@ -1443,20 +1448,26 @@ function renderOneAnalysis(el,t){
       <div class="small">${L.desc}</div>
       <div style="margin-top:8px;font-size:13px">${c.evidence.length
         ? c.evidence.map(i=>`<div>• <i>“${escapeHtml(t.responses[i]||"")}”</i> <span class="small">(card ${i+1})</span></div>`).join("")
-        : `<span class="small">No evidence attached yet — click answers below to attach them.</span>`}</div>
+        : `<span class="needs">Nothing quoted yet — click the answers below that show this level.</span>`}</div>
+      <label style="margin-top:10px">Why this level?</label>
+      <textarea class="whybox" data-why="${ci}" placeholder="What in their words puts them here — and what is missing that would put them higher?">${escapeHtml(c.why||"")}</textarea>
     </div>`;}).join("");
   el.innerHTML=`<div class="card">
     <div class="claimhd"><h1 style="margin:0">${escapeHtml(t.doerLabel||"Doer")} · ${escapeHtml(t.packName)}</h1>
       <button class="tbtn" id="backList">◀ All transcripts</button></div>
     <p class="stepnote">You are the <b>Thinker</b>. Locate where your partner is — then decide what to offer next. Locate, don’t rank.</p>
 
-    <label>1 · Which levels do you see most clearly?</label>
+    <label>1 · Which levels do you see most clearly? <span style="font-weight:400;color:var(--mark)">— start here</span></label>
+    <div class="stepnote">Click a level to make a claim. You can claim more than one.</div>
     <div class="lvlpick">${VAN_HIELE.map(L=>`<button class="lvlbtn ${t.claims.some(c=>c.level===L.n)?"on":""}" data-lvl="${L.n}">
       <span class="lname">${L.name}</span><span class="ldesc">${L.desc}<br><b>e.g.</b> ${L.example}</span></button>`).join("")}</div>
     ${claims||`<div class="small">Pick a level above to start a claim.</div>`}
 
-    <label style="margin-top:18px">2 · What is your evidence? <span style="font-weight:400;color:var(--muted)">— click an answer to attach it to your most recent claim</span></label>
-    ${rows}
+    <label style="margin-top:18px">2 · Quote your evidence</label>
+    ${t.claims.length
+      ? `<div class="stepnote">Click any answer below to attach it to <b>${levelOf(t.claims[t.claims.length-1].level).name}</b>. Click again to remove it.</div>${rows}`
+      : `<div class="locate needs">Pick a level above first. Then these answers become clickable, and the ones you click are quoted as your evidence.</div>
+         <div class="inert">${rows}</div>`}
 
     <label style="margin-top:18px">3 · What would you engage your partner in next?</label>
     <textarea id="nextExp" placeholder="Pitch it at the level you just located — an experience aimed above where they are only gets memorised…">${escapeHtml(t.next||"")}</textarea>
@@ -1488,17 +1499,38 @@ function renderOneAnalysis(el,t){
     else { t.claims.forEach(x=>{const j=x.evidence.indexOf(k); if(j>=0) x.evidence.splice(j,1);}); c.evidence.push(k); }
     await tsPut(t); TRANSCRIPTS=await tsAll(); renderAnalyze();
   });
-  el.querySelector("#saveAn").onclick=async()=>{
+  el.querySelectorAll("[data-why]").forEach(box=>box.oninput=()=>{
+    t.claims[+box.dataset.why].why=box.value; tsPut(t);
+  });
+  const collect=()=>{
     t.next=el.querySelector("#nextExp").value;
     t.thinker=el.querySelector("#thinkerName").value.trim();
-    t.done=!!(t.claims.length && t.next.trim());
+    el.querySelectorAll("[data-why]").forEach(b=>{ t.claims[+b.dataset.why].why=b.value; });
+  };
+  el.querySelector("#saveAn").onclick=async()=>{
+    collect();
+    const bare=t.claims.filter(c=>!c.evidence.length).length;
+    t.done=!!(t.claims.length && t.next.trim() && !bare);
     await tsPut(t); TRANSCRIPTS=await tsAll();
-    toast(t.done?"Analysis saved.":"Saved — add a level and a next experience to finish it.");
+    toast(!t.claims.length ? "Pick a level first."
+        : bare ? `Saved — but ${bare===1?"a claim has":bare+" claims have"} no quoted evidence. Click the answers that show it.`
+        : !t.next.trim() ? "Saved — add what you would offer next to finish it."
+        : "Analysis saved.");
     renderAnalyze();
   };
   el.querySelector("#exportPDF").onclick=()=>{
-    t.next=el.querySelector("#nextExp").value;
-    t.thinker=el.querySelector("#thinkerName").value.trim();
+    collect();
+    /* stop before the PDF exists, not after — the PDF is the evidence they hand in */
+    if(!t.claims.length){
+      alert("Make sure to select a level first.\n\nClick one of the three levels above, then click the answers that show it. A transcript with no level located is not a diagnosis.");
+      return;
+    }
+    const bare=t.claims.filter(c=>!c.evidence.length);
+    if(bare.length){
+      const names=bare.map(c=>levelOf(c.level).name).join(" and ");
+      if(!confirm(`Make sure to select the responses that support your conclusion.\n\n${names} ${bare.length===1?"has":"have"} no quoted evidence, so the PDF will say "nothing quoted yet" there.\n\nGo back and click the answers, or export anyway?`)) return;
+    }
+    if(!t.next.trim() && !confirm("You have not said what you would offer this learner next.\n\nExport anyway?")) return;
     tsPut(t); exportPDF(t);
   };
 }
@@ -1510,7 +1542,8 @@ function exportPDF(t){
   const claims=t.claims.length? t.claims.map(c=>{
     const L=levelOf(c.level);
     return `<div class="cl"><b>${L.name}</b> — ${L.short}
-      <ul>${c.evidence.length?c.evidence.map(i=>`<li>“${escapeHtml(t.responses[i]||"")}” <i>(card ${i+1})</i></li>`).join(""):"<li><i>no evidence attached</i></li>"}</ul></div>`;
+      <ul>${c.evidence.length?c.evidence.map(i=>`<li>“${escapeHtml(t.responses[i]||"")}” <i>(card ${i+1})</i></li>`).join(""):"<li><i>nothing quoted yet</i></li>"}</ul>
+      ${c.why&&c.why.trim()?`<div style="margin-top:6px">${escapeHtml(c.why)}</div>`:""}</div>`;
     }).join("") : "<p><i>No level located.</i></p>";
   const doc=`<!doctype html><html><head><meta charset="utf-8"><title>nVoke — ${escapeHtml(t.packName)}</title>
 <style>body{font-family:Inter,system-ui,sans-serif;color:#1a2b4a;max-width:720px;margin:24px auto;padding:0 16px}
