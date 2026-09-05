@@ -1,9 +1,8 @@
 # LibreOffice / OpenOffice lock files, written while a document is open
 .~lock.*#
-
 # Office temp files
 ~$*
-
 # macOS / Linux desktop cruft
 .DS_Store
 Thumbs.db
+week-3-geometry-van-hiele/possible-readings/

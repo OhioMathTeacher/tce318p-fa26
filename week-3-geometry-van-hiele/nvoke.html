@@ -392,20 +392,24 @@ const OUTLINE="#1a1a1a", FILL="#e9e9e9", MARK="#c62828";
 
 /* ================= van Hiele levels (reference only — the app never assigns one) ================= */
 const VAN_HIELE=[
- {n:0, name:"Level 0 · Visualization",
-  short:"names by how it looks",
-  desc:"Names the whole shape by its look or its orientation — \u201ca diamond,\u201d \u201ca door.\u201d A square and a rectangle feel like separate things.",
+ {n:1, name:"Level 1 · Visual",
+  short:"describes shapes by their appearance",
+  desc:"Describes a shape by how the whole thing looks, or by how it is turned \u2014 \u201ca diamond,\u201d \u201ca door.\u201d A square and a rectangle feel like separate things.",
   example:"\u201cIt\u2019s a diamond.\u201d"},
- {n:1, name:"Level 1 · Analysis",
-  short:"reasons from properties",
-  desc:"Reasons from properties and parts \u2014 \u201cfour equal sides,\u201d \u201cstraight sides, closed\u201d \u2014 but still treats the classes as separate things.",
+ {n:2, name:"Level 2 · Analysis",
+  short:"describes shapes by their properties",
+  desc:"Describes a shape by its properties and parts \u2014 \u201cfour equal sides,\u201d \u201cstraight sides, closed\u201d \u2014 but still treats the classes as separate things.",
   example:"\u201cFour equal sides and square corners.\u201d"},
- {n:2, name:"Level 2 · Informal deduction",
-  short:"relates the classes",
-  desc:"Relates properties to one another and uses class inclusion \u2014 one kind of shape can be a special case of another.",
+ {n:3, name:"Level 3 · Abstraction",
+  short:"relates the properties to each other",
+  desc:"Recognises how properties depend on one another and orders the classes logically \u2014 one kind of shape can be a special case of another.",
   example:"\u201cA square is a special rectangle.\u201d"}
 ];
-const LEVELS_NOTE="Levels are sequential and experience-driven, not age-based. You locate a level in order to offer the right next experience \u2014 locate, don\u2019t rank.";
+/* Howse & Howse number the ladder 1-5; levels 4 (Deduction) and 5 (Rigor) are
+   named in the reading but never offered here \u2014 nothing a grade 2-4 learner
+   says should be filed under them. Look up by value, never by array index. */
+function levelOf(n){ return VAN_HIELE.find(L=>L.n===n) || VAN_HIELE[0]; }
+const LEVELS_NOTE="The levels are sequential, invariant and hierarchical \u2014 experience-driven, not age-based. You locate a level in order to offer the right next experience: locate, don\u2019t rank.";
 
 /* ================= built-in geometry pack ================= */
 const GEOMETRY_PACK = {
@@ -1364,7 +1368,7 @@ function renderOneAnalysis(el,t){
       ${claimed?`<div class="small">evidence for Level ${claimed.level}</div>`:""}</div>
     </div>`;}).join("");
   const claims=t.claims.map((c,ci)=>{
-    const L=VAN_HIELE[c.level];
+    const L=levelOf(c.level);
     return `<div class="claimcard">
       <div class="claimhd"><b>${L.name}</b><button class="tbtn" data-unclaim="${ci}">remove</button></div>
       <div class="small">${L.desc}</div>
@@ -1433,9 +1437,9 @@ function exportPDF(t){
   const rows=t.responses.map((r,k)=>{
     const claimed=t.claims.find(c=>c.evidence.includes(k));
     return `<div class="pr"><div class="pi">${cardVisual(t.cards[k],110)}</div>
-      <div class="pt"><b>${k+1}.</b> “${escapeHtml(r||"")}”${claimed?`<br><span class="ev">cited as evidence for ${VAN_HIELE[claimed.level].name}</span>`:""}</div></div>`;}).join("");
+      <div class="pt"><b>${k+1}.</b> “${escapeHtml(r||"")}”${claimed?`<br><span class="ev">cited as evidence for ${levelOf(claimed.level).name}</span>`:""}</div></div>`;}).join("");
   const claims=t.claims.length? t.claims.map(c=>{
-    const L=VAN_HIELE[c.level];
+    const L=levelOf(c.level);
     return `<div class="cl"><b>${L.name}</b> — ${L.short}
       <ul>${c.evidence.length?c.evidence.map(i=>`<li>“${escapeHtml(t.responses[i]||"")}” <i>(card ${i+1})</i></li>`).join(""):"<li><i>no evidence attached</i></li>"}</ul></div>`;
     }).join("") : "<p><i>No level located.</i></p>";
