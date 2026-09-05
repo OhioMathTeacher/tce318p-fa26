@@ -11,13 +11,22 @@
  h1{font-size:22px;margin:0 0 2px;} .sub{color:#6b7280;font-size:13px;margin-bottom:16px;}
  .goals{background:#e7f3ff;padding:12px 16px;border-radius:6px;margin:12px 0;}
  .block{padding:14px 16px;margin:14px 0;border-left:4px solid var(--red);border-radius:2px;}
- .b-set{background:#e8dcf0;} .b-share{background:#ffe8d6;} .b-work{background:#d6f0e8;} .b-early{background:#ffe8d6;}
+ .b-set{background:#e8dcf0;} .b-share{background:#ffe8d6;} .b-work{background:#d6f0e8;}
  .block h2{font-size:15px;margin:0 0 8px;} .block .time{font-weight:400;color:#6b7280;}
  .purpose{font-style:italic;color:#374151;margin:8px 0 0;}
  .tag{background:#fff3a8;padding:1px 4px;border-radius:3px;font-weight:600;}
  ul{margin:6px 0;padding-left:20px;} li{margin:3px 0;}
  .wrap{background:#fff3cd;padding:14px 16px;border-radius:6px;margin-top:22px;}
  a{color:#2563eb;}
+ summary{list-style:none;cursor:pointer;}
+ summary::-webkit-details-marker{display:none;} summary::marker{content:"";}
+ .block>summary h2{margin:0;} .block[open]>summary h2{margin:0 0 8px;}
+ .block>summary h2::after{content:"\25B8";float:right;color:#6b7280;font-weight:400;}
+ .block[open]>summary h2::after{content:"\25BE";}
+ .block>summary:focus-visible{outline:2px solid var(--red);outline-offset:3px;}
+ li>ul{margin:5px 0 2px;}
+ #toggleAll{display:none;font-size:12px;color:#6b7280;background:none;border:1px solid #d1d5db;border-radius:4px;padding:3px 9px;cursor:pointer;margin:0 0 4px;}
+ @media print{.block>summary h2::after{content:"";} #toggleAll{display:none!important;}}
  .canvas-note{font-size:12px;color:#9ca3af;border-top:1px solid #e5e7eb;margin-top:26px;padding-top:10px;}
  .home{display:inline-block;margin:0 0 10px;font-size:12px;color:#6b7280;text-decoration:none;}
  .home:hover{color:#2563eb;text-decoration:underline;}
@@ -31,45 +40,63 @@
 
 <div class="goals"><strong>Today's goals:</strong> Put a name to last class's spread — <strong>van Hiele levels</strong> — and learn to <em>hear</em> the level in how a learner reasons, not just what they name. The aim is to <strong>locate, not to rank</strong>: you diagnose in order to offer the right next experience.</div>
 
-<div class="block b-set">
- <h2>1 · Name the levels <span class="time">(~20 min)</span></h2>
- <ul>
-  <li>Debrief <a href="https://www.jstor.org/stable/10.5951/teacchilmath.25.2.0094">Newell &amp; Orton</a> — the three routines you ran Tuesday, now described from the teacher&rsquo;s side — then put the levels on the board: <strong>Level 0</strong> names by appearance ("a diamond"), <strong>Level 1</strong> reasons from properties ("equal sides, straight, closed"), <strong>Level 2</strong> relates them ("a square <em>is</em> a special rectangle").</li>
-  <li>Today's goal: connect the routines you ran last class to these levels — the same spread, now with a name.</li>
- </ul>
- <p class="purpose">Purpose: the spread you saw last class wasn't error — it was level. Naming it is the first diagnostic move.</p>
-</div>
+<button id="toggleAll" type="button">Expand all</button>
 
-<div class="block b-work">
- <h2>2 · Run the nVoke diagnostic together <span class="time">(~20 min)</span></h2>
+<details class="block b-set">
+ <summary><h2>1 · Name the levels <span class="time">(~20 min)</span></h2></summary>
  <ul>
-  <li>As a class, open <a href="https://ohiomathteacher.github.io/tce318p-fa26/week-3-geometry-van-hiele/nvoke.html"><strong>nVoke</strong></a> and run the <strong>van Hiele Geometry</strong> pack in <strong>Diagnostic mode</strong>. Each of you types what you see for every figure and keeps your own responses.</li>
-  <li>Field every question about the app now, so it's second nature when you pose it yourself.</li>
+  <li>Debrief <a href="https://www.jstor.org/stable/10.5951/teacchilmath.25.2.0094">Newell &amp; Orton</a> — the routines you ran Tuesday, now described from the teacher&rsquo;s side. Then the ladder goes on the board:
+   <ul>
+    <li><strong>Level 1 · Visual</strong> names a shape by how it looks (<em>"a diamond," "a door"</em>)</li>
+    <li><strong>Level 2 · Analysis</strong> reasons from properties (<em>"four equal sides, square corners"</em>)</li>
+    <li><strong>Level 3 · Abstraction</strong> relates them (<em>"a square <strong>is</strong> a special rectangle"</em>). Keep the <a href="van-hiele-levels.pdf">levels reference sheet</a> beside you — it is the same ladder the app shows you.</li>
+   </ul>
+  </li>
+  <li>Connect the spread you saw last class to these levels — the same spread, now with a name.</li>
  </ul>
- <p class="purpose">Purpose: the class becomes one dataset. nVoke shows the responses and does no analysis — <em>you</em> do the diagnosing.</p>
-</div>
+</details>
 
-<div class="block b-share">
- <h2>3 · Locate the level <span class="time">(~20 min)</span></h2>
+<details class="block b-work">
+ <summary><h2>2 · Swap laptops — then both of you answer <span class="time">(~15 min)</span></h2></summary>
  <ul>
-  <li>Read your <em>own</em> responses through the levels — where did you land? (You won't all be Level 2.)</li>
-  <li>Swap with a partner and locate theirs from the <strong>reasoning</strong>, not the label. <strong>Locate, don't rank</strong> — a "diamond" answer is data, not an error.</li>
+  <li><strong>Swap first.</strong> Hand your laptop to your partner and take theirs. You will answer on <em>their</em> machine.</li>
+  <li>Open <a href="nvoke.html">nVoke</a> → <strong>van Hiele Geometry</strong> → <strong>Handoff · one person</strong>. Four cards. <strong>Both of you answer at the same time.</strong></li>
+  <li>Type your <strong>real</strong> reasoning, not what you think I want to read. Someone is about to diagnose it.</li>
+  <li>Field every question about the app <strong>now</strong> — you pose it yourself on Sunday.</li>
+  <li>The last screen tells you to <strong>hand the laptop back</strong>. Do that — the Doer never analyses.</li>
  </ul>
- <p class="purpose">Purpose: hearing the level in the reasoning is the whole skill — the pick tells you little, the <em>How do you know?</em> is the diagnosis.</p>
-</div>
+</details>
 
-<div class="block b-set">
- <h2>4 · Open the assignment + wrap <span class="time">(~20 min)</span></h2>
+<details class="block b-work">
+ <summary><h2>3 · Swap back — locate the level, <em>then</em> ask <span class="time">(~20 min)</span></h2></summary>
  <ul>
-  <li>We open <a href="week-3-pedagogical-excursion.docx"><strong>Pedagogical Excursion #3</strong></a> together and read through it — that's the one place the details live.</li>
+  <li>Take your own laptop back. Your partner&rsquo;s answers are sitting on it.</li>
+  <li>Go to <strong>Analyze</strong> and work <strong>alone first — don&rsquo;t talk to your partner yet.</strong> Name the level, <strong>click an answer to attach their exact words as evidence</strong>, and say why those words put them there. The app makes you quote, because the quote <em>is</em> the diagnosis.</li>
+  <li><strong>Now</strong> turn to them and ask. <em>"How do you know?"</em> — ask, never tell. Where did you read them wrong?</li>
+  <li>Then say what you&rsquo;d offer them next, pitched <em>at</em> their level — not above it.</li>
+ </ul>
+ <p class="purpose">Purpose: locate, don't rank. A "diamond" answer is data, not an error. Committing to a level <em>before</em> you can ask is the whole exercise — a real learner won't be sitting there to correct you.</p>
+</details>
+
+<details class="block b-work">
+ <summary><h2>4 · Export once, and open the Excursion <span class="time">(~10 min)</span></h2></summary>
+ <ul>
+  <li><strong>Export the PDF right now</strong>, from the transcript you just analysed — if today&rsquo;s answers are good enough to read, that file is what you hand in. It prints from the app; there is nothing to download and nothing to unblock.</li>
+  <li>We open <a href="week-3-pedagogical-excursion.docx">Pedagogical Excursion #3</a> together and read it through — that is the one place the details live.</li>
+  <li>Two cautions: pose in <strong>Handoff · one person</strong> (the whole-room setting keeps nothing), and <strong>export before you close the tab</strong>.</li>
   <li>Close: how did naming the levels change what you heard?</li>
  </ul>
-</div>
+</details>
 
-<div class="block b-early">
- <h2>If you finish early</h2>
- <ul><li>Take a response you'd call Level 0 and write the one question you'd ask to invite the next level — without telling.</li></ul>
-</div>
+<details class="block b-share">
+ <summary><h2>5 · Build your own <span class="time">(~15 min)</span></h2></summary>
+ <ul>
+  <li>In <a href="nvoke.html">nVoke</a>: <strong>＋ New pack → ＋ Add card → Add to canvas → 💾 Save pack</strong>, and <strong>⬇ Export pack (.json)</strong> to keep it.</li>
+  <li>Four shapes on a canvas is a <span class="tag">WODB</span>; two is a <span class="tag">Same &amp; Different</span>. The routines you ran Tuesday, now built by you.</li>
+  <li>Aim your figures at the boundary that splits levels — <strong>square, tilted square, rhombus, rectangle, parallelogram</strong>. A star next to a heart only gets you appearance talk.</li>
+  <li><a href="week-3-pedagogical-excursion.docx">Excursion #3</a> lets you build your own instead of using the built-in pack — this is how.</li>
+ </ul>
+</details>
 
 <div class="wrap">
  <strong>Wrap-up &amp; looking ahead:</strong>
@@ -81,5 +108,34 @@
 </div>
 <p class="canvas-note">The submission dropbox and due dates are in <strong>Canvas</strong>, below the link to this outline. This page is the lesson outline only — no names, no grades.</p>
 </main>
+
+<script>
+/* Sections start closed so the page reads as an agenda. Two sharp edges to remove:
+   find-in-page cannot reach inside a collapsed <details> in every browser, so
+   "Expand all" exists — revealed only when scripting is on, since it does nothing
+   without it; and printing must show everything, or the printout is a list of titles. */
+(function(){
+  var secs=[].slice.call(document.querySelectorAll('details.block'));
+  if(!secs.length) return;
+  var btn=document.getElementById('toggleAll');
+  if(btn){
+    btn.style.display='inline-block';
+    btn.addEventListener('click',function(){
+      var open=secs.some(function(d){return !d.open;});
+      secs.forEach(function(d){d.open=open;});
+      btn.textContent=open?'Collapse all':'Expand all';
+    });
+  }
+  var before=null;
+  window.addEventListener('beforeprint',function(){
+    before=secs.map(function(d){return d.open;});
+    secs.forEach(function(d){d.open=true;});
+  });
+  window.addEventListener('afterprint',function(){
+    if(before) secs.forEach(function(d,i){d.open=before[i];});
+    before=null;
+  });
+})();
+</script>
 </body>
 </html>
