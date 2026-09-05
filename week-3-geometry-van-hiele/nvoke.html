@@ -49,7 +49,7 @@
   #bar{position:absolute;top:0;left:0;height:5px;background:var(--outline);width:0%}
   #stageBody{display:flex;flex-direction:column;align-items:center;width:100%}
   .figbox{width:min(70vw,520px);height:min(70vw,520px);max-height:66vh;display:flex;align-items:center;justify-content:center}
-  .figbox svg,.figbox img{max-width:100%;max-height:60vh;border-radius:8px}
+  .figbox svg,.figbox img{max-width:100%;max-height:52vh;border-radius:8px}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px}
   .gcell{position:relative}
   .gcell .lab{position:absolute;top:-6px;left:2px;font-weight:800;color:var(--ink)}
@@ -415,40 +415,42 @@ const LEVELS_NOTE="The levels are sequential, invariant and hierarchical \u2014 
 const GEOMETRY_PACK = {
   packFormat:"provoke-cards/v1", name:"van Hiele Geometry", builtIn:true, mode:"see", builtWith:"builder",
   prompt:"What did you see? · How do you know?", levels:"vanhiele",
+  /* Built to follow the argument Higgins's second graders have (TCM 19(8), pp. 491-492):
+     is a circle a shape? The answer turns on whether "shape" means corners and straight
+     sides — which is the Level 1 / Level 2 / Level 3 boundary, in the children's own words. */
   cards:[
-    {id:"single-1", template:"single",
-     members:[{ref:"square", rotate:0, color:"gray"}],
-     prompt:"What do you see? · How do you know?"},
-    {id:"single-2", template:"single",
-     members:[{figure:{kind:"poly", pts:[[0,1.344],[1.344,0],[0,-1.344],[-1.344,0]]}, rotate:0, color:"gray"}],
-     prompt:"What do you see? · How do you know?"},
-    {id:"wodb-3", template:"wodb",
-     members:[
-       {figure:{kind:"poly", pts:[[-1.32,0.7],[1.32,0.7],[1.32,-0.7],[-1.32,-0.7]]}, rotate:90, color:"gray"},
-       {figure:{kind:"poly", pts:[[-0.95,0.95],[0.95,0.95],[0.95,-0.95],[-0.95,-0.95]]}, rotate:0, color:"gray"},
-       {figure:{kind:"poly", pts:[[-1.42,0.42],[1.42,0.42],[1.42,-0.42],[-1.42,-0.42]]}, rotate:45, color:"gray"},
-       {figure:{kind:"poly", pts:[[-1.02,0.8],[1.02,0.8],[1.02,-0.8],[-1.02,-0.8]]}, rotate:0, color:"gray"}],
-     prompt:"Which one doesn't belong?"},
-    {id:"single-4", template:"single",
-     members:[{figure:{kind:"poly", pts:[[-1,0.92],[1.08,1],[1,-0.98],[-1.06,-0.9]], ticks:1, rights:[0,1,2,3]}, rotate:0, color:"gray"}],
-     prompt:"What do you see? How do you know?"},
-    {id:"wodb-5", template:"wodb",
-     members:[
-       {ref:"dart", rotate:0, color:"gray"},
-       {ref:"star5", rotate:0, color:"gray"},
-       {ref:"pentagon", rotate:0, color:"gray"},
-       {ref:"chevron", rotate:0, color:"gray"}],
+    /* 1 — Higgins's opening move: what do you know about shapes? The rule is the diagnosis. */
+    {id:"sort-1", template:"sort",
+     members:[{ref:"square"},{ref:"rect-wide"},{ref:"tri-equilateral"},
+              {ref:"hexagon"},{ref:"circle-lg"},{ref:"oval"},
+              {ref:"crescent"},{ref:"star5"},{ref:"spiral"}].map(m=>({...m,rotate:0,color:"gray"})),
+     prompt:"Put these into groups. What is your rule?"},
+
+    /* 2 — the disequilibrium in one card: someone will say "the circle, it has no corners" */
+    {id:"wodb-2", template:"wodb",
+     members:[{ref:"square"},{ref:"rect-wide"},{ref:"tri-equilateral"},{ref:"circle-lg"}]
+       .map(m=>({...m,rotate:0,color:"gray"})),
      prompt:"Which one doesn't belong — and how do you know?"},
-    {id:"same-diff-6", template:"same-diff",
-     members:[
-       {ref:"square", rotate:0, color:"gray"},
-       {ref:"square", rotate:45, color:"gray"}],
+
+    /* 3 — Higgins's actual question, asked straight. A spiral is not even closed. */
+    {id:"single-3", template:"single",
+     members:[{ref:"spiral", rotate:0, color:"gray"}],
+     prompt:"Is this a shape? How do you know?"},
+
+    /* 4 — "if you trace a circle you can keep tracing it to infinity" (p. 492) */
+    {id:"same-diff-4", template:"same-diff",
+     members:[{ref:"circle-lg", rotate:0, color:"gray"},{ref:"oval", rotate:0, color:"gray"}],
      prompt:"What's the same? What's different?"},
-    {id:"same-diff-7", template:"same-diff",
-     members:[
-       {ref:"rect-wide", rotate:0, color:"gray"},
-       {ref:"parallelogram", rotate:0, color:"gray"}],
-     prompt:"What's the same? What's different?"}
+
+    /* 5 — class inclusion. Higgins's *teachers* split on this one (p. 494). */
+    {id:"same-diff-5", template:"same-diff",
+     members:[{ref:"square", rotate:0, color:"gray"},{ref:"rect-wide", rotate:0, color:"gray"}],
+     prompt:"What's the same? What's different?"},
+
+    /* 6 — the diamond. Same figure, turned: Level 1 reads the orientation, Level 2 the properties. */
+    {id:"single-6", template:"single",
+     members:[{ref:"square", rotate:45, color:"gray"}],
+     prompt:"What do you see? How do you know?"}
   ]
 };
 
@@ -1238,7 +1240,11 @@ function steadyPhase(){ answerPhase(); }
 function answerPhase(){
   const c=curCard(), flash=isFlashCard(c);
   const bar=stageEl("bar"); bar.style.transition="none"; bar.style.width="0%";
-  const figure = flash ? "" : `<div class="figbox" style="max-height:44vh">${cardVisual(c,300)}</div>`;
+  /* multi-figure cards need more room than a single figure: you cannot reason about
+     properties from a 50px shape */
+  const many = ((c.members||[]).length > 1) || c.template==="sort" || c.template==="ispy";
+  const figure = flash ? "" :
+    `<div class="figbox" style="max-height:${many?52:44}vh">${cardVisual(c, many?460:340)}</div>`;
   if(ses.mode==="presentation"){
     stageEl("stageBody").innerHTML=`
       <div class="prompt">${escapeHtml(questionFor(c))}</div>
