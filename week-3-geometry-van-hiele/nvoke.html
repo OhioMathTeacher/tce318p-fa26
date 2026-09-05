@@ -469,7 +469,8 @@ const GEOMETRY_PACK = {
      ],
      prompt:"Is this a shape? Why or why not?"},
 
-    /* 6 — her opening move. The stated rule is the diagnosis; a second rule is the level. */
+    /* 6 — anchored to shape 7, the crescent: curved like the circle and oval, but pointed
+       like the star. Whichever way they group it, the reason they give is the rule. */
     {id:"sort-6", template:"sort",
      members:[
        {ref:"square", rotate:0, color:"gray"},
@@ -482,7 +483,7 @@ const GEOMETRY_PACK = {
        {ref:"star5", rotate:0, color:"gray"},
        {ref:"spiral", rotate:0, color:"gray"}
      ],
-     prompt:"Put these into groups that belong together. What is your rule — and can you sort them a different way?"}
+     prompt:"Which, if any, of the following items belong with shape 7? Type their numbers below and explain why they belong together."}
 
   ]
 };
@@ -736,7 +737,8 @@ const TEMPLATES={
   single:{label:"Single card", max:1, prompt:"What do you see? · How do you know?", sub:"How do you know?"}
 };
 function posLabel(t,x,y){
-  return `<text x="${x}" y="${y}" font-size="0.46" font-weight="800" fill="#98a2b3" font-family="Inter,system-ui,sans-serif">${t}</text>`;
+  /* darker than a decoration: a question can ask "which belong with shape 7?" */
+  return `<text x="${x}" y="${y}" font-size="0.46" font-weight="800" fill="#5b6b82" font-family="Inter,system-ui,sans-serif">${t}</text>`;
 }
 function memberFig(m){return m.figure||(LIB[m.ref]&&LIB[m.ref].figure)||null;}
 function placeMember(m,cx,cy,s){

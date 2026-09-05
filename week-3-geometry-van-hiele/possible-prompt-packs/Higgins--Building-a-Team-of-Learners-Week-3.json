@@ -140,7 +140,7 @@
           "color": "gray"
         }
       ],
-      "prompt": "Put these into groups that belong together. What is your rule — and can you sort them a different way?"
+      "prompt": "Which, if any, of the following items belong with shape 7? Type their numbers below and explain why they belong together."
     }
   ]
 }
