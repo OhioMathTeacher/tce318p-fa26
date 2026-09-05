@@ -1384,6 +1384,13 @@ async function finish(){
 
 /* ================= phase 3 · ANALYZE ================= */
 let an={id:null};
+/* transcripts of the same pack look identical without this */
+function when(ts){
+  if(!ts) return "unknown time";
+  const d=new Date(ts), now=new Date();
+  const t=d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"});
+  return d.toDateString()===now.toDateString() ? "today "+t : d.toLocaleDateString([], {month:"short", day:"numeric"})+" "+t;
+}
 function renderAnalyze(){
   const el=document.getElementById("analyze"); if(!el) return;
   if(an.id){ const t=TRANSCRIPTS.find(x=>x.id===an.id); if(t){ renderOneAnalysis(el,t); return; } an.id=null; }
@@ -1395,14 +1402,20 @@ function renderAnalyze(){
   }
   el.innerHTML=`<div class="card"><h1>Analyze</h1>
     <p class="stepnote">Each transcript below is what one partner typed on this laptop. Read the reasoning, not the label.</p>
-    ${TRANSCRIPTS.map(t=>`<div class="tscript ${t.done?"done":""}" data-open="${t.id}">
+    ${TRANSCRIPTS.map(t=>{
+      const blank=t.responses.filter(r=>!r||!r.trim()).length;
+      const first=(t.responses.find(r=>r&&r.trim())||"").slice(0,60);
+      return `<div class="tscript ${t.done?"done":""}" data-open="${t.id}">
       <div style="flex:1">
         <div style="font-weight:700">${escapeHtml(t.doerLabel||"Doer")} · ${escapeHtml(t.packName)}</div>
-        <div class="small">${t.responses.length} answer${t.responses.length===1?"":"s"}${t.done?" · analysis written":" · not analysed yet"}</div>
+        <div class="small">${when(t.at)} · ${t.responses.length} card${t.responses.length===1?"":"s"}${
+          blank?` · <b style="color:var(--mark)">${blank} left blank</b>`:""}${t.done?" · analysis written":""}</div>
+        ${first?`<div class="small" style="font-style:italic">“${escapeHtml(first)}${first.length>=60?"…":""}”</div>`
+               :`<div class="small" style="color:var(--mark)">nothing was typed in this run</div>`}
       </div>
       <button class="tbtn">${t.done?"Review":"Analyze ▶"}</button>
       <button class="tbtn" data-drop="${t.id}" title="Delete this transcript">🗑</button>
-    </div>`).join("")}
+    </div>`;}).join("")}
     <div class="locate" style="margin-top:16px">${LEVELS_NOTE}</div></div>`;
   el.querySelectorAll("[data-open]").forEach(d=>d.onclick=ev=>{
     if(ev.target.dataset.drop) return;
