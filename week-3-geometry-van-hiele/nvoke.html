@@ -1441,7 +1441,7 @@ function renderAnalyze(){
         ${first?`<div class="small" style="font-style:italic">“${escapeHtml(first)}${first.length>=60?"…":""}”</div>`
                :`<div class="small" style="color:var(--mark)">nothing was typed in this run</div>`}
       </div>
-      <button class="tbtn">${t.done?"Review":"Analyze ▶"}</button>
+      <button class="tbtn" title="Open this transcript and locate the level your partner is reasoning from.">${t.done?"Review":"Analyze ▶"}</button>
       <button class="tbtn" data-drop="${t.id}" title="Delete this transcript">🗑</button>
     </div>`;}).join("")}
     <div class="locate" style="margin-top:16px">${LEVELS_NOTE}</div></div>`;
@@ -1458,7 +1458,7 @@ function renderAnalyze(){
 function renderOneAnalysis(el,t){
   const rows=t.responses.map((r,k)=>{
     const claimed=t.claims.find(c=>c.evidence.includes(k));
-    return `<div class="anrow ${claimed?"picked":""}" data-ev="${k}">
+    return `<div class="anrow ${claimed?"picked":""}" data-ev="${k}" title="${claimed?"Quoted as evidence — click to unquote it.":"Click to quote this answer as evidence for your most recent claim."}">
       <div class="abox">${claimed?"✓":"+"}</div>
       <div class="athumb">${cardVisual(t.cards[k],54)}</div>
       <div class="asaid"><span class="anum">${k+1}.</span> <i>“${escapeHtml(r||"(blank)")}”</i>
@@ -1467,22 +1467,22 @@ function renderOneAnalysis(el,t){
   const claims=t.claims.map((c,ci)=>{
     const L=levelOf(c.level);
     return `<div class="claimcard">
-      <div class="claimhd"><b>${L.name}</b><button class="tbtn" data-unclaim="${ci}">remove</button></div>
+      <div class="claimhd"><b>${L.name}</b><button class="tbtn" data-unclaim="${ci}" title="Drop this level claim and the quotes attached to it.">remove</button></div>
       <div class="small">${L.desc}</div>
       <div style="margin-top:8px;font-size:13px">${c.evidence.length
         ? c.evidence.map(i=>`<div>• <i>“${escapeHtml(t.responses[i]||"")}”</i> <span class="small">(card ${i+1})</span></div>`).join("")
         : `<span class="needs">Nothing quoted yet — click the answers below that show this level.</span>`}</div>
       <label style="margin-top:10px">Why this level?</label>
-      <textarea class="whybox" data-why="${ci}" placeholder="What in their words puts them here — and what is missing that would put them higher?">${escapeHtml(c.why||"")}</textarea>
+      <textarea class="whybox" data-why="${ci}" title="Say what in their words puts them at this level, and what would have put them higher. This prints under the quotes." placeholder="What in their words puts them here — and what is missing that would put them higher?">${escapeHtml(c.why||"")}</textarea>
     </div>`;}).join("");
   el.innerHTML=`<div class="card">
     <div class="claimhd"><h1 style="margin:0">${escapeHtml(t.doerLabel||"Doer")} · ${escapeHtml(t.packName)}</h1>
-      <button class="tbtn" id="backList">◀ All transcripts</button></div>
+      <button class="tbtn" id="backList" title="Back to every transcript saved on this device.">◀ All transcripts</button></div>
     <p class="stepnote">You are the <b>Thinker</b>. Locate where your partner is — then decide what to offer next. Locate, don’t rank.</p>
 
     <label>1 · Which levels do you see most clearly? <span style="font-weight:400;color:var(--mark)">— start here</span></label>
     <div class="stepnote">Click a level to make a claim. You can claim more than one.</div>
-    <div class="lvlpick">${VAN_HIELE.map(L=>`<button class="lvlbtn ${t.claims.some(c=>c.level===L.n)?"on":""}" data-lvl="${L.n}">
+    <div class="lvlpick">${VAN_HIELE.map(L=>`<button class="lvlbtn ${t.claims.some(c=>c.level===L.n)?"on":""}" data-lvl="${L.n}" title="Claim ${L.name} — then click the answers below that put your partner here. You can claim more than one level.">
       <span class="lname">${L.name}</span><span class="ldesc">${L.desc}<br><b>e.g.</b> ${L.example}</span></button>`).join("")}</div>
     ${claims||`<div class="small">Pick a level above to start a claim.</div>`}
 
@@ -1493,10 +1493,10 @@ function renderOneAnalysis(el,t){
          <div class="inert">${rows}</div>`}
 
     <label style="margin-top:18px">3 · What would you engage your partner in next?</label>
-    <textarea id="nextExp" placeholder="Pitch it at the level you just located — an experience aimed above where they are only gets memorised…">${escapeHtml(t.next||"")}</textarea>
+    <textarea id="nextExp" title="Pitch it at the level you located. An experience aimed above where someone is only gets memorised." placeholder="Pitch it at the level you just located — an experience aimed above where they are only gets memorised…">${escapeHtml(t.next||"")}</textarea>
 
     <label style="margin-top:14px">Your name <span style="font-weight:400;color:var(--muted)">— you did this analysis</span></label>
-    <input id="thinkerName" type="text" placeholder="Your name" value="${escapeHtml(t.thinker||"")}">
+    <input id="thinkerName" type="text" title="You did this analysis, so your name goes on it. Your partner stays anonymous." placeholder="Your name" value="${escapeHtml(t.thinker||"")}">
 
     <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
       <button class="primary" id="saveAn" title="Keep your levels, quoted evidence and next experience on this device. You can come back and finish later.">💾 Save analysis</button>
