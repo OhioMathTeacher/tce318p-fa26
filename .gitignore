@@ -6,3 +6,11 @@
 .DS_Store
 Thumbs.db
 week-3-geometry-van-hiele/possible-readings/
+
+# Student work — never in this public repo. Graded copies live in ~/Grading/.
+*-PE[0-9].pdf
+*-PE[0-9]-*.pdf
+scanned-*.pdf
+/grading/
+*student-work*
+*-scores.csv
