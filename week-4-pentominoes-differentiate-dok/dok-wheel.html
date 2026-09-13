@@ -276,21 +276,23 @@ const DECK = [
  {q:"Does everything you learned about pentominoes still hold for hexominoes? Where does it break?", l:4, why:"Connect to a new case and analyze where the ideas transfer — extended thinking."}
 ];
 const quiz = document.getElementById('quiz');
-let order = DECK.map((_, i) => i).sort(() => Math.random() - .5), pos = 0, right = 0, done = 0;
+// No score. A different word of support after each question instead.
+const CHEER = ["Nice.", "Keep going.", "That's the idea.", "Good eye.", "You're getting the feel of it.", "Argue it with your table.", "Notice what the question asks you to do.", "One more.", "Levels 2 and 3 are the tricky ones — that's normal.", "You'd have written that one differently, wouldn't you?", "Still with us.", "Good — now say why.", "Look at the verb, then ignore it.", "Nearly through.", "Last few.", "You did the whole deck."];
+let order = DECK.map((_, i) => i).sort(() => Math.random() - .5), pos = 0;
 function ask(){
  if (pos >= order.length) {
-  quiz.innerHTML = `<p class="q">Deck done: ${right} of ${done}.</p><p class="muted">Levels 2 and 3 are where most disagreements live — that's normal, and it's the conversation worth having.</p><button id="again">Shuffle and go again</button>`;
-  document.getElementById('again').addEventListener('click', () => { order.sort(() => Math.random() - .5); pos = 0; right = 0; done = 0; ask(); });
+  quiz.innerHTML = `<p class="q">That's the deck.</p><p class="muted">Levels 2 and 3 are where most disagreements live — that's normal, and it's the conversation worth having.</p><button id="again">Shuffle and go again</button>`;
+  document.getElementById('again').addEventListener('click', () => { order.sort(() => Math.random() - .5); pos = 0; ask(); });
   return;
  }
  const item = DECK[order[pos]];
  quiz.innerHTML = `<p class="q">${item.q}</p>
   <div class="choices">${LEVELS.map(L => `<button data-l="${L.n}">DOK ${L.n}</button>`).join('')}</div>
-  <div id="fb"></div><div class="score">${pos + 1} of ${order.length}${done ? ` · ${right} right so far` : ''}</div>`;
+  <div id="fb"></div><div class="score">${pos + 1} of ${order.length}</div>`;
  quiz.querySelectorAll('.choices button').forEach(b => b.addEventListener('click', () => {
-  const pick = +b.dataset.l, ok = pick === item.l; done++; if (ok) right++;
+  const pick = +b.dataset.l, ok = pick === item.l;
   quiz.querySelectorAll('.choices button').forEach(x => { x.disabled = true; x.classList.add(+x.dataset.l === item.l ? 'right' : 'wrong'); });
-  document.getElementById('fb').innerHTML = `<div class="fb ${ok ? 'ok' : 'no'}"><strong>${ok ? 'Yes' : `We'd call it DOK ${item.l}`}</strong> — ${item.why}</div><div class="row"><button id="next">Next</button></div>`;
+  document.getElementById('fb').innerHTML = `<div class="fb ${ok ? 'ok' : 'no'}"><strong>${ok ? 'Yes' : `We'd call it DOK ${item.l}`}</strong> — ${item.why}</div><div class="row"><button id="next">Next</button><span class="muted">${CHEER[pos % CHEER.length]}</span></div>`;
   document.getElementById('next').addEventListener('click', () => { pos++; ask(); });
  }));
 }
