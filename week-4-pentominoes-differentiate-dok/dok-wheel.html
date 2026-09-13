@@ -232,7 +232,7 @@ function show(i, challenge){
   <ul>${L.stems.map(s => `<li>${s}</li>`).join('')}</ul>
   <h3>A pentomino question at this level</h3>
   <div class="ex">${L.example}</div>
-  ${challenge ? `<div class="challenge"><strong>Your turn:</strong> rewrite the question you picked at <strong>DOK ${L.n}</strong> — even if that's a step down. Then say <strong>what you had to change</strong>. It's never just the verb.</div>` : ''}`;
+  ${challenge ? `<div class="challenge"><strong>Your turn:</strong> rewrite the question you picked at <strong>DOK ${L.n}</strong> — even if that's a step down. Stuck? <strong>Appeal to your team.</strong> Then say <strong>what you had to change</strong>. It's never just the verb.</div>` : ''}`;
 }
 function showAll(){
  document.querySelectorAll('.wedge').forEach(w => w.style.strokeWidth = 1.5);
