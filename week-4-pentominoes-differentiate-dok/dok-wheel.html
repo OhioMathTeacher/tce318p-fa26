@@ -75,7 +75,7 @@
    <button id="spin">Spin</button>
    <button id="reset" class="ghost">Show all</button>
   </div>
-  <p class="muted" style="margin-top:8px">Tap a wedge to see what that level asks for. Spin to get a level at random, then rewrite one of the five pentomino questions at that depth. Notice <strong>Compare</strong>, <strong>Construct</strong> and <strong>Critique</strong> each sit in two wedges, and the hub's three verbs live in all four: a verb alone never sets the level — what the learner has to <em>do</em> with it does.</p>
+  <p class="muted" style="margin-top:8px">Tap a wedge to see what that level asks for. <strong>To spin:</strong> pick one of the questions we recorded <em>first</em>, read it out, <em>then</em> spin — and rewrite that question at whatever level the wheel lands on, up or down. The real question afterward is <em>what did you have to change?</em> Notice <strong>Compare</strong>, <strong>Construct</strong> and <strong>Critique</strong> each sit in two wedges, and the hub's three verbs live in all four: a verb alone never sets the level — what the learner has to <em>do</em> with it does.</p>
 </div>
 
 <div class="scrim" id="scrim"></div>
@@ -205,7 +205,7 @@ function show(i, challenge){
   <ul>${L.stems.map(s => `<li>${s}</li>`).join('')}</ul>
   <h3>A pentomino question at this level</h3>
   <div class="ex">${L.example}</div>
-  ${challenge ? `<div class="challenge"><strong>Your turn:</strong> pick one of the five pentomino questions and rewrite it at <strong>DOK ${L.n}</strong>. What did you have to change?</div>` : ''}`;
+  ${challenge ? `<div class="challenge"><strong>Your turn:</strong> rewrite the question you picked at <strong>DOK ${L.n}</strong> — even if that's a step down. Then say <strong>what you had to change</strong>. It's never just the verb.</div>` : ''}`;
 }
 function showAll(){
  document.querySelectorAll('.wedge').forEach(w => w.style.strokeWidth = 1.5);
@@ -213,7 +213,7 @@ function showAll(){
  panel.innerHTML = `<h2>Four depths, one topic</h2>
   <div class="tag">Every level can be asked about pentominoes. The level isn't in the shape — it's in what the question asks you to do.</div>
   <ul>${LEVELS.map(L => `<li><strong style="color:${L.hex}">DOK ${L.n} · ${L.long}.</strong> ${L.meaning}</li>`).join('')}</ul>
-  <p class="muted" style="margin:10px 0 0">Tap a wedge, or spin.</p>`;
+  <p class="muted" style="margin:10px 0 0">Tap a wedge to see what it asks for. Or pick a question, then spin.</p>`;
 }
 let angle = 0, spinning = false;
 document.getElementById('spin').addEventListener('click', () => {
