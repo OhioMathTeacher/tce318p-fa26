@@ -13,6 +13,12 @@
  .block{padding:14px 16px;margin:14px 0;border-left:4px solid var(--red);border-radius:2px;}
  .b-set{background:#e8dcf0;} .b-share{background:#ffe8d6;} .b-work{background:#d6f0e8;} .b-early{background:#ffe8d6;}
  .block h2{font-size:15px;margin:0 0 8px;} .block .time{font-weight:400;color:#6b7280;}
+ details.block summary{cursor:pointer;list-style:none;display:flex;align-items:baseline;gap:8px;}
+ details.block summary::-webkit-details-marker{display:none;}
+ details.block summary::before{content:"▸";color:var(--red);font-size:13px;flex:none;transition:transform .15s;}
+ details.block[open] summary::before{transform:rotate(90deg);}
+ details.block summary h2{margin:0;}
+ details.block[open] summary{margin-bottom:8px;}
  .purpose{font-style:italic;color:#374151;margin:8px 0 0;}
  .tag{background:#fff3a8;padding:1px 4px;border-radius:3px;font-weight:600;}
  ul{margin:6px 0;padding-left:20px;} li{margin:3px 0;}
@@ -37,17 +43,17 @@
 
 <div class="goals"><strong>Today's goals:</strong> Explore <strong>differentiation</strong> through a study of pentominoes. Discover the pentominoes, solve a range of problems and sort them by depth (DOK), then start reshaping your own questions into tasks for learners.</div>
 
-<div class="block b-work">
- <h2>1 · Discover the pentominoes <span class="time">(~20 min)</span></h2>
+<details class="block b-work">
+ <summary><h2>1 · Discover the pentominoes <span class="time">(~20 min)</span></h2></summary>
  <ul>
   <li>With a partner, build pentominoes from snap cubes and sketch each on <strong>Activity Sheet 1 (Making Pieces)</strong>. A pentomino is <strong>five squares joined edge to edge</strong>; flips and turns of the same shape count as one.</li>
   <li><strong>How do you know when you have them all?</strong> Build a system, not a pile.</li>
  </ul>
  <p class="purpose">Purpose: the "how do you know you're done?" struggle is the Learner move again — building a system to be sure you've found them all.</p>
-</div>
+</details>
 
-<div class="block b-share">
- <h2>2 · Problem solving with pentominoes <span class="time">(~20 min)</span></h2>
+<details class="block b-share">
+ <summary><h2>2 · Problem solving with pentominoes <span class="time">(~20 min)</span></h2></summary>
  <p>Consider these five questions about pentominoes:</p>
  <div class="sortcard">
   <ol>
@@ -63,32 +69,32 @@
   <li>The levels of complexity are often described using <strong>Webb's Depth of Knowledge (DOK&nbsp;1–4)</strong>. It doesn't track harder <em>numbers</em>; it tracks how deep the <em>thinking</em> goes: recall a fact <em>(1)</em> → apply a skill <em>(2)</em> → reason and justify <em>(3)</em> → design and investigate <em>(4)</em>.</li>
  </ul>
  <p class="purpose">Purpose: sorting the questions surfaces the hidden dimension — not how hard the <em>numbers</em> are, but how deep the <em>thinking</em> goes. DOK is the <em>depth</em> dial you'll design with in the Builder.</p>
-</div>
+</details>
 
-<div class="block b-work">
- <h2>3 · Double your table's pentomino <span class="time">(~20 min)</span></h2>
+<details class="block b-work">
+ <summary><h2>3 · Double your table's pentomino <span class="time">(~20 min)</span></h2></summary>
  <ul>
   <li>Each table gets a different pentomino — <span class="tag">T</span> <span class="tag">L</span> <span class="tag">Z</span> <span class="tag">I</span> <span class="tag">P</span> <span class="tag">M</span>. On <strong>Activity Sheet 2 (Enlarged Pentominoes)</strong>, double yours using <strong>four distinct</strong> pentominoes.</li>
   <li>Can you do it? If not, <strong>why not?</strong></li>
   <li>As you work, <strong>jot down the questions that come up for <em>you</em></strong> — whatever you find yourself wondering about the shapes, the doubling, or the pieces.</li>
  </ul>
  <p class="purpose">Purpose: the doubling is genuine problem-solving — and the questions you catch as they arise are the raw material for the next step.</p>
-</div>
+</details>
 
-<div class="block b-set">
- <h2>4 · Come back together <span class="time">(~20 min)</span></h2>
+<details class="block b-set">
+ <summary><h2>4 · Come back together <span class="time">(~20 min)</span></h2></summary>
  <ul>
   <li><strong>Debrief.</strong> Could you double your pentomino with four distinct pieces? Which shapes couldn't — and <strong>why not?</strong> Put the questions you jotted up on the board.</li>
   <li><strong>Turn teacher — together.</strong> As a class, rewrite those questions into ones you'd pose to <strong>grade 2–4 students</strong> studying pentominoes.</li>
   <li><strong>Then sort.</strong> Place the kid-questions into <strong>DOK piles</strong> — recall <em>(1)</em>, apply <em>(2)</em>, reason <em>(3)</em>, design <em>(4)</em>. Where do they land? Which piles are empty?</li>
   <li><strong>Name it.</strong> Turning your own questions into questions for kids, pitched across a range of depths, is <strong>differentiation</strong> — a question for every learner. Two dials: <strong>depth</strong> (DOK) and <strong>size</strong> (which shape you hand which learner).</li>
  </ul>
-</div>
+</details>
 
-<div class="block b-early">
- <h2>If you finish early</h2>
+<details class="block b-early">
+ <summary><h2>If you finish early</h2></summary>
  <ul><li>Two pentominoes <em>can't</em> be doubled with four distinct pieces. Find them — and convince us why not.</li></ul>
-</div>
+</details>
 
 <div class="wrap">
  <strong>Wrap-up &amp; looking ahead:</strong>
