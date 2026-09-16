@@ -51,6 +51,9 @@
   v0.8.9: Play layout — moved level-selector / Rotate-Flip-Restart / Timer / hint into a bar UNDER
         the board, so the right panel is just task -> big answer box -> I'm done -> Download (more
         room to write).
+  v0.8.10: FIX — the Play "Filled: n / N · k outside frame" line only refreshed on drop/delete, so
+        dragging (or arrow-keying / rotating) a piece into the frame left a stale count and never
+        registered the solve. reposition() now refreshes the stats after every successful move.
   v0.7: ASSIGNMENT PACKET — each DOK level (1-4) is its own slot/grid; the task carries across
         levels as a starting point. "✓ Finished with DOK n" saves a level; "Print packet PDF"
         assembles every finished level into one multi-page document (page 1 = DOK 1, ...).
@@ -181,7 +184,7 @@
 </style>
 </head>
 <body>
-<h1>Pentomino Builder <span style="font-size:12px;color:var(--muted);font-weight:400">· v0.8.9 draft</span></h1>
+<h1>Pentomino Builder <span style="font-size:12px;color:var(--muted);font-weight:400">· v0.8.10 draft</span></h1>
 <div class="sub">Teacher task canvas — draw a grid-conforming frame, then place, rotate, flip, and color pentominoes to fill it.</div>
 
 <div class="tabs" id="tabs">
@@ -472,7 +475,7 @@ function removeInstance(id){ const inst=instances[id]; if(!inst) return; if(tab=
 function bboxCenter(cells){ const rs=cells.map(c=>c[0]),cs=cells.map(c=>c[1]); return [(Math.min(...rs)+Math.max(...rs))/2,(Math.min(...cs)+Math.max(...cs))/2]; }
 function reposition(id,newCells){ const inst=instances[id]; inst.cells.forEach(([r,c])=>grid[r][c]=null);
  const ok=newCells.every(([r,c])=> r>=0&&r<R&&c>=0&&c<C&&grid[r][c]==null);
- if(ok){ inst.cells=newCells; newCells.forEach(([r,c])=>grid[r][c]=id); } else inst.cells.forEach(([r,c])=>grid[r][c]=id); return ok; }
+ if(ok){ inst.cells=newCells; newCells.forEach(([r,c])=>grid[r][c]=id); if(tab==='play') playAfterChange(); } else inst.cells.forEach(([r,c])=>grid[r][c]=id); return ok; }   // moves (drag/arrow/rotate/flip) refresh the play count too, not just place/remove
 function transformSelected(fn){ if(selected==null||!instances[selected]) return; const inst=instances[selected];
  const t=fn(norm(inst.cells)); const oc=bboxCenter(inst.cells), nc=bboxCenter(t); const br=Math.round(oc[0]-nc[0]), bc=Math.round(oc[1]-nc[1]);
  for(const [dr,dc] of [[0,0],[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1],[-2,0],[2,0],[0,-2],[0,2]]){
