@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DOK Wheel — TCE 318P</title>
+
+<style>
+ :root{--red:#C41E3A;}
+ html,body{overflow-x:hidden;}
+ body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;padding:14px 56px 20px;color:#1f2937;line-height:1.5;}
+ h1{font-size:22px;margin:0 0 2px;} .sub{color:#6b7280;font-size:13px;margin-bottom:16px;}
+ a{color:#2563eb;}
+ .home{display:inline-block;margin:0 0 10px;font-size:12px;color:#6b7280;text-decoration:none;}
+ .home:hover{color:#2563eb;text-decoration:underline;}
+ .wheelcol{margin:0 auto;text-align:center;}
+ /* as big as the window allows, minus the header, controls, and the edge tabs */
+ svg{display:block;height:min(calc(100vh - 250px),calc(100vw - 130px));width:auto;max-width:100%;margin:0 auto;}
+ .wheelcol p{max-width:720px;margin-left:auto;margin-right:auto;}
+ /* drawers */
+ .drawer{position:fixed;top:0;bottom:0;width:min(420px,92vw);background:#fff;box-shadow:0 0 24px rgba(0,0,0,.18);z-index:20;overflow-y:auto;padding:16px 18px 32px;visibility:hidden;transition:transform .25s ease,visibility 0s linear .25s;}
+ .drawer.left{left:0;transform:translateX(-100%);} .drawer.right{right:0;transform:translateX(100%);}
+ .drawer.open{transform:none;visibility:visible;transition:transform .25s ease,visibility 0s;}
+ .drawer .close{position:absolute;top:8px;right:10px;background:none;border:none;color:#6b7280;font-size:22px;padding:2px 8px;cursor:pointer;}
+ .tab{position:fixed;z-index:19;writing-mode:vertical-rl;background:var(--red);color:#fff;font-weight:600;font-size:13px;padding:14px 8px;border:none;border-radius:0 6px 6px 0;cursor:pointer;letter-spacing:.03em;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+ .tab.l{left:0;top:120px;} .tab.r{right:0;transform:rotate(180deg);border-radius:0 6px 6px 0;}
+ .tab.r1{top:120px;} .tab.r2{top:250px;}
+ .tab.on{background:#1f2937;}
+ .scrim{position:fixed;inset:0;background:rgba(0,0,0,.12);z-index:18;display:none;} .scrim.show{display:block;}
+ .drawer .panel{background:none;padding:0;border:none;min-height:0;}
+ .drawer .block{margin:0;padding:0;border:none;background:none;}
+ /* curtain */
+ #curtain{position:fixed;inset:0;z-index:40;cursor:pointer;overflow:hidden;}
+ #curtain.gone{display:none;}
+ .velvet{position:absolute;top:0;bottom:0;width:50%;transition:transform 1.4s cubic-bezier(.6,.05,.4,1);
+  background:
+   linear-gradient(180deg,rgba(0,0,0,.35) 0,rgba(0,0,0,0) 12%,rgba(0,0,0,0) 85%,rgba(0,0,0,.45) 100%),
+   repeating-linear-gradient(90deg,#5c0714 0 14px,#8a0f24 14px 34px,#b3183a 34px 48px,#8a0f24 48px 66px,#6a0a19 66px 80px);
+  box-shadow:inset 0 0 60px rgba(0,0,0,.5);}
+ .velvet.l{left:0;} .velvet.r{right:0;}
+ #curtain.open .velvet.l{transform:translateX(-102%);} #curtain.open .velvet.r{transform:translateX(102%);}
+ .valance{position:absolute;top:0;left:0;right:0;height:38px;background:linear-gradient(180deg,#d4a017,#a67c00 60%,#7a5a00);box-shadow:0 4px 10px rgba(0,0,0,.5);z-index:2;transition:transform 1s ease .3s;}
+ #curtain.open .valance{transform:translateY(-110%);}
+ .marquee{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 6vw;z-index:1;transition:opacity .5s;}
+ #curtain.open .marquee{opacity:0;}
+ .marquee h2{font-size:clamp(34px,7vw,96px);line-height:1.1;font-weight:800;color:#fff8e7;margin:0;text-shadow:0 3px 0 #3a0410,0 8px 24px rgba(0,0,0,.6);letter-spacing:.01em;}
+ .marquee p{color:#f3d27a;font-size:clamp(14px,1.6vw,20px);margin:22px 0 0;letter-spacing:.12em;text-transform:uppercase;}
+ .wedge{cursor:pointer;stroke:#1f2937;stroke-width:1.5;transition:fill .15s;}
+ .wedge:hover,.wedge:focus{outline:none;}
+ .ring{fill:none;stroke:#1f2937;stroke-width:1.5;pointer-events:none;}
+ .verb{font-size:9px;fill:#1f2937;pointer-events:none;text-anchor:middle;dominant-baseline:central;}
+ .lvl{font-size:10.5px;font-weight:700;fill:#1f2937;pointer-events:none;text-anchor:middle;dominant-baseline:central;}
+ .lvlsub{font-size:8.5px;fill:#374151;pointer-events:none;text-anchor:middle;dominant-baseline:central;}
+ .hub{fill:#1f2937;stroke:none;}
+ .hubtext{font-size:9px;font-weight:600;fill:#fff;pointer-events:none;text-anchor:middle;dominant-baseline:central;}
+ #marker{transform-origin:200px 200px;transition:transform 3.2s cubic-bezier(.15,.75,.25,1);pointer-events:none;}
+ .controls{display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap;}
+ button{font:inherit;font-size:14px;font-weight:600;padding:8px 18px;border-radius:6px;border:2px solid var(--red);background:var(--red);color:#fff;cursor:pointer;}
+ button:disabled{opacity:.5;cursor:default;}
+ button.ghost{background:#fff;color:var(--red);}
+ .panel{padding:14px 16px;border-left:4px solid var(--lvl,#d1d5db);border-radius:2px;background:#f9fafb;min-height:200px;}
+ .drawer h2.dtitle{font-size:17px;margin:0 0 10px;padding-right:30px;}
+ .panel h2{font-size:17px;margin:0 0 2px;} .panel .tag{font-size:12px;color:#6b7280;margin-bottom:8px;}
+ h3{font-size:13px;margin:12px 0 4px;text-transform:uppercase;letter-spacing:.04em;color:#6b7280;}
+ ul{margin:4px 0;padding-left:20px;} li{margin:3px 0;}
+ .ex{background:#fff;border:1px solid #d1d5db;border-radius:6px;padding:8px 12px;margin:6px 0;}
+ .challenge{background:#fff3cd;border-radius:6px;padding:10px 14px;margin-top:12px;}
+ .muted{color:#6b7280;font-size:12px;}
+ .block{padding:14px 16px;margin:14px 0 0;border-left:4px solid var(--red);border-radius:2px;background:#d6f0e8;}
+ .block h2{font-size:15px;margin:0 0 8px;}
+ .card{background:#fff;border:1px solid #d1d5db;border-radius:6px;padding:12px 14px;margin:8px 0;}
+ .q{font-size:16px;font-weight:600;margin:0 0 10px;}
+ .choices{display:flex;gap:8px;flex-wrap:wrap;} .choices button{padding:6px 14px;}
+ .choices button.right{background:#0f766e;border-color:#0f766e;} .choices button.wrong{background:#fff;color:#9ca3af;border-color:#d1d5db;}
+ .fb{margin-top:10px;padding:8px 12px;border-radius:6px;background:#f3f4f6;font-size:14px;}
+ .fb.ok{background:#d6f0e8;} .fb.no{background:#fde8e8;}
+ .score{font-size:12px;color:#6b7280;margin-top:8px;}
+ textarea{width:100%;box-sizing:border-box;font:inherit;font-size:14px;padding:8px;border:1px solid #d1d5db;border-radius:6px;min-height:60px;}
+ select{font:inherit;font-size:14px;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;}
+ .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;}
+</style>
+</head>
+<body>
+<main>
+<h1>The DOK Wheel</h1>
+<div class="sub">Webb's Depth of Knowledge · <em>not how hard the numbers are — how deep the thinking goes</em></div>
+
+<div class="wheelcol">
+  <svg viewBox="0 0 400 400" role="group" aria-label="Depth of Knowledge wheel" id="wheel"></svg>
+  <div class="controls">
+   <button id="spin">Spin</button>
+   <button id="reset" class="ghost">Show all</button>
+  </div>
+  <p class="muted" style="margin-top:8px">Tap a wedge to see what that level asks for. <strong>To spin:</strong> pick one of the questions we recorded <em>first</em>, read it out, <em>then</em> spin — and rewrite that question at whatever level the wheel lands on, up or down. The real question afterward is <em>what did you have to change?</em> Notice <strong>Compare</strong>, <strong>Construct</strong> and <strong>Critique</strong> each sit in two wedges, and the hub's three verbs live in all four: a verb alone never sets the level — what the learner has to <em>do</em> with it does.</p>
+</div>
+
+<div id="curtain" role="button" aria-label="Open the curtain">
+ <div class="valance"></div>
+ <div class="velvet l"></div><div class="velvet r"></div>
+ <div class="marquee">
+  <h2>Write your question to the DOK level you spin.</h2>
+  <p>tap to open</p>
+ </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<button class="tab l" id="tabL" aria-controls="dL">Level</button>
+<button class="tab r r1" id="tabP" aria-controls="dR">Practice</button>
+<button class="tab r r2" id="tabW" aria-controls="dR">Write your own</button>
+
+<aside class="drawer left" id="dL" aria-label="Level details">
+ <button class="close" aria-label="Close">×</button>
+ <div class="panel" id="panel" aria-live="polite"></div>
+</aside>
+
+<aside class="drawer right" id="dR" aria-label="Practice">
+ <button class="close" aria-label="Close">×</button>
+ <div id="secP">
+<div class="block">
+ <h2>Practice · which level is this question?</h2>
+ <p class="muted" style="margin:0 0 6px">Each question is about pentominoes. Decide its depth, then see why.</p>
+ <div class="card" id="quiz"></div>
+</div>
+
+</div>
+ <div id="secW">
+<div class="block">
+ <h2>Write your own</h2>
+ <p class="muted" style="margin:0 0 6px">Write a pentomino question, pick the level you <em>intended</em>, and have a partner rate it before you say. If you disagree, that's the conversation. You can also copy a prompt and ask Gemini for a second opinion.</p>
+ <div class="card">
+  <textarea id="own" placeholder="e.g. Which pentominoes can tile a 3×5 rectangle? How do you know you found all of them?"></textarea>
+  <div class="row">
+   <label>I meant this to be <select id="ownlvl"><option value="">— pick —</option><option>DOK 1</option><option>DOK 2</option><option>DOK 3</option><option>DOK 4</option></select></label>
+   <button id="copy" class="ghost">Copy a prompt for Gemini</button>
+   <span id="copied" class="muted"></span>
+  </div>
+ </div>
+</div>
+ </div>
+</aside>
+
+<script>
+const LEVELS = [
+ {n:1, name:"Level One", sub:["(Recall)"], long:"Recall & Reproduction", fill:"#f3f4f6", hex:"#6b7280",
+  verbs:["Draw","List","Identify","Define","Memorize","Label","Calculate","Recall","Name","Measure"],
+  meaning:"One step. Remember a fact, a definition, or a procedure and carry it out.",
+  stems:["What is the area of …?","How many … are there?","Which of these is a …?","Name / identify / measure …","Follow the steps to …"],
+  example:"Find the area of one pentomino."},
+ {n:2, name:"Level Two", sub:["(Skill /","Concept)"], long:"Skills & Concepts", fill:"#dbeafe", hex:"#2563eb",
+  verbs:["Infer","Graph","Classify","Cause / Effect","Organize","Construct","Estimate","Predict","Compare","Summarize"],
+  meaning:"More than one step, and a decision about how to go. Classify, compare, organize, estimate, interpret.",
+  stems:["Sort these by … What do you notice?","How are … alike? How are they different?","Which ones have the same …?","What pattern do you see in …?","Show a different way to …"],
+  example:"Sort the pentominoes by perimeter. What do you notice about the ones that tie?"},
+ {n:3, name:"Level Three", sub:["(Strategic","Thinking)"], long:"Strategic Thinking", fill:"#d6f0e8", hex:"#0f766e",
+  verbs:["Revise","Assess","Critique","Draw Conclusions","Construct","Argue","Formulate","Investigate","Compare","Hypothesize"],
+  meaning:"Reason, plan, and justify. There is more than one route, and you have to defend yours with evidence.",
+  stems:["How do you know you have them all?","Is it always true that …? Convince us.","What would happen if …? Why?","Which approach is better here, and why?","Explain why … can't work."],
+  example:"How many distinct pentominoes are there? How do you know your list is complete?"},
+ {n:4, name:"Level Four", sub:["(Extended","Thinking)"], long:"Extended Thinking", fill:"#fde8e8", hex:"#C41E3A",
+  verbs:["Design","Prove","Connect","Apply Concepts","Analyze","Synthesize","Create","Model","Critique","Generalize"],
+  meaning:"Investigate over time. Design something, connect ideas across the topic, make and test a conjecture.",
+  stems:["Design a … that only … can do. Explain the property behind it.","Investigate … and write up what you found.","Make a conjecture about … and test it.","Generalize: does this work for hexominoes?","Create a task for a classmate and predict where they'll get stuck."],
+  example:"Design a frame that only the L, I, M, and T shapes can fill. What property keeps the others out?"}
+];
+
+// ---- wheel ----
+const NS = 'http://www.w3.org/2000/svg', C = 200, R = 184, RIN = 100, RHUB = 38;
+const svg = document.getElementById('wheel');
+const el = (t, a) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
+const pt = (a, r) => { const t = (a - 90) * Math.PI / 180; return [C + r * Math.cos(t), C + r * Math.sin(t)]; };
+function wedge(a0, a1, r){ const [x0,y0]=pt(a0,r),[x1,y1]=pt(a1,r); return `M${C},${C} L${x0},${y0} A${r},${r} 0 0 1 ${x1},${y1} Z`; }
+// Level One at top, Two right, Three bottom, Four left — as on the printed wheel.
+// Ten verb slots per wedge on three rings, slot 3 the roomiest. Side wedges avoid the
+// horizontal axis, where two rings' centre words would sit on the same line.
+const SLOTS_TB = [[114,[-18,18]],[138,[-32,0,32]],[162,[-36,-18,0,18,36]]];
+const SLOTS_LR = [[116,[-24,24]],[138,[-34,-11,11,34]],[162,[-38,-19,19,38]]];
+LEVELS.forEach((L, i) => {
+ const mid = i * 90, a0 = mid - 45, a1 = mid + 45;
+ const w = el('path', {d: wedge(a0, a1, R), fill: L.fill, class: 'wedge', tabindex: 0, role: 'button', 'aria-label': `DOK ${L.n}: ${L.long}`});
+ w.addEventListener('click', () => show(i));
+ w.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(i); } });
+ svg.appendChild(w);
+ let k = 0;
+ for (const [r, angs] of (i % 2 ? SLOTS_LR : SLOTS_TB)) for (const da of angs) {
+  if (k >= L.verbs.length) break;
+  const [x, y] = pt(mid + da, r);
+  const t = el('text', {x, y, class: 'verb'}); t.textContent = L.verbs[k++]; svg.appendChild(t);
+ }
+ const [lx, ly] = pt(mid, 69);
+ const t1 = el('text', {x: lx, y: ly - 7, class: 'lvl'}); t1.textContent = L.name; svg.appendChild(t1);
+ L.sub.forEach((line, j) => { const t = el('text', {x: lx, y: ly + 5 + j * 10, class: 'lvlsub'}); t.textContent = line; svg.appendChild(t); });
+});
+svg.appendChild(el('circle', {cx: C, cy: C, r: RIN, class: 'ring'}));
+svg.appendChild(el('circle', {cx: C, cy: C, r: RHUB, class: 'hub'}));
+['Describe', 'Explain', 'Interpret'].forEach((s, j) => { const t = el('text', {x: C, y: C + (j - 1) * 11, class: 'hubtext'}); t.textContent = s; svg.appendChild(t); });
+// Pointer is a marker on the rim, so it never covers a label; it rotates, the wheel doesn't.
+const marker = el('g', {id: 'marker'});
+marker.appendChild(el('polygon', {points: `${C},${C-R+7} ${C-8},${C-R-8} ${C+8},${C-R-8}`, fill: '#C41E3A', stroke: '#1f2937', 'stroke-width': 1.5}));
+svg.appendChild(marker);
+
+const panel = document.getElementById('panel');
+const dL = document.getElementById('dL'), dR = document.getElementById('dR'), scrim = document.getElementById('scrim');
+function openDrawer(d, sec){
+ [dL, dR].forEach(x => x.classList.toggle('open', x === d));
+ if (sec) { document.getElementById('secP').hidden = sec !== 'P'; document.getElementById('secW').hidden = sec !== 'W'; }
+ document.getElementById('tabP').classList.toggle('on', d === dR && sec === 'P');
+ document.getElementById('tabW').classList.toggle('on', d === dR && sec === 'W');
+ document.getElementById('tabL').classList.toggle('on', d === dL);
+ scrim.classList.add('show');
+}
+function closeDrawers(){
+ [dL, dR].forEach(x => x.classList.remove('open')); scrim.classList.remove('show');
+ ['tabL','tabP','tabW'].forEach(id => document.getElementById(id).classList.remove('on'));
+}
+document.getElementById('tabL').addEventListener('click', () => dL.classList.contains('open') ? closeDrawers() : openDrawer(dL));
+document.getElementById('tabP').addEventListener('click', () => openDrawer(dR, 'P'));
+document.getElementById('tabW').addEventListener('click', () => openDrawer(dR, 'W'));
+document.querySelectorAll('.drawer .close').forEach(b => b.addEventListener('click', closeDrawers));
+scrim.addEventListener('click', closeDrawers);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawers(); });
+const curtain = document.getElementById('curtain');
+curtain.addEventListener('click', () => { curtain.classList.add('open'); setTimeout(() => curtain.classList.add('gone'), 1500); }, {once: true});
+function show(i, challenge){
+ const L = LEVELS[i];
+ document.querySelectorAll('.wedge').forEach((w, j) => w.style.strokeWidth = j === i ? 4 : 1.5);
+ panel.style.setProperty('--lvl', L.hex);
+ openDrawer(dL);
+ panel.innerHTML = `
+  <h2 style="color:${L.hex}">DOK ${L.n} · ${L.long}</h2>
+  <div class="tag">${L.meaning}</div>
+  <h3>Question stems</h3>
+  <ul>${L.stems.map(s => `<li>${s}</li>`).join('')}</ul>
+  <h3>A pentomino question at this level</h3>
+  <div class="ex">${L.example}</div>
+  ${challenge ? `<div class="challenge"><strong>Your turn:</strong> rewrite the question you picked at <strong>DOK ${L.n}</strong> — even if that's a step down. Stuck? <strong>Appeal to your team.</strong> Then say <strong>what you had to change</strong>. It's never just the verb.</div>` : ''}`;
+}
+function showAll(){
+ document.querySelectorAll('.wedge').forEach(w => w.style.strokeWidth = 1.5);
+ panel.style.setProperty('--lvl', '#d1d5db');
+ panel.innerHTML = `<h2>Four depths, one topic</h2>
+  <div class="tag">Every level can be asked about pentominoes. The level isn't in the shape — it's in what the question asks you to do.</div>
+  <ul>${LEVELS.map(L => `<li><strong style="color:${L.hex}">DOK ${L.n} · ${L.long}.</strong> ${L.meaning}</li>`).join('')}</ul>
+  <p class="muted" style="margin:10px 0 0">Tap a wedge to see what it asks for. Or pick a question, then spin.</p>`;
+}
+let angle = 0, spinning = false;
+document.getElementById('spin').addEventListener('click', () => {
+ if (spinning) return; spinning = true;
+ const target = Math.floor(Math.random() * 4);
+ const within = target * 90 - 35 + Math.random() * 70;          // inside wedge `target`, away from its edges
+ angle += 360 * (4 + Math.floor(Math.random() * 2)) + ((within - angle % 360) + 360) % 360;
+ marker.style.transform = `rotate(${angle}deg)`;
+ document.getElementById('spin').disabled = true;
+ closeDrawers();
+ setTimeout(() => { show(target, true); spinning = false; document.getElementById('spin').disabled = false; }, 3300);
+});
+document.getElementById('reset').addEventListener('click', () => { showAll(); openDrawer(dL); });
+showAll();
+
+// ---- practice deck ----
+const DECK = [
+ {q:"How many squares make up a pentomino?", l:1, why:"It's the definition. One fact, recalled."},
+ {q:"Draw the T pentomino on grid paper.", l:1, why:"Reproduce a known shape. One step, no decision to make."},
+ {q:"Find the area of the L pentomino.", l:1, why:"Count five squares. A routine procedure with one answer."},
+ {q:"Which pentomino is this? (holds up the W)", l:1, why:"Identify and name. Recognition only."},
+ {q:"Sort the twelve pentominoes by perimeter. What do you notice?", l:2, why:"Measure, then classify, then interpret — several steps, and you decide how to organize."},
+ {q:"Which pentominoes have a line of symmetry? Which have more than one?", l:2, why:"Apply a concept across a set and categorize. More than recall, but the concept is given."},
+ {q:"Estimate how many pentominoes will fit in this 6×10 frame before you try.", l:2, why:"Estimate using area — a skill applied, with a decision about how."},
+ {q:"Make a larger version of the P pentomino using four pieces.", l:2, why:"A multi-step construction with a target. Trial and adjustment, but the goal is clear."},
+ {q:"How many distinct pentominoes are there? How do you know you have them all?", l:3, why:"The count is easy; the 'how do you know' demands a system and a justification."},
+ {q:"Can the X pentomino ever be doubled with four pieces? Explain why or why not.", l:3, why:"Reason about a property and defend a claim with evidence."},
+ {q:"Two students disagree about whether flips count as different pentominoes. Who's right, and why does it matter for the count?", l:3, why:"Compare positions, take one, and argue it — strategic thinking."},
+ {q:"Which is the better first move for tiling this rectangle, and why?", l:3, why:"Choose among strategies and justify the choice."},
+ {q:"Design a frame that only the L, I, M, and T shapes can fill. What property keeps the others out?", l:4, why:"Create something new, then generalize the property behind it. Extended work."},
+ {q:"Investigate which rectangles can be tiled by all twelve pentominoes, and write up what you found.", l:4, why:"An investigation over time with a written product — not one session's task."},
+ {q:"Make a conjecture about which pentominoes can be tripled, test it, and revise it.", l:4, why:"Conjecture, test, revise — the full cycle of mathematical investigation."},
+ {q:"Does everything you learned about pentominoes still hold for hexominoes? Where does it break?", l:4, why:"Connect to a new case and analyze where the ideas transfer — extended thinking."}
+];
+const quiz = document.getElementById('quiz');
+// No score. A different word of support after each question instead.
+const CHEER = ["Nice.", "Keep going.", "That's the idea.", "Good eye.", "You're getting the feel of it.", "Argue it with your table.", "Notice what the question asks you to do.", "One more.", "Levels 2 and 3 are the tricky ones — that's normal.", "You'd have written that one differently, wouldn't you?", "Still with us.", "Good — now say why.", "Look at the verb, then ignore it.", "Nearly through.", "Last few.", "You did the whole deck."];
+let order = DECK.map((_, i) => i).sort(() => Math.random() - .5), pos = 0;
+function ask(){
+ if (pos >= order.length) {
+  quiz.innerHTML = `<p class="q">That's the deck.</p><p class="muted">Levels 2 and 3 are where most disagreements live — that's normal, and it's the conversation worth having.</p><button id="again">Shuffle and go again</button>`;
+  document.getElementById('again').addEventListener('click', () => { order.sort(() => Math.random() - .5); pos = 0; ask(); });
+  return;
+ }
+ const item = DECK[order[pos]];
+ quiz.innerHTML = `<p class="q">${item.q}</p>
+  <div class="choices">${LEVELS.map(L => `<button data-l="${L.n}">DOK ${L.n}</button>`).join('')}</div>
+  <div id="fb"></div><div class="score">${pos + 1} of ${order.length}</div>`;
+ quiz.querySelectorAll('.choices button').forEach(b => b.addEventListener('click', () => {
+  const pick = +b.dataset.l, ok = pick === item.l;
+  quiz.querySelectorAll('.choices button').forEach(x => { x.disabled = true; x.classList.add(+x.dataset.l === item.l ? 'right' : 'wrong'); });
+  document.getElementById('fb').innerHTML = `<div class="fb ${ok ? 'ok' : 'no'}"><strong>${ok ? 'Yes' : `We'd call it DOK ${item.l}`}</strong> — ${item.why}</div><div class="row"><button id="next">Next</button><span class="muted">${CHEER[pos % CHEER.length]}</span></div>`;
+  document.getElementById('next').addEventListener('click', () => { pos++; ask(); });
+ }));
+}
+ask();
+
+// ---- write your own ----
+document.getElementById('copy').addEventListener('click', async () => {
+ const q = document.getElementById('own').value.trim(), lvl = document.getElementById('ownlvl').value;
+ const out = document.getElementById('copied');
+ if (!q) { out.textContent = 'Write a question first.'; return; }
+ const prompt = `I'm a pre-service math teacher learning Webb's Depth of Knowledge (DOK 1 recall & reproduction; DOK 2 skills & concepts; DOK 3 strategic thinking / justify; DOK 4 extended thinking / investigate & design). Here is a question I wrote for students working with pentominoes:\n\n"${q}"\n\n${lvl ? `I intended it to be ${lvl}. ` : ''}What DOK level is it, and why? Judge by what a student would actually have to do, not by the verb. Then suggest one small change that would move it up a level, and one that would move it down.`;
+ try { await navigator.clipboard.writeText(prompt); out.textContent = 'Copied — paste it into Gemini.'; }
+ catch { const ta = document.createElement('textarea'); ta.value = prompt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); out.textContent = 'Copied — paste it into Gemini.'; }
+});
+</script>
+</main>
+</body>
+</html>

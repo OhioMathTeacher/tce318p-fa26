@@ -168,7 +168,7 @@
  @media print{
   @page{margin:14mm}
   body{max-width:none;padding:0}
-  h1,.sub,.tabs,.bar,.rail,.side,.hint,.taskpanel,#overlay{display:none!important}
+  h1,.sub,.tabs,.bar,.rail,.side,.hint,.taskpanel,#overlay,#wheelpanel{display:none!important}
   .layout{display:block;margin:0}
   #boardWrap{overflow:visible}
   #printHead{display:block;margin:0 0 12px}
@@ -191,6 +191,7 @@
  <button data-tab="build" class="on">① Build the puzzle</button>
  <button data-tab="task">② Task &amp; DOK</button>
  <button data-tab="play">③ Play</button>
+ <button data-tab="wheel">DOK Wheel</button>
  <span class="ebadge" id="editingBadge"></span>
 </div>
 
@@ -279,6 +280,9 @@
   <button class="btn" id="playReportBtn">⬇ Download play report</button>
  </div>
 </div>
+
+<!-- DOK Wheel tab — a copy of the Week 4 wheel (dok-wheel.html), shown in its own frame so its drawers/curtain/global styles stay out of the builder -->
+<div id="wheelpanel" style="display:none"><iframe src="dok-wheel.html" title="DOK Wheel" style="width:100%;height:calc(100vh - 140px);min-height:560px;border:1px solid var(--line);border-radius:12px;background:#fff"></iframe></div>
 
 <div class="ctxmenu" id="ctxmenu" style="display:none">
  <button data-act="rot90">⟳ Rotate 90°</button>
@@ -558,10 +562,12 @@ document.getElementById('sizeSeg').onclick=e=>{ const b=e.target.closest('button
 function clearBoard(){ resetGrid(); selected=null; active=null; render(); renderPalette(); renderSwatches(); updateHint(); }
 document.getElementById('clearBtn').onclick=clearBoard;
 
-// ---------- tabs (Build | Task & DOK) — board stays visible on both ----------
+// ---------- tabs (Build | Task & DOK | Play | DOK Wheel) — board stays visible on the first three ----------
 function setTab(t){ const leaving=tab; tab=t;
- const build=(t==='build'), task=(t==='task'), playing=(t==='play');
+ const build=(t==='build'), task=(t==='task'), playing=(t==='play'), wheel=(t==='wheel');
  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+ document.querySelector('.layout').style.display = wheel?'none':'';   // DOK Wheel replaces the board; the design board is untouched underneath
+ document.getElementById('wheelpanel').style.display = wheel?'':'none';
  document.querySelector('.bar').style.display = build?'':'none';
  railEl.style.display = build?'':'none';
  document.querySelector('.side').style.display = (build||playing)?'':'none';   // palette for building AND playing
