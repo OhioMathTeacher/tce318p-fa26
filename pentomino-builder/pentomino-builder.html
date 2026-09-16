@@ -258,7 +258,7 @@
    <button class="btn" id="playRestartBtn" title="Clear your pieces, keep the frame">↺ Restart</button>
    <div class="grp"><label>Timer</label><div class="seg" id="timerSeg"><button data-t="0" class="on">Off</button><button data-t="1">On</button></div></div>
    <span class="playstat" id="playTimer"></span>
-   <div class="playhint" style="flex-basis:100%;margin:0">Place pentominoes, or just answer in words — you don't have to fill the frame. Click to place, <b>R</b>/<b>F</b> rotate/flip, drag to slide; click a placed piece then a <b>color</b> (left) to recolor. Write your explanation on the right, click <b>I'm done</b>, then download the report.</div>
+   <div class="playhint" style="flex-basis:100%;margin:0">Place pentominoes, or just answer in words — you don't have to fill the frame. Click to place, <b>R</b>/<b>F</b> rotate/flip, drag to slide; click a placed piece then a <b>color</b> (left) to recolor. Write your explanation on the right, click <b>I'm done</b>, then pick the next level. One download covers every level you've played.</div>
   </div>
  </div>
  <div class="taskpanel">
@@ -279,7 +279,8 @@
   <label class="flab" for="playNotes">Your answer &amp; explanation</label>
   <textarea id="playNotes" placeholder="Answer the question and explain your reasoning — you don't have to fill the whole frame."></textarea>
   <button class="btn" id="playDoneBtn">✓ I'm done with this question</button>
-  <button class="btn" id="playReportBtn">⬇ Download play report</button>
+  <div class="playstat" id="playReportStat"></div>
+  <button class="btn" id="playReportBtn">⬇ Download play report (all levels, one PDF)</button>
  </div>
 </div>
 
@@ -645,7 +646,7 @@ function finishLevel(){ saveActiveSlot(); if(!slots[dok]) slots[dok]={...snapsho
  slots[dok].done=true; saveSlots(); updateDokButtons(); renderPacketStatus(); flash('DOK '+dok+' saved to the packet.'); }
 function clearPacket(){ const n=[1,2,3,4].filter(l=>slots[l]).length; if(!n) return;
  if(!confirm('Clear all saved levels ('+n+')? This empties the packet.')) return;
- slots={}; saveSlots(); updateDokButtons(); renderPacketStatus(); flash('Packet cleared.'); }
+ slots={}; saveSlots(); plays={}; savePlays(); updateDokButtons(); renderPacketStatus(); flash('Packet cleared.'); }
 function updateDokButtons(){ document.querySelectorAll('#dokSeg button').forEach(b=>{ const lv=b.dataset.dok;
   b.classList.toggle('on', lv===dok); b.classList.toggle('done', !!(slots[lv] && slots[lv].done)); });
  const eb=document.getElementById('editingBadge'); if(eb){ eb.textContent='Editing · DOK '+dok; eb.style.background=DOKCOL[dok]; }
@@ -703,6 +704,18 @@ function updateHint(){ hintEl.innerHTML = tool==='frame'
 // ---------- init ----------
 // ---------- ③ Play: a partner solves a finished level in-app; capture -> play report ----------
 let play=null, playTimer=null, play_prevReveal=true, play_prevMode='1set', showTimer=false;   // timer OFF by default (no time pressure)
+let plays=loadPlays();   // {1..4} -> a saved play per level (board + log + answer); persisted so all four go into ONE report
+function loadPlays(){ try{ return JSON.parse(localStorage.getItem('pb_plays_v1')||'{}'); }catch(e){ return {}; } }
+function savePlays(){ localStorage.setItem('pb_plays_v1', JSON.stringify(plays)); }
+function stashPlay(){ if(!play || (!play.events.length && !(play.notes||'').trim() && !play.done)) return; const st=playStats();   // untouched levels aren't 'in progress'   // snapshot the live play (called after every change, so a reload loses nothing)
+ plays[play.level]={ level:play.level, cols:C, rows:R, frame:frame?[...frame]:null,
+  pieces:Object.values(instances).map(i=>({label:i.label,color:i.color,cells:i.cells.map(c=>[c[0],c[1]]),given:!!i.given})),
+  events:play.events, placements:play.placements, removals:play.removals, solved:play.solved, solveT:play.solveT,
+  notes:play.notes, done:play.done, doneT:play.doneT, elapsed:playElapsed(), timer:showTimer, filled:st.filled, total:st.total };
+ savePlays(); renderPlayStatus(); }
+function renderPlayStatus(){ const el=document.getElementById('playReportStat'); if(!el) return;
+ const done=[1,2,3,4].filter(l=>plays[l]&&plays[l].done), started=[1,2,3,4].filter(l=>plays[l]&&!plays[l].done);
+ el.innerHTML = (done.length?`Done: <b>DOK ${done.join(', ')}</b>`:'No levels marked done yet') + (started.length?` · in progress: DOK ${started.join(', ')}`:''); }
 const nowMs=()=> (window.performance&&performance.now)?performance.now():Date.now();
 function playElapsed(){ return play&&play.startT!=null? Math.round(nowMs()-play.startT):0; }
 function fmtT(ms){ const s=Math.round(ms/1000); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
@@ -720,6 +733,7 @@ function playAfterChange(){ if(!play) return; const st=playStats();
  document.getElementById('playProgress').innerHTML = `Filled: <b>${st.filled} / ${st.total}</b>`+(st.overflow?` · <span style="color:#c0392b">${st.overflow} outside frame</span>`:'');
  if(st.solved && !play.solved){ play.solved=true; play.solveT=playElapsed(); recordPlay('solved',''); stopPlayTimer(); }
  else if(!st.solved && play.solved){ play.solved=false; }
+ stashPlay();
  document.getElementById('playSolved').textContent = play.solved? `✓ Solved in ${fmtT(play.solveT)}!` : '';
  updateTimerText(); }
 function updateTimerText(){ const el=document.getElementById('playTimer'); if(!el) return;
@@ -728,7 +742,7 @@ function updateTimerText(){ const el=document.getElementById('playTimer'); if(!e
 function startPlayTimer(){ stopPlayTimer(); playTimer=setInterval(()=>{ if(play&&play.startT!=null&&!play.solved) updateTimerText(); },1000); }
 function stopPlayTimer(){ if(playTimer){ clearInterval(playTimer); playTimer=null; } }
 
-function loadPlayLevel(level){ const s=slots[level]; if(!s) return;
+function loadPlayLevel(level, fresh){ const s=slots[level]; if(!s) return; stashPlay();   // keep whatever level we're leaving
  mode = s.mode || '1set';   // Play honors the supply mode the level was BUILT with (1-Set = distinct pieces)
  C=s.cols; R=s.rows; U=s.u||30; document.documentElement.style.setProperty('--u',U+'px');
  document.getElementById('colsIn').value=C; document.getElementById('rowsIn').value=R;
@@ -736,16 +750,23 @@ function loadPlayLevel(level){ const s=slots[level]; if(!s) return;
  for(const pc of (s.pieces||[])){ if(!pc.given) continue;   // pre-place given/reference pieces (e.g. the "original" to double); solution pieces stay hidden
   const id=nextId++; instances[id]={label:pc.label,color:pc.color,cells:pc.cells.map(c=>[c[0],c[1]]),given:true};
   pc.cells.forEach(([r,c])=>{ if(r>=0&&r<R&&c>=0&&c<C) grid[r][c]=id; }); }
+ if(fresh) { delete plays[level]; savePlays(); }
+ const sv=plays[level];
+ if(sv){   // resume this level's saved play: the player's pieces go back on the board, the log and answer carry on
+  for(const pc of sv.pieces){ if(pc.given) continue; const id=nextId++; instances[id]={label:pc.label,color:pc.color,cells:pc.cells.map(c=>[c[0],c[1]])};
+   pc.cells.forEach(([r,c])=>{ if(r>=0&&r<R&&c>=0&&c<C) grid[r][c]=id; }); }
+  if(mode==='1set'){ used=new Set(); for(const id in instances) used.add(instances[id].label); } }
  render(); renderPalette(); drawOverlay();
- play={level, startT:null, events:[], placements:0, removals:0, solved:false, solveT:null, notes:'', done:false, doneT:null};
- const pn=document.getElementById('playNotes'); if(pn) pn.value='';
- const db=document.getElementById('playDoneBtn'); if(db){ db.textContent="✓ I'm done with this question"; db.classList.remove('on'); }
+ play= sv? {level, startT:(sv.events.length? nowMs()-sv.elapsed : null), events:sv.events, placements:sv.placements, removals:sv.removals, solved:sv.solved, solveT:sv.solveT, notes:sv.notes||'', done:sv.done, doneT:sv.doneT}
+         : {level, startT:null, events:[], placements:0, removals:0, solved:false, solveT:null, notes:'', done:false, doneT:null};
+ const pn=document.getElementById('playNotes'); if(pn) pn.value=play.notes;
+ const db=document.getElementById('playDoneBtn'); if(db){ db.textContent= play.done? '✓ Marked done' : "✓ I'm done with this question"; db.classList.toggle('on',play.done); }
  const learner=(s.learner||'').trim();
  document.getElementById('playTask').innerHTML =
    `<span class="dokchip" style="background:${DOKCOL[level]}">DOK ${level}</span> <span style="font-size:12px;font-weight:700;color:#666">${DOKNAME[level]}</span>`+
    `<div class="pprompt">${escapeHtml((s.prompt||'').trim())||'(no prompt)'}</div>`+
    (learner?`<span class="forwho">Play as the learner who ${escapeHtml(learner)}</span>`:'');
- stopPlayTimer(); playAfterChange(); updateTimerText(); }
+ stopPlayTimer(); if(showTimer && play.startT!=null && !play.solved && !play.done) startPlayTimer(); playAfterChange(); updateTimerText(); renderPlayStatus(); }
 function enterPlay(){ saveActiveSlot(); play_prevMode=mode;   // mode is set per-level in loadPlayLevel; reveal/frameVis set by setTab
  const fin=[1,2,3,4].filter(l=>slots[l]&&slots[l].done); const sel=document.getElementById('playLevelSel'); sel.innerHTML='';
  if(!fin.length){ play=null;
@@ -753,7 +774,7 @@ function enterPlay(){ saveActiveSlot(); play_prevMode=mode;   // mode is set per
    document.getElementById('playProgress').textContent=''; document.getElementById('playTimer').textContent=''; document.getElementById('playSolved').textContent=''; return; }
  for(const l of fin){ const o=document.createElement('option'); o.value=l; o.textContent='DOK '+l; sel.appendChild(o); }
  const start=(slots[dok]&&slots[dok].done)? String(dok) : String(fin[0]); sel.value=start; loadPlayLevel(start); }
-function exitPlay(){ stopPlayTimer(); mode=play_prevMode; play=null;
+function exitPlay(){ stashPlay(); stopPlayTimer(); mode=play_prevMode; play=null;
  if(slots[dok]) restoreBoard(slots[dok]); else { resetGrid(); buildBoard(); frame=null; render(); } renderPalette(); }
 
 function playBoardHTML(){ const snap={cols:C,rows:R,u:U,frame:frame?[...frame]:null, show:'key',
@@ -791,11 +812,11 @@ function downloadFile(name,text,type){ const blob=new Blob([text],{type}); const
  const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500); }
 // PDF play report — same content as playReportHTML, drawn as vectors with jsPDF (Letter, pt units)
 function hexRGB(h){ h=(h||'#ffffff').replace('#',''); if(h.length===3) h=h.replace(/./g,c=>c+c); const n=parseInt(h,16); return [(n>>16)&255,(n>>8)&255,n&255]; }
-function playBoardPDF(doc, x, y, maxW){   // crops to the frame (+ any given pieces), like the print packet's "frame" scope
- const fs=(frame&&frame.size)?frame:null; const inF=(r,c)=> !fs || fs.has(r+','+c);
- const occ={}; Object.values(instances).forEach(i=>i.cells.forEach(([r,c])=> occ[r+','+c]=i.color));
- let r0=0,c0=0,r1=R-1,c1=C-1; const pts=[]; if(fs) for(const k of fs) pts.push(k.split(',').map(Number));
- Object.values(instances).forEach(i=>{ if(i.given) i.cells.forEach(rc=>pts.push(rc)); });
+function playBoardPDF(doc, sv, x, y, maxW){   // crops to the frame (+ any given pieces), like the print packet's "frame" scope
+ const fs=(sv.frame&&sv.frame.length)? new Set(sv.frame) : null; const inF=(r,c)=> !fs || fs.has(r+','+c);
+ const occ={}; sv.pieces.forEach(i=>i.cells.forEach(([r,c])=> occ[r+','+c]=i.color));
+ let r0=0,c0=0,r1=sv.rows-1,c1=sv.cols-1; const pts=[]; if(fs) for(const k of fs) pts.push(k.split(',').map(Number));
+ sv.pieces.forEach(i=>{ if(i.given) i.cells.forEach(rc=>pts.push(rc)); });
  if(pts.length){ r0=1e9;c0=1e9;r1=-1;c1=-1; for(const [r,c] of pts){ if(r<r0)r0=r; if(c<c0)c0=c; if(r>r1)r1=r; if(c>c1)c1=c; } }
  const W=c1-c0+1, H=r1-r0+1, u=Math.min(22, maxW/W);
  doc.setLineWidth(.4); doc.setDrawColor(230,233,238);
@@ -804,8 +825,10 @@ function playBoardPDF(doc, x, y, maxW){   // crops to the frame (+ any given pie
  for(let r=r0;r<=r1;r++) for(let c=c0;c<=c1;c++){ if(!inF(r,c)) continue; const X=x+(c-c0)*u, Y=y+(r-r0)*u;
   if(!inF(r-1,c)) doc.line(X,Y,X+u,Y); if(!inF(r+1,c)) doc.line(X,Y+u,X+u,Y+u); if(!inF(r,c-1)) doc.line(X,Y,X,Y+u); if(!inF(r,c+1)) doc.line(X+u,Y,X+u,Y+u); }
  doc.setDrawColor(207,212,218); doc.setLineWidth(.6); doc.rect(x,y,W*u,H*u); return H*u; }
-function playReportPDF(){ const {jsPDF}=window.jspdf; const doc=new jsPDF({unit:'pt',format:'letter'});
- const s=slots[play.level]||{}; const st=playStats(); const notes=(play.notes||'').trim();
+function playReportPDF(levels){ const {jsPDF}=window.jspdf; const doc=new jsPDF({unit:'pt',format:'letter'});
+ levels.forEach((lv,i)=>{ if(i) doc.addPage(); playReportPage(doc, plays[lv]); }); return doc; }
+function playReportPage(doc, sv){ const play=sv, s=slots[sv.level]||{}, showTimer=!!sv.timer;   // shadow the live names: everything below reads the snapshot
+ const st={filled:sv.filled,total:sv.total,solved:sv.solved}; const notes=(sv.notes||'').trim(); const elapsed=sv.elapsed||0;
  const M=48, PW=612, PH=792, CW=PW-2*M; let y=M;
  const ink=()=>doc.setTextColor(31,41,55), grey=()=>doc.setTextColor(107,114,128);
  const ensure=h=>{ if(y+h>PH-M){ doc.addPage(); y=M; } };
@@ -821,11 +844,11 @@ function playReportPDF(){ const {jsPDF}=window.jspdf; const doc=new jsPDF({unit:
  if((s.learner||'').trim()){ para('Played as the learner who '+s.learner.trim(),10,'italic',grey); }
  y+=8;
  // board — measure first so it never splits across a page
- { const fs=(frame&&frame.size)?frame:null; let H=R; if(fs){ let r0=1e9,r1=-1; for(const k of fs){ const r=+k.split(',')[0]; if(r<r0)r0=r; if(r>r1)r1=r; } H=r1-r0+1; }
-   ensure(Math.min(22,CW/C)*H+12); y+=playBoardPDF(doc,M,y,CW)+14; }
+ { let H=sv.rows; if(sv.frame&&sv.frame.length){ let r0=1e9,r1=-1; for(const k of sv.frame){ const r=+k.split(',')[0]; if(r<r0)r0=r; if(r>r1)r1=r; } H=r1-r0+1; }
+   ensure(Math.min(22,CW/sv.cols)*H+12); y+=playBoardPDF(doc,sv,M,y,CW)+14; }
  const tileTxt=st.solved?'Frame fully tiled':`Frame not fully tiled (${st.filled}/${st.total} cells)`;
  const doneTxt=play.done?'Student marked DONE':'not marked done';
- const timeTxt=showTimer?` · Time: ${fmtT(play.done&&play.doneT!=null?play.doneT:(play.solved?play.solveT:playElapsed()))}`:'';
+ const timeTxt=showTimer?` · Time: ${fmtT(play.done&&play.doneT!=null?play.doneT:(play.solved?play.solveT:elapsed))}`:'';
  para(`Result: ${tileTxt} · ${doneTxt} · ${play.placements} placed · ${play.removals} taken back${timeTxt}`,10.5,'normal'); y+=8;
  // answer box
  { doc.setFont('helvetica','normal'); doc.setFontSize(10.5); const lines=doc.splitTextToSize(notes||'(none written)',CW-24); const lh=14, h=20+lines.length*lh+10;
@@ -846,22 +869,26 @@ function playReportPDF(){ const {jsPDF}=window.jspdf; const doc=new jsPDF({unit:
    doc.setFont('helvetica','bold'); ink(); doc.text('Designer — compare to your anticipation.',M+12,y+16);
    doc.setFont('helvetica','normal'); let ty=y+30; for(const l of lines){ doc.text(l,M+12,ty); ty+=13.5; } ty+=14;
    doc.setDrawColor(154,160,166); doc.setLineWidth(.6); let x=M+12; for(const lab of ['Designer:','Player:','Date:']){ doc.text(lab,x,ty); const w=doc.getTextWidth(lab)+4; doc.line(x+w,ty+2,x+w+110,ty+2); x+=w+126; } y+=h; }
- return doc; }
-function downloadPlayReport(){ if(!play){ flash('Pick a level to play first.'); return; }
- if(window.jspdf && window.jspdf.jsPDF){ playReportPDF().save(`pentomino-play-report-DOK${play.level}.pdf`); flash('Play report downloaded (PDF).'); }
- else { downloadFile(`pentomino-play-report-DOK${play.level}.html`, playReportHTML(), 'text/html'); flash('PDF library unavailable — downloaded the HTML report instead.'); } }
+ }
+function downloadPlayReport(){ stashPlay(); const levels=[1,2,3,4].filter(l=>plays[l]);   // one PDF, a page per played level, in DOK order
+ if(!levels.length){ flash('Nothing played yet — pick a level and play it first.'); return; }
+ const notDone=levels.filter(l=>!plays[l].done);
+ if(window.jspdf && window.jspdf.jsPDF){ playReportPDF(levels).save('pentomino-play-report.pdf');
+   flash(`Play report downloaded — DOK ${levels.join(', ')}`+(notDone.length?` (DOK ${notDone.join(', ')} not marked done)`:'')+'.'); }
+ else if(play){ downloadFile(`pentomino-play-report-DOK${play.level}.html`, playReportHTML(), 'text/html'); flash('PDF library unavailable — downloaded this level\'s HTML report instead.'); } }
 document.getElementById('playLevelSel').onchange=e=>{ loadPlayLevel(e.target.value); };
 document.getElementById('playRotBtn').onclick=doRotate;
 document.getElementById('playFlipBtn').onclick=doFlip;
-document.getElementById('playRestartBtn').onclick=()=>{ if(play) loadPlayLevel(play.level); };
+document.getElementById('playRestartBtn').onclick=()=>{ if(play) loadPlayLevel(play.level, true); };   // fresh: throws away this level's saved play
 document.getElementById('playReportBtn').onclick=downloadPlayReport;
-document.getElementById('playNotes').oninput=e=>{ if(play) play.notes=e.target.value; };
+document.getElementById('playNotes').oninput=e=>{ if(play){ play.notes=e.target.value; stashPlay(); } };
 document.getElementById('timerSeg').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; showTimer=b.dataset.t==='1';
  [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));
  if(showTimer && play && play.startT!=null && !play.solved) startPlayTimer(); else stopPlayTimer(); updateTimerText(); };
 document.getElementById('playDoneBtn').onclick=()=>{ if(!play){ flash('Pick a level to play first.'); return; }
- play.done=true; play.doneT=playElapsed(); recordPlay('done',''); const db=document.getElementById('playDoneBtn');
- db.textContent='✓ Marked done — now download the report'; db.classList.add('on'); flash('Marked done. Download your play report to submit.'); };
+ play.done=true; play.doneT=playElapsed(); recordPlay('done',''); stopPlayTimer(); stashPlay(); const db=document.getElementById('playDoneBtn');
+ const left=[1,2,3,4].filter(l=>slots[l]&&slots[l].done&&!(plays[l]&&plays[l].done));
+ db.textContent='✓ Marked done'; db.classList.add('on'); flash(left.length? `Marked done. Still to play: DOK ${left.join(', ')}.` : 'All levels done — download the play report to submit.'); };
 
 resetGrid(); buildBoard(); renderPalette(); renderSwatches(); renderRail(); renderStems(); render(); updateHint(); setTab('build');
 if(slots[dok]) restoreBoard(slots[dok]); updateDokButtons(); renderPacketStatus();
