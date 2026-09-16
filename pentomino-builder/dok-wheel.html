@@ -29,22 +29,6 @@
  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.12);z-index:18;display:none;} .scrim.show{display:block;}
  .drawer .panel{background:none;padding:0;border:none;min-height:0;}
  .drawer .block{margin:0;padding:0;border:none;background:none;}
- /* curtain */
- #curtain{position:fixed;inset:0;z-index:40;cursor:pointer;overflow:hidden;}
- #curtain.gone{display:none;}
- .velvet{position:absolute;top:0;bottom:0;width:50%;transition:transform 1.4s cubic-bezier(.6,.05,.4,1);
-  background:
-   linear-gradient(180deg,rgba(0,0,0,.35) 0,rgba(0,0,0,0) 12%,rgba(0,0,0,0) 85%,rgba(0,0,0,.45) 100%),
-   repeating-linear-gradient(90deg,#5c0714 0 14px,#8a0f24 14px 34px,#b3183a 34px 48px,#8a0f24 48px 66px,#6a0a19 66px 80px);
-  box-shadow:inset 0 0 60px rgba(0,0,0,.5);}
- .velvet.l{left:0;} .velvet.r{right:0;}
- #curtain.open .velvet.l{transform:translateX(-102%);} #curtain.open .velvet.r{transform:translateX(102%);}
- .valance{position:absolute;top:0;left:0;right:0;height:38px;background:linear-gradient(180deg,#d4a017,#a67c00 60%,#7a5a00);box-shadow:0 4px 10px rgba(0,0,0,.5);z-index:2;transition:transform 1s ease .3s;}
- #curtain.open .valance{transform:translateY(-110%);}
- .marquee{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 6vw;z-index:1;transition:opacity .5s;}
- #curtain.open .marquee{opacity:0;}
- .marquee h2{font-size:clamp(34px,7vw,96px);line-height:1.1;font-weight:800;color:#fff8e7;margin:0;text-shadow:0 3px 0 #3a0410,0 8px 24px rgba(0,0,0,.6);letter-spacing:.01em;}
- .marquee p{color:#f3d27a;font-size:clamp(14px,1.6vw,20px);margin:22px 0 0;letter-spacing:.12em;text-transform:uppercase;}
  .wedge{cursor:pointer;stroke:#1f2937;stroke-width:1.5;transition:fill .15s;}
  .wedge:hover,.wedge:focus{outline:none;}
  .ring{fill:none;stroke:#1f2937;stroke-width:1.5;pointer-events:none;}
@@ -92,15 +76,6 @@
    <button id="reset" class="ghost">Show all</button>
   </div>
   <p class="muted" style="margin-top:8px">Tap a wedge to see what that level asks for. <strong>To spin:</strong> pick one of the questions we recorded <em>first</em>, read it out, <em>then</em> spin — and rewrite that question at whatever level the wheel lands on, up or down. The real question afterward is <em>what did you have to change?</em> Notice <strong>Compare</strong>, <strong>Construct</strong> and <strong>Critique</strong> each sit in two wedges, and the hub's three verbs live in all four: a verb alone never sets the level — what the learner has to <em>do</em> with it does.</p>
-</div>
-
-<div id="curtain" role="button" aria-label="Open the curtain">
- <div class="valance"></div>
- <div class="velvet l"></div><div class="velvet r"></div>
- <div class="marquee">
-  <h2>Write your question to the DOK level you spin.</h2>
-  <p>tap to open</p>
- </div>
 </div>
 
 <div class="scrim" id="scrim"></div>
@@ -218,8 +193,6 @@ document.getElementById('tabW').addEventListener('click', () => openDrawer(dR, '
 document.querySelectorAll('.drawer .close').forEach(b => b.addEventListener('click', closeDrawers));
 scrim.addEventListener('click', closeDrawers);
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawers(); });
-const curtain = document.getElementById('curtain');
-curtain.addEventListener('click', () => { curtain.classList.add('open'); setTimeout(() => curtain.classList.add('gone'), 1500); }, {once: true});
 function show(i, challenge){
  const L = LEVELS[i];
  document.querySelectorAll('.wedge').forEach((w, j) => w.style.strokeWidth = j === i ? 4 : 1.5);
