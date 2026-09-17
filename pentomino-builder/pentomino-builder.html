@@ -65,6 +65,10 @@
         partner did, how the task met its learner (typed into the box the PDF used to leave blank). Plus an
         overall reflection across the four levels, printed as the report's last page. Saved in this browser
         (pb_reflect_v1) as you type; "Clear all" clears it with the packet.
+  v0.10.1: FIX — long writing was cut off in the play-report PDF. The answer box and the per-level
+        reflection box were drawn as one block sized to the text, so anything past the bottom of a
+        page (about 25 typed lines) was lost. Both boxes now flow across pages, closing the border at
+        the page edge and reopening it on the next page. Nothing typed is dropped.
   v0.9.6: HOVER TIPS — every control has a plain-language tooltip, shown instantly in a styled bubble
         (the browser's native title tip is slow and easy to miss). Written for students: what it does,
         not just what it is called.
@@ -255,7 +259,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-<h1>Pentomino Builder <span style="font-size:12px;color:var(--muted);font-weight:400">· v0.10 draft</span></h1>
+<h1>Pentomino Builder <span style="font-size:12px;color:var(--muted);font-weight:400">· v0.10.1 draft</span></h1>
 <div class="sub">Teacher task canvas — draw one or more grid-conforming frames, then place, rotate, flip, and color pentominoes to fill them. Lay 1×1 squares and draw with the pen to annotate.</div>
 
 <div class="tabs" id="tabs">
@@ -1090,11 +1094,19 @@ function playReportPage(doc, sv){ const play=sv, s=slots[sv.level]||{}, showTime
  const doneTxt=play.done?'Student marked DONE':'not marked done';
  const timeTxt=showTimer?` · Time: ${fmtT(play.done&&play.doneT!=null?play.doneT:(play.solved?play.solveT:elapsed))}`:'';
  para(`Result: ${tileTxt} · ${doneTxt} · ${play.placements} placed · ${play.removals} taken back${timeTxt}`,10.5,'normal'); y+=8;
+ // a bordered box whose text flows across pages (v0.10.1): the border closes at the page edge and reopens on the next page,
+ // so a long answer or reflection is never clipped. parts: [{lines,size,style,color,lh}]; tail(): optional extra drawing after the text
+ const flowBox=(title,parts,tail)=>{ const pad=12; let top=y;
+   const close=()=>{ doc.setDrawColor(207,212,218); doc.setLineWidth(.8); doc.roundedRect(M,top,CW,y-top,6,6,'S'); };
+   const need=h=>{ if(y+h+8>PH-M){ close(); doc.addPage(); y=M; top=y; y+=6; } };
+   need(20); doc.setFont('helvetica','bold'); doc.setFontSize(10.5); ink(); doc.text(title,M+pad,y+16); y+=20;
+   for(const p of parts){ doc.setFont('helvetica',p.style||'normal'); doc.setFontSize(p.size); (p.color||ink)(); y+=p.gap||0;
+     for(const l of p.lines){ need(p.lh); doc.text(l,M+pad,y+p.size); y+=p.lh; } }
+   if(tail){ need(tail.h); tail.draw(M+pad); y+=tail.h; }
+   y+=8; close(); y+=14; };
  // answer box
- { doc.setFont('helvetica','normal'); doc.setFontSize(10.5); const lines=doc.splitTextToSize(notes||'(none written)',CW-24); const lh=14, h=20+lines.length*lh+10;
-   ensure(h); doc.setDrawColor(207,212,218); doc.setLineWidth(.8); doc.roundedRect(M,y,CW,h,6,6,'S');
-   doc.setFont('helvetica','bold'); ink(); doc.text("Student's answer & explanation",M+12,y+16);
-   doc.setFont('helvetica',notes?'normal':'italic'); let ty=y+20+lh; for(const l of lines){ doc.text(l,M+12,ty-3); ty+=lh; } y+=h+14; }
+ { doc.setFont('helvetica','normal'); doc.setFontSize(10.5); const lines=doc.splitTextToSize(notes||'(none written)',CW-24);
+   flowBox("Student's answer & explanation",[{lines,size:10.5,style:notes?'normal':'italic',lh:14}]); }
  // play log table
  para('Play log',12,'bold'); y+=2;
  { const col0=showTimer?'Time':'Step'; const cw=[70,110,CW-180], rh=15;
@@ -1104,14 +1116,11 @@ function playReportPage(doc, sv){ const play=sv, s=slots[sv.level]||{}, showTime
    if(!play.events.length) row(['—','(no moves — answered in words)','']); else play.events.forEach((e,i)=> row([showTimer?fmtT(e.t):(i+1), e.a, e.p])); y+=16; }
  // designer reflection — typed on the ④ Reflect tab (v0.10); the question prints either way, with blank lines if nothing was written
  { doc.setFont('helvetica','normal'); doc.setFontSize(10); const q=RQ_LEVEL; const txt=((reflect[sv.level]||'')+'').trim();
-   const qlines=doc.splitTextToSize(q,CW-24); doc.setFontSize(10.5); const alines=txt? doc.splitTextToSize(txt,CW-24) : []; const lh=14;
-   const h=20+qlines.length*13.5+(txt? alines.length*lh+10 : 34); ensure(h);
-   doc.setDrawColor(215,219,224); doc.setLineWidth(.8); doc.roundedRect(M,y,CW,h,6,6,'S');
-   doc.setFont('helvetica','bold'); doc.setFontSize(10); ink(); doc.text("Designer's reflection — compare to your anticipation.",M+12,y+16);
-   doc.setFont('helvetica','normal'); grey(); let ty=y+30; for(const l of qlines){ doc.text(l,M+12,ty); ty+=13.5; }
-   if(txt){ doc.setFontSize(10.5); ink(); ty+=4; for(const l of alines){ doc.text(l,M+12,ty); ty+=lh; } }
-   else { ty+=14; doc.setDrawColor(154,160,166); doc.setLineWidth(.6); let x=M+12; for(const lab of ['Designer:','Player:','Date:']){ ink(); doc.text(lab,x,ty); const w=doc.getTextWidth(lab)+4; doc.line(x+w,ty+2,x+w+110,ty+2); x+=w+126; } }
-   y+=h; }
+   const qlines=doc.splitTextToSize(q,CW-24); doc.setFontSize(10.5); const alines=txt? doc.splitTextToSize(txt,CW-24) : [];
+   const parts=[{lines:qlines,size:10,color:grey,lh:13.5}]; if(txt) parts.push({lines:alines,size:10.5,lh:14,gap:4});
+   const sig={h:24, draw:x=>{ const ty=y+16; doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setDrawColor(154,160,166); doc.setLineWidth(.6);
+     for(const lab of ['Designer:','Player:','Date:']){ ink(); doc.text(lab,x,ty); const w=doc.getTextWidth(lab)+4; doc.line(x+w,ty+2,x+w+110,ty+2); x+=w+126; } }};
+   flowBox("Designer's reflection — compare to your anticipation.",parts, txt?null:sig); y-=14; }
  }
 function reflectionPage(doc){ const M=48, PW=612, PH=792, CW=PW-2*M; let y=M; const txt=((reflect.all||'')+'').trim();
  const ink=()=>doc.setTextColor(31,41,55), grey=()=>doc.setTextColor(107,114,128);
