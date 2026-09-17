@@ -54,6 +54,54 @@
   v0.8.10: FIX — the Play "Filled: n / N · k outside frame" line only refreshed on drop/delete, so
         dragging (or arrow-keying / rotating) a piece into the frame left a stale count and never
         registered the solve. reposition() now refreshes the stats after every successful move.
+  v0.8.11: FIX — a level built WITHOUT a frame (pieces arranged on the full board as the stimulus)
+        came up BLANK in Play: Play draws the frame and hides every non-given piece as the answer key,
+        so with no frame there was nothing left to draw. With no frame there is no tiling puzzle, so
+        Play now shows all of that level's pieces as GIVENS (visible, locked); framed levels are
+        unchanged. "✓ Finished" warns when a level has no frame; Play hides the meaningless
+        "Filled: 0 / 0" line; and leaving Build mid-outline no longer silently discards it.
+  v0.10: ④ REFLECT tab (between Play and DOK Wheel) — the designer's written reflection lives in the app
+        and goes into the play-report PDF, so PE 4 is ONE upload. Per level: what you predicted, what the
+        partner did, how the task met its learner (typed into the box the PDF used to leave blank). Plus an
+        overall reflection across the four levels, printed as the report's last page. Saved in this browser
+        (pb_reflect_v1) as you type; "Clear all" clears it with the packet.
+  v0.9.6: HOVER TIPS — every control has a plain-language tooltip, shown instantly in a styled bubble
+        (the browser's native title tip is slow and easy to miss). Written for students: what it does,
+        not just what it is called.
+  v0.9.5: the per-level rules are now four CHECKBOXES on the Task tab — "Your partner sees / may":
+        FRAMES (outlines visible) · PIECES (the author's pieces visible) · MOVABLE (the author's pieces can
+        be moved; a partner's own pieces always can) · PALETTE (the partner may add pieces). Frames and
+        Pieces also drive the printed packet; the fourth combination (neither) is a bare board. Internally
+        `show` gains a 'none' value; older saves (blank/key/pieces) still load. Moving an author's piece in
+        Play now counts as starting the play, so a reload keeps it where the partner left it.
+  v0.9.4: two more PER-LEVEL play rules beside "Show this level as" on the Task tab —
+        "In Play, your pieces are" Movable | Fixed (level-wide; a pin still fixes one piece on a movable
+        level), and "Partner's supply" Full palette | Only these pieces (Play hides the palette and the
+        Square tool, so the partner works with exactly what the author put on the board). Saved with the
+        level; older saves default to Movable + Full palette.
+  v0.9.3: SHOWN PIECES ARE MOVABLE in Play. "Show this level as" controls VISIBILITY only; anything
+        visible can be dragged, turned, or taken off. The only fixed pieces are ones the author PINNED
+        (right-click → 📌), and those show in every mode, Blank frame included. Restart puts the author's
+        arrangement back. Squares are no longer auto-pinned — same rule as every other piece.
+  v0.9.2: FIT TO WIDTH on the Task and Play tabs — the board shrinks (never below 16px cells, never
+        above the author's Size) so the whole level is visible beside the panel; before, a wide level
+        ran off the right edge under a scrollbar nobody sees. The author's cell size is what gets saved
+        (baseU), so fitting never changes the level. The right-hand panel wraps under the board when the
+        window is too narrow for both.
+  v0.9.1: PLAY HONORS "SHOW THIS LEVEL AS" — what the Task tab previews is what the partner gets.
+        Answer key (default): every piece shown, locked. Blank frame: pieces hidden, partner tiles the
+        frame (the old behaviour). Pieces only: pieces shown, frame outline hidden. Before, Play always
+        hid non-given pieces, so a shape built from pieces vanished no matter what the setting said.
+        Shown levels skip the tiling check (no "Solved!" on arrival) and say so in the status line.
+  v0.9: MULTIPLE FRAMES per level — starting a new outline no longer wipes the board; each closed
+        outline is added (touching allowed, overlapping not). "Remove last frame" / "Full board" in
+        the rail. Borders are drawn between touching frames. Older saves (single frame) still load.
+        DRAWING TOOLS under the palette, in Build AND Play, sharing the COLOR swatches:
+        SQUARE — a 1x1 "monomino" PIECE (click or drag to lay several; stays armed until Esc). Being a
+        piece, it selects/drags/deletes/recolors like any other, is unlimited even in 1-Set mode, and
+        right-click → Pin as given makes one a fixed, always-shown "blocked" cell. PEN — freehand ink on top of the board, in cell units so it
+        scales with Size; Undo stroke · Clear pen. Ink is saved with the level (author) and with a
+        play (player), and appears in the printed packet and the play-report PDF. White swatch added.
   v0.7: ASSIGNMENT PACKET — each DOK level (1-4) is its own slot/grid; the task carries across
         levels as a starting point. "✓ Finished with DOK n" saves a level; "Print packet PDF"
         assembles every finished level into one multi-page document (page 1 = DOK 1, ...).
@@ -80,9 +128,9 @@
  .rail .tp{border:2px solid var(--line);border-radius:9px;background:#fff;padding:5px 7px 3px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:52px;position:relative}
  .rail .tp:hover{border-color:var(--accent)} .rail .tp .nm{font-size:10px;font-weight:700;color:var(--muted)}
  .rail .tp .x{position:absolute;top:-6px;right:-6px;background:#fff;border:1px solid var(--line);border-radius:50%;width:16px;height:16px;line-height:13px;font-size:11px;text-align:center;color:#c33}
- .layout{display:flex;gap:22px;flex-wrap:nowrap;align-items:flex-start;margin-top:10px}
+ .layout{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;margin-top:10px}
  .side{flex:0 0 250px}
- #boardWrap{flex:1 1 0;min-width:0}
+ #boardWrap{flex:1 1 460px;min-width:0}   /* below ~460px of room the task/play panel wraps underneath instead of crushing the board */
  .palette{display:flex;flex-wrap:wrap;gap:8px;max-width:240px}
  .pc{border:2px solid var(--line);border-radius:10px;background:#fff;padding:6px;cursor:pointer;width:66px;display:flex;flex-direction:column;align-items:center;gap:3px}
  .pc:hover{border-color:var(--accent)} .pc.sel{border-color:var(--accent);background:var(--accentbg)}
@@ -95,6 +143,27 @@
  #boardStage{position:relative;width:max-content}
  #board{display:grid;background:#fff;border:2px solid var(--line);border-radius:6px;width:max-content}
  #overlay{position:absolute;left:2px;top:2px;pointer-events:none;z-index:5}
+ #inkc{position:absolute;left:2px;top:2px;pointer-events:none;z-index:4;touch-action:none}
+ #inkc.on{pointer-events:auto;cursor:crosshair}
+ .dtools{display:flex;flex-direction:column;gap:6px;max-width:240px}
+ .dtools .seg button{flex:1 1 0}
+ .dtools .row{display:flex;gap:6px}
+ .dtools .row .btn{flex:1 1 0;font-size:12px;padding:4px 6px}
+ .dhint{font-size:11px;color:var(--muted);line-height:1.4}
+ #reflectpanel{max-width:820px}
+ .rf{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fbfcfe;margin:10px 0}
+ .rf .rfhead{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-bottom:6px}
+ .rf .rfprompt{font-size:14px;line-height:1.4;margin:2px 0 6px}
+ .rf .rfplay{font-size:12.5px;color:#555;margin-bottom:8px}
+ .rf .rfplay .a{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 9px;margin-top:4px;max-height:110px;overflow:auto}
+ .rf textarea{width:100%;min-height:110px;border:2px solid var(--line);border-radius:9px;padding:9px 11px;font:inherit;font-size:14px;line-height:1.5;resize:vertical}
+ .rf.all{background:#f6faf6}
+ .rfq{font-size:12.5px;color:var(--muted);margin-bottom:6px;line-height:1.45}
+ .tip{position:fixed;z-index:1000;background:#1f2937;color:#fff;font-size:12.5px;line-height:1.4;padding:7px 10px;border-radius:8px;max-width:280px;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+ .tip b{color:#ffd54f}
+ .chk{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;border:2px solid var(--line);border-radius:20px;padding:3px 10px 3px 7px;background:#fff;cursor:pointer;user-select:none}
+ .chk input{margin:0;accent-color:var(--accent)} .chk:has(input:checked){border-color:var(--accent);background:var(--accentbg)}
+ .pkgboard{position:relative} .pkgink{position:absolute;left:0;top:0;pointer-events:none}
  .cell{width:var(--u);height:var(--u);background:#fff}
  #board.gridon .cell{box-shadow:inset 0 0 0 1px #e6e9ee}
  .hint{color:var(--muted);font-size:12px;margin-top:10px} .count{font-weight:800}
@@ -168,7 +237,7 @@
  @media print{
   @page{margin:14mm}
   body{max-width:none;padding:0}
-  h1,.sub,.tabs,.bar,.rail,.side,.hint,.taskpanel,#overlay,#wheelpanel{display:none!important}
+  h1,.sub,.tabs,.bar,.rail,.side,.hint,.taskpanel,#overlay,#wheelpanel,#reflectpanel,.tip{display:none!important}
   .layout{display:block;margin:0}
   #boardWrap{overflow:visible}
   #printHead{display:block;margin:0 0 12px}
@@ -186,39 +255,40 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-<h1>Pentomino Builder <span style="font-size:12px;color:var(--muted);font-weight:400">· v0.8.10 draft</span></h1>
-<div class="sub">Teacher task canvas — draw a grid-conforming frame, then place, rotate, flip, and color pentominoes to fill it.</div>
+<h1>Pentomino Builder <span style="font-size:12px;color:var(--muted);font-weight:400">· v0.10 draft</span></h1>
+<div class="sub">Teacher task canvas — draw one or more grid-conforming frames, then place, rotate, flip, and color pentominoes to fill them. Lay 1×1 squares and draw with the pen to annotate.</div>
 
 <div class="tabs" id="tabs">
- <button data-tab="build" class="on">① Build the puzzle</button>
- <button data-tab="task">② Task &amp; DOK</button>
- <button data-tab="play">③ Play</button>
- <button data-tab="wheel">DOK Wheel</button>
+ <button data-tab="build" class="on" title="Step 1 — draw frames and place pieces to design the puzzle">① Build the puzzle</button>
+ <button data-tab="task" title="Step 2 — write the question, pick its DOK level, and set what your partner will see">② Task &amp; DOK</button>
+ <button data-tab="play" title="Step 3 — a partner solves your finished levels here; their moves and answers go into a play report">③ Play</button>
+ <button data-tab="reflect" title="Step 4 — write your reflection on each play, and one overall. It prints into the play report, so PE 4 is a single PDF">④ Reflect</button>
+ <button data-tab="wheel" title="The DOK wheel from Week 4, for choosing question stems">DOK Wheel</button>
  <span class="ebadge" id="editingBadge"></span>
 </div>
 
 <div class="bar">
  <div class="grp"><label>Tool</label>
-  <div class="seg" id="toolSeg"><button data-tool="pieces" class="on">Pieces</button><button data-tool="frame">Draw&nbsp;Frame</button></div>
+  <div class="seg" id="toolSeg"><button data-tool="pieces" class="on" title="Place and move pentominoes on the board">Pieces</button><button data-tool="frame" title="Trace an outline on the grid to make a frame — the region to be filled. Click corner points; click the start dot to close. Draw again for a second frame">Draw&nbsp;Frame</button></div>
  </div>
  <div class="grp"><label>Supply</label>
-  <div class="seg" id="modeSeg"><button data-mode="1set" class="on">1 Set</button><button data-mode="multi">Multi</button></div>
+  <div class="seg" id="modeSeg"><button data-mode="1set" class="on" title="One of each pentomino — a piece greys out in the palette once it is on the board">1 Set</button><button data-mode="multi" title="Unlimited copies of every pentomino">Multi</button></div>
  </div>
  <div class="grp"><label>Grid</label>
-  <div class="seg" id="gridSeg"><button data-grid="1" class="on">On</button><button data-grid="0">Off</button></div>
+  <div class="seg" id="gridSeg"><button data-grid="1" class="on" title="Show the faint grid lines">On</button><button data-grid="0" title="Hide the grid lines (pieces and frames still snap to the grid)">Off</button></div>
  </div>
  <div class="grp"><label>Size</label>
-  <div class="seg" id="sizeSeg"><button data-u="22">S</button><button data-u="30" class="on">M</button><button data-u="42">L</button><button data-u="56">XL</button></div>
+  <div class="seg" id="sizeSeg"><button data-u="22" title="Small cells — a big board for large puzzles (clears the board)">S</button><button data-u="30" class="on" title="Medium cells (clears the board)">M</button><button data-u="42" title="Large cells — easier to see and click (clears the board)">L</button><button data-u="56" title="Extra-large cells for younger learners or projection (clears the board)">XL</button></div>
  </div>
  <div class="grp"><label>Piece</label>
-  <button class="btn" id="rotBtn" title="Rotate (R)">⟳ Rotate</button>
-  <button class="btn" id="flipBtn" title="Flip (F)">⇋ Flip</button>
+  <button class="btn" id="rotBtn" title="Turn the selected piece (or the piece you are about to place) a quarter turn. Shortcut: R">⟳ Rotate</button>
+  <button class="btn" id="flipBtn" title="Mirror the selected piece (or the piece you are about to place) left-to-right. Shortcut: F">⇋ Flip</button>
  </div>
  <div class="grp"><label>Board</label>
-  <input class="num" id="colsIn" type="number" min="3" max="40" value="28"> ×
-  <input class="num" id="rowsIn" type="number" min="3" max="40" value="18">
-  <button class="btn" id="resizeBtn">Resize</button>
-  <button class="btn" id="clearBtn" title="Remove all placed pieces (keeps the frame)">Clear</button>
+  <input class="num" id="colsIn" type="number" min="3" max="40" value="28" title="Board width in cells (3–40)"> ×
+  <input class="num" id="rowsIn" type="number" min="3" max="40" value="18" title="Board height in cells (3–40)">
+  <button class="btn" id="resizeBtn" title="Apply the width × height above. This clears the board">Resize</button>
+  <button class="btn" id="clearBtn" title="Remove every piece from the board. Frames and pen marks stay">Clear</button>
  </div>
 </div>
 
@@ -229,75 +299,87 @@
 <div class="layout">
  <div class="side">
   <div class="cap">Pieces</div>
+  <div class="dhint" id="supplyNote" style="display:none;border:1px dashed var(--line);border-radius:8px;padding:8px;margin-bottom:6px">This level uses <b>only the pieces on the board</b> — no palette. Move, turn, and arrange what's there.</div>
   <div class="palette" id="palette"></div>
   <div class="cap">Color</div>
   <div class="swatches" id="swatches"></div>
+  <div class="cap">Drawing tools</div>
+  <div class="dtools">
+   <div class="seg" id="dtSeg"><button data-tool="pieces" class="on" title="Back to placing and moving pentominoes">Pieces</button><button data-tool="square" title="Lay 1×1 squares in the chosen color (click or drag). A square is a piece: click it to select, then drag, Delete, or recolor; right-click → Pin to make it a fixed blocked cell">■ Square</button><button data-tool="pen" title="Draw freehand on top of the board in the chosen color — circle something, write a number, mark a line of symmetry">✏️ Pen</button></div>
+   <div class="row"><button class="btn" id="inkUndoBtn" title="Remove the last pen stroke">↶ Undo stroke</button><button class="btn" id="inkClearBtn" title="Remove every pen stroke">✕ Clear pen</button></div>
+   <div class="dhint" id="dhint">Square and Pen use the color chosen above.</div>
+  </div>
  </div>
  <div id="boardWrap">
   <div id="boardStage">
    <div id="board" class="gridon"></div>
+   <canvas id="inkc"></canvas>
    <svg id="overlay"></svg>
   </div>
   <div class="hint" id="hint"></div>
   <div class="outbar" id="outbar">
    <div class="grp"><label>Assignment packet</label> <span id="pkgCount"></span></div>
-   <div class="grp"><label>Show this level as</label>
-    <div class="seg" id="showSeg"><button data-show="blank">Blank frame</button><button data-show="key" class="on">Answer key</button><button data-show="pieces">Pieces only</button></div>
+   <div class="grp"><label title="Frames and Pieces: what is visible — in the printed packet and when your partner opens the level in Play. Movable and Palette apply to Play only.">Your partner sees / may</label>
+    <label class="chk" title="Frame outlines are visible"><input type="checkbox" id="chkFrames" checked> Frames</label>
+    <label class="chk" title="The pieces you placed are visible. Unchecked = they are the hidden answer; only pinned pieces (right-click → 📌) still show"><input type="checkbox" id="chkPieces" checked> Pieces</label>
+    <label class="chk" title="Your partner can drag, turn, or remove the pieces you placed (Restart puts them back). Unchecked = they stay put. Pieces the partner adds are always movable; a pinned piece is never movable"><input type="checkbox" id="chkMove" checked> Movable</label>
+    <label class="chk" title="Your partner may add pieces from the palette (and lay squares). Unchecked = Play hides the palette and Square tool, so they work with exactly what you placed"><input type="checkbox" id="chkPalette" checked> Palette</label>
    </div>
    <div class="grp"><label>Print area</label>
-    <div class="seg" id="scopeSeg"><button data-s="full" class="on">Full board</button><button data-s="frame">Frame only</button></div>
+    <div class="seg" id="scopeSeg"><button data-s="full" class="on" title="Print the whole board">Full board</button><button data-s="frame" title="Print just the frames (plus any pinned pieces), cropped">Frame only</button></div>
    </div>
-   <button class="btn" id="printPkgBtn" title="Assemble every finished level into one multi-page PDF">🖨 Print packet PDF</button>
-   <button class="btn" id="printBtn" title="Print just the current level">🖨 This page</button>
-   <button class="btn" id="clearPkgBtn">Clear all</button>
+   <button class="btn" id="printPkgBtn" title="Every ✓ Finished level becomes one page of a PDF — page 1 is DOK 1, and so on. Choose “Save as PDF” in the print dialog">🖨 Print packet PDF</button>
+   <button class="btn" id="printBtn" title="Print or save just the level you are editing">🖨 This page</button>
+   <button class="btn" id="clearPkgBtn" title="Delete every saved level and every play. Cannot be undone">Clear all</button>
   </div>
   <div class="outbar" id="playbar">
-   <div class="grp"><label>Play a level</label><select id="playLevelSel"></select></div>
-   <button class="btn" id="playRotBtn" title="Rotate (R)">⟳ Rotate</button>
-   <button class="btn" id="playFlipBtn" title="Flip (F)">⇋ Flip</button>
-   <button class="btn" id="playRestartBtn" title="Clear your pieces, keep the frame">↺ Restart</button>
-   <div class="grp"><label>Timer</label><div class="seg" id="timerSeg"><button data-t="0" class="on">Off</button><button data-t="1">On</button></div></div>
+   <div class="grp"><label>Play a level</label><select id="playLevelSel" title="Only levels marked ✓ Finished on the Task tab appear here"></select></div>
+   <button class="btn" id="playRotBtn" title="Turn the selected piece a quarter turn. Shortcut: R">⟳ Rotate</button>
+   <button class="btn" id="playFlipBtn" title="Mirror the selected piece left-to-right. Shortcut: F">⇋ Flip</button>
+   <button class="btn" id="playRestartBtn" title="Start this level over: your pieces, marks, and answer are cleared; the designer's board comes back">↺ Restart</button>
+   <div class="grp"><label>Timer</label><div class="seg" id="timerSeg"><button data-t="0" class="on" title="No clock — take your time">Off</button><button data-t="1" title="Show a clock from your first move; the time goes in the report">On</button></div></div>
    <span class="playstat" id="playTimer"></span>
-   <div class="playhint" style="flex-basis:100%;margin:0">Place pentominoes, or just answer in words — you don't have to fill the frame. Click to place, <b>R</b>/<b>F</b> rotate/flip, drag to slide; click a placed piece then a <b>color</b> (left) to recolor. Write your explanation on the right, click <b>I'm done</b>, then pick the next level. One download covers every level you've played.</div>
+   <div class="playhint" style="flex-basis:100%;margin:0">Place pentominoes, or just answer in words — you don't have to fill the frame. <b>Square</b> and <b>Pen</b> (under the pieces) let you lay 1×1 squares and draw on the board; they go into the report. Click to place, <b>R</b>/<b>F</b> rotate/flip, drag to slide; click a placed piece then a <b>color</b> (left) to recolor. Write your explanation on the right, click <b>I'm done</b>, then pick the next level. One download covers every level you've played.</div>
   </div>
  </div>
  <div class="taskpanel">
   <div class="grp"><label>DOK level (you decide)</label>
-   <div class="seg" id="dokSeg"><button data-dok="1" class="on">1</button><button data-dok="2">2</button><button data-dok="3">3</button><button data-dok="4">4</button></div>
+   <div class="seg" id="dokSeg"><button data-dok="1" class="on" title="DOK 1 — Recall &amp; Reproduce. Each level is its own puzzle + question; switch to edit it">1</button><button data-dok="2" title="DOK 2 — Skills &amp; Concepts. Each level is its own puzzle + question; switch to edit it">2</button><button data-dok="3" title="DOK 3 — Strategic Reasoning. Each level is its own puzzle + question; switch to edit it">3</button><button data-dok="4" title="DOK 4 — Extended Thinking. Each level is its own puzzle + question; switch to edit it">4</button></div>
   </div>
   <div class="stemlist" id="stemGrid"></div>
   <label class="flab" for="promptIn">Task prompt</label>
-  <textarea id="promptIn" placeholder="Type the task, or click a stem above…"></textarea>
+  <textarea id="promptIn" placeholder="Type the task, or click a stem above…" title="The question your partner will answer. Click a stem above to start from it"></textarea>
   <label class="flab" for="learnerIn">For the learner who…</label>
-  <input id="learnerIn" type="text" placeholder="e.g. finds area but not yet why perimeter changes">
-  <button class="btn" id="finishBtn">✓ Finished with DOK 1</button>
+  <input id="learnerIn" type="text" placeholder="e.g. finds area but not yet why perimeter changes" title="Optional: who is this level for? Your partner plays it as that learner">
+  <button class="btn" id="finishBtn" title="Save this level into the packet and make it playable. You can keep editing and re-save">✓ Finished with DOK 1</button>
  </div>
  <div class="playpanel" id="playpanel">
   <div id="playTask"></div>
   <div class="playstat" id="playProgress"></div>
   <div id="playSolved"></div>
   <label class="flab" for="playNotes">Your answer &amp; explanation</label>
-  <textarea id="playNotes" placeholder="Answer the question and explain your reasoning — you don't have to fill the whole frame."></textarea>
-  <button class="btn" id="playDoneBtn">✓ I'm done with this question</button>
+  <textarea id="playNotes" placeholder="Answer the question and explain your reasoning — you don't have to fill the whole frame." title="Your answer and reasoning, in words. Saved as you type and printed in the report"></textarea>
+  <button class="btn" id="playDoneBtn" title="Mark this level finished. Then pick the next level above, or download the report">✓ I'm done with this question</button>
   <div class="playstat" id="playReportStat"></div>
-  <button class="btn" id="playReportBtn">⬇ Download play report (all levels, one PDF)</button>
+  <button class="btn" id="playReportBtn" title="One PDF with a page per level you played: the board, your answer, and your moves. No names are recorded">⬇ Download play report (all levels, one PDF)</button>
  </div>
 </div>
 
 <!-- DOK Wheel tab — a copy of the Week 4 wheel (dok-wheel.html), shown in its own frame so its drawers/curtain/global styles stay out of the builder -->
+<div id="reflectpanel" style="display:none"></div>
 <div id="wheelpanel" style="display:none"><iframe src="dok-wheel.html" title="DOK Wheel" style="width:100%;height:calc(100vh - 140px);min-height:560px;border:1px solid var(--line);border-radius:12px;background:#fff"></iframe></div>
 
 <div class="ctxmenu" id="ctxmenu" style="display:none">
- <button data-act="rot90">⟳ Rotate 90°</button>
- <button data-act="rot180">⟳ Rotate 180°</button>
- <button data-act="rot270">⟳ Rotate 270°</button>
+ <button data-act="rot90" title="Quarter turn clockwise">⟳ Rotate 90°</button>
+ <button data-act="rot180" title="Half turn">⟳ Rotate 180°</button>
+ <button data-act="rot270" title="Quarter turn counter-clockwise">⟳ Rotate 270°</button>
  <hr>
- <button data-act="fliph">⇋ Flip horizontal</button>
- <button data-act="flipv">⇵ Flip vertical</button>
+ <button data-act="fliph" title="Mirror left-to-right">⇋ Flip horizontal</button>
+ <button data-act="flipv" title="Mirror top-to-bottom">⇵ Flip vertical</button>
  <hr>
- <button data-act="given" id="ctxGiven">📌 Pin as given (always shown)</button>
+ <button data-act="given" id="ctxGiven" title="A pinned piece is part of the puzzle, not the answer: it is always visible and cannot be moved in Play">📌 Pin as given (always shown)</button>
  <hr>
- <button data-act="del" class="del">🗑 Delete piece</button>
+ <button data-act="del" class="del" title="Take this piece off the board. Shortcut: Delete">🗑 Delete piece</button>
 </div>
 
 <div id="pkgPrint"></div>
@@ -313,8 +395,11 @@ const PENTS = {
  Y:{cells:[[0,1],[1,0],[1,1],[2,1],[3,1]], color:'#5c6bc0'}, Z:{cells:[[0,0],[0,1],[1,1],[2,1],[2,2]], color:'#26c6da'},
 };
 const ORDER = ['L','N','P','T','C','V','M','X','Y','Z','F','I'];
-const SWATCH = ['#ef5350','#f0a13b','#ffca28','#66bb6a','#26a69a','#4aa3df','#5c6bc0','#7e57c2','#e0567a','#8d6e63','#90a4ae'];
+const SQ='■'; PENTS[SQ]={cells:[[0,0]], color:'#ef5350'};   // v0.9: the 1x1 square piece (Drawing tools → Square); not in ORDER, so the palette stays the 12 pentominoes
+const isSq = lab => lab===SQ;
+const SWATCH = ['#ef5350','#f0a13b','#ffca28','#66bb6a','#26a69a','#4aa3df','#5c6bc0','#7e57c2','#e0567a','#8d6e63','#90a4ae','#ffffff'];
 let U=30; // cell px — the Size control scales the grid + pieces together (for younger kids)
+let baseU=30; // the author's chosen cell size (what gets saved). U itself may be shrunk by fitBoard() on the Task/Play tabs.
 const SIZES={22:[38,25],30:[28,18],42:[20,12],56:[15,10]}; // Size px -> [cols,rows] default board
 // DOK question stems — teacher-owned starters (the app never scores level). CRM / Simpson 2015.
 const STEMS={
@@ -325,6 +410,11 @@ const STEMS={
 };
 const DOKCOL={1:'#2e7d32',2:'#1565c0',3:'#e67e22',4:'#7e57c2'};
 const DOKNAME={1:'Recall & Reproduce',2:'Skills & Concepts',3:'Strategic Reasoning',4:'Extended Thinking'};
+const SHOWNAME={blank:'Blank frame',key:'Answer key',pieces:'Pieces only',none:'Board only'};
+// `show` per level: key = frames+pieces · blank = frames only · pieces = pieces only · none = neither (v0.9.5)
+const showFrames = v => v==='key'||v==='blank'||v==null;
+const showPieces = v => v==='key'||v==='pieces'||v==null;
+const showFrom = (fr,pc) => fr? (pc?'key':'blank') : (pc?'pieces':'none');
 
 // ---------- geometry ----------
 function norm(cells){ const mr=Math.min(...cells.map(c=>c[0])), mc=Math.min(...cells.map(c=>c[1])); return cells.map(([r,c])=>[r-mr,c-mc]).sort((a,b)=>a[0]-b[0]||a[1]-b[1]); }
@@ -351,14 +441,27 @@ let R=18, C=28;
 let grid, instances, nextId, used, hover, cellEls, lastGhost=[];
 let mode='1set', gridOn=true, tool='pieces';
 let dok='1', reveal=true, frameVis=true, curShow='key', printScope='full', tab='build';
+let curLock='move', curSupply='palette';   // v0.9.4 per-level play rules: are the author's pieces movable in Play? may the partner add from the palette?
 // reveal = pieces shown? · frameVis = frame outline shown? · curShow (per active level) = 'blank'|'key'|'pieces'
 let slots=loadSlots();   // {1..4} -> per-level puzzle snapshots (the assignment packet); persisted
 let active=null, selected=null;
-let frame=null;                 // null = whole board fillable; else Set of "r,c"
+let frame=null;                 // null = whole board fillable; else Set of "r,c" — the UNION of every frame (v0.9)
+let frames=[];                  // v0.9: one Set per closed outline; `frame` is derived from it (rebuildFrame)
+let frameIdx=new Map();         // "r,c" -> index into frames (borders are drawn between DIFFERENT frames)
 let poly=[], drawing=false, preview=null;   // frame drawing
+let ink=[];                     // v0.9: pen strokes [{color,w,pts:[[x,y],...]}] in CELL units, so they scale with Size
+let curColor='#ef5350';         // the swatch currently chosen — shared by Square, Pen, and piece recoloring
+let sqGesture=false;            // mouse held with the Square armed: each cell entered gets a square
+function rebuildFrame(){ frameIdx=new Map(); frames.forEach((f,i)=>{ for(const k of f) frameIdx.set(k,i); });
+ frame = frames.length? new Set(frameIdx.keys()) : null; }
+function setFrames(list){ frames=list; rebuildFrame(); }
+const frameOf=(r,c)=> (r<0||r>=R||c<0||c>=C)? -1 : (frameIdx.has(key(r,c))? frameIdx.get(key(r,c)) : -1);
+// serialised frames -> [Set]; accepts old single-frame saves (frame only) and new multi-frame ones (frames)
+function framesFrom(s){ if(s.frames) return s.frames.map(a=>new Set(a)); return s.frame? [new Set(s.frame)] : []; }
+function frameIndexMap(list){ const m=new Map(); list.forEach((f,i)=>{ for(const k of f) m.set(k,i); }); return m; }
 let custom = loadCustom();
 
-const boardEl=document.getElementById('board'), overlay=document.getElementById('overlay');
+const boardEl=document.getElementById('board'), overlay=document.getElementById('overlay'), inkc=document.getElementById('inkc');
 const paletteEl=document.getElementById('palette'), swatchEl=document.getElementById('swatches');
 const railEl=document.getElementById('rail'), hintEl=document.getElementById('hint');
 const stemGrid=document.getElementById('stemGrid'), promptIn=document.getElementById('promptIn'), learnerIn=document.getElementById('learnerIn');
@@ -374,10 +477,11 @@ function miniSVG(cells,color,px){ px=px||9; const rows=Math.max(...cells.map(c=>
 function cellBase(r,c){ const id=grid[r][c]; if(id!=null && (reveal || instances[id].given)) return instances[id].color; return inFrame(r,c)?'#fff':'#e9ecf1'; }
 function render(){
  for(let r=0;r<R;r++)for(let c=0;c<C;c++){ const d=cellEls[r][c]; d.style.border=''; d.style.boxShadow=''; d.style.background=cellBase(r,c);
-  if(frameVis && frame!==null && frame.has(key(r,c))){ const b='2.5px solid #334';
-   if(!inFrame(r-1,c)) d.style.borderTop=b; if(!inFrame(r+1,c)) d.style.borderBottom=b;
-   if(!inFrame(r,c-1)) d.style.borderLeft=b; if(!inFrame(r,c+1)) d.style.borderRight=b; } }
- for(const gid in instances){ if(!instances[gid].given) continue; const id=+gid, same=(r,c)=> r>=0&&r<R&&c>=0&&c<C&&grid[r][c]===id, gb='2px dashed #555';
+  if(frameVis && frame!==null && frame.has(key(r,c))){ const b='2.5px solid #334', fi=frameOf(r,c);   // edge wherever the neighbour is outside THIS frame (so touching frames keep a line between them)
+   if(frameOf(r-1,c)!==fi) d.style.borderTop=b; if(frameOf(r+1,c)!==fi) d.style.borderBottom=b;
+   if(frameOf(r,c-1)!==fi) d.style.borderLeft=b; if(frameOf(r,c+1)!==fi) d.style.borderRight=b; } }
+ for(const gid in instances){ if(!instances[gid].given) continue; if(tab==='play' && play && play.fixed) break;   // on a Fixed level everything is fixed, so the dashed outline would just dash the whole drawing
+  const id=+gid, same=(r,c)=> r>=0&&r<R&&c>=0&&c<C&&grid[r][c]===id, gb='2px dashed #555';
   for(const [r,c] of instances[gid].cells){ const d=cellEls[r][c];
    if(!same(r-1,c)) d.style.borderTop=gb; if(!same(r+1,c)) d.style.borderBottom=gb; if(!same(r,c-1)) d.style.borderLeft=gb; if(!same(r,c+1)) d.style.borderRight=gb; } }
  if(selected!=null && instances[selected]){ const id=selected, same=(r,c)=> r>=0&&r<R&&c>=0&&c<C&&grid[r][c]===id, sb='3px solid #111';
@@ -388,8 +492,36 @@ function render(){
   const hatch='repeating-linear-gradient(45deg, rgba(40,45,55,.32) 0 4px, rgba(255,255,255,0) 4px 9px)';
   for(const idk in instances){ if(instances[idk].given) continue;
    for(const [r,c] of instances[idk].cells){ if(!frame.has(key(r,c))) cellEls[r][c].style.backgroundImage=hatch+', '+wash; } } }
- lastGhost=[]; const cw=document.getElementById('count'); if(cw) cw.textContent=Object.keys(instances).length; paintGhost();
+ lastGhost=[]; const cw=document.getElementById('count'); if(cw) cw.textContent=Object.keys(instances).length; paintGhost(); drawInk();
 }
+// ---------- v0.9 drawing tools: Fill (per-cell color) + Pen (freehand ink) ----------
+function sizeInk(){ inkc.width=C*U; inkc.height=R*U; inkc.style.width=C*U+'px'; inkc.style.height=R*U+'px'; }
+function strokePath(ctx,st,u,ox,oy){ ctx.strokeStyle=st.color; ctx.lineWidth=st.w*u; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.beginPath();
+ st.pts.forEach(([x,y],i)=>{ const X=(x-(ox||0))*u, Y=(y-(oy||0))*u; if(i) ctx.lineTo(X,Y); else ctx.moveTo(X,Y); });
+ if(st.pts.length===1){ const [x,y]=st.pts[0]; ctx.lineTo((x-(ox||0))*u+0.01,(y-(oy||0))*u); } ctx.stroke(); }
+function drawInk(){ const ctx=inkc.getContext('2d'); ctx.clearRect(0,0,inkc.width,inkc.height); for(const st of ink) strokePath(ctx,st,U); }
+function inkPoint(e){ const rc=inkc.getBoundingClientRect(); return [(e.clientX-rc.left)/U,(e.clientY-rc.top)/U]; }
+let stroke=null;
+inkc.addEventListener('pointerdown',e=>{ if(tool!=='pen'||e.button!==0) return; e.preventDefault(); inkc.setPointerCapture(e.pointerId);
+ stroke={color:curColor,w:0.12,pts:[inkPoint(e)]}; ink.push(stroke); drawInk(); });
+inkc.addEventListener('pointermove',e=>{ if(!stroke) return; const p=inkPoint(e), l=stroke.pts[stroke.pts.length-1];
+ if(Math.hypot(p[0]-l[0],p[1]-l[1])<0.04) return; stroke.pts.push(p); const ctx=inkc.getContext('2d'); strokePath(ctx,{color:stroke.color,w:stroke.w,pts:[l,p]},U); });
+const endStroke=()=>{ if(!stroke) return; stroke=null; afterDrawChange(); };
+inkc.addEventListener('pointerup',endStroke); inkc.addEventListener('pointercancel',endStroke);
+function afterDrawChange(){ if(tab==='play'){ if(play) play.marked=true; stashPlay(); } else saveActiveSlot(); }
+function undoStroke(){ if(!ink.length){ flash('No pen strokes to undo.'); return; } ink.pop(); drawInk(); afterDrawChange(); }
+function clearInk(){ if(!ink.length) return; ink=[]; drawInk(); afterDrawChange(); }
+document.getElementById('inkUndoBtn').onclick=undoStroke;
+document.getElementById('inkClearBtn').onclick=clearInk;
+// Square = arm the 1x1 piece (tool stays 'pieces'); Pieces = disarm; Pen = the ink tool
+document.getElementById('dtSeg').onclick=e=>{ const b=e.target.closest('button'); if(!b) return;
+ if(b.dataset.tool==='square'){ if(tool!=='pieces') setTool('pieces'); setActive(SQ); }
+ else if(b.dataset.tool==='pieces'){ if(tool!=='pieces') setTool('pieces'); active=null; renderPalette(); renderSwatches(); paintGhost(); }
+ else setTool(b.dataset.tool); };
+function updateDtSeg(){ const sq = tool==='pieces' && active && isSq(active.label);
+ document.querySelectorAll('#dtSeg button').forEach(x=>x.classList.toggle('on', x.dataset.tool==='square'? sq : (x.dataset.tool===tool && !sq)));
+ const dh=document.getElementById('dhint'); if(dh) dh.innerHTML = sq? 'Click a cell to lay a square; drag to lay a run. It stays armed — <kbd>Esc</kbd> or <b>Pieces</b> to stop. Click a laid square to select it, then drag, <kbd>Delete</kbd>, or pick a color.'
+   : tool==='pen'? 'Draw on top of the board. <b>Undo stroke</b> removes the last line.' : 'Square and Pen use the color chosen above.'; }
 // anchor = the filled cell nearest the piece's centre → that cell sits under the cursor
 // (fixes dropping X/T/U/plus, whose bbox top-left corner is empty).
 function anchorOf(cells){ const cr=cells.reduce((s,c)=>s+c[0],0)/cells.length, cc=cells.reduce((s,c)=>s+c[1],0)/cells.length;
@@ -419,8 +551,7 @@ function snapAxis(last,p){ if(Math.abs(p[1]-last[1])>=Math.abs(p[0]-last[0])) re
 
 overlay.addEventListener('mousemove',e=>{ if(tool!=='frame'||!drawing) return; const p=latticeFromEvt(e); preview = veq(p,poly[poly.length-1])?null:snapAxis(poly[poly.length-1],p); drawOverlay(); });
 overlay.addEventListener('click',e=>{ if(tool!=='frame') return; const raw=latticeFromEvt(e);
- if(!drawing){ // begin: clear board + frame
-  instances={}; grid=Array.from({length:R},()=>Array(C).fill(null)); used=new Set(); frame=null; render();
+ if(!drawing){ // begin a NEW outline — pieces and existing frames stay (v0.9: several frames per level)
   poly=[raw]; drawing=true; preview=null; drawOverlay(); return; }
  const last=poly[poly.length-1];
  if(veq(raw,poly[0]) && poly.length>=3){ return closePoly(); }   // click start → close
@@ -438,51 +569,67 @@ function closePoly(){ const last=poly[poly.length-1], start=poly[0];
  if(orient(poly[poly.length-2],last,start)===0){ flash('Turn before closing.'); return; }
  if(!isSimple(poly)){ flash('That outline crosses itself — adjust and try again.'); return; }
  // fill interior
- frame=new Set(); for(let r=0;r<R;r++)for(let c=0;c<C;c++){ if(pip(poly,c+0.5,r+0.5)) frame.add(key(r,c)); }
+ const nf=new Set(); for(let r=0;r<R;r++)for(let c=0;c<C;c++){ if(pip(poly,c+0.5,r+0.5)) nf.add(key(r,c)); }
+ if(nf.size===0){ flash('That outline enclosed no cells.'); drawing=false; poly=[]; preview=null; drawOverlay(); render(); return; }
+ if(frame && [...nf].some(k=>frame.has(k))){ flash('That outline overlaps a frame you already have — frames can touch, not overlap. Adjust it (Backspace) or Esc.'); return; }
  drawing=false; poly=[]; preview=null;
- if(frame.size===0){ flash('That outline enclosed no cells.'); frame=null; drawOverlay(); render(); return; }
- render(); setTool('pieces');   // one frame per puzzle — hop back to Pieces so you can place/move right away
+ setFrames([...frames, nf]);
+ render(); setTool('pieces');   // hop back to Pieces so you can place/move right away — pick Draw Frame again for another frame
 }
 let flashTimer=null;
-function flash(msg){ hintEl.innerHTML='<span style="color:#c0392b;font-weight:700">'+msg+'</span>'; clearTimeout(flashTimer); flashTimer=setTimeout(updateHint,2200); }
+function flash(msg,ms){ hintEl.innerHTML='<span style="color:#c0392b;font-weight:700">'+msg+'</span>'; clearTimeout(flashTimer); flashTimer=setTimeout(updateHint,ms||2200); }
 
 // ---------- palette / swatches / rail ----------
 function renderPalette(){ paletteEl.innerHTML=''; for(const lab of ORDER){ const p=PENTS[lab]; const el=document.createElement('button');
   el.className='pc'+(active&&active.label===lab?' sel':'')+(mode==='1set'&&used.has(lab)?' used':'');
-  el.innerHTML=miniSVG(norm(p.cells),p.color)+`<span class="lab">${lab}</span>`; el.onclick=()=>setActive(lab); paletteEl.appendChild(el); } }
+  el.innerHTML=miniSVG(norm(p.cells),p.color)+`<span class="lab">${lab}</span>`; el.onclick=()=>setActive(lab); paletteEl.appendChild(el);
+  el.title = (mode==='1set'&&used.has(lab)) ? `${lab} is already on the board (1 Set mode allows one of each)` : `${lab} pentomino — click, then click the board to place it. R turns it, F flips it, before or after placing`; }
+ updateDtSeg(); }
 function renderSwatches(){ swatchEl.innerHTML=''; const selCol = (selected!=null && instances[selected])? instances[selected].color : null;
- for(const col of SWATCH){ const s=document.createElement('div'); s.className='sw'+(((active&&active.color===col)||selCol===col)?' on':''); s.style.background=col;
-  s.onclick=()=>{ if(selected!=null && instances[selected]){ instances[selected].color=col; render(); renderSwatches(); }   // recolor the SELECTED placed piece
-    else if(active){ active.color=col; renderSwatches(); paintGhost(); } }; swatchEl.appendChild(s); } }
+ const drawTool = tool==='pen';
+ for(const col of SWATCH){ const s=document.createElement('div'); s.className='sw'+((drawTool? curColor===col : ((active&&active.color===col)||selCol===col))?' on':''); s.style.background=col;
+  s.title = col==='#ffffff' ? 'White — for a square that reads as blank space' : 'Pick a color for the selected piece, or for the Square and Pen tools';
+  s.onclick=()=>{ curColor=col;   // one color for everything: Fill, Pen, and recoloring the SELECTED placed piece
+    if(!drawTool && selected!=null && instances[selected]){ instances[selected].color=col; render(); }
+    else if(!drawTool && active){ active.color=col; paintGhost(); }
+    renderSwatches(); }; swatchEl.appendChild(s); } }
 function tpThumb(t){ const el=document.createElement('button'); el.className='tp'; const px=Math.max(3,Math.floor(40/Math.max(t.cols,t.rows)));
- el.innerHTML=miniSVG(t.cells,'#9db4d6',px)+`<span class="nm">${t.name}</span>`; el.onclick=()=>loadFrame(t); return el; }
+ el.innerHTML=miniSVG(t.cells,'#9db4d6',px)+`<span class="nm">${t.name}</span>`; el.title=`Load the saved frame “${t.name}” onto a fresh board`; el.onclick=()=>loadFrame(t); return el; }
 function renderRail(){ railEl.innerHTML=''; const lbl=document.createElement('span'); lbl.className='cap'; lbl.style.margin='0 4px 0 0'; lbl.textContent='Saved frames'; railEl.appendChild(lbl);
  if(!custom.length){ const e=document.createElement('span'); e.style.cssText='font-size:12px;color:#9aa0a6'; e.textContent='none yet — draw one, then Save.'; railEl.appendChild(e); }
  custom.forEach((t,i)=>{ const el=tpThumb(t); const x=document.createElement('span'); x.className='x'; x.textContent='×'; x.onclick=e=>{ e.stopPropagation(); custom.splice(i,1); saveCustom(); renderRail(); }; el.appendChild(x); railEl.appendChild(el); });
- const full=document.createElement('button'); full.className='btn'; full.textContent='Full board'; full.onclick=()=>{ frame=null; drawing=false; poly=[]; drawOverlay(); render(); }; railEl.appendChild(full);
- const save=document.createElement('button'); save.className='btn'; save.textContent='＋ Save frame'; save.onclick=saveFrame; railEl.appendChild(save);
+ const undo=document.createElement('button'); undo.className='btn'; undo.textContent='− Remove last frame'; undo.title='Remove the most recently drawn frame (pieces stay)';
+ undo.onclick=()=>{ if(!frames.length){ flash('No frame to remove.'); return; } setFrames(frames.slice(0,-1)); drawing=false; poly=[]; drawOverlay(); render(); }; railEl.appendChild(undo);
+ const full=document.createElement('button'); full.className='btn'; full.textContent='Full board'; full.title='Remove every frame'; full.onclick=()=>{ setFrames([]); drawing=false; poly=[]; drawOverlay(); render(); }; railEl.appendChild(full);
+ const save=document.createElement('button'); save.className='btn'; save.textContent='＋ Save frame'; save.title='Keep the current frame shape in this list so you can reuse it later (stored in this browser)'; save.onclick=saveFrame; railEl.appendChild(save);
 }
 
 // ---------- actions ----------
-function setActive(lab){ if(mode==='1set'&&used.has(lab)) return; active={label:lab,color:PENTS[lab].color,cells:norm(PENTS[lab].cells)}; selected=null; renderPalette(); renderSwatches(); render(); }
+function setActive(lab){ if(mode==='1set'&&used.has(lab)&&!isSq(lab)) return; if(tool==='pen') setTool('pieces'); active={label:lab,color:isSq(lab)?curColor:PENTS[lab].color,cells:norm(PENTS[lab].cells)}; selected=null; renderPalette(); renderSwatches(); render(); }
 function onCellClick(r,c){ if(tool!=='pieces') return;
+ if(active && isSq(active.label)) return;   // squares are laid on mousedown (so a drag lays a run); the click that follows must not act again
  if(grid[r][c]!=null){ if(tab==='play' && instances[grid[r][c]].given) return;   // givens are locked while playing
   selected=grid[r][c]; active=null; renderPalette(); renderSwatches(); render(); return; }   // click placed → select
  if(!active){ if(selected!=null){ selected=null; render(); } return; }
- const [ar,ac]=anchorOf(active.cells);
+ placeActive(r,c); }
+function placeActive(r,c){ const [ar,ac]=anchorOf(active.cells);
  const t=active.cells.map(([rr,cc])=>[r+rr-ar,c+cc-ac]);
- if(!t.every(([rr,cc])=> rr>=0&&rr<R&&cc>=0&&cc<C&&grid[rr][cc]==null)) return;
+ if(!t.every(([rr,cc])=> rr>=0&&rr<R&&cc>=0&&cc<C&&grid[rr][cc]==null)) return false;
+ const sq=isSq(active.label);
  const id=nextId++; instances[id]={label:active.label,color:active.color,cells:t}; t.forEach(([rr,cc])=>grid[rr][cc]=id);
- if(mode==='1set') used.add(active.label); active=null;   // deselect after EVERY drop (all modes) — the tool stops being armed, so the next board click selects/moves instead of dropping a duplicate; re-pick from the palette to place another
+ if(mode==='1set' && !sq) used.add(active.label);
+ if(!sq) active=null;   // deselect after EVERY drop (all modes) — the tool stops being armed, so the next board click selects/moves instead of dropping a duplicate; re-pick from the palette to place another. Squares stay armed (Esc to stop).
  selected=null; render(); renderPalette(); renderSwatches();
- if(tab==='play'){ recordPlay('place', instances[id].label); playAfterChange(); } }
+ if(tab==='play'){ recordPlay('place', instances[id].label); playAfterChange(); }
+ if(sq && tab!=='play') saveActiveSlot();
+ return true; }
 function removeInstance(id){ const inst=instances[id]; if(!inst) return; if(tab==='play') recordPlay('remove', inst.label);
  inst.cells.forEach(([r,c])=>grid[r][c]=null); if(mode==='1set') used.delete(inst.label); delete instances[id]; render(); renderPalette();
  if(tab==='play') playAfterChange(); }
 function bboxCenter(cells){ const rs=cells.map(c=>c[0]),cs=cells.map(c=>c[1]); return [(Math.min(...rs)+Math.max(...rs))/2,(Math.min(...cs)+Math.max(...cs))/2]; }
 function reposition(id,newCells){ const inst=instances[id]; inst.cells.forEach(([r,c])=>grid[r][c]=null);
  const ok=newCells.every(([r,c])=> r>=0&&r<R&&c>=0&&c<C&&grid[r][c]==null);
- if(ok){ inst.cells=newCells; newCells.forEach(([r,c])=>grid[r][c]=id); if(tab==='play') playAfterChange(); } else inst.cells.forEach(([r,c])=>grid[r][c]=id); return ok; }   // moves (drag/arrow/rotate/flip) refresh the play count too, not just place/remove
+ if(ok){ inst.cells=newCells; newCells.forEach(([r,c])=>grid[r][c]=id); if(tab==='play'){ if(play) play.marked=true; playAfterChange(); } } else inst.cells.forEach(([r,c])=>grid[r][c]=id); return ok; }   // moves (drag/arrow/rotate/flip) refresh the play count too, not just place/remove
 function transformSelected(fn){ if(selected==null||!instances[selected]) return; const inst=instances[selected];
  const t=fn(norm(inst.cells)); const oc=bboxCenter(inst.cells), nc=bboxCenter(t); const br=Math.round(oc[0]-nc[0]), bc=Math.round(oc[1]-nc[1]);
  for(const [dr,dc] of [[0,0],[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1],[-2,0],[2,0],[0,-2],[0,2]]){
@@ -490,7 +637,7 @@ function transformSelected(fn){ if(selected==null||!instances[selected]) return;
  flash('No room to turn the piece there — move it first.'); }
 function moveSelected(dr,dc){ if(selected==null||!instances[selected]) return; const cand=instances[selected].cells.map(([r,c])=>[r+dr,c+dc]); if(reposition(selected,cand)) render(); }
 function loadFrame(t){ const m=1; C=t.cols+2*m; R=t.rows+2*m; document.getElementById('colsIn').value=C; document.getElementById('rowsIn').value=R;
- resetGrid(); buildBoard(); frame=new Set(t.cells.map(([r,c])=>key(r+m,c+m))); render(); renderPalette(); }
+ resetGrid(); buildBoard(); setFrames([new Set(t.cells.map(([r,c])=>key(r+m,c+m)))]); ink=[]; render(); renderPalette(); }
 function saveFrame(){ if(frame===null||frame.size===0){ flash('Draw and close a frame first (Tool → Draw Frame).'); return; }
  const name=prompt('Name this frame:','My frame'); if(!name) return;
  const cells=[...frame].map(s=>s.split(',').map(Number)); const nc=norm(cells);
@@ -500,15 +647,28 @@ function saveFrame(){ if(frame===null||frame.size===0){ flash('Draw and close a 
 function resetGrid(){ grid=Array.from({length:R},()=>Array(C).fill(null)); instances={}; nextId=1; used=new Set(); hover=null; lastGhost=[]; }
 function buildBoard(){ boardEl.style.gridTemplateColumns=`repeat(${C},${U}px)`; boardEl.innerHTML=''; cellEls=[];
  for(let r=0;r<R;r++){ cellEls[r]=[]; for(let c=0;c<C;c++){ const d=document.createElement('div'); d.className='cell'; d._r=r; d._c=c;
-   d.onmouseenter=()=>{hover=[r,c]; paintGhost();}; d.onclick=()=>onCellClick(r,c); boardEl.appendChild(d); cellEls[r][c]=d; } }
- boardEl.onmouseleave=()=>{hover=null; paintGhost();}; sizeOverlay(); }
+   d.onmouseenter=()=>{hover=[r,c]; paintGhost(); if(sqGesture && active && isSq(active.label) && grid[r][c]==null) placeActive(r,c); }; d.onclick=()=>onCellClick(r,c); boardEl.appendChild(d); cellEls[r][c]=d; } }
+ boardEl.onmouseleave=()=>{hover=null; paintGhost();}; sizeOverlay(); sizeInk(); }
+
+// ---------- fit to width (Task + Play tabs) ----------
+// The panel beside the board takes 340-372px, so a level built at Size M/L can run off the right edge
+// under a scrollbar nobody notices. Shrink the cell size to fit — never below 16px, never above the
+// author's choice — and put it back on the Build tab. Only U changes; the level is saved with baseU.
+function fitBoard(){ const wrap=document.getElementById('boardWrap');
+ let want=baseU;
+ if(tab==='task'||tab==='play'){ const room=wrap.clientWidth-6; if(room>0) want=Math.max(16, Math.min(baseU, Math.floor(room/C))); }
+ if(want===U) return;
+ U=want; document.documentElement.style.setProperty('--u',U+'px'); buildBoard(); render(); drawOverlay(); }
+window.addEventListener('resize', ()=>{ clearTimeout(window._fitT); window._fitT=setTimeout(fitBoard,120); });
 
 // ---------- drag a placed piece ----------
 let drag=null;   // {id, grab:[r,c], moved}
 function cellFromPoint(e){ const rc=boardEl.getBoundingClientRect();
  const c=Math.floor((e.clientX-rc.left-2)/U), r=Math.floor((e.clientY-rc.top-2)/U);
  if(r<0||r>=R||c<0||c>=C) return null; return [r,c]; }
-boardEl.addEventListener('mousedown',e=>{ if(e.button!==0) return; if(tool!=='pieces') return; const d=e.target.closest('.cell'); if(!d) return;
+boardEl.addEventListener('mousedown',e=>{ if(e.button!==0) return; const d=e.target.closest('.cell'); if(!d) return;
+ if(tool!=='pieces') return;
+ if(active && isSq(active.label) && grid[d._r][d._c]==null){ e.preventDefault(); placeActive(d._r,d._c); sqGesture=true; return; }   // lay a square; dragging lays a run (onmouseenter)
  const id=grid[d._r][d._c]; if(id==null) return;                 // empty cell → let click place
  if(tab==='play' && instances[id].given) return;                 // givens are locked while playing
  e.preventDefault(); selected=id; active=null; drag={id, grab:[d._r,d._c], moved:false};
@@ -539,38 +699,43 @@ document.addEventListener('mousemove',e=>{ if(!drag) return; const cell=cellFrom
  const dr=cell[0]-drag.grab[0], dc=cell[1]-drag.grab[1]; if(dr===0&&dc===0) return;
  const cand=instances[drag.id].cells.map(([r,c])=>[r+dr,c+dc]);
  if(reposition(drag.id,cand)){ drag.grab=cell; drag.moved=true; render(); } });
-document.addEventListener('mouseup',()=>{ drag=null; });
+document.addEventListener('mouseup',()=>{ drag=null; sqGesture=false; });
 
 // ---------- controls ----------
 function setTool(t){ tool=t;
- document.querySelectorAll('#toolSeg button').forEach(x=>x.classList.toggle('on', x.dataset.tool===t));
- active=null; drawing=false; poly=[]; preview=null;
+ document.querySelectorAll('#toolSeg button, #dtSeg button').forEach(x=>x.classList.toggle('on', x.dataset.tool===t));
+ active=null; drawing=false; poly=[]; preview=null; sqGesture=false; if(t!=='pieces') selected=null;
  overlay.style.pointerEvents = t==='frame'?'auto':'none'; overlay.style.cursor = t==='frame'?'crosshair':'default';
- renderPalette(); render(); drawOverlay(); updateHint(); }
+ inkc.classList.toggle('on', t==='pen');
+ renderPalette(); renderSwatches(); render(); drawOverlay(); updateHint(); }
 document.getElementById('toolSeg').onclick=e=>{ const b=e.target.closest('button'); if(b) setTool(b.dataset.tool); };
 document.getElementById('modeSeg').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; mode=b.dataset.mode; [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));
  if(mode==='1set'){                                   // leaving Multi → enforce one-of-each: keep the first-placed of each label, drop the repeats
   const seen=new Set();
   for(const id of Object.keys(instances).map(Number).sort((a,b)=>a-b)){ const inst=instances[id];
+   if(isSq(inst.label)) continue;
    if(seen.has(inst.label)){ inst.cells.forEach(([r,c])=>grid[r][c]=null); delete instances[id]; } else seen.add(inst.label); }
   used=new Set(seen); if(selected!=null && !instances[selected]) selected=null; active=null;
  } else used=new Set();
  render(); renderPalette(); renderSwatches(); };
 document.getElementById('gridSeg').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; gridOn=b.dataset.grid==='1'; boardEl.classList.toggle('gridon',gridOn); [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b)); };
-function setCellSize(px){ U=px; document.documentElement.style.setProperty('--u',U+'px');
+function setCellSize(px){ U=baseU=px; document.documentElement.style.setProperty('--u',U+'px');
  const dim=SIZES[px]; if(dim){ C=dim[0]; R=dim[1]; document.getElementById('colsIn').value=C; document.getElementById('rowsIn').value=R;
-  frame=null; drawing=false; poly=[]; resetGrid(); }
+  setFrames([]); ink=[]; drawing=false; poly=[]; resetGrid(); }
  buildBoard(); render(); drawOverlay(); renderPalette(); }
 document.getElementById('sizeSeg').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b)); setCellSize(+b.dataset.u); };
 function clearBoard(){ resetGrid(); selected=null; active=null; render(); renderPalette(); renderSwatches(); updateHint(); }
 document.getElementById('clearBtn').onclick=clearBoard;
 
 // ---------- tabs (Build | Task & DOK | Play | DOK Wheel) — board stays visible on the first three ----------
-function setTab(t){ const leaving=tab; tab=t;
- const build=(t==='build'), task=(t==='task'), playing=(t==='play'), wheel=(t==='wheel');
+function setTab(t){ const leaving=tab;
+ if(t!=='build' && tool==='frame' && drawing && poly.length){ flash('Close your frame first — click its starting point (or press Esc to abandon it).', 4000); return; }
+ tab=t;
+ const build=(t==='build'), task=(t==='task'), playing=(t==='play'), wheel=(t==='wheel'), reflect=(t==='reflect');
  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
- document.querySelector('.layout').style.display = wheel?'none':'';   // DOK Wheel replaces the board; the design board is untouched underneath
+ document.querySelector('.layout').style.display = (wheel||reflect)?'none':'';   // DOK Wheel / Reflect replace the board; the design board is untouched underneath
  document.getElementById('wheelpanel').style.display = wheel?'':'none';
+ document.getElementById('reflectpanel').style.display = reflect?'':'none'; if(reflect) renderReflect();
  document.querySelector('.bar').style.display = build?'':'none';
  railEl.style.display = build?'':'none';
  document.querySelector('.side').style.display = (build||playing)?'':'none';   // palette for building AND playing
@@ -583,8 +748,9 @@ function setTab(t){ const leaving=tab; tab=t;
  if(playing){ reveal=true; frameVis=true; enterPlay(); }
  else { if(leaving==='play') exitPlay();          // restores the design board + its curShow
    if(build){ reveal=true; frameVis=true; }         // Build always shows pieces+frame for authoring
-   else { reveal=(curShow!=='blank'); frameVis=(curShow!=='pieces'); }   // Task previews the active level's "Show as"
-   render(); updateShowSeg(); } }
+   else { reveal=showPieces(curShow); frameVis=showFrames(curShow); }   // Task previews the active level's "Show as"
+   render(); updateShowSeg(); }
+ fitBoard(); }
 document.getElementById('tabs').onclick=e=>{ const b=e.target.closest('button'); if(b) setTab(b.dataset.tab); };
 
 // ---------- task authoring (prompt + DOK stems + tag) ----------
@@ -594,14 +760,17 @@ function renderStems(){ stemGrid.innerHTML='';
  const head=document.createElement('div'); head.className='stemhead';
  head.innerHTML=`<span class="dot" style="background:${DOKCOL[dok]}"></span>DOK ${dok} · ${DOKNAME[dok]} — click to drop into the prompt`;
  stemGrid.appendChild(head);
- for(const s of STEMS[dok]){ const b=document.createElement('button'); b.className='stem'; b.textContent=s; b.onclick=()=>insertStem(s); stemGrid.appendChild(b); } }
+ for(const s of STEMS[dok]){ const b=document.createElement('button'); b.className='stem'; b.textContent=s; b.title='Click to drop this stem into the task prompt, then edit it'; b.onclick=()=>insertStem(s); stemGrid.appendChild(b); } }
 function insertStem(text){ const el=promptIn, s=el.selectionStart, e=el.selectionEnd, v=el.value;
  const pre=v.slice(0,s), post=v.slice(e); const sep = (pre && !/\s$/.test(pre)) ? ' ' : '';
  el.value = pre + sep + text + post; const pos = (pre+sep+text).length; el.focus(); el.setSelectionRange(pos,pos); }
 document.getElementById('dokSeg').onclick=e=>{ const b=e.target.closest('button'); if(b) switchLevel(b.dataset.dok); };
-function updateShowSeg(){ document.querySelectorAll('#showSeg button').forEach(b=>b.classList.toggle('on', b.dataset.show===curShow)); }
-function applyShow(v){ curShow=v; reveal=(v!=='blank'); frameVis=(v!=='pieces'); updateShowSeg(); selected=null; render(); }
-document.getElementById('showSeg').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; applyShow(b.dataset.show); saveActiveSlot(); renderPacketStatus(); };
+function updateShowSeg(){ document.getElementById('chkFrames').checked=showFrames(curShow); document.getElementById('chkPieces').checked=showPieces(curShow);
+ document.getElementById('chkMove').checked=(curLock!=='fixed'); document.getElementById('chkPalette').checked=(curSupply!=='these'); }
+document.getElementById('chkFrames').onchange=document.getElementById('chkPieces').onchange=()=>{ applyShow(showFrom(document.getElementById('chkFrames').checked, document.getElementById('chkPieces').checked)); saveActiveSlot(); renderPacketStatus(); };
+document.getElementById('chkMove').onchange=()=>{ curLock=document.getElementById('chkMove').checked?'move':'fixed'; saveActiveSlot(); };
+document.getElementById('chkPalette').onchange=()=>{ curSupply=document.getElementById('chkPalette').checked?'palette':'these'; saveActiveSlot(); };
+function applyShow(v){ curShow=v; reveal=showPieces(v); frameVis=showFrames(v); updateShowSeg(); selected=null; render(); }
 document.getElementById('scopeSeg').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; printScope=b.dataset.s; [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b)); };
 
 // ---------- print / PDF ----------
@@ -624,29 +793,34 @@ window.addEventListener('afterprint', ()=>{ clearCrop(); document.body.classList
 // ---------- DOK levels as slots + the assignment packet ----------
 function loadSlots(){ try{ return JSON.parse(localStorage.getItem('pb_slots_v1')||'{}'); }catch(e){ return {}; } }
 function saveSlots(){ localStorage.setItem('pb_slots_v1', JSON.stringify(slots)); }
-function snapshotBoard(){ return { cols:C, rows:R, u:U, frame: frame?[...frame]:null,
+function snapshotBoard(){ return { cols:C, rows:R, u:baseU, frame: frame?[...frame]:null, frames: frames.map(f=>[...f]), ink: ink.map(st=>({color:st.color,w:st.w,pts:st.pts.map(p=>[p[0],p[1]])})),
  pieces: Object.values(instances).map(i=>({label:i.label,color:i.color,cells:i.cells.map(c=>[c[0],c[1]]),given:!!i.given})),
- prompt: promptIn.value, learner: learnerIn.value, show: curShow, mode: mode }; }
-function slotHasContent(s){ return s && (s.pieces.length || s.frame || (s.prompt||'').trim() || (s.learner||'').trim()); }
+ prompt: promptIn.value, learner: learnerIn.value, show: curShow, lock: curLock, supply: curSupply, mode: mode }; }
+function slotHasContent(s){ return s && (s.pieces.length || s.frame || (s.ink&&s.ink.length) || (s.prompt||'').trim() || (s.learner||'').trim()); }
 function saveActiveSlot(){ const snap=snapshotBoard(); if(!slotHasContent(snap) && !slots[dok]) return;
  slots[dok] = {...snap, done: slots[dok]? slots[dok].done : false}; saveSlots(); }
-function restoreBoard(s){ C=s.cols; R=s.rows; U=s.u||30; document.documentElement.style.setProperty('--u',U+'px');
+function restoreBoard(s){ C=s.cols; R=s.rows; U=baseU=s.u||30; document.documentElement.style.setProperty('--u',U+'px');
  document.getElementById('colsIn').value=C; document.getElementById('rowsIn').value=R;
- resetGrid(); buildBoard(); frame = s.frame? new Set(s.frame): null;
+ resetGrid(); buildBoard(); setFrames(framesFrom(s)); ink=(s.ink||[]).map(st=>({color:st.color,w:st.w,pts:st.pts.map(p=>[p[0],p[1]])}));
  for(const pc of (s.pieces||[])){ const id=nextId++; instances[id]={label:pc.label,color:pc.color,cells:pc.cells.map(c=>[c[0],c[1]]),given:!!pc.given};
   pc.cells.forEach(([r,c])=>{ if(r>=0&&r<R&&c>=0&&c<C) grid[r][c]=id; }); }
- if(mode==='1set'){ used=new Set(); for(const id in instances) used.add(instances[id].label); }
- promptIn.value=s.prompt||''; learnerIn.value=s.learner||''; curShow=s.show||'key';
- render(); renderPalette(); drawOverlay(); }
+ if(mode==='1set'){ used=new Set(); for(const id in instances) if(!isSq(instances[id].label)) used.add(instances[id].label); }
+ promptIn.value=s.prompt||''; learnerIn.value=s.learner||''; curShow=s.show||'key'; curLock=s.lock||'move'; curSupply=s.supply||'palette';
+ render(); renderPalette(); drawOverlay(); fitBoard(); }
 function switchLevel(nl){ if(nl===dok) return; saveActiveSlot(); dok=nl;
  if(slots[nl]){ restoreBoard(slots[nl]); }
- else { promptIn.value=''; learnerIn.value=''; curShow='key'; }   // empty level: carry the task over, fresh prompt/show
+ else { promptIn.value=''; learnerIn.value=''; curShow='key'; curLock='move'; curSupply='palette'; }   // empty level: carry the task over, fresh prompt/show/rules
  updateDokButtons(); renderStems(); renderPacketStatus(); applyShow(curShow); }
 function finishLevel(){ saveActiveSlot(); if(!slots[dok]) slots[dok]={...snapshotBoard(),done:false};
- slots[dok].done=true; saveSlots(); updateDokButtons(); renderPacketStatus(); flash('DOK '+dok+' saved to the packet.'); }
+ slots[dok].done=true; saveSlots(); updateDokButtons(); renderPacketStatus();
+ flash('DOK '+dok+' saved. In Play your partner sees: '+rulesText(slots[dok])+'.', 6000); }
+function rulesText(sl){ const sh=sl.show||'key', parts=[];
+ if(!sl.frame) parts.push('no frame (every piece shown)'); else parts.push(showFrames(sh)?'frames':'no frames');
+ if(sl.frame) parts.push(showPieces(sh)?'your pieces':'your pieces hidden (pinned ones stay)');
+ parts.push((sl.lock||'move')==='fixed'?'fixed':'movable'); parts.push((sl.supply||'palette')==='these'?'no palette (only these pieces)':'palette on'); return parts.join(' · '); }
 function clearPacket(){ const n=[1,2,3,4].filter(l=>slots[l]).length; if(!n) return;
  if(!confirm('Clear all saved levels ('+n+')? This empties the packet.')) return;
- slots={}; saveSlots(); plays={}; savePlays(); updateDokButtons(); renderPacketStatus(); flash('Packet cleared.'); }
+ slots={}; saveSlots(); plays={}; savePlays(); reflect={}; saveReflect(); updateDokButtons(); renderPacketStatus(); flash('Packet cleared.'); }
 function updateDokButtons(){ document.querySelectorAll('#dokSeg button').forEach(b=>{ const lv=b.dataset.dok;
   b.classList.toggle('on', lv===dok); b.classList.toggle('done', !!(slots[lv] && slots[lv].done)); });
  const eb=document.getElementById('editingBadge'); if(eb){ eb.textContent='Editing · DOK '+dok; eb.style.background=DOKCOL[dok]; }
@@ -654,8 +828,9 @@ function updateDokButtons(){ document.querySelectorAll('#dokSeg button').forEach
 function renderPacketStatus(){ const done=[1,2,3,4].filter(l=>slots[l]&&slots[l].done);
  const el=document.getElementById('pkgCount'); if(el) el.textContent = done.length? `— ${done.length} page${done.length>1?'s':''} (DOK ${done.join(', ')})` : '— none finished yet'; }
 // build the printable pages (one per finished level)
-function renderPuzzleBoard(s){ const show=s.show||'key', drawPieces=show!=='blank', drawFrame=show!=='pieces';
+function renderPuzzleBoard(s){ const show=s.show||'key', drawPieces=showPieces(show), drawFrame=showFrames(show);
  const fs=new Set(s.frame||[]); const inF=(r,c)=> !s.frame || fs.has(r+','+c);
+ const fm=frameIndexMap(framesFrom(s)); const fo=(r,c)=> fm.has(r+','+c)? fm.get(r+','+c) : -1;   // v0.9: a line between touching frames
  const occ={}; (s.pieces||[]).forEach(pc=>pc.cells.forEach(([r,c])=> occ[r+','+c]={color:pc.color, given:!!pc.given}));
  let r0=0,c0=0,r1=s.rows-1,c1=s.cols-1;
  if(printScope==='frame'){ const pts=[]; if(s.frame) for(const k of s.frame){ const [r,c]=k.split(',').map(Number); pts.push([r,c]); }
@@ -664,8 +839,14 @@ function renderPuzzleBoard(s){ const show=s.show||'key', drawPieces=show!=='blan
  const W=c1-c0+1; const board=document.createElement('div'); board.className='pkgboard'; board.style.gridTemplateColumns=`repeat(${W},${s.u}px)`;
  for(let r=r0;r<=r1;r++) for(let c=c0;c<=c1;c++){ const d=document.createElement('div'); d.className='pcell'; d.style.width=d.style.height=s.u+'px';
   const o=occ[r+','+c]; d.style.background=(o && (drawPieces || o.given))? o.color : '#fff';
-  if(drawFrame && inF(r,c)){ const b='2.5px solid #334'; if(!inF(r-1,c))d.style.borderTop=b; if(!inF(r+1,c))d.style.borderBottom=b; if(!inF(r,c-1))d.style.borderLeft=b; if(!inF(r,c+1))d.style.borderRight=b; }
-  board.appendChild(d); } return board; }
+  if(drawFrame && inF(r,c) && s.frame){ const b='2.5px solid #334', fi=fo(r,c); if(fo(r-1,c)!==fi)d.style.borderTop=b; if(fo(r+1,c)!==fi)d.style.borderBottom=b; if(fo(r,c-1)!==fi)d.style.borderLeft=b; if(fo(r,c+1)!==fi)d.style.borderRight=b; }
+  board.appendChild(d); }
+ if(s.ink && s.ink.length){ const H=r1-r0+1; const u=s.u;   // pen strokes ride on top as an SVG, cropped with the board
+  let svg=`<svg class="pkgink" width="${W*u}" height="${H*u}" viewBox="0 0 ${W*u} ${H*u}">`;
+  for(const st of s.ink){ const pts=st.pts.map(([x,y])=>`${((x-c0)*u).toFixed(1)},${((y-r0)*u).toFixed(1)}`).join(' ');
+   svg+=`<polyline points="${pts}" fill="none" stroke="${st.color}" stroke-width="${(st.w*u).toFixed(1)}" stroke-linecap="round" stroke-linejoin="round"/>`; }
+  board.insertAdjacentHTML('beforeend', svg+'</svg>'); }
+ return board; }
 function renderPuzzlePage(s, level){ const page=document.createElement('div'); page.className='pkgpage';
  const head=document.createElement('div'); head.className='pkghead';
  let h=`<span class="dokchip" style="background:${DOKCOL[level]}">DOK ${level}</span><span class="doknm">${DOKNAME[level]}</span>`;
@@ -684,10 +865,11 @@ document.getElementById('printPkgBtn').onclick=printPacket;
 document.getElementById('clearPkgBtn').onclick=clearPacket;
 document.getElementById('rotBtn').onclick=()=>{ if(selected!=null) transformSelected(rotate); else if(active){active.cells=rotate(active.cells); paintGhost();} };
 document.getElementById('flipBtn').onclick=()=>{ if(selected!=null) transformSelected(flip); else if(active){active.cells=flip(active.cells); paintGhost();} };
-document.getElementById('resizeBtn').onclick=()=>{ C=Math.max(3,Math.min(40,+document.getElementById('colsIn').value||24)); R=Math.max(3,Math.min(40,+document.getElementById('rowsIn').value||20)); frame=null; drawing=false; poly=[]; resetGrid(); buildBoard(); render(); renderPalette(); drawOverlay(); };
+document.getElementById('resizeBtn').onclick=()=>{ C=Math.max(3,Math.min(40,+document.getElementById('colsIn').value||24)); R=Math.max(3,Math.min(40,+document.getElementById('rowsIn').value||20)); setFrames([]); ink=[]; drawing=false; poly=[]; resetGrid(); buildBoard(); render(); renderPalette(); drawOverlay(); };
 document.addEventListener('keydown',e=>{
  const tn=(e.target&&e.target.tagName)||''; if(tn==='INPUT'||tn==='TEXTAREA'||tn==='SELECT') return;   // don't fire piece shortcuts while typing notes/prompt
  if(tool==='frame'&&drawing){ if(e.key==='Backspace'){ e.preventDefault(); poly.pop(); if(!poly.length) drawing=false; drawOverlay(); return; } if(e.key==='Escape'){ drawing=false; poly=[]; preview=null; drawOverlay(); return; } }
+ if(tool==='pen'){ if(e.key==='Escape') setTool('pieces'); return; }
  if(tool!=='pieces') return;
  if(e.key==='r'||e.key==='R'){ if(selected!=null) transformSelected(rotate); else if(active){active.cells=rotate(active.cells); paintGhost();} }
  else if(e.key==='f'||e.key==='F'){ if(selected!=null) transformSelected(flip); else if(active){active.cells=flip(active.cells); paintGhost();} }
@@ -698,8 +880,45 @@ document.addEventListener('keydown',e=>{
  else if(e.key==='Delete'||e.key==='Backspace'){ if(selected!=null){ e.preventDefault(); const id=selected; selected=null; removeInstance(id);} }
  else if(e.key==='Escape'){ active=null; selected=null; renderPalette(); render(); } });
 function updateHint(){ hintEl.innerHTML = tool==='frame'
-  ? 'Click lattice points to trace an outline (edges snap horizontal/vertical). Click the <b>start dot</b> to close. <kbd>Backspace</kbd> undo point · <kbd>Esc</kbd> cancel. Then <b>＋ Save frame</b> and switch Tool → <b>Pieces</b>.'
+  ? 'Click lattice points to trace an outline (edges snap horizontal/vertical). Click the <b>start dot</b> to close. <kbd>Backspace</kbd> undo point · <kbd>Esc</kbd> cancel. Pick <b>Draw Frame</b> again for a <b>second frame</b> (they may touch, not overlap); <b>− Remove last frame</b> undoes one.'
   : 'Pick a piece → click to place <b>anywhere</b> (the cell <b>under your cursor</b> is the anchor). Stage pieces in the margin, rotate/flip, then <b>drag them into the frame</b>. Click a placed piece to select → <kbd>R</kbd>/<kbd>F</kbd> rotate/flip · <kbd>↑↓←→</kbd> move · <kbd>Delete</kbd> remove · <kbd>Esc</kbd> deselect. &nbsp; Placed: <span class="count" id="count">'+Object.keys(instances||{}).length+'</span>'; }
+
+// ---------- ④ Reflect: the designer's written reflection, per level + overall; printed into the play report (v0.10) ----------
+let reflect=loadReflect();   // {1..4: text, all: text}
+function loadReflect(){ try{ return JSON.parse(localStorage.getItem('pb_reflect_v1')||'{}'); }catch(e){ return {}; } }
+function saveReflect(){ localStorage.setItem('pb_reflect_v1', JSON.stringify(reflect)); }
+const RQ_LEVEL='What did you predict this learner would do, and where did you expect them to get stuck? Did the play match? How did this task meet (or miss) its learner?';
+const RQ_ALL='Across the four levels: what did differentiating by DEPTH (the DOK level of the question) — rather than by difficulty — change about what your partner did? Which task worked best, which would you revise, and how?';
+function renderReflect(){ const root=document.getElementById('reflectpanel'); stashPlay(); saveActiveSlot(); let h='';
+ h+='<div class="sub" style="margin:0 0 4px">Your reflection goes into the play report PDF — one page per level, plus this overall reflection as the last page. Saved as you type.</div>';
+ const fin=[1,2,3,4].filter(l=>slots[l]&&slots[l].done);
+ if(!fin.length) h+='<div class="playempty">No finished levels yet. Build a task, click ✓ Finished on the ② Task &amp; DOK tab, have a partner play it, then reflect here.</div>';
+ for(const l of fin){ const sl=slots[l], pv=plays[l];
+  h+=`<div class="rf"><div class="rfhead"><span class="dokchip" style="background:${DOKCOL[l]}">DOK ${l}</span><b>${DOKNAME[l]}</b>`+((sl.learner||'').trim()?`<span class="forwho" style="margin:0">For the learner who ${escapeHtml(sl.learner.trim())}</span>`:'')+`</div>`;
+  h+=`<div class="rfprompt">${escapeHtml((sl.prompt||'').trim())||'<i>(no prompt)</i>'}</div>`;
+  if(pv){ const res = pv.stimulus? ('Shown as '+(SHOWNAME[pv.show]||'answer key')) : (pv.solved?'Frame fully tiled':`Frame not fully tiled (${pv.filled}/${pv.total})`);
+   h+=`<div class="rfplay"><b>Partner's play:</b> ${res} · ${pv.done?'marked done':'not marked done'} · ${pv.placements} placed · ${pv.removals} taken back`+((pv.notes||'').trim()?`<div class="a">${escapeHtml(pv.notes.trim())}</div>`:' · <i>no written answer</i>')+`</div>`; }
+  else h+=`<div class="rfplay"><i>Not played yet — a partner can play it on the ③ Play tab.</i></div>`;
+  h+=`<div class="rfq">${RQ_LEVEL}</div><textarea data-rf="${l}" placeholder="Your reflection on this level…">${escapeHtml(reflect[l]||'')}</textarea></div>`; }
+ h+=`<div class="rf all"><div class="rfhead"><b>Overall reflection</b></div><div class="rfq">${RQ_ALL}</div><textarea data-rf="all" placeholder="Across all four levels…">${escapeHtml(reflect.all||'')}</textarea></div>`;
+ h+=`<div class="outbar" style="margin-top:12px"><button class="btn" id="reflectReportBtn" title="One PDF: a page per level played (board, answer, moves, your reflection) and the overall reflection last. This is what you submit">⬇ Download play report (with reflections)</button> <span class="dhint">Levels played: ${[1,2,3,4].filter(l=>plays[l]).map(l=>'DOK '+l).join(', ')||'none yet'}</span></div>`;
+ root.innerHTML=h;
+ root.querySelectorAll('textarea[data-rf]').forEach(t=>{ t.oninput=()=>{ reflect[t.dataset.rf]=t.value; saveReflect(); }; });
+ const rb=document.getElementById('reflectReportBtn'); if(rb) rb.onclick=downloadPlayReport; }
+
+// ---------- hover tips: instant styled bubble for anything with a title (v0.9.6) ----------
+const tipEl=document.createElement('div'); tipEl.className='tip'; tipEl.style.display='none'; document.body.appendChild(tipEl);
+let tipFor=null;
+function showTip(t){ const txt=t.dataset.tip; if(!txt) return; tipFor=t; tipEl.innerHTML=txt; tipEl.style.display='block';
+ const r=t.getBoundingClientRect(), w=tipEl.offsetWidth, h=tipEl.offsetHeight;
+ let x=r.left+r.width/2-w/2, y=r.bottom+8; if(y+h>window.innerHeight-6) y=r.top-h-8;
+ tipEl.style.left=Math.max(6,Math.min(x,window.innerWidth-w-6))+'px'; tipEl.style.top=Math.max(6,y)+'px'; }
+function hideTip(){ tipEl.style.display='none'; tipFor=null; }
+document.addEventListener('mouseover',e=>{ const t=e.target.closest('[title],[data-tip]'); if(!t){ if(tipFor) hideTip(); return; }
+ if(t.hasAttribute('title')){ t.dataset.tip=t.getAttribute('title'); t.removeAttribute('title'); }   // suppress the native tip; ours shows instead
+ if(t!==tipFor) showTip(t); });
+document.addEventListener('mouseout',e=>{ const t=e.target.closest('[data-tip]'); if(t && !t.contains(e.relatedTarget)) hideTip(); });
+document.addEventListener('mousedown',hideTip); document.addEventListener('scroll',hideTip,true); window.addEventListener('blur',hideTip);
 
 // ---------- init ----------
 // ---------- ③ Play: a partner solves a finished level in-app; capture -> play report ----------
@@ -707,11 +926,11 @@ let play=null, playTimer=null, play_prevReveal=true, play_prevMode='1set', showT
 let plays=loadPlays();   // {1..4} -> a saved play per level (board + log + answer); persisted so all four go into ONE report
 function loadPlays(){ try{ return JSON.parse(localStorage.getItem('pb_plays_v1')||'{}'); }catch(e){ return {}; } }
 function savePlays(){ localStorage.setItem('pb_plays_v1', JSON.stringify(plays)); }
-function stashPlay(){ if(!play || (!play.events.length && !(play.notes||'').trim() && !play.done)) return; const st=playStats();   // untouched levels aren't 'in progress'   // snapshot the live play (called after every change, so a reload loses nothing)
- plays[play.level]={ level:play.level, cols:C, rows:R, frame:frame?[...frame]:null,
+function stashPlay(){ if(!play || (!play.events.length && !(play.notes||'').trim() && !play.done && !play.marked)) return; const st=playStats();   // untouched levels aren't 'in progress'   // snapshot the live play (called after every change, so a reload loses nothing)
+ plays[play.level]={ level:play.level, cols:C, rows:R, frame:frame?[...frame]:null, frames:frames.map(f=>[...f]), ink:ink.map(st=>({color:st.color,w:st.w,pts:st.pts.map(p=>[p[0],p[1]])})),
   pieces:Object.values(instances).map(i=>({label:i.label,color:i.color,cells:i.cells.map(c=>[c[0],c[1]]),given:!!i.given})),
   events:play.events, placements:play.placements, removals:play.removals, solved:play.solved, solveT:play.solveT,
-  notes:play.notes, done:play.done, doneT:play.doneT, elapsed:playElapsed(), timer:showTimer, filled:st.filled, total:st.total };
+  notes:play.notes, done:play.done, doneT:play.doneT, elapsed:playElapsed(), timer:showTimer, filled:st.filled, total:st.total, marked:!!play.marked, show:play.show, stimulus:!!play.stimulus };
  savePlays(); renderPlayStatus(); }
 function renderPlayStatus(){ const el=document.getElementById('playReportStat'); if(!el) return;
  const done=[1,2,3,4].filter(l=>plays[l]&&plays[l].done), started=[1,2,3,4].filter(l=>plays[l]&&!plays[l].done);
@@ -730,6 +949,8 @@ function playStats(){ let filled=0, overflow=0;
  const total=frame?frame.size:0;
  return {filled,total,overflow,pieces:Object.keys(instances).length, solved: !!frame && total>0 && filled===total && overflow===0}; }
 function playAfterChange(){ if(!play) return; const st=playStats();
+ if(play.stimulus){ document.getElementById('playProgress').innerHTML = `<span style="font-weight:400;color:#555">${play.noFrame?'No frame on this level — the pieces are shown.':'The pieces are shown.'} ${play.fixed?'They are fixed — '+(play.supply==='these'?'answer in words.':'add to them, or answer in words.'):'Move them'+(play.supply==='these'?'':', add more from the palette,')+' or just answer in words; <b>Restart</b> puts them back. Pinned pieces (dashed) stay put.'} <span style="color:#888">(To hide them for a tiling puzzle, untick “Pieces” on the ② Task tab.)</span></span>`;
+  document.getElementById('playSolved').textContent=''; stashPlay(); updateTimerText(); return; }
  document.getElementById('playProgress').innerHTML = `Filled: <b>${st.filled} / ${st.total}</b>`+(st.overflow?` · <span style="color:#c0392b">${st.overflow} outside frame</span>`:'');
  if(st.solved && !play.solved){ play.solved=true; play.solveT=playElapsed(); recordPlay('solved',''); stopPlayTimer(); }
  else if(!st.solved && play.solved){ play.solved=false; }
@@ -744,21 +965,30 @@ function stopPlayTimer(){ if(playTimer){ clearInterval(playTimer); playTimer=nul
 
 function loadPlayLevel(level, fresh){ const s=slots[level]; if(!s) return; stashPlay();   // keep whatever level we're leaving
  mode = s.mode || '1set';   // Play honors the supply mode the level was BUILT with (1-Set = distinct pieces)
- C=s.cols; R=s.rows; U=s.u||30; document.documentElement.style.setProperty('--u',U+'px');
+ C=s.cols; R=s.rows; U=baseU=s.u||30; document.documentElement.style.setProperty('--u',U+'px');
  document.getElementById('colsIn').value=C; document.getElementById('rowsIn').value=R;
- resetGrid(); buildBoard(); frame = s.frame? new Set(s.frame): null;
- for(const pc of (s.pieces||[])){ if(!pc.given) continue;   // pre-place given/reference pieces (e.g. the "original" to double); solution pieces stay hidden
-  const id=nextId++; instances[id]={label:pc.label,color:pc.color,cells:pc.cells.map(c=>[c[0],c[1]]),given:true};
-  pc.cells.forEach(([r,c])=>{ if(r>=0&&r<R&&c>=0&&c<C) grid[r][c]=id; }); }
+ resetGrid(); buildBoard(); setFrames(framesFrom(s)); ink=(s.ink||[]).map(st=>({color:st.color,w:st.w,pts:st.pts.map(p=>[p[0],p[1]])}));
+ const show=s.show||'key', noFrame=!s.frame, showAll = noFrame || showPieces(show);   // Play shows what the Task tab previews. Pieces unchecked = the solution is hidden. No frame = nothing to tile, so show all.
+ frameVis = showFrames(show);
  if(fresh) { delete plays[level]; savePlays(); }
  const sv=plays[level];
+ const fixedAll = showAll && (s.lock||'move')==='fixed';   // "Fixed": every shown author piece behaves like a pinned one
+ const isFixed = pc => !!pc.given || fixedAll;
+ for(const pc of (s.pieces||[])){ if(!isFixed(pc) && !(showAll && !sv)) continue;   // fixed/pinned pieces always come from the level; on a shown level the movable rest come too — unless we are resuming, in which case the saved play has their current positions
+  const id=nextId++; instances[id]={label:pc.label,color:pc.color,cells:pc.cells.map(c=>[c[0],c[1]]),given:isFixed(pc)};
+  pc.cells.forEach(([r,c])=>{ if(r>=0&&r<R&&c>=0&&c<C) grid[r][c]=id; }); }
+ if(mode==='1set'){ used=new Set(); for(const id in instances) if(!isSq(instances[id].label)) used.add(instances[id].label); }
  if(sv){   // resume this level's saved play: the player's pieces go back on the board, the log and answer carry on
+  if(sv.ink) ink=sv.ink.map(st=>({color:st.color,w:st.w,pts:st.pts.map(p=>[p[0],p[1]])}));   // the player's fills/ink (start from the level's)
   for(const pc of sv.pieces){ if(pc.given) continue; const id=nextId++; instances[id]={label:pc.label,color:pc.color,cells:pc.cells.map(c=>[c[0],c[1]])};
    pc.cells.forEach(([r,c])=>{ if(r>=0&&r<R&&c>=0&&c<C) grid[r][c]=id; }); }
-  if(mode==='1set'){ used=new Set(); for(const id in instances) used.add(instances[id].label); } }
- render(); renderPalette(); drawOverlay();
- play= sv? {level, startT:(sv.events.length? nowMs()-sv.elapsed : null), events:sv.events, placements:sv.placements, removals:sv.removals, solved:sv.solved, solveT:sv.solveT, notes:sv.notes||'', done:sv.done, doneT:sv.doneT}
+  if(mode==='1set'){ used=new Set(); for(const id in instances) if(!isSq(instances[id].label)) used.add(instances[id].label); } }
+ render(); renderPalette(); drawOverlay(); fitBoard();
+ play= sv? {level, startT:(sv.events.length? nowMs()-sv.elapsed : null), events:sv.events, placements:sv.placements, removals:sv.removals, solved:sv.solved, solveT:sv.solveT, notes:sv.notes||'', done:sv.done, doneT:sv.doneT, marked:!!sv.marked}
          : {level, startT:null, events:[], placements:0, removals:0, solved:false, solveT:null, notes:'', done:false, doneT:null};
+ play.show=show; play.stimulus=showAll; play.noFrame=noFrame; play.fixed=fixedAll; play.supply=s.supply||'palette';   // a shown level is a stimulus, not a tiling puzzle: no solve check
+ applyPlayUI();
+ render();   // again, now that play.stimulus is known (it decides whether the dashed "given" outlines are drawn)
  const pn=document.getElementById('playNotes'); if(pn) pn.value=play.notes;
  const db=document.getElementById('playDoneBtn'); if(db){ db.textContent= play.done? '✓ Marked done' : "✓ I'm done with this question"; db.classList.toggle('on',play.done); }
  const learner=(s.learner||'').trim();
@@ -774,16 +1004,20 @@ function enterPlay(){ saveActiveSlot(); play_prevMode=mode;   // mode is set per
    document.getElementById('playProgress').textContent=''; document.getElementById('playTimer').textContent=''; document.getElementById('playSolved').textContent=''; return; }
  for(const l of fin){ const o=document.createElement('option'); o.value=l; o.textContent='DOK '+l; sel.appendChild(o); }
  const start=(slots[dok]&&slots[dok].done)? String(dok) : String(fin[0]); sel.value=start; loadPlayLevel(start); }
-function exitPlay(){ stashPlay(); stopPlayTimer(); mode=play_prevMode; play=null;
- if(slots[dok]) restoreBoard(slots[dok]); else { resetGrid(); buildBoard(); frame=null; render(); } renderPalette(); }
+function applyPlayUI(){ const only = tab==='play' && play && play.supply==='these';   // "Only these pieces": no palette, no Square tool
+ paletteEl.style.display = only?'none':''; document.getElementById('supplyNote').style.display = only?'':'none';
+ const sq=document.querySelector('#dtSeg [data-tool=square]'); if(sq) sq.style.display = only?'none':'';
+ if(only && active){ active=null; renderPalette(); } }
+function exitPlay(){ stashPlay(); stopPlayTimer(); mode=play_prevMode; play=null; applyPlayUI();
+ if(slots[dok]) restoreBoard(slots[dok]); else { resetGrid(); buildBoard(); setFrames([]); ink=[]; render(); } renderPalette(); }
 
-function playBoardHTML(){ const snap={cols:C,rows:R,u:U,frame:frame?[...frame]:null, show:'key',
+function playBoardHTML(){ const snap={cols:C,rows:R,u:baseU,frame:frame?[...frame]:null, frames:frames.map(f=>[...f]), ink:ink, show:(play&&!showFrames(play.show))?'pieces':'key',
    pieces:Object.values(instances).map(i=>({label:i.label,cells:i.cells.map(c=>[c[0],c[1]]),color:i.color}))};
  const pr=printScope; printScope='frame'; const el=renderPuzzleBoard(snap); const s=el.outerHTML; printScope=pr; return s; }
 function playReportHTML(){ const s=slots[play.level]||{}; const st=playStats(); const notes=(play.notes||'').trim();
  const col0=showTimer?'Time':'Step';
  const rows=play.events.map((e,i)=>`<tr><td>${showTimer?fmtT(e.t):(i+1)}</td><td>${e.a}</td><td>${escapeHtml(e.p)}</td></tr>`).join('');
- const tileTxt=st.solved?'Frame fully tiled':`Frame not fully tiled (${st.filled}/${st.total} cells)`;
+ const tileTxt=play.stimulus?`Shown as ${SHOWNAME[play.show]||'answer key'}`:(st.solved?'Frame fully tiled':`Frame not fully tiled (${st.filled}/${st.total} cells)`);
  const doneTxt=play.done?'Student marked DONE':'not marked done';
  const timeTxt=showTimer?` · Time: ${fmtT(play.done&&play.doneT!=null?play.doneT:(play.solved?play.solveT:playElapsed()))}`:'';
  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Pentomino Play Report — DOK ${play.level}</title>
@@ -791,8 +1025,8 @@ function playReportHTML(){ const s=slots[play.level]||{}; const st=playStats(); 
 h1{font-size:20px;margin:0 0 4px}.sub{color:#6b7280;font-size:13px;margin:0 0 16px}
 .dokchip{display:inline-block;color:#fff;font-weight:800;font-size:12px;border-radius:20px;padding:2px 10px}
 .pprompt{font-size:16px;margin:8px 0}.forwho{font-style:italic;color:#555;font-size:13px}
-.pkgboard{display:grid;width:max-content;border:1px solid #cfd4da;background:#fff;margin:12px 0}
-.pkgboard div{box-shadow:inset 0 0 0 1px #e6e9ee}
+.pkgboard{display:grid;width:max-content;border:1px solid #cfd4da;background:#fff;margin:12px 0;position:relative}
+.pkgboard div{box-shadow:inset 0 0 0 1px #e6e9ee}.pkgink{position:absolute;left:0;top:0}
 table{border-collapse:collapse;font-size:12px;margin-top:6px}td,th{border:1px solid #d7dbe0;padding:2px 8px;text-align:left}
 .stats{font-size:14px}.answer{border:1px solid #cfd4da;border-radius:8px;padding:10px 12px;margin-top:12px;font-size:14px}
 .answer .a{white-space:pre-wrap;margin-top:4px}.note{border:1px solid #d7dbe0;border-radius:8px;padding:10px;margin-top:14px;font-size:13px}
@@ -806,7 +1040,7 @@ ${playBoardHTML()}
 <div class="answer"><b>Student's answer &amp; explanation</b><div class="a">${escapeHtml(notes)||'<i>(none written)</i>'}</div></div>
 <h3 style="margin:16px 0 4px;font-size:14px">Play log</h3>
 <table><thead><tr><th>${col0}</th><th>Action</th><th>Piece</th></tr></thead><tbody>${rows||`<tr><td colspan="3">(no moves — answered in words)</td></tr>`}</tbody></table>
-<div class="note"><b>Designer — compare to your anticipation.</b> What did you predict this learner would do, and where did you expect them to get stuck? Did the play match?<br><br>Designer: <span class="fill"></span> &nbsp; Player: <span class="fill"></span> &nbsp; Date: <span class="fill"></span></div>
+<div class="note"><b>Designer's reflection — compare to your anticipation.</b> ${RQ_LEVEL}<br><br>${escapeHtml(((reflect[play.level]||'')+'').trim())||'Designer: <span class="fill"></span> &nbsp; Player: <span class="fill"></span> &nbsp; Date: <span class="fill"></span>'}</div>
 </body></html>`; }
 function downloadFile(name,text,type){ const blob=new Blob([text],{type}); const url=URL.createObjectURL(blob);
  const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500); }
@@ -815,18 +1049,24 @@ function hexRGB(h){ h=(h||'#ffffff').replace('#',''); if(h.length===3) h=h.repla
 function playBoardPDF(doc, sv, x, y, maxW){   // crops to the frame (+ any given pieces), like the print packet's "frame" scope
  const fs=(sv.frame&&sv.frame.length)? new Set(sv.frame) : null; const inF=(r,c)=> !fs || fs.has(r+','+c);
  const occ={}; sv.pieces.forEach(i=>i.cells.forEach(([r,c])=> occ[r+','+c]=i.color));
+ const fm=frameIndexMap(framesFrom(sv)); const fo=(r,c)=> fm.has(r+','+c)? fm.get(r+','+c) : -1;
  let r0=0,c0=0,r1=sv.rows-1,c1=sv.cols-1; const pts=[]; if(fs) for(const k of fs) pts.push(k.split(',').map(Number));
  sv.pieces.forEach(i=>{ if(i.given) i.cells.forEach(rc=>pts.push(rc)); });
  if(pts.length){ r0=1e9;c0=1e9;r1=-1;c1=-1; for(const [r,c] of pts){ if(r<r0)r0=r; if(c<c0)c0=c; if(r>r1)r1=r; if(c>c1)c1=c; } }
  const W=c1-c0+1, H=r1-r0+1, u=Math.min(22, maxW/W);
  doc.setLineWidth(.4); doc.setDrawColor(230,233,238);
  for(let r=r0;r<=r1;r++) for(let c=c0;c<=c1;c++){ doc.setFillColor(...hexRGB(occ[r+','+c]||'#ffffff')); doc.rect(x+(c-c0)*u, y+(r-r0)*u, u, u, 'FD'); }
- doc.setDrawColor(51,51,68); doc.setLineWidth(1.8);   // frame outline: thick edge wherever the neighbour is outside the frame
- for(let r=r0;r<=r1;r++) for(let c=c0;c<=c1;c++){ if(!inF(r,c)) continue; const X=x+(c-c0)*u, Y=y+(r-r0)*u;
-  if(!inF(r-1,c)) doc.line(X,Y,X+u,Y); if(!inF(r+1,c)) doc.line(X,Y+u,X+u,Y+u); if(!inF(r,c-1)) doc.line(X,Y,X,Y+u); if(!inF(r,c+1)) doc.line(X+u,Y,X+u,Y+u); }
+ doc.setDrawColor(51,51,68); doc.setLineWidth(1.8);   // frame outline: thick edge wherever the neighbour is outside THIS frame
+ if(fs && showFrames(sv.show)) for(let r=r0;r<=r1;r++) for(let c=c0;c<=c1;c++){ if(!inF(r,c)) continue; const X=x+(c-c0)*u, Y=y+(r-r0)*u, fi=fo(r,c);
+  if(fo(r-1,c)!==fi) doc.line(X,Y,X+u,Y); if(fo(r+1,c)!==fi) doc.line(X,Y+u,X+u,Y+u); if(fo(r,c-1)!==fi) doc.line(X,Y,X,Y+u); if(fo(r,c+1)!==fi) doc.line(X+u,Y,X+u,Y+u); }
+ for(const st of (sv.ink||[])){ const [cr,cg,cb]=hexRGB(st.color); doc.setDrawColor(cr,cg,cb); doc.setLineWidth(Math.max(.8,st.w*u)); doc.setLineCap('round'); doc.setLineJoin('round');   // pen strokes
+  const P=st.pts.map(([px,py])=>[x+(px-c0)*u, y+(py-r0)*u]); if(P.length===1) P.push([P[0][0]+0.01,P[0][1]]);
+  for(let i=1;i<P.length;i++) doc.line(P[i-1][0],P[i-1][1],P[i][0],P[i][1]); }
  doc.setDrawColor(207,212,218); doc.setLineWidth(.6); doc.rect(x,y,W*u,H*u); return H*u; }
 function playReportPDF(levels){ const {jsPDF}=window.jspdf; const doc=new jsPDF({unit:'pt',format:'letter'});
- levels.forEach((lv,i)=>{ if(i) doc.addPage(); playReportPage(doc, plays[lv]); }); return doc; }
+ levels.forEach((lv,i)=>{ if(i) doc.addPage(); playReportPage(doc, plays[lv]); });
+ doc.addPage(); reflectionPage(doc);   // the overall reflection is always the last page (v0.10)
+ return doc; }
 function playReportPage(doc, sv){ const play=sv, s=slots[sv.level]||{}, showTimer=!!sv.timer;   // shadow the live names: everything below reads the snapshot
  const st={filled:sv.filled,total:sv.total,solved:sv.solved}; const notes=(sv.notes||'').trim(); const elapsed=sv.elapsed||0;
  const M=48, PW=612, PH=792, CW=PW-2*M; let y=M;
@@ -846,7 +1086,7 @@ function playReportPage(doc, sv){ const play=sv, s=slots[sv.level]||{}, showTime
  // board — measure first so it never splits across a page
  { let H=sv.rows; if(sv.frame&&sv.frame.length){ let r0=1e9,r1=-1; for(const k of sv.frame){ const r=+k.split(',')[0]; if(r<r0)r0=r; if(r>r1)r1=r; } H=r1-r0+1; }
    ensure(Math.min(22,CW/sv.cols)*H+12); y+=playBoardPDF(doc,sv,M,y,CW)+14; }
- const tileTxt=st.solved?'Frame fully tiled':`Frame not fully tiled (${st.filled}/${st.total} cells)`;
+ const tileTxt=sv.stimulus?`Shown as ${SHOWNAME[sv.show]||'answer key'}`:(st.solved?'Frame fully tiled':`Frame not fully tiled (${st.filled}/${st.total} cells)`);
  const doneTxt=play.done?'Student marked DONE':'not marked done';
  const timeTxt=showTimer?` · Time: ${fmtT(play.done&&play.doneT!=null?play.doneT:(play.solved?play.solveT:elapsed))}`:'';
  para(`Result: ${tileTxt} · ${doneTxt} · ${play.placements} placed · ${play.removals} taken back${timeTxt}`,10.5,'normal'); y+=8;
@@ -862,14 +1102,24 @@ function playReportPage(doc, sv){ const play=sv, s=slots[sv.level]||{}, showTime
      cells.forEach((t,i)=>{ if(head){ doc.setFillColor(243,244,246); doc.rect(x,y,cw[i],rh,'FD'); } else doc.rect(x,y,cw[i],rh,'S'); doc.text(String(t),x+5,y+10.5); x+=cw[i]; }); y+=rh; };
    row([col0,'Action','Piece'],true);
    if(!play.events.length) row(['—','(no moves — answered in words)','']); else play.events.forEach((e,i)=> row([showTimer?fmtT(e.t):(i+1), e.a, e.p])); y+=16; }
- // designer note
- { doc.setFont('helvetica','normal'); doc.setFontSize(10); const q='What did you predict this learner would do, and where did you expect them to get stuck? Did the play match?';
-   const lines=doc.splitTextToSize(q,CW-24); const h=20+lines.length*13.5+34; ensure(h);
+ // designer reflection — typed on the ④ Reflect tab (v0.10); the question prints either way, with blank lines if nothing was written
+ { doc.setFont('helvetica','normal'); doc.setFontSize(10); const q=RQ_LEVEL; const txt=((reflect[sv.level]||'')+'').trim();
+   const qlines=doc.splitTextToSize(q,CW-24); doc.setFontSize(10.5); const alines=txt? doc.splitTextToSize(txt,CW-24) : []; const lh=14;
+   const h=20+qlines.length*13.5+(txt? alines.length*lh+10 : 34); ensure(h);
    doc.setDrawColor(215,219,224); doc.setLineWidth(.8); doc.roundedRect(M,y,CW,h,6,6,'S');
-   doc.setFont('helvetica','bold'); ink(); doc.text('Designer — compare to your anticipation.',M+12,y+16);
-   doc.setFont('helvetica','normal'); let ty=y+30; for(const l of lines){ doc.text(l,M+12,ty); ty+=13.5; } ty+=14;
-   doc.setDrawColor(154,160,166); doc.setLineWidth(.6); let x=M+12; for(const lab of ['Designer:','Player:','Date:']){ doc.text(lab,x,ty); const w=doc.getTextWidth(lab)+4; doc.line(x+w,ty+2,x+w+110,ty+2); x+=w+126; } y+=h; }
+   doc.setFont('helvetica','bold'); doc.setFontSize(10); ink(); doc.text("Designer's reflection — compare to your anticipation.",M+12,y+16);
+   doc.setFont('helvetica','normal'); grey(); let ty=y+30; for(const l of qlines){ doc.text(l,M+12,ty); ty+=13.5; }
+   if(txt){ doc.setFontSize(10.5); ink(); ty+=4; for(const l of alines){ doc.text(l,M+12,ty); ty+=lh; } }
+   else { ty+=14; doc.setDrawColor(154,160,166); doc.setLineWidth(.6); let x=M+12; for(const lab of ['Designer:','Player:','Date:']){ ink(); doc.text(lab,x,ty); const w=doc.getTextWidth(lab)+4; doc.line(x+w,ty+2,x+w+110,ty+2); x+=w+126; } }
+   y+=h; }
  }
+function reflectionPage(doc){ const M=48, PW=612, PH=792, CW=PW-2*M; let y=M; const txt=((reflect.all||'')+'').trim();
+ const ink=()=>doc.setTextColor(31,41,55), grey=()=>doc.setTextColor(107,114,128);
+ doc.setFont('helvetica','bold'); doc.setFontSize(18); ink(); doc.text('Pentomino — Overall Reflection',M,y+16); y+=24;
+ doc.setFont('helvetica','normal'); doc.setFontSize(9); grey(); doc.text('Designer\'s reflection across all four DOK levels · Pentomino Builder',M,y+9); y+=22;
+ doc.setFontSize(10.5); grey(); for(const l of doc.splitTextToSize(RQ_ALL,CW)){ doc.text(l,M,y+10); y+=14; } y+=10;
+ doc.setFontSize(11); ink(); if(txt){ for(const l of doc.splitTextToSize(txt,CW)){ if(y+15>PH-M){ doc.addPage(); y=M; } doc.text(l,M,y+11); y+=15; } }
+ else { doc.setFont('helvetica','italic'); grey(); doc.text('(no overall reflection written — add one on the ④ Reflect tab)',M,y+11); } }
 function downloadPlayReport(){ stashPlay(); const levels=[1,2,3,4].filter(l=>plays[l]);   // one PDF, a page per played level, in DOK order
  if(!levels.length){ flash('Nothing played yet — pick a level and play it first.'); return; }
  const notDone=levels.filter(l=>!plays[l].done);
