@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 5 · Scoring board — TCE 318P</title>
+<!--
+  The projector view for Week 5 Day 1. Reads the four Google Forms' response sheets
+  directly (gviz CSV; the sheets are shared "anyone with the link") and shows ONE thing
+  at a time, big, for ONE campus: the gut-score spread, then each round's scores, then
+  all three side by side. Refreshes itself every 8 seconds. Nothing is written here —
+  students submit through the Forms linked on the outline.
+
+  Campus comes from ?campus=oxford or ?campus=hamilton (buttons in the header otherwise).
+  ?demo=1 fills the board with made-up numbers so the layout can be checked.
+-->
+<style>
+ :root{--accent:#7A3B10;--ink:#1f2937;--mut:#6b7280;--line:#e5e7eb;--band:#f3eefb;}
+ *{box-sizing:border-box;}
+ body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;padding:18px 28px 40px;color:var(--ink);background:#fff;}
+ header{display:flex;align-items:center;gap:18px;flex-wrap:wrap;border-bottom:3px solid var(--accent);padding-bottom:10px;margin-bottom:18px;}
+ header h1{font-size:26px;margin:0;flex:1;}
+ header h1 small{font-weight:400;color:var(--mut);font-size:16px;margin-left:10px;}
+ .seg{display:flex;gap:6px;}
+ .seg button{font:600 18px/1 system-ui,sans-serif;padding:10px 16px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink);}
+ .seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff;}
+ .views{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;}
+ .views button{font:700 19px/1 system-ui,sans-serif;padding:11px 18px;border:2px solid var(--line);background:#fff;border-radius:10px;cursor:pointer;color:var(--ink);}
+ .views button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff;}
+ h2{font-size:30px;margin:4px 0 10px;}
+ h2 small{font-size:20px;color:var(--mut);font-weight:400;margin-left:12px;}
+ .empty{font-size:30px;color:var(--mut);padding:40px 0;}
+ .status{position:fixed;right:16px;bottom:10px;font-size:13px;color:var(--mut);}
+ /* one round */
+ table.round{border-collapse:collapse;width:100%;}
+ table.round td{border-bottom:2px solid var(--line);padding:8px 10px;vertical-align:middle;}
+ table.round td.s{font-size:28px;font-weight:700;width:6em;white-space:nowrap;}
+ table.round td.avg{font-size:26px;color:var(--mut);width:7em;text-align:right;white-space:nowrap;}
+ .chips{display:flex;flex-wrap:wrap;gap:7px;}
+ .chip{font-size:24px;line-height:1;padding:8px 11px;border-radius:10px;background:var(--band);border:2px solid #d9cdf0;white-space:nowrap;}
+ .chip b{font-weight:800;}
+ .chip small{font-size:14px;color:var(--mut);display:block;margin-top:4px;}
+ /* gut */
+ table.gut{border-collapse:collapse;}
+ table.gut td{padding:10px 14px;font-size:34px;vertical-align:middle;}
+ table.gut td.n{font-weight:800;width:2em;text-align:right;}
+ table.gut td.bar div{height:44px;background:var(--accent);border-radius:6px;min-width:4px;}
+ table.gut td.c{color:var(--mut);font-size:28px;width:2.5em;}
+ /* all three */
+ table.all{border-collapse:collapse;width:100%;table-layout:fixed;}
+ table.all th{font-size:22px;text-align:left;padding:8px 10px;border-bottom:3px solid var(--accent);}
+ table.all th:first-child{width:7em;}
+ table.all td{border-bottom:2px solid var(--line);padding:12px 10px;vertical-align:top;font-size:24px;}
+ table.all td.s{font-weight:700;font-size:26px;}
+ table.all .m{display:block;color:var(--mut);font-size:20px;margin-top:6px;}
+ /* rubric 3 breakdown */
+ table.sub{border-collapse:collapse;margin-top:12px;}
+ table.sub th,table.sub td{font-size:20px;padding:5px 16px;text-align:right;border-bottom:1px solid var(--line);}
+ table.sub th{color:var(--mut);font-weight:600;}
+ table.sub td:first-child,table.sub th:first-child{text-align:left;font-weight:700;}
+</style>
+</head>
+<body>
+<header>
+ <h1>Week 5 · Scoring board <small id="campusLabel"></small></h1>
+ <div class="seg" id="campusSeg">
+  <button data-campus="Oxford">Oxford</button>
+  <button data-campus="Hamilton">Hamilton</button>
+ </div>
+</header>
+
+<div class="views" id="views">
+ <button data-view="gut">Gut score</button>
+ <button data-view="r1">Round 1 · NAEP</button>
+ <button data-view="r2">Round 2 · Maryland</button>
+ <button data-view="r3">Round 3 · Charles, Lester &amp; O'Daffer</button>
+ <button data-view="all">All three</button>
+</div>
+
+<main id="main"><div class="empty">Choose a campus.</div></main>
+<div class="status" id="status"></div>
+
+<script>
+(function(){
+ // The four response sheets. Column positions are what the Forms produce; do not reorder questions.
+ const SHEETS = {
+   r1:  '1NSFKsTQbjHVebR7KcwStlYKC4IIxYIfbPxzIG2-yFXg',   // campus 1 · group 2 · S1–S4 3–6 (level words)
+   r2:  '1VgeNZ7BwPXV9PuHbW19IFbxMmGSKOEvwQoAu-egiYqQ',   // campus 1 · group 2 · S1–S4 3–6 (0–4)
+   r3:  '1I4Mi-Leti0gZ-7IlfcfApbdSIuOhPQ7cJ96vybx9szY',   // campus 1 · group 2 · S1 U,P,A 3–5 · S2 6–8 · S3 9–11 · S4 12–14
+   gut: '1iZ_osNB_l5Au0tMXTMS1iyMDbI26i9soDNGEKiRAGQc',   // campus 1 · score 2
+ };
+ const url = id => `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&headers=1&_=${Date.now()}`;
+ const q = new URLSearchParams(location.search);
+ let campus = ({oxford:'Oxford',hamilton:'Hamilton'})[(q.get('campus')||'').toLowerCase()] || null;
+ let view = q.get('view') || 'gut';
+ let data = {r1:[],r2:[],r3:[],gut:[]};
+ const main = document.getElementById('main');
+
+ function parseCSV(text){
+   const rows=[]; let row=[], cell='', inq=false;
+   for (let i=0;i<text.length;i++){
+     const c=text[i];
+     if (inq){ if (c==='"'){ if (text[i+1]==='"'){cell+='"';i++;} else inq=false; } else cell+=c; }
+     else if (c==='"') inq=true;
+     else if (c===','){ row.push(cell); cell=''; }
+     else if (c==='\n'){ row.push(cell); rows.push(row); row=[]; cell=''; }
+     else if (c!=='\r') cell+=c;
+   }
+   if (cell!==''||row.length){ row.push(cell); rows.push(row); }
+   return rows.slice(1).filter(r=>r.some(x=>x!==''));
+ }
+ const G = s => (s||'').replace(/^Group\s*/,'G');
+ const gnum = s => parseInt((s||'').replace(/\D/g,''),10)||0;
+ const mine = rows => rows.filter(r=>r[1]===campus).sort((a,b)=>gnum(a[2])-gnum(b[2]));
+ const mean = xs => xs.length ? (xs.reduce((a,b)=>a+b,0)/xs.length) : null;
+ const fmt = x => x==null ? '' : (Math.round(x*10)/10).toString();
+ const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+ function chips(items){ // items: [{g, v, sub}]
+   if (!items.length) return '<span class="empty" style="font-size:24px;padding:0">— waiting for groups —</span>';
+   return '<div class="chips">'+items.map(it=>`<span class="chip">${esc(it.g)} <b>${esc(it.v)}</b>${it.sub?`<small>${esc(it.sub)}</small>`:''}</span>`).join('')+'</div>';
+ }
+
+ function viewGut(){
+   const rows=mine(data.gut); const counts=[0,0,0,0,0];
+   rows.forEach(r=>{const v=parseInt(r[2],10); if(v>=0&&v<=4) counts[v]++;});
+   const max=Math.max(1,...counts), total=rows.length;
+   let h=`<h2>Gut score for Sample 2 <small>${total} answer${total===1?'':'s'}</small></h2>`;
+   if (!total) return h+'<div class="empty">— waiting for the poll —</div>';
+   h+='<table class="gut">'+[0,1,2,3,4].map(s=>`<tr><td class="n">${s}</td><td class="bar" style="width:60vw"><div style="width:${counts[s]/max*100}%"></div></td><td class="c">${counts[s]||''}</td></tr>`).join('')+'</table>';
+   return h;
+ }
+
+ function viewRound(k){
+   const rows=mine(data[k]);
+   const title={r1:'Round 1 · NAEP scoring guide',r2:'Round 2 · Maryland (0–4)',r3:'Round 3 · Charles, Lester &amp; O\'Daffer (0–15)'}[k];
+   let h=`<h2>${title} <small>${rows.length} group${rows.length===1?'':'s'} in</small></h2><table class="round">`;
+   for (let s=0;s<4;s++){
+     let items=[], nums=[];
+     rows.forEach(r=>{
+       if (k==='r3'){ const u=+r[3+3*s], p=+r[4+3*s], a=+r[5+3*s]; const t=u+p+a; nums.push(t); items.push({g:G(r[2]), v:t, sub:`${u} · ${p} · ${a}`}); }
+       else if (k==='r2'){ const v=+r[3+s]; nums.push(v); items.push({g:G(r[2]), v}); }
+       else { items.push({g:G(r[2]), v:(r[3+s]||'').slice(0,3)}); }
+     });
+     let avg='';
+     if (k==='r1' && items.length){ const c={}; items.forEach(i=>c[i.v]=(c[i.v]||0)+1); const top=Object.entries(c).sort((a,b)=>b[1]-a[1])[0]; avg=`most: ${esc(top[0])}`; }
+     else if (nums.length) avg=`avg ${fmt(mean(nums))}`;
+     h+=`<tr><td class="s">Sample ${s+1}</td><td>${chips(items)}</td><td class="avg">${avg}</td></tr>`;
+   }
+   h+='</table>';
+   if (k==='r3' && rows.length){
+     h+='<table class="sub"><tr><th>Where the points go</th><th>Understanding /6</th><th>Planning /6</th><th>Answer /3</th></tr>';
+     for (let s=0;s<4;s++){
+       const col=j=>fmt(mean(rows.map(r=>+r[3+3*s+j])));
+       h+=`<tr><td>Sample ${s+1}</td><td>${col(0)}</td><td>${col(1)}</td><td>${col(2)}</td></tr>`;
+     }
+     h+='</table>';
+   }
+   return h;
+ }
+
+ function viewAll(){
+   const r1=mine(data.r1), r2=mine(data.r2), r3=mine(data.r3);
+   let h='<h2>Same work, three lenses</h2><table class="all"><tr><th></th><th>Rubric 1 · NAEP</th><th>Rubric 2 · Maryland (0–4)</th><th>Rubric 3 · Charles, Lester &amp; O\'Daffer (0–15)</th></tr>';
+   for (let s=0;s<4;s++){
+     const a=r1.map(r=>r[3+s].slice(0,3)).join(' · ')||'—';
+     const bn=r2.map(r=>+r[3+s]); const b=bn.join(' · ')||'—';
+     const cn=r3.map(r=>(+r[3+3*s])+(+r[4+3*s])+(+r[5+3*s])); const c=cn.join(' · ')||'—';
+     h+=`<tr><td class="s">Sample ${s+1}</td><td>${esc(a)}</td><td>${esc(b)}${bn.length?`<span class="m">avg ${fmt(mean(bn))}</span>`:''}</td><td>${esc(c)}${cn.length?`<span class="m">avg ${fmt(mean(cn))}</span>`:''}</td></tr>`;
+   }
+   return h+'</table>';
+ }
+
+ function render(){
+   document.getElementById('campusLabel').textContent = campus ? campus : '';
+   document.querySelectorAll('#campusSeg button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.campus===campus));
+   document.querySelectorAll('#views button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.view===view));
+   if (!campus){ main.innerHTML='<div class="empty">Choose a campus.</div>'; return; }
+   main.innerHTML = view==='gut' ? viewGut() : view==='all' ? viewAll() : viewRound(view);
+ }
+
+ async function load(){
+   if (q.get('demo')){ demo(); render(); return; }
+   try {
+     const got = await Promise.all(Object.entries(SHEETS).map(async ([k,id])=>{
+       const t = await (await fetch(url(id),{cache:'no-store'})).text(); return [k, parseCSV(t)];
+     }));
+     got.forEach(([k,rows])=>data[k]=rows);
+     document.getElementById('status').textContent = 'updated ' + new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit',second:'2-digit'});
+   } catch(e){ document.getElementById('status').textContent = 'could not reach the sheets — ' + e.message; }
+   render();
+ }
+
+ function demo(){ // made-up numbers, layout check only
+   const lv=['Extended','Satisfactory','Partial','Minimal'];
+   const pick=a=>a[Math.floor(Math.random()*a.length)];
+   const mk=n=>Array.from({length:n},(_,i)=>i+1);
+   data.gut = mk(28).map(()=>['', campus, String(pick([1,2,2,3,3,3,4,4]))]);
+   data.r1  = mk(7).map(g=>['', campus, 'Group '+g, pick(lv.slice(0,2)), pick(lv.slice(0,2)), pick(lv.slice(1,3)), pick(lv.slice(1,3))]);
+   data.r2  = mk(7).map(g=>['', campus, 'Group '+g, String(pick([3,4])), String(pick([3,4])), String(pick([1,2])), String(pick([0,1]))]);
+   data.r3  = mk(7).map(g=>['', campus, 'Group '+g, ...[[6,6,3],[6,6,3],[6,3,3],[3,3,3]].flatMap(([u,p,a])=>[String(pick([u,u,3])),String(pick([p,3])),String(a)])]);
+ }
+
+ document.getElementById('campusSeg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; campus=b.dataset.campus; history.replaceState(null,'',`?campus=${campus.toLowerCase()}&view=${view}${q.get('demo')?'&demo=1':''}`); load(); });
+ document.getElementById('views').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; view=b.dataset.view; history.replaceState(null,'',`?campus=${(campus||'').toLowerCase()}&view=${view}${q.get('demo')?'&demo=1':''}`); render(); });
+
+ load();
+ if (!q.get('demo')) setInterval(load, 8000);
+})();
+</script>
+</body>
+</html>
