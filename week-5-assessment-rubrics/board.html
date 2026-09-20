@@ -40,6 +40,7 @@
  .chip{font-size:24px;line-height:1;padding:8px 11px;border-radius:10px;background:var(--band);border:2px solid #d9cdf0;white-space:nowrap;}
  .chip b{font-weight:800;}
  .chip small{font-size:14px;color:var(--mut);display:block;margin-top:4px;}
+ .words .chip{font-size:21px;padding:7px 10px;}
  /* gut */
  table.gut{border-collapse:collapse;}
  table.gut td{padding:10px 14px;font-size:34px;vertical-align:middle;}
@@ -50,7 +51,7 @@
  table.all{border-collapse:collapse;width:100%;table-layout:fixed;}
  table.all th{font-size:22px;text-align:left;padding:8px 10px;border-bottom:3px solid var(--accent);}
  table.all th:first-child{width:7em;}
- table.all td{border-bottom:2px solid var(--line);padding:12px 10px;vertical-align:top;font-size:24px;}
+ table.all td{border-bottom:2px solid var(--line);padding:12px 10px;vertical-align:top;font-size:22px;}
  table.all td.s{font-weight:700;font-size:26px;}
  table.all .m{display:block;color:var(--mut);font-size:20px;margin-top:6px;}
  /* rubric 3 breakdown */
@@ -134,13 +135,13 @@
  function viewRound(k){
    const rows=mine(data[k]);
    const title={r1:'Round 1 · NAEP scoring guide',r2:'Round 2 · Maryland (0–4)',r3:'Round 3 · Charles, Lester &amp; O\'Daffer (0–15)'}[k];
-   let h=`<h2>${title} <small>${rows.length} group${rows.length===1?'':'s'} in</small></h2><table class="round">`;
+   let h=`<h2>${title} <small>${rows.length} group${rows.length===1?'':'s'} in</small></h2><table class="round${k==='r1'?' words':''}">`;
    for (let s=0;s<4;s++){
      let items=[], nums=[];
      rows.forEach(r=>{
        if (k==='r3'){ const u=+r[3+3*s], p=+r[4+3*s], a=+r[5+3*s]; const t=u+p+a; nums.push(t); items.push({g:G(r[2]), v:t, sub:`${u} · ${p} · ${a}`}); }
        else if (k==='r2'){ const v=+r[3+s]; nums.push(v); items.push({g:G(r[2]), v}); }
-       else { items.push({g:G(r[2]), v:(r[3+s]||'').slice(0,3)}); }
+       else { items.push({g:G(r[2]), v:r[3+s]}); }
      });
      let avg='';
      if (k==='r1' && items.length){ const c={}; items.forEach(i=>c[i.v]=(c[i.v]||0)+1); const top=Object.entries(c).sort((a,b)=>b[1]-a[1])[0]; avg=`most: ${esc(top[0])}`; }
@@ -163,7 +164,7 @@
    const r1=mine(data.r1), r2=mine(data.r2), r3=mine(data.r3);
    let h='<h2>Same work, three lenses</h2><table class="all"><tr><th></th><th>Rubric 1 · NAEP</th><th>Rubric 2 · Maryland (0–4)</th><th>Rubric 3 · Charles, Lester &amp; O\'Daffer (0–15)</th></tr>';
    for (let s=0;s<4;s++){
-     const a=r1.map(r=>r[3+s].slice(0,3)).join(' · ')||'—';
+     const a=r1.map(r=>r[3+s]).join(' · ')||'—';
      const bn=r2.map(r=>+r[3+s]); const b=bn.join(' · ')||'—';
      const cn=r3.map(r=>(+r[3+3*s])+(+r[4+3*s])+(+r[5+3*s])); const c=cn.join(' · ')||'—';
      h+=`<tr><td class="s">Sample ${s+1}</td><td>${esc(a)}</td><td>${esc(b)}${bn.length?`<span class="m">avg ${fmt(mean(bn))}</span>`:''}</td><td>${esc(c)}${cn.length?`<span class="m">avg ${fmt(mean(cn))}</span>`:''}</td></tr>`;
