@@ -54,6 +54,7 @@
  table.all td{border-bottom:2px solid var(--line);padding:12px 10px;vertical-align:top;font-size:22px;}
  table.all td.s{font-weight:700;font-size:26px;}
  table.all .m{display:block;color:var(--mut);font-size:20px;margin-top:6px;}
+ .note{font-size:17px;color:var(--mut);margin:14px 0 0;}
  /* rubric 3 breakdown */
  table.sub{border-collapse:collapse;margin-top:12px;}
  table.sub th,table.sub td{font-size:20px;padding:5px 16px;text-align:right;border-bottom:1px solid var(--line);}
@@ -112,7 +113,8 @@
  }
  const G = s => (s||'').replace(/^Group\s*/,'G');
  const gnum = s => parseInt((s||'').replace(/\D/g,''),10)||0;
- const mine = rows => rows.filter(r=>r[1]===campus).sort((a,b)=>gnum(a[2])-gnum(b[2]));
+ const complete = r => r.slice(2).every(x=>x!=='');   // every answer cell filled
+ const mine = rows => rows.filter(r=>r[1]===campus && complete(r)).sort((a,b)=>gnum(a[2])-gnum(b[2]));
  const mean = xs => xs.length ? (xs.reduce((a,b)=>a+b,0)/xs.length) : null;
  const fmt = x => x==null ? '' : (Math.round(x*10)/10).toString();
  const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -160,16 +162,20 @@
    return h;
  }
 
+ const LEVEL = {Extended:100, Satisfactory:75, Partial:50, Minimal:25, Incorrect:0};
  function viewAll(){
    const r1=mine(data.r1), r2=mine(data.r2), r3=mine(data.r3);
-   let h='<h2>Same work, three lenses</h2><table class="all"><tr><th></th><th>Rubric 1 · NAEP</th><th>Rubric 2 · Maryland (0–4)</th><th>Rubric 3 · Charles, Lester &amp; O\'Daffer (0–15)</th></tr>';
+   const pct = xs => xs.map(x=>Math.round(x)+'%').join(' · ')||'—';
+   const avgp = xs => xs.length?`<span class="m">avg ${Math.round(mean(xs))}%</span>`:'';
+   let h='<h2>Same work, three lenses <small>percent of each rubric\'s maximum</small></h2><table class="all"><tr><th></th><th>Rubric 1 · NAEP</th><th>Rubric 2 · Maryland</th><th>Rubric 3 · Charles, Lester &amp; O\'Daffer</th></tr>';
    for (let s=0;s<4;s++){
-     const a=r1.map(r=>r[3+s]).join(' · ')||'—';
-     const bn=r2.map(r=>+r[3+s]); const b=bn.join(' · ')||'—';
-     const cn=r3.map(r=>(+r[3+3*s])+(+r[4+3*s])+(+r[5+3*s])); const c=cn.join(' · ')||'—';
-     h+=`<tr><td class="s">Sample ${s+1}</td><td>${esc(a)}</td><td>${esc(b)}${bn.length?`<span class="m">avg ${fmt(mean(bn))}</span>`:''}</td><td>${esc(c)}${cn.length?`<span class="m">avg ${fmt(mean(cn))}</span>`:''}</td></tr>`;
+     const a=r1.map(r=>LEVEL[r[3+s]]).filter(x=>x!=null);
+     const b=r2.map(r=>(+r[3+s])/4*100);
+     const c=r3.map(r=>((+r[3+3*s])+(+r[4+3*s])+(+r[5+3*s]))/15*100);
+     h+=`<tr><td class="s">Sample ${s+1}</td><td>${pct(a)}${avgp(a)}</td><td>${pct(b)}${avgp(b)}</td><td>${pct(c)}${avgp(c)}</td></tr>`;
    }
-   return h+'</table>';
+   h+='</table><p class="note">NAEP\'s five levels are spaced evenly: Extended 100 · Satisfactory 75 · Partial 50 · Minimal 25 · Incorrect 0. Maryland is out of 4; Charles, Lester &amp; O\'Daffer out of 15.</p>';
+   return h;
  }
 
  function render(){
