@@ -143,7 +143,7 @@
      rows.forEach(r=>{
        if (k==='r3'){ const u=+r[3+3*s], p=+r[4+3*s], a=+r[5+3*s]; const t=u+p+a; nums.push(t); items.push({g:G(r[2]), v:t, sub:`${u} · ${p} · ${a}`}); }
        else if (k==='r2'){ const v=+r[3+s]; nums.push(v); items.push({g:G(r[2]), v}); }
-       else { items.push({g:G(r[2]), v:r[3+s]}); }
+       else { items.push({g:G(r[2]), v:r[3+s], sub: LEVEL[r[3+s]]!=null ? String(LEVEL[r[3+s]]/25) : ''}); }
      });
      let avg='';
      if (k==='r1' && items.length){ const c={}; items.forEach(i=>c[i.v]=(c[i.v]||0)+1); const top=Object.entries(c).sort((a,b)=>b[1]-a[1])[0]; avg=`most: ${esc(top[0])}`; }
@@ -174,7 +174,7 @@
      const c=r3.map(r=>((+r[3+3*s])+(+r[4+3*s])+(+r[5+3*s]))/15*100);
      h+=`<tr><td class="s">Sample ${s+1}</td><td>${pct(a)}${avgp(a)}</td><td>${pct(b)}${avgp(b)}</td><td>${pct(c)}${avgp(c)}</td></tr>`;
    }
-   h+='</table><p class="note">NAEP\'s five levels are spaced evenly: Extended 100 · Satisfactory 75 · Partial 50 · Minimal 25 · Incorrect 0. Maryland is out of 4; Charles, Lester &amp; O\'Daffer out of 15.</p>';
+   h+='</table><p class="note">NAEP\'s levels numbered as on the sheet — Extended 4 · Satisfactory 3 · Partial 2 · Minimal 1 · Incorrect 0 — so Rubrics 1 and 2 are both out of 4; Charles, Lester &amp; O\'Daffer is out of 15.</p>';
    return h;
  }
 
