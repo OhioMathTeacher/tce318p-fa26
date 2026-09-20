@@ -55,6 +55,15 @@
  table.all td.s{font-weight:700;font-size:26px;}
  table.all .m{display:block;color:var(--mut);font-size:20px;margin-top:6px;}
  .note{font-size:17px;color:var(--mut);margin:14px 0 0;}
+ .s2{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+ .s2 h3{font-size:22px;margin:0 0 8px;}
+ .s2 h3 small{display:block;font-size:15px;color:var(--mut);font-weight:400;}
+ .s2 table{border-collapse:collapse;width:100%;}
+ .s2 td{padding:5px 6px;font-size:22px;vertical-align:middle;}
+ .s2 td.n{font-weight:800;width:5.5em;white-space:nowrap;text-align:right;}
+ .s2 td.bar div{height:30px;background:var(--accent);border-radius:5px;min-width:3px;}
+ .s2 td.c{color:var(--mut);width:2em;}
+ .s2 .avg{color:var(--mut);font-size:19px;margin-top:6px;}
  /* rubric 3 breakdown */
  table.sub{border-collapse:collapse;margin-top:12px;}
  table.sub th,table.sub td{font-size:20px;padding:5px 16px;text-align:right;border-bottom:1px solid var(--line);}
@@ -77,6 +86,7 @@
  <button data-view="r2">Round 2 · Maryland</button>
  <button data-view="r3">Round 3 · Charles, Lester &amp; O'Daffer</button>
  <button data-view="all">All three</button>
+ <button data-view="s2">Sample 2 · gut vs. lenses</button>
 </div>
 
 <main id="main"><div class="empty">Choose a campus.</div></main>
@@ -178,12 +188,35 @@
    return h;
  }
 
+ function bars(labels, counts){  // labels top-to-bottom, counts aligned
+   const max=Math.max(1,...counts);
+   return '<table>'+labels.map((l,i)=>`<tr><td class="n">${esc(l)}</td><td class="bar"><div style="width:${counts[i]/max*100}%"></div></td><td class="c">${counts[i]||''}</td></tr>`).join('')+'</table>';
+ }
+ function viewS2(){
+   const gut=mine(data.gut), r1=mine(data.r1), r2=mine(data.r2), r3=mine(data.r3);
+   const cnt=(vals,keys)=>keys.map(k=>vals.filter(v=>String(v)===String(k)).length);
+   const gv=gut.map(r=>+r[2]); const gc=cnt(gv,[4,3,2,1,0]);
+   const lv=['Extended','Satisfactory','Partial','Minimal','Incorrect']; const c1=cnt(r1.map(r=>r[4]),lv);
+   const v2=r2.map(r=>+r[4]); const c2=cnt(v2,[4,3,2,1,0]);
+   const v3=r3.map(r=>(+r[6])+(+r[7])+(+r[8]));
+   const bins=[['15–13',15,13],['12–10',12,10],['9–7',9,7],['6–4',6,4],['3–0',3,0]];
+   const c3=bins.map(([l,hi,lo])=>v3.filter(x=>x<=hi&&x>=lo).length);
+   const pct=(xs,max)=>xs.length?`avg ${Math.round(mean(xs)/max*100)}% of maximum`:'';
+   const p1=r1.map(r=>LEVEL[r[4]]).filter(x=>x!=null);
+   let h='<h2>Sample 2 <small>gut, then each lens</small></h2><div class="s2">';
+   h+=`<div><h3>Gut score<small>${gut.length} people · 0–4</small></h3>${bars(['4','3','2','1','0'],gc)}<div class="avg">${gv.length?`avg ${Math.round(mean(gv)/4*100)}% of maximum`:''}</div></div>`;
+   h+=`<div><h3>Rubric 1 · NAEP<small>${r1.length} groups</small></h3>${bars(lv,c1)}<div class="avg">${p1.length?`avg ${Math.round(mean(p1))}% of maximum`:''}</div></div>`;
+   h+=`<div><h3>Rubric 2 · Maryland<small>${r2.length} groups · 0–4</small></h3>${bars(['4','3','2','1','0'],c2)}<div class="avg">${pct(v2,4)}</div></div>`;
+   h+=`<div><h3>Rubric 3 · Charles et al.<small>${r3.length} groups · 0–15</small></h3>${bars(bins.map(b=>b[0]),c3)}<div class="avg">${pct(v3,15)}</div></div>`;
+   return h+'</div>';
+ }
+
  function render(){
    document.getElementById('campusLabel').textContent = campus ? campus : '';
    document.querySelectorAll('#campusSeg button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.campus===campus));
    document.querySelectorAll('#views button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.view===view));
    if (!campus){ main.innerHTML='<div class="empty">Choose a campus.</div>'; return; }
-   main.innerHTML = view==='gut' ? viewGut() : view==='all' ? viewAll() : viewRound(view);
+   main.innerHTML = view==='gut' ? viewGut() : view==='all' ? viewAll() : view==='s2' ? viewS2() : viewRound(view);
  }
 
  async function load(){
