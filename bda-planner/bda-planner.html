@@ -21,8 +21,18 @@
   body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--ground);color:var(--ink);line-height:1.5;font-size:15px}
   .wrap{max-width:none;margin:0;padding:16px 28px 70px}
   .wrap.narrow{max-width:900px;margin:0 auto}
-  h1{font-size:26px;margin:0;color:var(--outline);letter-spacing:.3px}
+  h1{font-size:26px;margin:0;color:var(--outline);letter-spacing:.3px;display:flex;align-items:baseline;line-height:1.1}
+  h1 a{color:inherit;text-decoration:none}
+  h1 a:hover{text-decoration:underline}
   h1 small{font-weight:600;color:var(--muted);font-size:14px;margin-left:8px}
+  .gear{position:relative}
+  .gear button.ghost{padding:8px 11px}
+  .gearMenu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 28px #0002;min-width:260px;padding:6px;display:none;z-index:45}
+  .gearMenu.open{display:block}
+  .gearMenu button{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;font-size:14px;padding:9px 12px;border-radius:8px;cursor:pointer;color:var(--ink)}
+  .gearMenu button:hover{background:#eef4fc}
+  .gearMenu .sep{border-top:1px solid var(--line);margin:6px 4px}
+  .gearMenu .hd{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:6px 12px 2px}
   .hdrbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
   .proto{font-size:12px;color:#6b4a08;background:var(--gold-soft);border:1px solid #e7d3a1;border-radius:8px;padding:6px 10px;margin:10px 0 6px}
   /* phase strip (nVoke) */
@@ -424,13 +434,24 @@
 <body>
 <div class="wrap">
   <div class="hdrbar">
-    <h1>BDA Planner <small>plan it · hand it over · teach it</small></h1>
+    <h1><a href="https://github.com/OhioMathTeacher/tce318p-fa26/tree/main/bda-planner" target="_blank" rel="noopener" title="The app's source on GitHub">BDA Planner</a> <small>plan it · hand it over · teach it</small></h1>
     <span class="toolbar" style="margin-left:18px"><label for="tbNames" style="font-weight:600;font-size:14px">Name(s)</label><input type="text" id="tbNames" placeholder="you — or your whole team"><label for="tbSection" style="font-weight:600;font-size:14px">Section</label><select id="tbSection"><option value="">…</option><option value="oxford">Oxford</option><option value="hamilton">Hamilton</option></select><span class="i" tabindex="0">i<span class="pop">One plan per team; one planning record per person. Put every teammate's name here. Your section decides which day's class this is for.</span></span></span>
     <span style="flex:1"></span>
     <span class="note small" id="saveNote">Autosaves in this browser</span>
     <button class="ghost" id="saveProj" title="Download your project as a file — how it travels to another computer or a teammate">⬇ Save</button>
     <label class="ghost" for="loadProj" style="cursor:pointer" title="Open a saved project file">⬆ Load<input type="file" id="loadProj" accept=".json" hidden></label>
-    <button class="ghost" id="resetProj" title="Start over with an empty project">↺</button>
+    <span class="gear"><button class="ghost" id="gearBtn" title="Options">⚙</button>
+      <div class="gearMenu" id="gearMenu">
+        <div class="hd">Examples</div>
+        <button data-gear="ex1">Load the example — EngageNY grade 2, make a ten</button>
+        <button data-gear="ex2">Load the other example — fractions of a set, grade 4</button>
+        <div class="sep"></div>
+        <div class="hd">Planning partner</div>
+        <button data-gear="passcode">Course passcode…</button>
+        <button data-gear="forget">Forget the passcode on this browser</button>
+        <div class="sep"></div>
+        <button data-gear="reset">↺ Start over with an empty project</button>
+      </div></span>
   </div>
   <div class="phasebar">
     <button class="phase on" data-phase="background" title="Weeks 6–7 — your Concept Profile, your question, and the lesson you have (or your idea)."><span class="pnum"><b>1</b></span> Profile</button>
@@ -463,7 +484,7 @@
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 35</div>
+<div id="build">Build 36</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1085,7 +1106,13 @@ function pickShape(){
 /* ---------- project bar ---------- */
 document.getElementById("saveProj").onclick=()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="bda-planner-project.json"; a.click(); toast("Saved. Keep this file — it's how your plan travels."); };
 document.getElementById("loadProj").onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ state=JSON.parse(r.result); selId=null; save(); renderAll(); toast("Project loaded."); }catch(err){ toast("That file didn't read as a project."); } }; r.readAsText(f); e.target.value=""; };
-document.getElementById("resetProj").onclick=()=>{ if(!confirm("Start over with an empty project? Your edits in this browser are lost (a saved .json file is not).")) return; state=blankState(); selId=null; save(); renderAll(); };
+function resetProject(){ if(!confirm("Start over with an empty project? Your edits in this browser are lost (a saved .json file is not).")) return; state=blankState(); selId=null; save(); renderAll(); }
+(function(){ const m=document.getElementById("gearMenu"), b=document.getElementById("gearBtn"); b.onclick=e=>{ e.stopPropagation(); m.classList.toggle("open"); }; document.addEventListener("click",e=>{ if(!m.contains(e.target)) m.classList.remove("open"); });
+  m.querySelectorAll("[data-gear]").forEach(x=>x.onclick=()=>{ m.classList.remove("open"); const k=x.dataset.gear;
+    if(k==="ex1"||k==="ex2"){ if(!confirm("Load the example? It replaces what is here.")) return; loadExample(k==="ex1"?1:2); toast("Example loaded."); }
+    else if(k==="passcode"){ const p=prompt("The course passcode (from class):", ""); if(p&&p.trim()){ try{ localStorage.setItem("bda-passcode",p.trim()); }catch(e){} toast("Passcode saved on this browser."); } }
+    else if(k==="forget"){ try{ localStorage.removeItem("bda-passcode"); }catch(e){} toast("Forgotten. You'll be asked next time."); }
+    else if(k==="reset") resetProject(); }); })();
 function loadExample(n){ state=JSON.parse(JSON.stringify(n===2?SAMPLES.idea:SAMPLES.lesson)); selId=null; save(); renderAll(); }
 
 /* ---------- misc ---------- */
