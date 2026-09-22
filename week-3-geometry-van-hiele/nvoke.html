@@ -42,11 +42,23 @@
   body.embed .embednote{font-size:13px;color:var(--muted);margin:0 0 6px}
   body.embed #usePlanner{display:inline-block}
   body.embed.inline #apphdr,body.embed.inline .bname,body.embed.inline #usePlanner,body.embed.inline .embednote{display:none}
-  body.embed.inline .wrap{padding:4px 6px 10px;max-width:none}
-  body.embed.inline .card.bhead{padding:10px 14px;margin:0 0 8px}
-  body.embed.inline .studio{margin-top:8px}
-  body.embed.inline .cardspanel{max-height:560px;position:static}
-  body.embed.inline .studio{grid-template-columns:230px 1fr}
+  body.embed.inline .wrap{padding:0;max-width:none}
+  body.embed.inline .card.bhead{padding:0;margin:0;border:0;background:transparent;box-shadow:none}
+  body.embed.inline .striplabel{font-size:12.5px;margin:0}
+  body.embed.inline .setlist{margin-top:6px;gap:8px}
+  body.embed.inline .setlist .sitem{padding:3px;border-width:1px}
+  body.embed.inline .studio{margin-top:8px;gap:12px;grid-template-columns:260px 1fr}
+  body.embed.inline .cardspanel{max-height:none;position:static;padding:6px;border-radius:10px}
+  body.embed.inline .cardsearch{padding:6px 9px;margin-bottom:4px;font-size:13px}
+  body.embed.inline .cardspanel .lc{width:44px;height:44px}
+  body.embed.inline .libgrid .ghdr{font-size:11px;margin:6px 2px 1px}
+  body.embed.inline .libgrid .ghdr .mkbtn{padding:2px 6px;font-size:11px}
+  body.embed.inline .tplhint{display:none}
+  body.embed.inline .stage2 .canvasWrap{min-height:0;padding:10px;border-width:1px;border-radius:10px}
+  body.embed.inline .stage2 .board{max-width:420px}
+  body.embed.inline .stage2 .board.sort{max-width:340px}
+  body.embed.inline .stage2 .board.single{max-width:260px}
+  body.embed.inline .stagefoot input{padding:7px 10px;font-size:13.5px}
   body.embed.tpllock #tplRail{display:none}
   body.embed.tpllock .studio{grid-template-columns:250px 1fr}
   body.embed.tpllock .embednote b{color:var(--outline)}

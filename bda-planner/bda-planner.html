@@ -230,7 +230,8 @@
   .slice .prog{position:absolute;top:7px;right:30px;font-size:11px;font-weight:700;color:var(--muted)}
   .slice .prog.done{color:var(--ok)}
   #build{position:fixed;right:10px;bottom:8px;font-size:11.5px;color:var(--muted);opacity:.55;z-index:30;pointer-events:none;font-weight:600}
-  iframe.nvinline{width:100%;height:700px;border:1px solid var(--line);border-radius:12px;background:#fffdf5;margin-top:6px}
+  #actModal .box.wide{width:min(1280px,97vw)}
+  iframe.nvinline{width:100%;height:640px;border:0;background:transparent;margin-top:4px;display:block}
   .nv .ncard.thumb{padding:3px;cursor:pointer;background:#fff}
   .nv .ncard.thumb svg{width:100%;height:100%}
   .slice .minithumbs{display:flex;gap:4px;margin:4px 0 2px}
@@ -440,7 +441,7 @@
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 26</div>
+<div id="build">Build 27</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -874,7 +875,7 @@ function openActivity(id){
   M.querySelectorAll("[data-close]").forEach(el=>el.onclick=closeActivity);
   M.querySelectorAll("[data-go]").forEach(el=>el.onclick=()=>{ renderPlan(); openActivity(el.dataset.go); });
   M.querySelector("[data-chg]").onclick=()=>pickActivity(a.id);
-  M.dataset.reopen=a.id; prog(); M.classList.add("open"); M.querySelector(".bb").scrollTop=0;
+  M.dataset.reopen=a.id; M.querySelector(".box").classList.remove("wide"); prog(); M.classList.add("open"); M.querySelector(".bb").scrollTop=0;
 }
 function closeActivity(){ document.getElementById("actModal").classList.remove("open"); renderPlan(); }
 function showModal(head,body,foot,progFn,rerender){
@@ -893,11 +894,11 @@ function openBefore(){
   const head=`<h2>Before</h2><span class="sicon" style="font-size:24px">${ROUTINE_ICON}</span><input type="text" data-b="name" value="${esc(b.name)}" placeholder="The routine's name" style="width:auto;flex:1;max-width:280px;font-weight:800;padding:5px 8px;border:1px solid var(--line);border-radius:7px;font-size:15px"><a class="chg" data-chg style="font-size:12.5px;color:var(--outline);cursor:pointer;text-decoration:underline">change</a>${R&&R[2]?`<a href="${R[2]}" target="_blank" rel="noopener" class="small">examples</a>`:""}<span class="mins"><input type="text" inputmode="numeric" placeholder="15" data-b="min" value="${esc(b.min)}">min</span><button class="tbtn" data-close>✕</button>`;
   const body=`<div class="tip" style="margin-top:8px">${esc(R?R[1]:"Your own routine — name it in the box above, and say where it's from.")}</div>
     <div class="step">1 · The cards, and what you say</div>
-    <div class="nv" style="margin-top:6px">${(R&&R[3])
-      ?`<div class="striplabel">🖐 Your cards — what students see. Drag shapes into the slots, write the question, press <b>＋ Add card</b>; add as many cards as the routine needs. They save as you go.</div><iframe class="nvinline" src="${NVOKE_URL}&tpl=${R[3]}&inline=1" title="Card editor"></iframe>
-        <details style="margin-top:8px"><summary class="small" style="cursor:pointer">Or plain text cards — a number or an expression each</summary><div class="cards" style="margin-top:8px">${cards}<div class="ncard add" data-addcard title="Add a card and type what's on it">＋ card</div></div></details>`
-      :`<div class="striplabel">🖐 Your cards — what students see, one card each. Type on a card.</div><div class="cards">${cards}<div class="ncard add" data-addcard title="Add a card and type what's on it: a number, an expression, a figure described">＋ card</div></div>`}
-      <div class="prompt"><label style="margin-top:8px">What you say <span class="hint">— the posing question, exactly</span></label><input type="text" data-b="prompt" value="${esc(b.prompt)}" placeholder="What's the same? What's different?"></div></div>
+    ${(R&&R[3])
+      ?`<iframe class="nvinline" src="${NVOKE_URL}&tpl=${R[3]}&inline=1" title="Card editor"></iframe>
+        <details style="margin-top:4px"><summary class="small" style="cursor:pointer">Or plain text cards — a number or an expression each</summary><div class="nv"><div class="cards">${cards}<div class="ncard add" data-addcard title="Add a card and type what's on it">＋ card</div></div></div></details>`
+      :`<div class="nv" style="margin-top:6px"><div class="striplabel">🖐 Your cards — what students see, one card each. Type on a card.</div><div class="cards">${cards}<div class="ncard add" data-addcard title="Add a card and type what's on it: a number, an expression, a figure described">＋ card</div></div></div>`}
+    <label>What you say <span class="hint">— the posing question, exactly</span></label><input type="text" data-b="prompt" value="${esc(b.prompt)}" placeholder="What's the same? What's different?">
     <div class="step">2 · Procedures</div>
     <div class="two"><div><label>What students do<span class="req">*</span></label><textarea data-b="students">${esc(b.students)}</textarea></div><div><label>What I do</label><textarea data-b="teacher">${esc(b.teacher)}</textarea></div></div>
     <div class="step">3 · Objective</div>
@@ -910,7 +911,7 @@ function openBefore(){
     <div class="conn"><b>How does this routine connect to the first During activity?</b><textarea data-b="thread" style="margin-top:4px">${esc(b.thread)}</textarea></div>`;
   const first=state.during[0];
   const foot=`${first?`<button class="tbtn" data-go1>Activity 1 ▶</button>`:""}<span style="flex:1"></span><span class="small" data-prog></span><button class="primary" data-close>Done</button>`;
-  const M=showModal(head,body,foot,()=>beforeProgress(state.before),openBefore); M.dataset.reopen="before";
+  const M=showModal(head,body,foot,()=>beforeProgress(state.before),openBefore); M.dataset.reopen="before"; M.querySelector(".box").classList.toggle("wide",!!(R&&R[3]));
   M.querySelector("[data-chg]").onclick=pickRoutine;
   const g=M.querySelector("[data-go1]"); if(g) g.onclick=()=>{ renderPlan(); openActivity(first.id); };
 }
@@ -933,7 +934,7 @@ function openAfter(){
     <label>Would a student's response answer your research question?<span class="req">*</span> <span class="hint">— the one test the After has to pass; your question is on the Profile tab</span></label><textarea data-af="answers">${esc(a.answers)}</textarea>`;
   const last=state.during[state.during.length-1];
   const foot=`${last?`<button class="tbtn" data-golast>◀ Activity ${state.during.length}</button>`:""}<span style="flex:1"></span><span class="small" data-prog></span><button class="primary" data-close>Done</button>`;
-  const M=showModal(head,body,foot,()=>afterProgress(state.after),openAfter); M.dataset.reopen="after";
+  const M=showModal(head,body,foot,()=>afterProgress(state.after),openAfter); M.dataset.reopen="after"; M.querySelector(".box").classList.remove("wide");
   M.querySelector("[data-chg]").onclick=pickArtifact;
   const g=M.querySelector("[data-golast]"); if(g) g.onclick=()=>{ renderPlan(); openActivity(last.id); };
 }
