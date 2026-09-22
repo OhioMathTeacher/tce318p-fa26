@@ -12,6 +12,10 @@
 -->
 <style>
   :root{
+    /* The page is light and always has been. Say so, or an iPad (and any desktop in dark
+       mode) repaints the form controls dark against it -- textareas go charcoal, selects
+       invert, and the ✓/○ tables lose their contrast. One line; Journaler's Build 43. */
+    color-scheme: light;
     --outline:#1F4E96; --ground:#fffdf5; --ink:#1a2b4a; --muted:#4a5a70; --line:#d8e2ee; --mark:#b23b3b; --ok:#2e7d32;
     --before:#7a4fb0; --before-soft:#f0e9f8; --during:#1F4E96; --during-soft:#e7f0fb; --after:#2b7a3d; --after-soft:#e5f2e8;
     --gold:#b3730a; --gold-soft:#fbf1dd;
@@ -527,7 +531,7 @@
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 47</div>
+<div id="build">Build 48</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1199,6 +1203,49 @@ async function buildDocx(){
   return zipStore(files);
 }
 function slugify(t){ return (t||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); }
+
+// ── Handing a file to the student ──────────────────────────────────────────────
+// Ported from Journaler (journaler-284, 2026-09-08) where both of these were found on
+// Todd's own iPad. Two things iOS does differently, and the project file -- the one
+// students carry from Week 6 to Week 10 -- must not be what finds out.
+//
+// 1. THE NAME IS THROWN AWAY. iOS Safari ignores a.download for blob: URLs, so the file
+//    saves under the blob's UUID. Journaler's backup reached a thumb drive as
+//    "39214aba-....zip": undateable, unsortable, indistinguishable from the next one.
+//    navigator.share hands iOS a real File with a real name and offers Save to Files.
+// 2. REVOKING TOO SOON. a.click() STARTS the download and returns; the browser reads the
+//    blob afterwards. Revoking on the next statement is a race iOS Safari loses and the
+//    file arrives empty. saveProj never revoked at all (a leak, but safe); the .docx
+//    waited 1500ms. Both go through the same wait now.
+//
+// Share is used ONLY where the anchor is known to lose the name. On a desktop the anchor
+// IS the right answer and a share sheet would be a worse one.
+const IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+            (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+async function saveBlob(blob, name){
+  if(IOS && navigator.canShare){
+    try{
+      const file = new File([blob], name, { type: blob.type || "application/octet-stream" });
+      if(navigator.canShare({ files:[file] })){
+        await navigator.share({ files:[file] });
+        return true;
+      }
+    }catch(e){
+      // AbortError is the student tapping Cancel on the share sheet. That is a decision,
+      // not a failure, and it must NOT fall through to a second download nobody asked for.
+      if(e && e.name === "AbortError") return false;
+      console.warn("share failed, falling back to a download", e);
+    }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = name; a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 10000);
+  return true;
+}
 /* --- the plan as PDF: the same placemat, through the print stylesheet (Save as PDF) --- */
 function printPlan(){
   const A=assemblePlan(); const el=document.getElementById("profilePrint");
@@ -1252,7 +1299,7 @@ function renderShare(){
       <div class="dl" style="grid-template-columns:1fr"><div><button class="primary" id="mkRecord">🖨 Generate Planning Record — PDF</button><div class="cap">opens Print → Save as PDF — a record, not a draft, so PDF only · upload to Canvas with your plan</div></div></div>
     </div>`;
   wrap.querySelectorAll("[data-sh]").forEach(el=>{ el.oninput=()=>{ sh[el.dataset.sh]=el.value; save(); }; });
-  document.getElementById("mkDocx").onclick=async()=>{ const b=document.getElementById("mkDocx"); b.disabled=true; b.textContent="Building…"; try{ const blob=await buildDocx(); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=(slugify(planTitle())||"lesson-plan")+".docx"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1500); toast("Word file built — open it and keep writing."); }catch(e){ toast("Couldn't build the Word file: "+e.message); } b.disabled=false; b.textContent="⬇ Generate Lesson Plan — Word"; };
+  document.getElementById("mkDocx").onclick=async()=>{ const b=document.getElementById("mkDocx"); b.disabled=true; b.textContent="Building…"; try{ const blob=await buildDocx(); const kept=await saveBlob(blob,(slugify(planTitle())||"lesson-plan")+".docx"); if(kept) toast("Word file built — open it and keep writing."); }catch(e){ toast("Couldn't build the Word file: "+e.message); } b.disabled=false; b.textContent="⬇ Generate Lesson Plan — Word"; };
   document.getElementById("mkRecord").onclick=()=>printRecord(sh.who||names[0]||g.names);
   document.getElementById("mkPdf").onclick=printPlan;
   wireInfo();
@@ -1282,7 +1329,7 @@ function pickShape(){
 }
 
 /* ---------- project bar ---------- */
-document.getElementById("saveProj").onclick=()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); const nm=((state.bg||{}).names||"").trim().replace(/[^a-z0-9]+/gi,"-").replace(/^-+|-+$/g,""); a.download=`bda-planner${nm?"-"+nm:""}-${new Date().toISOString().slice(0,10)}.json`; a.click(); recordFileSave(); toast("Saved. Keep this file — it's how your plan travels."); };
+document.getElementById("saveProj").onclick=async()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}); const nm=((state.bg||{}).names||"").trim().replace(/[^a-z0-9]+/gi,"-").replace(/^-+|-+$/g,""); const kept=await saveBlob(blob,`bda-planner${nm?"-"+nm:""}-${new Date().toISOString().slice(0,10)}.json`); if(!kept) return; recordFileSave(); toast("Saved. Keep this file — it's how your plan travels."); };
 document.getElementById("loadProj").onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ state=JSON.parse(r.result); selId=null; save(); renderAll(); toast("Project loaded."); }catch(err){ toast("That file didn't read as a project."); } }; r.readAsText(f); e.target.value=""; };
 function resetProject(){ if(!confirm("Start over with an empty project? Your edits in this browser are lost (a saved .json file is not).")) return; state=blankState(); selId=null; save(); renderAll(); }
 (function(){ const m=document.getElementById("gearMenu"), b=document.getElementById("gearBtn"); b.onclick=e=>{ e.stopPropagation(); m.classList.toggle("open"); }; document.addEventListener("click",e=>{ if(!m.contains(e.target)) m.classList.remove("open"); });
