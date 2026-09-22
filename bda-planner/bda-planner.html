@@ -508,13 +508,13 @@
         <button data-gear="reset"><span class="ic">↺</span>Start over with an empty project</button>
         <div class="sep"></div>
         <div class="hd">Something went wrong</div>
-        <div class="note">Makes a PDF that says what your device and this app were doing — submit it in Canvas.</div>
+        <div class="note">Makes a PDF that says what your device and this app were doing — send it to Dr. Edwards.</div>
         <button data-gear="diag"><span class="ic">🩺</span>Report a problem…</button>
       </div></span>
   </div>
   <div id="nag"><span>💾</span><span id="nagText"></span><span class="sp"></span><button class="go" id="nagSave">⬇ Save to a file</button><button class="later" id="nagLater">Later</button></div>
   <div class="phasebar">
-    <button class="phase on" data-phase="background" title="Weeks 6–7 — your Concept Profile, your question, and the lesson you have (or your idea)."><span class="pnum"><b>1</b></span> Profile</button>
+    <button class="phase on" data-phase="background" title="Weeks 6–7 — your Concept Profile, your question, and the lesson you have (or your idea)."><span class="pnum"><b>1</b></span> Concept Profile</button>
     <button class="phase" data-phase="during" title="Weeks 8–10 — the lesson, minute by minute: the routine before, the activities, the artifact after."><span class="pnum"><b>2</b></span> Plan</button>
     <button class="phase" data-phase="share" title="The plan as a Word file (the 3-Pager) and your planning record as a PDF — whenever there's something to share."><span class="pnum"><b>3</b></span> Share</button>
   </div>
@@ -550,8 +550,9 @@
   <div class="bb">
     <label for="diagSaid">What were you doing when it went wrong?</label>
     <textarea id="diagSaid" placeholder="I pressed Export and nothing happened. I'm on the school iPad."></textarea>
-    <p class="why">Save this as a PDF and submit it in Canvas. It tells Dr.&nbsp;Edwards which version you have,
-      what your device is, and what the app was doing — which is almost always what the answer turns on.</p>
+    <p class="why">Save this as a PDF and send it to Dr.&nbsp;Edwards — a <strong>Canvas Inbox message</strong> with the
+      PDF attached, or bring it to class. This is not an assignment and is not graded. It tells him which version you
+      have, what your device is, and what the app was doing — which is almost always what the answer turns on.</p>
     <p class="why"><strong>This report does not contain your work.</strong> No concept, no question, no students,
       no pictures — only settings and counts. Everything it will say is below; read it before you send it.</p>
     <pre id="diagOut">…</pre>
@@ -566,7 +567,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 49</div>
+<div id="build">Build 50</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -862,7 +863,7 @@ function renderBackground(){
       <div class="sec"><h3><span class="k">1d</span>What shows up in the work${I("Now put the two together. Which of the misconceptions and challenges your sources describe appear in your collected work — and which don't? Name the student and the sample. Add anything your host teacher has noticed that the research didn't. A paragraph.")}</h3>
         <textarea data-bg="think" style="min-height:120px" placeholder="What, if any, of the cited misconceptions appear in the collected work? Which student, which sample? What did you see that the research didn't predict?">${esc(g.think||"")}</textarea></div>
     </div>`;
-  const right=`<h2><span class="n">${done[0]?"✓":"2"}</span>Concept &amp; question${I("The mathematics, what is known about how students learn it, and the question you'll carry into the field.")}<span style="flex:1"></span><span class="gauge ${words<430?"short":""}">about <b>${pages} pages</b> · the assignment asks for 1–2</span><button class="ghost" type="button" id="exportProfile" title="Renders the Concept Profile for Canvas, with your work samples as an appendix">⬇ Export (PDF)</button></h2>
+  const right=`<h2><span class="n">${done[0]?"✓":"2"}</span>Concept &amp; question${I("The mathematics, what is known about how students learn it, and the question you'll carry into the field.")}<span style="flex:1"></span><span class="gauge ${words<430?"short":""}">about <b>${pages} pages</b> · the assignment asks for 1–2</span><button class="ghost" type="button" id="exportProfile" title="Makes the PDF you submit in Canvas — the whole Concept Profile, with your work samples as an appendix">⬇ Export Concept Profile (PDF)</button></h2>
     <div class="cols">
       <div class="sec"><h3><span class="k">2a</span>The concept${I("One specific, grade-appropriate mathematical concept — an idea students build understanding of. Not a whole strand (“fractions”), not a bare skill (“adding fractions”). Chosen with your host teacher, from what the class is actually doing.")}</h3>
         <label>The concept, in a sentence</label><input type="text" data-bg="concept" value="${esc(g.concept||"")}">
@@ -901,6 +902,37 @@ function renderBackground(){
   const ex=document.getElementById("exportProfile"); if(ex) ex.onclick=exportProfile;
   wireInfo();
 }
+/* Every browser names a printed PDF after document.title, and ours is the APP's title --
+   so the Concept Profile, the Investigation Plan and the problem report all reached Files
+   as "BDA Planner — plan it · hand it over · teach it". Found on Todd's iPhone, 9/22.
+   The student then submits three identically-named PDFs to Canvas.
+
+   ⚠ Restoring the title on the next line does NOT work. window.print() hands the page to
+   the system dialog and RETURNS while that dialog is still open -- Journaler hit exactly
+   this on Android (the page tore its print host down on afterprint and printed the nav
+   bar). Nothing the page can observe says when the dialog closes: visibility never
+   changes, there is no blur/focus, and afterprint fires early. So the title is restored on
+   the first real interaction afterwards, by which time the file is named and saved. */
+const APP_TITLE=document.title;
+function printAs(name, build){
+  // Restore to the app's real title, NOT to whatever document.title happens to hold now:
+  // print twice without touching the page in between and the second call would capture the
+  // FIRST print's name as the original, leaving the app permanently titled "Concept
+  // Profile — …". Found by driving three prints in a row, 9/22.
+  build();
+  document.title=name;
+  let done=false;
+  const restore=()=>{ if(done) return; done=true; document.title=APP_TITLE;
+    ["pointerdown","keydown","touchstart"].forEach(e=>window.removeEventListener(e,restore,true)); };
+  ["pointerdown","keydown","touchstart"].forEach(e=>window.addEventListener(e,restore,true));
+  // A backstop, in case the student saves and never touches this tab again.
+  setTimeout(restore, 120000);
+  window.print();
+}
+// Safe in a filename on every platform, and still readable.
+function fileStamp(){ return new Date().toISOString().slice(0,10); }
+function whoStamp(){ const n=((state.bg||{}).names||"").trim(); return n?" — "+n.replace(/[\\/:*?"<>|]/g,"").slice(0,40):""; }
+
 function exportProfile(){ try{ if((+localStorage.getItem(STORE+"-unsaved")||0)>0) toast("Tip: Export makes the PDF; ⬇ Save keeps the project file. Do both."); }catch(e){}
   const g=state.bg||{}; const el=document.getElementById("profilePrint");
   const stds=(g.standards||[]).map(c=>`<div class="std"><b>${esc(c)}</b> ${esc(stdText(c))}</div>`).join("")||"<p>—</p>";
@@ -917,7 +949,8 @@ function exportProfile(){ try{ if((+localStorage.getItem(STORE+"-unsaved")||0)>0
     <h2>2b · What the research — and your host teacher — say</h2>${(g.sources||[]).filter(r=>r[0]||r[1]).map(r=>`<p><i>${r[2]==="host"?"Host teacher":esc(r[0])}</i><br>${esc(r[1])}</p>`).join("")||"<p>—</p>"}
     <h2>2c · The question I'm asking</h2><p><b>${esc(g.question||"")}</b></p><p>${esc(g.why||"")}</p>
     <div class="note">Pseudonyms only. Work samples de-identified. Written in BDA Planner.</div>${app}`;
-  window.print();
+  logEvent("export","Concept Profile → PDF");
+  printAs("Concept Profile"+whoStamp()+" — "+fileStamp(), ()=>{});
 }
 /* ---------- photos: pick, resize, crop / black out ---------- */
 let edIdx=null, edImg=null, edTool="black", edDrag=null;
@@ -1387,7 +1420,8 @@ function printPlan(){
     <p class="note">Attach student handouts and any printed materials students will need. The Before's cards and the exit slip, if built in the app, follow.</p>
     ${A.thumbs.length?`<div class="hand"><h2>Handout — the Before's cards</h2><p><i>${esc(state.before.prompt||"")}</i></p>${A.thumbs.map(t=>`<img src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(t)}">`).join("")}</div>`:""}
     ${A.exit.length?`<div class="hand"><h2>Handout — exit slip</h2><p>Name: ____________________</p>${A.exit.map((r,i)=>`<p style="font-size:13pt;margin-top:14pt"><b>${i+1}.</b> ${esc(r[0])}</p><p style="height:1.4in"></p>`).join("")}</div>`:""}`;
-  window.print();
+  logEvent("export","Investigation Plan → PDF");
+  printAs("Investigation Plan"+(planTitle()?" — "+planTitle().replace(/[\\/:*?"<>|]/g,"").slice(0,50):"")+" — "+fileStamp(), ()=>{});
 }
 /* --- the planning record: one person's PDF via the print stylesheet --- */
 function printRecord(who){
@@ -1402,7 +1436,8 @@ function printRecord(who){
     <h2>Document 2 — how I used the two reads</h2><p>${esc(sh.twoReads||"")||"<i>— not written —</i>"}</p>
     ${sh.reflection?`<h2>After teaching — reflection &amp; next steps</h2><p>${esc(sh.reflection)}</p>`:""}
     <p class="note">The record: what the planning partner asked, what I kept and set aside, what a classmate said, and what I made of it. The partner asks; it never writes the plan. Produced by BDA Planner.</p>`;
-  window.print();
+  logEvent("export","Planning Record → PDF");
+  printAs("Planning Record"+(who?" — "+String(who).replace(/[\\/:*?"<>|]/g,"").slice(0,40):"")+" — "+fileStamp(), ()=>{});
 }
 function renderShare(){
   const g=state.bg||{}; state.share=state.share||{}; const sh=state.share; const A=assemblePlan(); const names=teamNames();
@@ -1500,7 +1535,7 @@ async function diagPrint(){
     '@media print{.noprint{display:none}body{margin:0}}'+
     '</style></head><body>'+
     '<button class="noprint" onclick="window.print()">Save as PDF / Print</button>'+
-    '<p class="tip noprint">On an iPad or iPhone: the Share button, then Print, then Save to Files. Submit the PDF in Canvas.</p>'+
+    '<p class="tip noprint">On an iPad or iPhone: the Share button, then Print, then Save to Files. Then send the PDF to Dr. Edwards in a Canvas Inbox message.</p>'+
     '<h1>BDA Planner problem report</h1><div class="sub">TCE 318P · '+esc(new Date().toString())+'</div>'+
     '<pre>'+esc(text)+'</pre></body></html>');
   w.document.close();
