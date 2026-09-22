@@ -589,7 +589,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 51</div>
+<div id="build">Build 52</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -846,12 +846,12 @@ function used(){ return planTotal(); }
 
 /* ---------- render: Background accordion ---------- */
 
-function bgDone(){ const g=state.bg||{}; const rows=(g.samplesRows||[]).filter(r=>r.some(x=>x&&x.trim())); return [ !!(g.grade&&state.block&&g.concept&&(g.standards||[]).length>=2&&(g.studentsRows||[]).some(r=>r[0])&&rows.length>=3&&g.question), !!(state.door==="idea"||(state.door==="lesson"&&g.scriptName)) ]; }
+function bgDone(){ const g=state.bg||{}; const rows=(g.samplesRows||[]).filter(r=>r.some(x=>x&&x.trim())); return [ !!(g.grade&&state.block&&g.concept&&(g.standards||[]).length>=FLOOR.content&&(g.practices||[]).length>=FLOOR.practice&&(g.studentsRows||[]).some(r=>r[0])&&rows.length>=3&&g.question), !!(state.door==="idea"||(state.door==="lesson"&&g.scriptName)) ]; }
 function profileWords(){ const g=state.bg||{}; const parts=[g.host,g.concept,g.think,...(g.sources||[]).map(r=>r[1]),g.question,g.why,...(g.studentsRows||[]).flat(),...(g.samplesRows||[]).map(r=>r.slice(0,3)).flat()]; return parts.join(' ').split(/\s+/).filter(Boolean).length; }
 function I(text){ return `<span class="i" tabindex="0">i<span class="pop">${text}</span></span>`; }
 let profTab=[0,0];
 const PROF_TABS=[[["1a","Classroom"],["1b","Students"],["1c","Collected work"],["1d","What shows up"]],[["2a","Concept"],["2b","Research & host"],["2c","Question"]]];
-function profileParts(){ const g=state.bg||{}; const rows=(g.samplesRows||[]).filter(r=>r.slice(0,3).some(x=>x&&x.trim())); return [[!!(g.grade&&state.block&&(g.host||"").trim()), (g.studentsRows||[]).some(r=>(r[0]||"").trim()), rows.length>=3, !!(g.think||"").trim()],[!!((g.concept||"").trim()&&(g.standards||[]).length>=2), (g.sources||[]).some(r=>(r[1]||"").trim()), !!(g.question||"").trim()]]; }
+function profileParts(){ const g=state.bg||{}; const rows=(g.samplesRows||[]).filter(r=>r.slice(0,3).some(x=>x&&x.trim())); return [[!!(g.grade&&state.block&&(g.host||"").trim()), (g.studentsRows||[]).some(r=>(r[0]||"").trim()), rows.length>=3, !!(g.think||"").trim()],[!!((g.concept||"").trim()&&(g.standards||[]).length>=FLOOR.content&&(g.practices||[]).length>=FLOOR.practice), (g.sources||[]).some(r=>(r[1]||"").trim()), !!(g.question||"").trim()]]; }
 /* ---------- My Progress ----------
    Journaler-284's panel, and two rules Todd wrote into it there:
 
@@ -871,7 +871,15 @@ function profileParts(){ const g=state.bg||{}; const rows=(g.samplesRows||[]).fi
    state.bg, which is only ever written by the student typing. The partner's replies live
    in state.reads and are not consulted here -- which is what makes the numbers mean
    something. */
-const FLOOR={ think:60, source:40, why:25, students:2, samples:3, standards:2 };
+const FLOOR={ think:60, source:40, why:25, students:2, samples:3, content:1, practice:1 };
+// ⚠ Standards: ONE content standard AND ONE practice standard (Todd, 9/22), not two
+// content standards. The app demanded two content standards and the assignment asks for
+// "one or two" — so a student who did exactly what the handout says was told they were
+// not finished. One of each is the better ask anyway: the content standard says what
+// mathematics this is, the practice says what the students are doing with it, and a
+// profile that names both has located the concept in a way that naming two adjacent
+// content codes does not. The handout's "Locate the math" and its rubric row both need a
+// line saying so — the app is now ahead of the assignment on this.
 const words=t=>String(t||"").trim().split(/\s+/).filter(Boolean).length;
 // One row per thing the Concept Profile asks for. [key, where it lives, label, what it
 // wants, is it done, what to say when it is not]
@@ -897,10 +905,14 @@ function progressRows(){
     ok:words(g.think)>=FLOOR.think,
     say:words(g.think)+" of "+FLOOR.think+" words — this is the reading of your samples against your sources",
     done:words(g.think)+" words"});
+  const nc=(g.standards||[]).length, np=(g.practices||[]).length;
   R.push({go:[1,0], k:"2a", label:"The concept and its standards",
-    ok:!!((g.concept||"").trim())&&(g.standards||[]).length>=FLOOR.standards,
-    say:!(g.concept||"").trim()?"No concept named":(g.standards||[]).length+" of "+FLOOR.standards+" standards chosen",
-    done:(g.standards||[]).length+" standards"});
+    ok:!!((g.concept||"").trim())&&nc>=FLOOR.content&&np>=FLOOR.practice,
+    say:!(g.concept||"").trim()?"No concept named"
+        :!nc&&!np?"No standards chosen — one content standard and one practice"
+        :!nc?"A practice is chosen; now one content standard"
+        :"A content standard is chosen; now one Standard for Mathematical Practice",
+    done:nc+" content · "+np+" practice"});
   R.push({go:[1,1], k:"2b", label:"Research and your host teacher",
     ok:src>=FLOOR.source,
     say:src?src+" of "+FLOOR.source+" words on your fullest source":"Nothing written about a source yet",
