@@ -258,6 +258,9 @@
   #nag button{font:inherit;font-size:13px;border-radius:8px;padding:6px 11px;cursor:pointer}
   #nag .go{background:var(--outline);color:#fff;border:0;font-weight:700}
   #nag .later{background:none;border:1px solid #e7d3a1;color:#6b4a08}
+  details.about{margin:4px 0 8px}
+  details.about summary{cursor:pointer;font-weight:700;color:var(--outline);font-size:14px;padding:6px 0}
+  details.about summary:hover{text-decoration:underline}
   table.fill{width:100%;border-collapse:collapse;margin-top:10px;font-size:13.5px}
   table.fill td{padding:6px 8px;border-top:1px solid var(--line);vertical-align:top}
   table.fill tr:first-child td{border-top:0}
@@ -521,7 +524,7 @@
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 45</div>
+<div id="build">Build 46</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1237,8 +1240,8 @@ function renderShare(){
       <div class="dl"><div><button class="primary" id="mkDocx">⬇ Generate Lesson Plan — Word</button><div class="cap">.docx — choose this if you'll make your own edits afterwards</div></div><div><button id="mkPdf">🖨 Generate Lesson Plan — PDF</button><div class="cap">opens Print → Save as PDF — best for uploading straight to Canvas</div></div></div>
     </div>
     <div class="tile"><h2><span class="n">2</span>Planning record — Document 2${I("Week 10's Document 2: your account of the two reads — a classmate's and the planning partner's — and what you did with them. One per person; everybody submits their own.")}</h2>
-      <p class="small" style="margin:4px 0 10px;font-size:14px;color:var(--ink)">The Investigation Plan is submitted with a second document: <b>how you used the two reads</b>. Your plan gets read twice before you teach it — once by a classmate (<i>Hand it over</i>), once by the planning partner (<i>Ask me · Show me options · Check this</i>). Neither one designs the lesson; both push on it. Document 2 is your reasoning about what they saw and what you changed, or kept, and why. <b>Generate Planning Record</b> compiles your paragraphs with the evidence behind them.</p>
-      <table class="fill">${[["Your Document 2 — how I used the two reads","written below",(sh.twoReads||"").trim()],["Peer notes from Hand it over","written below",(sh.peer||"").trim()],...["before","during","after"].map(t=>{ const n=(((state.reads||{})[t]||{}).log||[]).length; return [`The planning partner's reads on the ${t[0].toUpperCase()+t.slice(1)} — with what you kept or set aside`,`Plan · ${t[0].toUpperCase()+t.slice(1)} · ${n} read${n===1?"":"s"}`,n?"x":""]; }),["After teaching — reflection & next steps","written below · Weeks 11–13",(sh.reflection||"").trim()]].map(r=>`<tr><td class="st ${r[2]?"ok":"no"}">${r[2]?"✓":"○"}</td><td>${esc(r[0])}</td><td class="src">${esc(r[1])}</td></tr>`).join("")}</table>
+      <details class="about"><summary>About Document 2</summary><p class="small" style="margin:6px 0 10px;font-size:14px;color:var(--ink)">The Investigation Plan is submitted with a second document: <b>how you used the two reads</b>. Your plan gets read twice before you teach it — once by a classmate (<i>Hand it over</i>), once by the planning partner (<i>Ask me · Show me options · Check this</i>). Neither one designs the lesson; both push on it. Document 2 is your reasoning about what they saw and what you changed, or kept, and why. <b>Generate Planning Record</b> compiles your paragraphs with the evidence behind them.</p>
+      <table class="fill">${[["Your Document 2 — how I used the two reads","written below",(sh.twoReads||"").trim()],["Peer notes from Hand it over","written below",(sh.peer||"").trim()],...["before","during","after"].map(t=>{ const n=(((state.reads||{})[t]||{}).log||[]).length; return [`The planning partner's reads on the ${t[0].toUpperCase()+t.slice(1)} — with what you kept or set aside`,`Plan · ${t[0].toUpperCase()+t.slice(1)} · ${n} read${n===1?"":"s"}`,n?"x":""]; }),["After teaching — reflection & next steps","written below · Weeks 11–13",(sh.reflection||"").trim()]].map(r=>`<tr><td class="st ${r[2]?"ok":"no"}">${r[2]?"✓":"○"}</td><td>${esc(r[0])}</td><td class="src">${esc(r[1])}</td></tr>`).join("")}</table></details>
       ${names.length>1?`<label>Whose record <span class="hint">— each teammate generates their own</span></label><select data-sh="who">${names.map(n=>`<option ${sh.who===n?"selected":""}>${esc(n)}</option>`).join("")}</select>`:""}
       <label>How I used the two reads <span class="hint">— one to two paragraphs: which feedback you acted on, which you set aside, and why</span></label><textarea data-sh="twoReads" style="min-height:120px">${esc(sh.twoReads||"")}</textarea>
       <label>Peer notes <span class="hint">— what your classmate said when you handed it over</span></label><textarea data-sh="peer" style="min-height:80px">${esc(sh.peer||"")}</textarea>
