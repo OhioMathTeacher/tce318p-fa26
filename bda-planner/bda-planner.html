@@ -450,7 +450,7 @@
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 31</div>
+<div id="build">Build 32</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -878,7 +878,7 @@ function openActivity(id){
     <div class="step">1 · Procedures</div>
     <div class="two"><div><label>What students do<span class="req">*</span></label><textarea data-a="students">${esc(a.students)}</textarea></div><div><label>What I do</label><textarea data-a="teacher">${esc(a.teacher)}</textarea></div></div>
     <div class="step">2 · Objective</div>
-    <label>By the end of these minutes, students can…<span class="req">*</span></label><input type="text" data-a="objective" value="${esc(a.objective)}">
+    <label>By the end of these minutes, students can…<span class="req">*</span></label><textarea data-a="objective" style="min-height:90px">${esc(a.objective)}</textarea>
     <div class="tip" style="margin-top:4px">Standards are what the state expects by the end of the year; an objective is what <i>you</i> expect by the end of this activity. You write objectives.</div>
     ${own}
     <div class="step">${own?4:3} · The connection</div>
@@ -928,12 +928,12 @@ function openBefore(){
     <div class="two"><div><label>What students do<span class="req">*</span></label><textarea data-b="students" style="min-height:160px">${esc(b.students)}</textarea></div><div><label>What I do</label><textarea data-b="teacher" style="min-height:160px">${esc(b.teacher)}</textarea></div></div>
     </div>
     <div class="tabp ${beforeTab===2?"on":""}" data-tabp="2">
-    <label>By the end of these minutes, students can…<span class="req">*</span></label><input type="text" data-b="objective" value="${esc(b.objective)}">
+    <label>By the end of these minutes, students can…<span class="req">*</span></label><textarea data-b="objective" style="min-height:90px">${esc(b.objective)}</textarea>
     <div class="tip" style="margin-top:6px">Standards are what the state expects by the end of the year; an objective is what <i>you</i> expect by the end of these minutes. You write objectives.</div>
     </div>
     <div class="tabp ${beforeTab===3?"on":""}" data-tabp="3">
-    <label>What must NOT be given away <span class="hint">— the move the During is designed to reveal</span></label><input type="text" data-b="withhold" value="${esc(b.withhold)}">
-    <label>What entry thinking should it surface?</label><input type="text" data-b="entry" value="${esc(b.entry)}">
+    <label>What must NOT be given away <span class="hint">— the move the During is designed to reveal</span></label><textarea data-b="withhold" style="min-height:70px">${esc(b.withhold)}</textarea>
+    <label>What entry thinking should it surface?</label><textarea data-b="entry" style="min-height:70px">${esc(b.entry)}</textarea>
     <label>The over-scaffold check <span class="hint">— read your cards and your question against the line above. Does anything give it away?</span></label><textarea data-b="guard">${esc(b.guard)}</textarea>
     </div>
     <div class="tabp ${beforeTab===4?"on":""}" data-tabp="4">
@@ -961,9 +961,9 @@ function openAfter(){
     <div class="step">2 · Procedures</div>
     <div class="two"><div><label>What students do<span class="req">*</span></label><textarea data-af="students">${esc(a.students)}</textarea></div><div><label>What I do</label><textarea data-af="teacher">${esc(a.teacher)}</textarea></div></div>
     <div class="step">3 · Objective</div>
-    <label>By the end of these minutes, students can…<span class="req">*</span></label><input type="text" data-af="objective" value="${esc(a.objective)}">
+    <label>By the end of these minutes, students can…<span class="req">*</span></label><textarea data-af="objective" style="min-height:90px">${esc(a.objective)}</textarea>
     <div class="step">4 · What it captures</div>
-    <label>What the artifact captures</label><input type="text" data-af="captures" value="${esc(a.captures)}">
+    <label>What the artifact captures</label><textarea data-af="captures" style="min-height:70px">${esc(a.captures)}</textarea>
     <label>Would a student's response answer your research question?<span class="req">*</span> <span class="hint">— the one test the After has to pass; your question is on the Profile tab</span></label><textarea data-af="answers">${esc(a.answers)}</textarea>`;
   const last=state.during[state.during.length-1];
   const foot=`${last?`<button class="tbtn" data-golast>◀ Activity ${state.during.length}</button>`:""}<span style="flex:1"></span><span class="small" data-prog></span><button class="primary" data-close>Done</button>`;
