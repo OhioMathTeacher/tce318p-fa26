@@ -315,6 +315,22 @@
   .stds .dh{font-weight:600;font-size:12px;color:var(--muted);margin:6px 0 0}
   .stds details{margin-top:4px}
   .stds summary{cursor:pointer;font-size:13px;color:var(--muted)}
+  .chosen{margin-top:6px}
+  .chosen .cs{display:flex;gap:10px;align-items:flex-start;padding:7px 10px;border:1px solid var(--line);border-radius:9px;margin-top:6px;font-size:13.5px;background:#fbfcfe}
+  .chosen .cs b{color:var(--outline);flex:none;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;padding-top:1px}
+  .chosen .cs span{flex:1}
+  .chosen .cs button{flex:none;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:14px;padding:0 2px}
+  .chosen .cs button:hover{color:var(--mark)}
+  .chosen .none{font-size:13px;color:var(--muted);font-style:italic;margin-top:6px}
+  #stdModal{position:fixed;inset:0;background:#0006;z-index:60;display:none;align-items:center;justify-content:center;padding:24px}
+  #stdModal.open{display:flex}
+  #stdModal .box{background:#fff;border-radius:14px;width:min(980px,96vw);height:90vh;display:flex;flex-direction:column;overflow:hidden}
+  #stdModal .bh{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  #stdModal .bh h2{margin:0;font-size:18px;color:var(--outline)}
+  #stdModal .bb{flex:1;overflow:auto;padding:6px 18px 18px}
+  #stdModal .stds{max-height:none;border:0;padding:0}
+  #stdModal .stds label span{display:inline;-webkit-line-clamp:unset}
+  #stdModal .bf{display:flex;align-items:center;gap:10px;padding:10px 16px;border-top:1px solid var(--line)}
   #pdfModal{position:fixed;inset:0;background:#0006;z-index:60;display:none;align-items:center;justify-content:center;padding:24px}
   #pdfModal.open{display:flex}
   #pdfModal .box{background:#fff;border-radius:14px;width:min(1100px,96vw);height:92vh;display:flex;flex-direction:column;overflow:hidden}
@@ -387,6 +403,7 @@
   <div class="small">Replaces the middle of your timeline with the shape's activities. Before and After stay.</div>
   <div id="shapeList"></div>
 </div>
+<div id="stdModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><h2>Ohio's standards</h2><span class="small" id="stdModalSub"></span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pdfModal').classList.add('open')">The PDF</button><button class="tbtn" onclick="document.getElementById('stdModal').classList.remove('open')">✕</button></div><div class="bb" id="stdModalBody"></div><div class="bf"><span class="small" id="stdModalCount"></span><span style="flex:1"></span><button class="primary" onclick="document.getElementById('stdModal').classList.remove('open')">Done</button></div></div></div>
 <div id="pdfModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><b>Ohio's Learning Standards | Mathematics (2017)</b><span class="small">Ohio Department of Education</span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pdfModal').classList.remove('open')">✕</button></div><iframe src="standards/Ohio-Learning-Standards-Mathematics-2017.pdf" title="Ohio standards"></iframe></div></div>
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="profilePrint"></div>
@@ -534,7 +551,7 @@ function I(text){ return `<span class="i" tabindex="0">i<span class="pop">${text
 function renderBackground(){
   const g=state.bg=state.bg||{}; if(!Array.isArray(g.standards)) g.standards=[]; const done=bgDone();
   const span=gradeSpan(g.grade);
-  let stdHtml="";
+  let stdHtml=""; // (list now lives in the popup)
   if(span.length){
     stdHtml='<div class="stds">'+span.map(gr=>{ const rows=OM.standards[gr]||[]; let last=""; const now=gr===g.grade; const body=rows.map(([c,d,t])=>{ const dh=d!==last?`<div class="dh">${d}</div>`:""; last=d; return dh+`<label title="${esc(t)}"><input type="checkbox" data-std="${c}" ${g.standards.includes(c)?"checked":""}><b>${c}</b><span>${esc(t)}</span></label>`; }).join(""); return `<details class="gr" ${now?"open":""}><summary>${gr}${now?"":" <span style='font-weight:400;text-transform:none;letter-spacing:0'>· one grade "+(OM.grades.indexOf(gr)<OM.grades.indexOf(g.grade)?"below":"above")+"</span>"}</summary>${body}</details>`; }).join("")
       +`<details><summary>Standards for Mathematical Practice — pick one or two the lesson leans on</summary>${OM.practices.map(([c,n,t])=>`<label title="${esc(t)}"><input type="checkbox" data-mp="${c}" ${(g.practices||[]).includes(c)?"checked":""}><b>${c}</b><span>${esc(n)}</span></label>`).join("")}</details></div>`;
@@ -560,7 +577,9 @@ function renderBackground(){
     <div class="cols">
       <div class="sec"><h3><span class="k">2a</span>The concept${I("One specific, grade-appropriate mathematical concept — an idea students build understanding of. Not a whole strand (“fractions”), not a bare skill (“adding fractions”). Chosen with your host teacher, from what the class is actually doing.")}</h3>
         <label>The concept, in a sentence</label><input type="text" data-bg="concept" value="${esc(g.concept||"")}">
-        <label>Standards ${I("The LESSON is aligned to state standards; the parts of the lesson get objectives, which you write. Check the ones this lesson is really about — usually two, at most four. The list shows your grade with the grade below and the grade above, because students work at all three.")} <button class="tbtn" style="margin-left:8px" type="button" onclick="findStandards(this)">Find the standards</button><button class="tbtn" style="margin-left:6px" type="button" onclick="document.getElementById('pdfModal').classList.add('open')">Ohio's standards (PDF)</button></label><div class="why">Check the <b>2–4 standards</b> this lesson is aligned to. Type your concept and press <b>Find the standards</b> to have the list matched for you, then uncheck any that don't fit.</div>${stdHtml}
+        <label>Standards ${I("The LESSON is aligned to state standards; the parts of the lesson get objectives, which you write. Check the ones this lesson is really about — usually two, at most four. The list shows your grade with the grade below and the grade above, because students work at all three.")} <button class="tbtn" style="margin-left:8px" type="button" onclick="findStandards(this)">Find the standards</button><button class="tbtn" style="margin-left:6px" type="button" onclick="document.getElementById('pdfModal').classList.add('open')">Ohio's standards (PDF)</button></label><div class="why">The <b>2–4 standards</b> this lesson is aligned to. Type your concept and press <b>Find the standards</b>, or <b>Choose standards…</b> to browse your grade with the grade below and above.</div>
+        <div class="chosen">${(g.standards||[]).length?g.standards.map(c=>`<div class="cs"><b>${c}</b><span>${esc(stdText(c))}</span><button type="button" data-unstd="${c}" title="Remove">✕</button></div>`).join(""):`<div class="none">None chosen yet.</div>`}${(g.practices||[]).length?`<div class="small" style="margin-top:6px">Practices: <b>${g.practices.join(", ")}</b></div>`:""}</div>
+        <div style="margin-top:8px"><button class="tbtn" type="button" id="chooseStd" ${g.grade?"":"disabled"}>${g.grade?"Choose standards…":"Pick a grade to choose standards"}</button></div>
       </div>
       <div class="sec"><h3><span class="k">2b</span>What the research — and your host teacher — say${I("One to three sources on the misconceptions and challenges students have with this concept. At least one from JSTOR (Miami's library gives you access): the permanent link or DOI, and three or four sentences on what it describes. Your host teacher can be one source — what they have seen students do with this concept, in your words. This seeds the “What Does Research Say?” section of your Final Report.")}</h3>
         <div class="why">At least one JSTOR source — the permanent link (jstor.org/stable/…) or a DOI (doi.org/…). <a href="https://www.jstor.org/" target="_blank" rel="noopener">Open JSTOR</a>. Your host teacher counts as one source.</div>
@@ -573,6 +592,8 @@ function renderBackground(){
   const wrap=document.getElementById("tiles"); wrap.innerHTML=`<div class="tile ${done[0]?"done":""}">${left}</div><div class="tile ${done[0]?"done":""}">${right}</div>`;
   const refresh=()=>{ const d=bgDone(); wrap.querySelectorAll(".tile").forEach((t,i)=>{ t.classList.toggle("done",d[i]); t.querySelector(".n").textContent=d[i]?"✓":i+1; }); const go=wrap.querySelector("[data-goto]"); if(go) go.disabled=!d.every(Boolean); };
   wrap.querySelectorAll("[data-bg]").forEach(inp=>{ inp.oninput=e=>{ const k=inp.dataset.bg; if(k==="block"){ state.block=Math.max(20,Math.min(120,+e.target.value||45)); } else state.bg[k]=e.target.value; save(); refresh(); const gg=wrap.querySelector(".gauge"); if(gg){ const w=profileWords(); gg.className="gauge "+(w<430?"short":""); gg.innerHTML=`about <b>${(w/430).toFixed(1)} pages</b> · the assignment asks for 1–2`; } }; if(inp.dataset.bg==="grade") inp.onchange=()=>{ state.bg.standards=[]; save(); renderBackground(); }; });
+  wrap.querySelectorAll("[data-unstd]").forEach(b=>b.onclick=()=>{ state.bg.standards=state.bg.standards.filter(x=>x!==b.dataset.unstd); save(); renderBackground(); });
+  const cs=document.getElementById("chooseStd"); if(cs) cs.onclick=openStdModal;
   wrap.querySelectorAll(".stds label span").forEach(sp=>sp.onclick=e=>{ e.preventDefault(); sp.parentElement.classList.toggle("open"); });
   wrap.querySelectorAll("[data-mp]").forEach(cb=>cb.onchange=()=>{ const c=cb.dataset.mp; state.bg.practices=state.bg.practices||[]; if(cb.checked){ if(state.bg.practices.length>=2){ cb.checked=false; toast("One or two practices — the ones this lesson really leans on."); return; } state.bg.practices.push(c); } else state.bg.practices=state.bg.practices.filter(x=>x!==c); save(); });
   wrap.querySelectorAll("[data-std]").forEach(cb=>cb.onchange=()=>{ const c=cb.dataset.std; if(cb.checked){ if(state.bg.standards.length>=4){ cb.checked=false; toast("Four standards at most — a lesson can't be about everything."); return; } state.bg.standards.push(c); } else state.bg.standards=state.bg.standards.filter(x=>x!==c); save(); });
@@ -631,6 +652,16 @@ function buildFromRead(){
   state.during=mid.map(r=>Object.assign(blankAct("script"),{title:r[0]+" (as written)",min:+r[1]||"",students:r[3],teacher:r[2],materials:"",thread:""}));
   state.after=Object.assign(blankAfter(),{kind:"exit",min:+last[1]||"",students:last[3],teacher:last[2],prompts:[[last[0]+" (from the script)",""]]});
   state.lessonOpen=false; selId=state.during[0]?state.during[0].id:null; save(); showPhase("during"); renderPlan(); toast("The script is on the timeline. Now: keep, bend, or replace each block.");
+}
+function openStdModal(){
+  const g=state.bg; const span=gradeSpan(g.grade); const body=document.getElementById("stdModalBody");
+  document.getElementById("stdModalSub").textContent=`${g.grade} — with the grade below and the grade above. Check 2–4.`;
+  body.innerHTML='<div class="stds">'+span.map(gr=>{ const rows=OM.standards[gr]||[]; let last=""; const now=gr===g.grade; return `<details class="gr" ${now?"open":""}><summary>${gr}${now?"":" <span style='font-weight:400;text-transform:none;letter-spacing:0'>· one grade "+(OM.grades.indexOf(gr)<OM.grades.indexOf(g.grade)?"below":"above")+"</span>"}</summary>`+rows.map(([c,d,t])=>{ const dh=d!==last?`<div class="dh">${d}</div>`:""; last=d; return dh+`<label><input type="checkbox" data-mstd="${c}" ${g.standards.includes(c)?"checked":""}><b>${c}</b><span>${esc(t)}</span></label>`; }).join("")+`</details>`; }).join("")
+    +`<details style="margin-top:10px"><summary>Standards for Mathematical Practice — pick one or two the lesson leans on</summary>${OM.practices.map(([c,n,t])=>`<label title="${esc(t)}"><input type="checkbox" data-mmp="${c}" ${(g.practices||[]).includes(c)?"checked":""}><b>${c}</b><span>${esc(n)}</span></label>`).join("")}</details></div>`;
+  const count=()=>{ document.getElementById("stdModalCount").textContent=`${g.standards.length} of 2–4 chosen`; };
+  body.querySelectorAll("[data-mstd]").forEach(cb=>cb.onchange=()=>{ const c=cb.dataset.mstd; if(cb.checked){ if(g.standards.length>=4){ cb.checked=false; toast("Four standards at most — a lesson can't be about everything."); return; } g.standards.push(c); } else g.standards=g.standards.filter(x=>x!==c); save(); count(); renderBackground(); });
+  body.querySelectorAll("[data-mmp]").forEach(cb=>cb.onchange=()=>{ const c=cb.dataset.mmp; g.practices=g.practices||[]; if(cb.checked){ if(g.practices.length>=2){ cb.checked=false; toast("One or two practices."); return; } g.practices.push(c); } else g.practices=g.practices.filter(x=>x!==c); save(); renderBackground(); });
+  count(); document.getElementById("stdModal").classList.add("open");
 }
 function wireInfo(){ document.querySelectorAll(".i").forEach(el=>{ if(el.dataset.w) return; el.dataset.w=1; el.onclick=e=>{ e.stopPropagation(); const on=el.classList.contains("on"); document.querySelectorAll(".i.on").forEach(x=>x.classList.remove("on")); if(!on) el.classList.add("on"); }; }); }
 document.addEventListener("click",()=>document.querySelectorAll(".i.on").forEach(x=>x.classList.remove("on")));
