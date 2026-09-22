@@ -27,10 +27,12 @@
   h1 small{font-weight:600;color:var(--muted);font-size:14px;margin-left:8px}
   .gear{position:relative}
   .gear button.ghost{padding:8px 11px}
-  .gearMenu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 28px #0002;min-width:260px;padding:6px;display:none;z-index:45}
+  .gearMenu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 28px #0002;width:380px;padding:6px;display:none;z-index:45}
   .gearMenu.open{display:block}
-  .gearMenu button{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;font-size:14px;padding:9px 12px;border-radius:8px;cursor:pointer;color:var(--ink)}
-  .gearMenu button:hover{background:#eef4fc}
+  .gearMenu button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:none;font:inherit;font-size:14px;font-weight:700;padding:9px 12px;border-radius:8px;cursor:pointer;color:var(--outline);white-space:nowrap}
+  .gearMenu button .ic{display:inline-flex;width:22px;justify-content:center;font-size:15px;flex:none}
+  .gearMenu button:hover{background:#eef4fc;text-decoration:underline}
+  .gearMenu .note{font-size:12px;color:var(--muted);font-style:italic;padding:0 12px 6px;font-weight:400}
   .gearMenu .sep{border-top:1px solid var(--line);margin:6px 4px}
   .gearMenu .hd{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:6px 12px 2px}
   .hdrbar{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
@@ -444,16 +446,16 @@
     <span class="gear"><button class="ghost" id="gearBtn" title="Options">⚙</button>
       <div class="gearMenu" id="gearMenu">
         <div class="hd">See a finished example</div>
-        <div class="small" style="padding:0 12px 4px">Opens a complete Profile and Plan in place of yours — save yours first.</div>
-        <button data-gear="ex1">Grade 2 · make a ten (from an EngageNY lesson)</button>
-        <button data-gear="ex2">Grade 4 · fractions of a set (from an original idea)</button>
+        <div class="note">Opens a complete Profile and Plan in place of yours — save yours first.</div>
+        <button data-gear="ex1"><span class="ic">📘</span>Grade 2 · make a ten (EngageNY lesson)</button>
+        <button data-gear="ex2"><span class="ic">📗</span>Grade 4 · fractions of a set (original idea)</button>
         <div class="sep"></div>
         <div class="hd">Planning partner (AI)</div>
-        <button data-gear="passcode">Enter the course passcode…</button>
-        <button data-gear="forget">Forget the passcode on this browser</button>
+        <button data-gear="passcode"><span class="ic">🔑</span>Enter the course passcode…</button>
+        <button data-gear="forget"><span class="ic">🚫</span>Forget the passcode on this browser</button>
         <div class="sep"></div>
         <div class="hd">This project</div>
-        <button data-gear="reset">↺ Start over with an empty project</button>
+        <button data-gear="reset"><span class="ic">↺</span>Start over with an empty project</button>
       </div></span>
   </div>
   <div class="phasebar">
@@ -487,7 +489,7 @@
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 40</div>
+<div id="build">Build 41</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
