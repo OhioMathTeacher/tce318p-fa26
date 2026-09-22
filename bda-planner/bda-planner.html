@@ -258,6 +258,16 @@
   #nag button{font:inherit;font-size:13px;border-radius:8px;padding:6px 11px;cursor:pointer}
   #nag .go{background:var(--outline);color:#fff;border:0;font-weight:700}
   #nag .later{background:none;border:1px solid #e7d3a1;color:#6b4a08}
+  table.fill{width:100%;border-collapse:collapse;margin-top:10px;font-size:13.5px}
+  table.fill td{padding:6px 8px;border-top:1px solid var(--line);vertical-align:top}
+  table.fill tr:first-child td{border-top:0}
+  table.fill td.st{width:26px;text-align:center;font-weight:800}
+  table.fill td.st.ok{color:var(--ok)} table.fill td.st.no{color:#c9d2de}
+  table.fill td.src{color:var(--muted);font-size:12.5px;white-space:nowrap;text-align:right}
+  .dl{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  .dl button{width:100%;padding:12px 14px;border-radius:12px;font:inherit;font-weight:700;font-size:15px;cursor:pointer;border:2px solid var(--outline);background:#fff;color:var(--outline)}
+  .dl button.primary{background:var(--outline);color:#fff}
+  .dl .cap{font-size:12.5px;color:var(--muted);margin-top:6px;text-align:center;font-weight:400}
   #build{position:fixed;right:10px;bottom:8px;font-size:11.5px;color:var(--muted);opacity:.55;z-index:30;pointer-events:none;font-weight:600}
   #actModal .box.wide{width:min(1280px,97vw)}
   iframe.nvinline{width:100%;height:600px;border:0;background:transparent;margin-top:4px;display:block}
@@ -370,6 +380,14 @@
     #profilePrint .std{margin:2pt 0 2pt 0}
     #profilePrint .std b{font-family:monospace}
     #profilePrint .note{font-size:10pt;color:#444;margin-top:12pt}
+    #profilePrint table.pm{width:100%;border-collapse:collapse;margin:0 0 10pt;page-break-inside:auto}
+    #profilePrint table.pm td{border:1px solid #333;padding:6pt 8pt;vertical-align:top;font-size:11pt}
+    #profilePrint table.pm td.lb{width:2.1in;background:#eef3fa}
+    #profilePrint table.pm td.lb b{display:block;font-size:11pt}
+    #profilePrint table.pm td.lb span{font-size:8.5pt;color:#555}
+    #profilePrint table.pm tr{page-break-inside:avoid}
+    #profilePrint .hand{page-break-before:always}
+    #profilePrint .hand img{width:2.6in;height:2.6in;margin:4pt 8pt 8pt 0;border:1px solid #ccc}
     #profilePrint .entry{margin:4pt 0 8pt;padding-left:8pt;border-left:2px solid #bbb}
     #profilePrint .entry .when{font-size:9.5pt;color:#555}
     #profilePrint .tag{font-size:9pt;border:1px solid #888;border-radius:6pt;padding:0 5pt;margin-left:4pt}
@@ -503,7 +521,7 @@
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 43</div>
+<div id="build">Build 44</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1175,6 +1193,23 @@ async function buildDocx(){
   return zipStore(files);
 }
 function slugify(t){ return (t||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); }
+/* --- the plan as PDF: the same placemat, through the print stylesheet (Save as PDF) --- */
+function printPlan(){
+  const A=assemblePlan(); const el=document.getElementById("profilePrint");
+  const cell=(label,hint,text)=>`<tr><td class="lb"><b>${esc(label)}</b><span>${esc(hint)}</span></td><td>${text&&text.trim()?esc(text).replace(/\n/g,"<br>"):"&nbsp;"}</td></tr>`;
+  el.innerHTML=`<div class="meta" style="margin:0 0 2pt">TCE 318P · 3-Pager Investigation Plan</div><h1>Lesson Title: ${esc(A.title||"")}</h1><div class="meta">Intended Grade Level(s): ${esc(A.grade||"")}${A.names?" · "+esc(A.names):""}${A.section?" · "+A.section:""} · ${new Date().toLocaleDateString()}</div>
+    <table class="pm">${cell("Your research question","The question about how students understand your concept that this lesson is built to investigate.",A.focus)}</table>
+    <table class="pm">${cell("Materials Needed","All physical and digital resources, manipulatives, handouts.",A.materials)}</table>
+    <table class="pm">${cell("Learning Objectives","Clear, measurable objectives — one per part, in order.",A.objectives)}</table>
+    <table class="pm">${cell("Standards Alignment","The 1 to 2 Ohio Mathematics standards your lesson addresses.",A.standards)}</table>
+    <table class="pm">${cell("Lesson Flow — Before (baseline)","The routine: what you show, what you say, what it primes and what it withholds.",A.before)}${cell("Lesson Flow — During (primary instrument)","The activities in order: what students do, what you do, how each connects to the next.",A.during)}${cell("Lesson Flow — After (the capture)","The discussion and the artifact you carry out of the room.",A.after)}</table>
+    <table class="pm">${cell("Assessment — name your read","What you'll look for in the work on the task and the After — and what would not count as evidence.",A.assessment)}</table>
+    <table class="pm">${cell("Reflection & Next Steps","Complete after you teach in the field (Weeks 11 and 12).",A.reflection)}</table>
+    <p class="note">Attach student handouts and any printed materials students will need. The Before's cards and the exit slip, if built in the app, follow.</p>
+    ${A.thumbs.length?`<div class="hand"><h2>Handout — the Before's cards</h2><p><i>${esc(state.before.prompt||"")}</i></p>${A.thumbs.map(t=>`<img src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(t)}">`).join("")}</div>`:""}
+    ${A.exit.length?`<div class="hand"><h2>Handout — exit slip</h2><p>Name: ____________________</p>${A.exit.map((r,i)=>`<p style="font-size:13pt;margin-top:14pt"><b>${i+1}.</b> ${esc(r[0])}</p><p style="height:1.4in"></p>`).join("")}</div>`:""}`;
+  window.print();
+}
 /* --- the planning record: one person's PDF via the print stylesheet --- */
 function printRecord(who){
   const g=state.bg||{}, sh=state.share||{}, A=assemblePlan(); const el=document.getElementById("profilePrint");
@@ -1194,11 +1229,12 @@ function renderShare(){
   const g=state.bg||{}; state.share=state.share||{}; const sh=state.share; const A=assemblePlan(); const names=teamNames();
   const have=k=>A[k]&&A[k].trim()?"✓":"·";
   const wrap=document.getElementById("shareTiles");
-  wrap.innerHTML=`<div class="tile"><h2><span class="n">1</span>Investigation Plan — Document 1 (.docx)${I("Week 10's Document 1, in the course's 3-Pager placemat: prompts on the left, your plan on the right. What isn't written yet stays visibly empty — a starting point you revise, not a finished plan. One per team; export it to PDF for Canvas after revising.")}</h2>
+  const rows=[["Your research question and the concept","Profile · 2a, 2c",A.focus],["Materials needed","Plan · every part",A.materials],["Learning objectives — one per part","Plan · Before, During, After",A.objectives],["Standards alignment, full text","Profile · 2a",A.standards],["Lesson flow — Before (baseline)","Plan · Before",A.before],["Lesson flow — During (primary instrument)","Plan · During",A.during],["Lesson flow — After (the capture)","Plan · After",A.after],["Assessment — name your read","Plan · After",A.assessment],["Reflection & next steps","Share · after teaching",A.reflection],["Handout — the Before's cards","Plan · Before",A.thumbs.length?"x":""],["Handout — the exit slip","Plan · After",A.exit.length?"x":""]];
+  wrap.innerHTML=`<div class="tile"><h2><span class="n">1</span>Investigation Plan — Document 1${I("Week 10's Document 1, in the course's 3-Pager placemat: prompts on the left, your plan on the right. What isn't written yet stays visibly empty — a starting point you revise, not a finished plan. One per team.")}</h2>
+      <p class="small" style="margin:4px 0 10px;font-size:14px;color:var(--ink)"><b>Generate Lesson Plan</b> gathers everything you've written on the Profile and Plan tabs and lays it out as the course's 3-Pager Investigation Plan. Sections you haven't written yet come out empty, ready for you to fill by hand.</p>
       <label>Lesson title</label><input type="text" data-sh="title" value="${esc(planTitle())}" placeholder="What you'd call this lesson">
-      <div class="small" style="margin-top:10px">What will fill in:</div>
-      <div class="small" style="line-height:1.7">${have("focus")} Your research question — and the concept<br>${have("materials")} Materials<br>${have("objectives")} Learning objectives — one per part<br>${have("standards")} Standards alignment — full text<br>${have("before")} Lesson flow · Before &nbsp; ${have("during")} During &nbsp; ${have("after")} After<br>${have("assessment")} Assessment — name your read<br>${A.reflection?"✓":"·"} Reflection &amp; next steps — after teaching<br>${A.thumbs.length?`✓ Handout: ${A.thumbs.length} card${A.thumbs.length===1?"":"s"}`:"· Handout: the Before's cards"} &nbsp; ${A.exit.length?`✓ Handout: exit slip`:"· Handout: exit slip"}</div>
-      <div style="margin-top:14px"><button class="primary" id="mkDocx">⬇ lesson-plan.docx</button></div>
+      <table class="fill">${rows.map(r=>`<tr><td class="st ${r[2]&&String(r[2]).trim()?"ok":"no"}">${r[2]&&String(r[2]).trim()?"✓":"○"}</td><td>${esc(r[0])}</td><td class="src">${esc(r[1])}</td></tr>`).join("")}</table>
+      <div class="dl"><div><button class="primary" id="mkDocx">⬇ Generate Lesson Plan — Word</button><div class="cap">.docx — choose this if you'll make your own edits afterwards</div></div><div><button id="mkPdf">🖨 Generate Lesson Plan — PDF</button><div class="cap">opens Print → Save as PDF — best for uploading straight to Canvas</div></div></div>
     </div>
     <div class="tile"><h2><span class="n">2</span>Planning record — Document 2 (.pdf)${I("Week 10's Document 2: how you used the two reads. Your one-to-two-paragraph reflection, with the evidence behind it — every read the planning partner gave you and what you kept or set aside, and the classmate's notes from Hand it over. One per person; everybody submits their own. Print → Save as PDF.")}</h2>
       ${names.length>1?`<label>Whose record</label><select data-sh="who">${names.map(n=>`<option ${sh.who===n?"selected":""}>${esc(n)}</option>`).join("")}</select>`:""}
@@ -1209,8 +1245,9 @@ function renderShare(){
       <div style="margin-top:14px"><button class="primary" id="mkRecord">🖨 Print / save as PDF</button></div>
     </div>`;
   wrap.querySelectorAll("[data-sh]").forEach(el=>{ el.oninput=()=>{ sh[el.dataset.sh]=el.value; save(); }; });
-  document.getElementById("mkDocx").onclick=async()=>{ const b=document.getElementById("mkDocx"); b.disabled=true; b.textContent="Building…"; try{ const blob=await buildDocx(); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=(slugify(planTitle())||"lesson-plan")+".docx"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1500); toast("Word file built — open it and keep writing."); }catch(e){ toast("Couldn't build the Word file: "+e.message); } b.disabled=false; b.textContent="⬇ lesson-plan.docx"; };
+  document.getElementById("mkDocx").onclick=async()=>{ const b=document.getElementById("mkDocx"); b.disabled=true; b.textContent="Building…"; try{ const blob=await buildDocx(); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=(slugify(planTitle())||"lesson-plan")+".docx"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1500); toast("Word file built — open it and keep writing."); }catch(e){ toast("Couldn't build the Word file: "+e.message); } b.disabled=false; b.textContent="⬇ Generate Lesson Plan — Word"; };
   document.getElementById("mkRecord").onclick=()=>printRecord(sh.who||names[0]||g.names);
+  document.getElementById("mkPdf").onclick=printPlan;
   wireInfo();
 }
 
