@@ -621,15 +621,17 @@
   <div class="bb">
     <label for="diagSaid">What were you doing when it went wrong?</label>
     <textarea id="diagSaid" placeholder="I pressed Export and nothing happened. I'm on the school iPad."></textarea>
-    <p class="why">Save this as a PDF and send it to Dr.&nbsp;Edwards — a <strong>Canvas Inbox message</strong> with the
-      PDF attached, or bring it to class. This is not an assignment and is not graded. It tells him which version you
-      have, what your device is, and what the app was doing — which is almost always what the answer turns on.</p>
+    <p class="why"><strong>This is a message to Dr.&nbsp;Edwards, not an assignment.</strong> Nothing here gets
+      submitted or graded, and it does not go in a Canvas assignment. Save it as a PDF and send it to him however
+      you like — a <strong>Canvas Inbox message</strong> with the PDF attached is easiest — or just bring it to
+      class. It tells him which version you have, what your device is, and what the app was doing, which is almost
+      always what the answer turns on.</p>
     <p class="why"><strong>This report does not contain your work.</strong> No concept, no question, no students,
       no pictures — only settings and counts. Everything it will say is below; read it before you send it.</p>
     <pre id="diagOut">…</pre>
   </div>
   <div class="bf">
-    <button class="primary" id="diagPdf">⤓ Save as PDF for Canvas</button>
+    <button class="primary" id="diagPdf" title="Saves this report as a PDF. Attach it to a Canvas Inbox message to Dr. Edwards, or bring it to class.">⤓ Save as PDF to send</button>
     <button class="ghost" id="diagCopy">Copy the text</button>
     <button class="ghost" id="diagTxt">Save as a file</button>
     <span style="flex:1"></span>
@@ -638,7 +640,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 60</div>
+<div id="build">Build 61</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1819,7 +1821,7 @@ async function diagPrint(){
     '@media print{.noprint{display:none}body{margin:0}}'+
     '</style></head><body>'+
     '<button class="noprint" onclick="window.print()">Save as PDF / Print</button>'+
-    '<p class="tip noprint">On an iPad or iPhone: the Share button, then Print, then Save to Files. Then send the PDF to Dr. Edwards in a Canvas Inbox message.</p>'+
+    '<p class="tip noprint">On an iPad or iPhone: the Share button, then Print, then Save to Files. Then send the PDF to Dr. Edwards — a Canvas Inbox message is easiest. This is a message, not an assignment.</p>'+
     '<h1>BDA Planner problem report</h1><div class="sub">TCE 318P · '+esc(new Date().toString())+'</div>'+
     '<pre>'+esc(text)+'</pre></body></html>');
   w.document.close();
