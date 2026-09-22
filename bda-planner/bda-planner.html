@@ -225,7 +225,7 @@
   #actModal .bb{flex:1;overflow:auto;padding:6px 18px 18px}
   #actModal .bf{display:flex;align-items:center;gap:10px;padding:10px 16px;border-top:1px solid var(--line)}
   .ptabs{display:flex;gap:4px;margin:10px 0 6px;border-bottom:2px solid var(--line);flex-wrap:wrap}
-  .ptabs button{border:0;background:none;padding:8px 12px;font:inherit;font-weight:700;font-size:13.5px;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;cursor:pointer;border-radius:6px 6px 0 0}
+  .ptabs button{border:0;background:none;padding:8px 10px;font:inherit;font-weight:700;font-size:13.5px;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;cursor:pointer;border-radius:6px 6px 0 0}
   .ptabs button:hover{background:#f4f8fd}
   .ptabs button.on{color:var(--outline);border-bottom-color:var(--outline)}
   .ptabs button .tk{margin-left:5px;color:var(--ok)}
@@ -281,6 +281,7 @@
   .exitrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
   .exitrow textarea{min-height:56px}
   .sec{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+  .sec.tabbed{margin-top:4px;padding-top:6px;border-top:0}
   .sec:first-of-type{border-top:0;padding-top:0;margin-top:6px}
   .sec h3{margin:0 0 2px;font-size:15.5px;color:var(--ink);display:flex;align-items:center}
   .sec h3 .k{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:22px;padding:0 7px;border-radius:11px;background:var(--outline);color:#fff;font-size:12px;font-weight:800;margin-right:8px;flex:none;letter-spacing:.3px}
@@ -421,7 +422,6 @@
     <button class="phase" data-phase="during" title="Weeks 8–10 — the lesson, minute by minute: the routine before, the activities, the artifact after."><span class="pnum"><b>2</b></span> Plan</button>
     <button class="phase" disabled title="Week 10 — the plan as a Word file, your planning record, the reflection. Unlocks in Week 10."><span class="pnum"><b>3</b></span> Share</button>
   </div>
-  <div class="small" style="margin:6px 0 0;color:#8a6a1a" id="protoNote">Prototype — Profile and Plan, this browser only; AI buttons placed, not wired. <a href="#" id="loadSample">Load an example</a> · <a href="#" id="loadSample2">the other example</a></div>
 
 
   <!-- ===== ① BACKGROUND ===== -->
@@ -448,7 +448,7 @@
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 28</div>
+<div id="build">Build 29</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -611,6 +611,17 @@ function used(){ return planTotal(); }
 function bgDone(){ const g=state.bg||{}; const rows=(g.samplesRows||[]).filter(r=>r.some(x=>x&&x.trim())); return [ !!(g.grade&&state.block&&g.concept&&(g.standards||[]).length>=2&&(g.studentsRows||[]).some(r=>r[0])&&rows.length>=3&&g.question), !!(state.door==="idea"||(state.door==="lesson"&&g.scriptName)) ]; }
 function profileWords(){ const g=state.bg||{}; const parts=[g.host,g.concept,g.think,...(g.sources||[]).map(r=>r[1]),g.question,g.why,...(g.studentsRows||[]).flat(),...(g.samplesRows||[]).map(r=>r.slice(0,3)).flat()]; return parts.join(' ').split(/\s+/).filter(Boolean).length; }
 function I(text){ return `<span class="i" tabindex="0">i<span class="pop">${text}</span></span>`; }
+let profTab=[0,0];
+const PROF_TABS=[[["1a","Classroom"],["1b","Students"],["1c","Collected work"],["1d","What shows up"]],[["2a","Concept"],["2b","Research & host"],["2c","Question"]]];
+function profileParts(){ const g=state.bg||{}; const rows=(g.samplesRows||[]).filter(r=>r.slice(0,3).some(x=>x&&x.trim())); return [[!!(g.grade&&state.block&&(g.host||"").trim()), (g.studentsRows||[]).some(r=>(r[0]||"").trim()), rows.length>=3, !!(g.think||"").trim()],[!!((g.concept||"").trim()&&(g.standards||[]).length>=2), (g.sources||[]).some(r=>(r[1]||"").trim()), !!(g.question||"").trim()]]; }
+function tabifyTiles(wrap){
+  const pp=profileParts();
+  wrap.querySelectorAll(".tile").forEach((t,ti)=>{ const cols=t.querySelector(":scope > .cols"); if(!cols) return; const secs=[...cols.children].filter(x=>x.classList.contains("sec")); const strip=document.createElement("div"); strip.className="ptabs"; strip.style.margin="8px 0 4px";
+    strip.innerHTML=secs.map((sc,i)=>`<button data-pt="${i}">${PROF_TABS[ti][i][0]} · ${PROF_TABS[ti][i][1]}<span class="tk ${pp[ti][i]?"":"no"}" data-ptk="${ti}:${i}">✓</span></button>`).join("");
+    cols.before(strip);
+    const show=i=>{ profTab[ti]=i; secs.forEach((sc,j)=>{ sc.style.display=j===i?"":"none"; sc.classList.add("tabbed"); }); strip.querySelectorAll("button").forEach((b,j)=>b.classList.toggle("on",j===i)); };
+    strip.querySelectorAll("button").forEach(b=>b.onclick=()=>show(+b.dataset.pt)); show(Math.min(profTab[ti],secs.length-1)); });
+}
 function renderBackground(){
   const g=state.bg=state.bg||{}; if(!Array.isArray(g.standards)) g.standards=[]; const done=bgDone();
   const span=gradeSpan(g.grade);
@@ -624,9 +635,9 @@ function renderBackground(){
   const left=`<h2><span class="n">${done[0]?"✓":"1"}</span>Context${I("Where you'll teach, who you'll follow, and what their work shows. This half and the other half together are your Week 6 Concept Profile.")}</h2>
     <div class="cols">
       <div class="sec"><h3><span class="k">1a</span>Your classroom${I("Where you'll teach in Weeks 11–12. Grade, how long the math block is, and what your host teacher is like — their style, one non-negotiable they hold for math, and what the class will be working on when you're there.")}</h3>
-        <div class="row"><div class="narrow"><label>Grade</label><select data-bg="grade"><option value="">…</option>${["Kindergarten","Grade 1","Grade 2","Grade 3","Grade 4","Grade 5"].map(x=>`<option ${g.grade===x?"selected":""}>${x}</option>`).join("")}</select></div>
-        <div class="narrow"><label>Math block <span class="hint">min</span></label><input type="number" min="20" max="120" step="5" data-bg="block" value="${state.block||""}" placeholder="45"></div></div>
-        <label>Host teacher &amp; what the class is working on</label><textarea data-bg="host" style="min-height:96px">${esc(g.host||"")}</textarea></div>
+        <div class="row" style="align-items:flex-start"><div class="narrow" style="flex:0 0 150px;min-width:150px"><label>Grade</label><select data-bg="grade"><option value="">…</option>${["Kindergarten","Grade 1","Grade 2","Grade 3","Grade 4","Grade 5"].map(x=>`<option ${g.grade===x?"selected":""}>${x}</option>`).join("")}</select></div>
+        <div class="narrow" style="flex:0 0 110px;min-width:110px"><label>Math block <span class="hint">min</span></label><input type="number" min="20" max="120" step="5" data-bg="block" value="${state.block||""}" placeholder="45"></div>
+        <div style="flex:1;min-width:220px"><label>Host teacher &amp; what the class is working on</label><textarea data-bg="host" style="min-height:150px">${esc(g.host||"")}</textarea></div></div></div>
       <div class="sec"><h3><span class="k">1b</span>The students${I("Two or three focus students, chosen with your host teacher, whose work on this concept you'll follow. A pseudonym and a line of context each — enough that a reader could follow them into the immersion. Real names never leave the classroom.")}</h3>
         <div class="rows">${g.studentsRows.map((r,i)=>`<div class="rrow students"><input type="text" placeholder="Pseudonym" data-sr="${i}:0" value="${esc(r[0])}"><input type="text" placeholder="A line of context" data-sr="${i}:1" value="${esc(r[1])}"></div>`).join("")}</div></div>
       <div class="sec"><h3><span class="k">1c</span>The collected work${I("Three to five pieces of actual student work on this concept, across your focus students. For each: who, what the task was, and what the work reveals about how that student understands the concept — that last column is the whole point. Add a photo: crop it, black out the name, and it goes into your PDF as an appendix.")}</h3>
@@ -653,7 +664,8 @@ function renderBackground(){
         <label>Why this question</label><textarea data-bg="why" style="min-height:60px">${esc(g.why||"")}</textarea></div>
     </div>`;
   const wrap=document.getElementById("tiles"); wrap.innerHTML=`<div class="tile ${done[0]?"done":""}">${left}</div><div class="tile ${done[0]?"done":""}">${right}</div>`;
-  const refresh=()=>{ const d=bgDone(); wrap.querySelectorAll(".tile").forEach((t,i)=>{ t.classList.toggle("done",d[i]); t.querySelector(".n").textContent=d[i]?"✓":i+1; }); const go=wrap.querySelector("[data-goto]"); if(go) go.disabled=!d.every(Boolean); };
+  tabifyTiles(wrap);
+  const refresh=()=>{ const d=bgDone(); wrap.querySelectorAll(".tile").forEach((t,i)=>{ t.classList.toggle("done",d[i]); t.querySelector(".n").textContent=d[i]?"✓":i+1; }); const go=wrap.querySelector("[data-goto]"); if(go) go.disabled=!d.every(Boolean); const pp=profileParts(); wrap.querySelectorAll("[data-ptk]").forEach(t=>{ const [a,b]=t.dataset.ptk.split(":").map(Number); t.classList.toggle("no",!pp[a][b]); }); };
   wrap.querySelectorAll("[data-bg]").forEach(inp=>{ inp.oninput=e=>{ const k=inp.dataset.bg; if(k==="block"){ state.block=Math.max(20,Math.min(120,+e.target.value||45)); } else state.bg[k]=e.target.value; save(); refresh(); const gg=wrap.querySelector(".gauge"); if(gg){ const w=profileWords(); gg.className="gauge "+(w<430?"short":""); gg.innerHTML=`about <b>${(w/430).toFixed(1)} pages</b> · the assignment asks for 1–2`; } }; if(inp.dataset.bg==="grade") inp.onchange=()=>{ state.bg.standards=[]; save(); renderBackground(); }; });
   wrap.querySelectorAll("[data-unstd]").forEach(b=>b.onclick=()=>{ state.bg.standards=state.bg.standards.filter(x=>x!==b.dataset.unstd); save(); renderBackground(); });
   const cs=document.getElementById("chooseStd"); if(cs) cs.onclick=openStdModal;
@@ -1004,8 +1016,7 @@ function pickShape(){
 document.getElementById("saveProj").onclick=()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="bda-planner-project.json"; a.click(); toast("Saved. Keep this file — it's how your plan travels."); };
 document.getElementById("loadProj").onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ state=JSON.parse(r.result); selId=null; save(); renderAll(); toast("Project loaded."); }catch(err){ toast("That file didn't read as a project."); } }; r.readAsText(f); e.target.value=""; };
 document.getElementById("resetProj").onclick=()=>{ if(!confirm("Start over with an empty project? Your edits in this browser are lost (a saved .json file is not).")) return; state=blankState(); selId=null; save(); renderAll(); };
-document.getElementById("loadSample").onclick=e=>{ e.preventDefault(); if(!confirm("Load the example (EngageNY grade 2)? It replaces what is here.")) return; state=JSON.parse(JSON.stringify(SAMPLES.lesson)); selId=null; save(); renderAll(); };
-document.getElementById("loadSample2").onclick=e=>{ e.preventDefault(); if(!confirm("Load the other example (fractions of a set, grade 4)? It replaces what is here.")) return; state=JSON.parse(JSON.stringify(SAMPLES.idea)); selId=null; save(); renderAll(); };
+function loadExample(n){ state=JSON.parse(JSON.stringify(n===2?SAMPLES.idea:SAMPLES.lesson)); selId=null; save(); renderAll(); }
 
 /* ---------- misc ---------- */
 function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
