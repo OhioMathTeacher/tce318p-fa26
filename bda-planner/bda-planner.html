@@ -444,14 +444,16 @@
     <label class="ghost" for="loadProj" style="cursor:pointer" title="Open a saved project file">⬆ Load<input type="file" id="loadProj" accept=".json" hidden></label>
     <span class="gear"><button class="ghost" id="gearBtn" title="Options">⚙</button>
       <div class="gearMenu" id="gearMenu">
-        <div class="hd">Examples</div>
-        <button data-gear="ex1">Load the example — EngageNY grade 2, make a ten</button>
-        <button data-gear="ex2">Load the other example — fractions of a set, grade 4</button>
+        <div class="hd">See a finished example</div>
+        <div class="small" style="padding:0 12px 4px">Opens a complete Profile and Plan in place of yours — save yours first.</div>
+        <button data-gear="ex1">Grade 2 · make a ten (from an EngageNY lesson)</button>
+        <button data-gear="ex2">Grade 4 · fractions of a set (from an original idea)</button>
         <div class="sep"></div>
-        <div class="hd">Planning partner</div>
-        <button data-gear="passcode">Course passcode…</button>
+        <div class="hd">Planning partner (AI)</div>
+        <button data-gear="passcode">Enter the course passcode…</button>
         <button data-gear="forget">Forget the passcode on this browser</button>
         <div class="sep"></div>
+        <div class="hd">This project</div>
         <button data-gear="reset">↺ Start over with an empty project</button>
       </div></span>
   </div>
@@ -486,7 +488,7 @@
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 38</div>
+<div id="build">Build 39</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1111,7 +1113,7 @@ document.getElementById("loadProj").onchange=e=>{ const f=e.target.files[0]; if(
 function resetProject(){ if(!confirm("Start over with an empty project? Your edits in this browser are lost (a saved .json file is not).")) return; state=blankState(); selId=null; save(); renderAll(); }
 (function(){ const m=document.getElementById("gearMenu"), b=document.getElementById("gearBtn"); b.onclick=e=>{ e.stopPropagation(); m.classList.toggle("open"); }; document.addEventListener("click",e=>{ if(!m.contains(e.target)) m.classList.remove("open"); });
   m.querySelectorAll("[data-gear]").forEach(x=>x.onclick=()=>{ m.classList.remove("open"); const k=x.dataset.gear;
-    if(k==="ex1"||k==="ex2"){ if(!confirm("Load the example? It replaces what is here.")) return; loadExample(k==="ex1"?1:2); toast("Example loaded."); }
+    if(k==="ex1"||k==="ex2"){ if(!confirm("Open the finished example? It replaces what is here — press Save first if you want to keep your work.")) return; loadExample(k==="ex1"?1:2); toast("A finished example — look around; ↺ or Load brings your own work back."); }
     else if(k==="passcode"){ const p=prompt("The course passcode (from class):", ""); if(p&&p.trim()){ try{ localStorage.setItem("bda-passcode",p.trim()); }catch(e){} toast("Passcode saved on this browser."); } }
     else if(k==="forget"){ try{ localStorage.removeItem("bda-passcode"); }catch(e){} toast("Forgotten. You'll be asked next time."); }
     else if(k==="reset") resetProject(); }); })();
