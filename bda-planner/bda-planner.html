@@ -19,7 +19,8 @@
   *{box-sizing:border-box}
   html,body{margin:0}
   body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--ground);color:var(--ink);line-height:1.5;font-size:15px}
-  .wrap{max-width:1180px;margin:0 auto;padding:18px 20px 70px}
+  .wrap{max-width:none;margin:0;padding:16px 28px 70px}
+  .wrap.narrow{max-width:900px;margin:0 auto}
   h1{font-size:26px;margin:0;color:var(--outline);letter-spacing:.3px}
   h1 small{font-weight:600;color:var(--muted);font-size:14px;margin-left:8px}
   .hdrbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
@@ -57,7 +58,7 @@
   .blockrow input{width:70px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:15px;font-weight:700;text-align:center}
   .blockrow .hint{font-size:12.5px;color:var(--muted)}
   /* work area */
-  .work{display:grid;grid-template-columns:400px 1fr;gap:18px;margin-top:12px;align-items:start}
+  .work{display:grid;grid-template-columns:420px minmax(0,1fr);gap:22px;margin-top:12px;align-items:start}
   .tl{position:sticky;top:10px;max-height:calc(100vh - 20px);overflow:auto}
   @media(max-width:900px){.work{grid-template-columns:1fr}.tl{position:static;max-height:none}}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -115,7 +116,8 @@
   .guide{font-size:13.5px;background:var(--during-soft);border:1px solid #cfe0f5;border-radius:8px;padding:8px 11px;margin:10px 0 0;color:#22333f}
   .guide.warn{background:var(--gold-soft);border-color:#e7d3a1;color:#6b4a08}
   .guide b{color:var(--outline)}
-  .four{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+  .four{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:6px}
+  @media(max-width:1100px){.four{grid-template-columns:1fr 1fr}}
   @media(max-width:700px){.four{grid-template-columns:1fr}}
   .four>div{border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:#fbfcfe}
   .four b{font-size:12.5px;color:var(--outline)}
@@ -148,6 +150,81 @@
   .tbtn:hover{border-color:var(--outline);color:var(--outline)}
   #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;z-index:50;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none}
   .small{font-size:13px;color:var(--muted)}
+  /* accordion (Background) */
+  .acc{border:1px solid var(--line);border-radius:14px;background:#fff;margin:10px 0;overflow:hidden}
+  .acc .hd{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;user-select:none}
+  .acc .hd .n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--line);color:var(--muted);font-weight:800;font-size:13px;flex:none}
+  .acc.done .hd .n{background:var(--ok);color:#fff}
+  .acc.open .hd .n{background:var(--outline);color:#fff}
+  .acc .hd h2{margin:0;font-size:17px;color:var(--ink);flex:1}
+  .acc .hd .sum{font-size:13.5px;color:var(--muted);max-width:55%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .acc .hd .chev{color:var(--muted);font-size:12px}
+  .acc .bd{display:none;padding:4px 18px 18px 56px;border-top:1px solid var(--line)}
+  .acc.open .bd{display:block}
+  .acc.locked .hd{cursor:default;opacity:.55}
+  .acc .bd label{display:block;font-weight:600;margin:12px 0 4px;font-size:14px}
+  .acc .bd label .hint{font-weight:400;color:var(--muted);font-size:13px}
+  .acc .bd input[type=text],.acc .bd input[type=number],.acc .bd textarea,.acc .bd select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:9px;font:inherit;background:#fff;color:var(--ink);font-size:14.5px}
+  .acc .bd textarea{min-height:70px;resize:vertical}
+  .acc .row{display:flex;gap:14px;flex-wrap:wrap}
+  .acc .row>div{flex:1;min-width:180px}
+  .acc .row>div.narrow{flex:0 0 150px;min-width:150px}
+  .acc .next{margin-top:14px}
+  .yn{display:flex;gap:10px;margin-top:8px}
+  .yn button{flex:1;border:2px solid var(--line);background:#fff;border-radius:11px;padding:12px 14px;font:inherit;font-weight:700;cursor:pointer;color:var(--ink);text-align:left}
+  .yn button small{display:block;font-weight:400;color:var(--muted);font-size:13px;margin-top:2px}
+  .yn button.on{border-color:var(--outline);background:#eef4fc}
+  .chip{display:inline-block;font-size:13px;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 12px;margin:6px 8px 0 0}
+  .chip b{color:var(--ink)}
+  .chip a{color:var(--outline);text-decoration:none;margin-left:6px}
+  .panel{display:none}.panel.on{display:block}
+  /* tiles (Background) */
+  .tiles{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;margin-top:12px;align-items:stretch;height:calc(100vh - 150px);min-height:560px}
+  @media(max-width:900px){.tiles{grid-template-columns:1fr;height:auto}}
+  .tile{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px 28px 20px;display:flex;flex-direction:column;min-height:0;overflow:auto}
+  .tile h2{margin:0 0 2px;font-size:20px;color:var(--ink);display:flex;align-items:center;gap:10px}
+  .tile h2 .n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--line);color:var(--muted);font-weight:800;font-size:13px;flex:none}
+  .tile.done h2 .n{background:var(--ok);color:#fff}
+  .tile .sub{color:var(--muted);font-size:13.5px;margin:0 0 6px}
+  .tile label{display:block;font-weight:600;margin:18px 0 6px;font-size:14px}
+  .tile label .hint{font-weight:400;color:var(--muted);font-size:13px}
+  .tile input[type=text],.tile input[type=number],.tile textarea,.tile select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;font:inherit;background:#fff;color:var(--ink);font-size:14.5px}
+  .tile textarea{min-height:84px;resize:vertical}
+  .tile .grow{flex:1}
+  .tile .pdf{flex:1;min-height:0;border:1px solid var(--line);border-radius:10px;margin-top:12px;background:#f6f7f9;display:flex}
+  .tile .pdf iframe{width:100%;height:100%;border:0;border-radius:10px;min-height:0}
+  .tile.lesson{overflow:hidden}
+  .tile .cols{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  @media(max-width:1250px){.tile .cols{grid-template-columns:1fr}}
+  .tile .cols label:first-child{margin-top:6px}
+  /* info buttons */
+  .i{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--outline);color:var(--outline);font-size:11px;font-weight:800;font-style:normal;cursor:pointer;margin-left:6px;vertical-align:middle;background:#fff;position:relative;user-select:none}
+  .i .pop{display:none;position:absolute;left:24px;top:-8px;z-index:30;width:min(320px,70vw);background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 22px #0002;padding:10px 12px;font-size:13px;font-weight:400;color:var(--ink);line-height:1.45;text-align:left}
+  .i:hover .pop,.i.on .pop{display:block}
+  .stds{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:9px;padding:6px 10px;margin-top:4px}
+  .stds .gh{font-weight:800;font-size:12.5px;color:var(--ink);margin:8px 0 2px;text-transform:uppercase;letter-spacing:.3px}
+  .stds .gh.now{color:var(--outline)}
+  .stds .dh{font-weight:600;font-size:12px;color:var(--muted);margin:6px 0 0}
+  .stds details{margin-top:4px}
+  .stds summary{cursor:pointer;font-size:13px;color:var(--muted)}
+  #pdfModal{position:fixed;inset:0;background:#0006;z-index:60;display:none;align-items:center;justify-content:center;padding:24px}
+  #pdfModal.open{display:flex}
+  #pdfModal .box{background:#fff;border-radius:14px;width:min(1100px,96vw);height:92vh;display:flex;flex-direction:column;overflow:hidden}
+  #pdfModal .bh{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)}
+  #pdfModal iframe{flex:1;border:0}
+  .stds label{display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:13.5px;margin:4px 0;cursor:pointer}
+  .stds label span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .stds label.open span{-webkit-line-clamp:unset}
+  .stds details.gr>summary{font-weight:800;font-size:12.5px;color:var(--ink);text-transform:uppercase;letter-spacing:.3px;margin:8px 0 2px;list-style:none}
+  .stds details.gr>summary::before{content:'▸ ';color:var(--muted)}
+  .stds details.gr[open]>summary::before{content:'▾ '}
+  .stds label b{color:var(--outline);flex:none}
+  .stds input{margin-top:3px}
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .toolbar input[type=text]{padding:7px 10px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:14px;width:240px}
+  .toolbar select{padding:7px 8px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:14px}
+  .tile .yn{flex-direction:column}
+  .tile .yn button{flex:none}
   .tip{font-size:13px;color:var(--muted)}
   body:not(.tips) .tip{display:none}
 </style>
@@ -155,32 +232,35 @@
 <body>
 <div class="wrap">
   <div class="hdrbar">
-    <button class="drawerToggle" id="drawerToggle" title="Activities you can put on the timeline, and shapes to start from.">🧩 <span>Activities</span></button>
     <h1>BDA Planner <small>plan it · hand it over · teach it</small></h1>
+    <span class="toolbar" style="margin-left:18px"><label for="tbNames" style="font-weight:600;font-size:14px">Name(s)</label><input type="text" id="tbNames" placeholder="you — or your whole team"><label for="tbSection" style="font-weight:600;font-size:14px">Section</label><select id="tbSection"><option value="">…</option><option value="oxford">Oxford</option><option value="hamilton">Hamilton</option></select><span class="i" tabindex="0">i<span class="pop">One plan per team; one planning record per person. Put every teammate's name here. Your section decides which day's class this is for.</span></span></span>
+    <span style="flex:1"></span>
+    <span class="note small" id="saveNote">Autosaves in this browser</span>
+    <button class="ghost" id="saveProj" title="Download your project as a file — how it travels to another computer or a teammate">⬇ Save</button>
+    <label class="ghost" for="loadProj" style="cursor:pointer" title="Open a saved project file">⬆ Load<input type="file" id="loadProj" accept=".json" hidden></label>
+    <button class="ghost" id="tipsBtn" title="Show or hide the explanations under the fields">💡 Tips</button>
+    <button class="ghost" id="resetProj" title="Put the sample data back">↺</button>
   </div>
   <div class="phasebar">
-    <button class="phase" disabled title="Week 6–7. Your Concept Profile, your question. (Not in this prototype.)"><span class="pnum"><b>1</b></span> Research Question</button>
-    <button class="phase on" data-phase="during" title="Week 8. The lesson's time, carved into activities."><span class="pnum"><b>2</b></span> During</button>
-    <button class="phase" disabled title="Week 9. The routine — built in nVoke. (Not yet.)"><span class="pnum"><b>3</b></span> Before</button>
-    <button class="phase" disabled title="Week 10. The artifact. (Not yet.)"><span class="pnum"><b>4</b></span> After</button>
-    <button class="phase" disabled title="Week 10. Assemble and export. (Not yet.)"><span class="pnum"><b>5</b></span> Lesson &amp; reflect</button>
-    <button class="phase ref" disabled title="Ohio PK–5 standards. (Not yet.)">Standards</button>
-    <button class="phase ref" disabled title="The 3-Pager. (Not yet.)">Template</button>
+    <button class="phase on" data-phase="background" title="Week 6. Who you are, your placement, your concept and students, and the lesson you have — or the idea."><span class="pnum"><b>1</b></span> Background</button>
+    <button class="phase" disabled title="Week 7. Your research question. (Not yet.)"><span class="pnum"><b>2</b></span> Question</button>
+    <button class="phase" data-phase="during" title="Week 8. The activities, minute by minute."><span class="pnum"><b>3</b></span> During</button>
+    <button class="phase" disabled title="Week 9. The routine — built in nVoke. (Not yet.)"><span class="pnum"><b>4</b></span> Before</button>
+    <button class="phase" disabled title="Week 10. The artifact. (Not yet.)"><span class="pnum"><b>5</b></span> After</button>
+    <button class="phase" disabled title="Week 10. Assemble and export. (Not yet.)"><span class="pnum"><b>6</b></span> Lesson</button>
   </div>
-  <div class="tip" style="margin:8px 0 0">Why During before Before? You plan the core of the lesson first, then the routine that opens it and the artifact that closes it — the same order the course builds it (Weeks 8, 9, 10).</div>
-  <div class="proto"><b>Prototype.</b> The During tab only, with sample data. Nothing here is saved anywhere but this browser. The AI buttons are placed but not wired.</div>
+  <div class="small" style="margin:6px 0 0;color:#8a6a1a">Prototype — Background and During, sample data, this browser only; AI buttons placed, not wired.</div>
 
-  <div class="projbar">
-    <button class="ghost" id="saveProj">⬇ Save project (.json)</button>
-    <label class="ghost" for="loadProj" style="cursor:pointer">⬆ Load project (.json)<input type="file" id="loadProj" accept=".json" hidden></label>
-    <span class="grow"></span>
-    <button class="ghost" id="tipsBtn" title="Show or hide the explanations under the fields">💡 Show tips</button>
-    <span class="note" id="saveNote">Autosaves in this browser</span>
-    <button class="ghost" id="resetProj" title="Put the sample data back">↺ Reset sample</button>
+
+  <!-- ===== ① BACKGROUND ===== -->
+  <div class="panel on" data-panel="background">
+    <div class="tiles" id="tiles"></div>
   </div>
 
-  <!-- ===== ② DURING ===== -->
-  <div class="card">
+  <!-- ===== ③ DURING ===== -->
+  <div class="panel" data-panel="during">
+  <div id="duringChips" style="margin:0 0 4px"></div>
+  <div class="card" style="display:none">
     <h2>② During — the shape of the lesson</h2>
     <p class="lead">Set how much time you have. Then carve it: one routine before, one artifact after, and in the middle two or three <b>activities</b> that build on each other. <span class="tip">A <b>thread</b> is the line between two blocks — what the students now have that the next block needs.</span></p>
     <div class="doors">
@@ -205,13 +285,14 @@
     <div class="card tl">
       <div class="tlhead"><b>The lesson, minute by minute</b><span class="budget" id="budget"></span></div>
       <div id="timeline"></div>
-      <div class="addrow"><button class="ghost" id="addAct">＋ Add an activity</button><button class="ghost" id="openShapes">Start from a shape…</button></div>
+      <div class="addrow"><button class="drawerToggle" id="drawerToggle" title="Activities you can put on the timeline, and shapes to start from.">🧩 Activities</button><button class="ghost" id="addAct">＋ Add</button><button class="ghost" id="openShapes">Start from a shape…</button></div>
       <div class="small" style="margin:10px 0 0 14px">Before and After are one block each — that's the rule. Drag the middle activities to reorder, or use ▲▼. Click any block to edit it.</div>
     </div>
 
     <!-- editor -->
     <div class="card ed" id="editor"><div class="empty">Click a block on the timeline to edit it.</div></div>
   </div>
+  </div><!-- /during panel -->
 </div>
 
 <!-- drawer -->
@@ -225,9 +306,16 @@
   <div class="small">Replaces the middle of your timeline with the shape's activities. Before and After stay.</div>
   <div id="shapeList"></div>
 </div>
+<div id="pdfModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><b>Ohio's Learning Standards | Mathematics (2017)</b><span class="small">Ohio Department of Education</span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pdfModal').classList.remove('open')">✕</button></div><iframe src="standards/Ohio-Learning-Standards-Mathematics-2017.pdf" title="Ohio standards"></iframe></div></div>
 <div id="toast"></div>
 
+<script src="standards/ohio-math-k5.js"></script>
 <script>
+/* ---------- Ohio standards — PROTOTYPE paraphrases for grades 2 and 4; the real app loads ODE's full text for K–5 ---------- */
+const OM = window.OHIO_MATH || {grades:[],standards:{},practices:[]};
+function gradeSpan(g){ const i=OM.grades.indexOf(g); if(i<0) return []; return [OM.grades[i-1],OM.grades[i],OM.grades[i+1]].filter(Boolean); }
+function stdText(code){ for(const g of OM.grades){ const hit=(OM.standards[g]||[]).find(x=>x[0]===code); if(hit) return hit[2]; } return ""; }
+
 /* ---------- the palette ---------- */
 const ACTIVITIES = {
   notice:   {name:"Notice & wonder",          sub:"A situation or image, no question yet. What do you notice? What do you wonder?", extra:{key:"shown",label:"What is shown"}, link:"https://www.nctm.org/noticeandwonder/"},
@@ -258,7 +346,7 @@ let seq=0; function uid(){ return "a"+(++seq)+"_"+Math.random().toString(36).sli
 
 const SAMPLES = {
   lesson: {
-    door:"lesson", block:60,
+    door:"lesson", block:60, bg:{names:"Sam R.", section:"hamilton", grade:"Grade 2", host:"Ms. K. Eureka Math, whole-group, 60-minute block. Non-negotiable: every student talks math every day.", concept:"Making a ten to add within 20 — decomposing an addend to complete a ten", students:"Ava, Marcus, Lena", question:"When students make a ten to add, how do they decide which addend to break apart?", samples:"Ava: 9 + 4 — drew 9 dots, then 4, circled 10, wrote 13. Marcus: counted all 13 on fingers. Lena: wrote 13 with no ten shown.", standards:["2.OA.2"], practices:["MP.7"], scriptName:"EngageNY G2 M1 Lesson 3 — Make a ten to add within 20 (PDF)"},
     before:{id:"before", type:"before", title:"Pairs to Make 10 (from the script's fluency block)", min:6, objective:"Recall the ten-partners quickly, without being shown which addend to break.", students:"Write the addition sentence that makes 10 on white boards; show me.", teacher:"I say a number. Six or seven numbers, no comment on which addend to break.", thread:"They have the ten-partners in hand; nobody has said what to do with them."},
     during:[
       Object.assign(blankAct("script"), {title:"Concept Development — make a ten (Lesson 3, EngageNY G2 M1)", min:25,
@@ -281,7 +369,7 @@ const SAMPLES = {
     after:{id:"after", type:"after", title:"Exit ticket (the script's) + one line: 'Which number did you break, and why?'", min:8, objective:"Each student shows one make-ten solution and names the addend they chose.", students:"The script's exit ticket as printed, plus one line at the bottom.", teacher:"Read aloud if needed. Collect.", thread:""},
   },
   idea: {
-    door:"idea", block:45,
+    door:"idea", block:45, bg:{names:"Jordan P. & Casey L.", section:"oxford", grade:"Grade 4", host:"Mr. D. Bridges. 45-minute block, small groups. Non-negotiable: manipulatives on every table.", concept:"Fractions of a set", students:"Jordan, Maya, Eli", question:"How do students reason about equal shares of a set?", samples:"Jordan: 3/4 of 12 — grouped into 4 groups of 3, took 3 groups. Maya: circled 3 counters, said 'three fourths'. Eli: shaded 9 of 12, no grouping shown.", standards:["4.NF.4","4.NF.1"], practices:["MP.2","MP.3"], scriptName:""},
     before:{id:"before", type:"before", title:"Same or Different: 12 counters in 4 groups / 12 counters in 3 groups", min:6, objective:"Students describe a set as groups without being asked to name a fraction.", students:"Say what's the same and what's different about two images.", teacher:"Show both. Record their words; don't say 'fourths'.", thread:"'Groups' is in the room; 'fraction of' is not."},
     during:[
       Object.assign(blankAct("task"), {title:"Show 3/4 of 12 counters — in more than one way", min:15,
@@ -314,7 +402,7 @@ const SAMPLES = {
 };
 
 /* ---------- state ---------- */
-const STORE="bda-planner-proto-v2";
+const STORE="bda-planner-proto-v5";
 let state=null, selId=null;
 function load(){ try{ const s=localStorage.getItem(STORE); if(s){ state=JSON.parse(s); return; } }catch(e){} state=JSON.parse(JSON.stringify(SAMPLES.lesson)); }
 function save(){ try{ localStorage.setItem(STORE,JSON.stringify(state)); document.getElementById("saveNote").textContent="Autosaved "+new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}); }catch(e){} }
@@ -322,18 +410,62 @@ function allBlocks(){ return [state.before, ...state.during, state.after]; }
 function byId(id){ return allBlocks().find(b=>b.id===id); }
 function used(){ return allBlocks().reduce((n,b)=>n+(+b.min||0),0); }
 
-/* ---------- render: doors + block ---------- */
-function renderTop(){
-  document.getElementById("doorLesson").classList.toggle("on", state.door==="lesson");
-  document.getElementById("doorIdea").classList.toggle("on", state.door==="idea");
-  document.getElementById("blockMin").value=state.block;
+/* ---------- render: Background accordion ---------- */
+
+function bgDone(){ const g=state.bg||{}; return [ !!(g.grade&&state.block&&g.concept&&g.students&&g.question), !!(state.door==="idea"||(state.door==="lesson"&&g.scriptName)) ]; }
+function I(text){ return `<span class="i" tabindex="0">i<span class="pop">${text}</span></span>`; }
+function renderBackground(){
+  const g=state.bg=state.bg||{}; if(!Array.isArray(g.standards)) g.standards=[]; const done=bgDone();
+  const span=gradeSpan(g.grade);
+  let stdHtml="";
+  if(span.length){
+    stdHtml='<div class="stds">'+span.map(gr=>{ const rows=OM.standards[gr]||[]; let last=""; const now=gr===g.grade; const body=rows.map(([c,d,t])=>{ const dh=d!==last?`<div class="dh">${d}</div>`:""; last=d; return dh+`<label title="${esc(t)}"><input type="checkbox" data-std="${c}" ${g.standards.includes(c)?"checked":""}><b>${c}</b><span>${esc(t)}</span></label>`; }).join(""); return `<details class="gr" ${now?"open":""}><summary>${gr}${now?"":" <span style='font-weight:400;text-transform:none;letter-spacing:0'>· one grade "+(OM.grades.indexOf(gr)<OM.grades.indexOf(g.grade)?"below":"above")+"</span>"}</summary>${body}</details>`; }).join("")
+      +`<details><summary>Standards for Mathematical Practice — pick one or two the lesson leans on</summary>${OM.practices.map(([c,n,t])=>`<label title="${esc(t)}"><input type="checkbox" data-mp="${c}" ${(g.practices||[]).includes(c)?"checked":""}><b>${c}</b><span>${esc(n)}</span></label>`).join("")}</details></div>`;
+  } else stdHtml=`<div class="small" style="margin-top:6px">Pick a grade to see its standards — with the grade below and the grade above.</div>`;
+  const left=`<h2><span class="n">${done[0]?"✓":"1"}</span>Your placement, concept &amp; students${I("From your Week 6 Concept Profile — paste it in once; every tab reads it. The samples themselves stay off the app; only your descriptions of them are here.")}</h2>
+    <div class="cols"><div>
+      <label>Grade</label><select data-bg="grade"><option value="">…</option>${["Kindergarten","Grade 1","Grade 2","Grade 3","Grade 4","Grade 5"].map(x=>`<option ${g.grade===x?"selected":""}>${x}</option>`).join("")}</select>
+      <label>Math block ${I("How many minutes your host teacher gives to math. Ask — placements differ. The During tab's timeline is exactly this long.")}</label><input type="number" min="20" max="120" step="5" data-bg="block" value="${state.block}">
+      <label>Host teacher &amp; classroom ${I("Their teaching style, one non-negotiable they hold for math, and what the class is working on during your Weeks 11–12 immersion.")}</label><textarea data-bg="host" style="min-height:110px">${esc(g.host||"")}</textarea>
+      <label>Focus students ${I("Two or three students whose work you'll follow, chosen with your host teacher. Pseudonyms only — real names never leave the classroom.")}</label><input type="text" data-bg="students" value="${esc(g.students||"")}">
+    </div><div>
+      <label>The concept ${I("One mathematical idea students build understanding of — fractions of a set, making a ten, place value. Not a whole strand (“fractions”) and not a bare skill (“adding fractions”).")}</label><input type="text" data-bg="concept" value="${esc(g.concept||"")}">
+      <label>Your question — a first read ${I("A genuine question about how students understand the concept — not whether they got it right, and not a diagnosis of a child. Week 7 sharpens it.")}</label><input type="text" data-bg="question" value="${esc(g.question||"")}">
+      <label>The collected work, described ${I("Three to five samples across your focus students. Say what each one shows about how the student understands the concept. The images stay in your Canvas submission, not here.")}</label><textarea data-bg="samples" style="min-height:84px">${esc(g.samples||"")}</textarea>
+      <label>Standards ${I("The LESSON is aligned to one to three state standards. The parts of the lesson get objectives — those you write. Pick from the grade's list, or type your concept and press Find the standards to have the app match it against the list.")} <button class="tbtn" style="margin-left:8px" type="button" onclick="toast('Prototype — in the real app this matches your concept against the grade\'s standards')">Find the standards</button><button class="tbtn" style="margin-left:6px" type="button" onclick="document.getElementById('pdfModal').classList.add('open')">Open Ohio's standards (PDF)</button></label>${stdHtml}
+    </div></div>`;
+  const right=`<h2><span class="n">${done[1]?"✓":"2"}</span>Your lesson${I("Do you have a lesson from your host teacher? If yes, upload it — you'll work from it: keep its spirit, change how it's delivered. If no, say the idea in a sentence; the During tab grows it.")}</h2>
+    <div class="yn" style="flex-direction:row"><button data-door="lesson" class="${state.door==="lesson"?"on":""}">Yes — I'll work from it<small>Keep its spirit; change how it's delivered.</small></button><button data-door="idea" class="${state.door==="idea"?"on":""}">No — I have an idea<small>A task, a routine, something from a work sample.</small></button></div>
+    ${state.door==="lesson"?`<div class="uprow" style="margin-top:12px;align-items:center"><button class="ghost" type="button" onclick="toast('Prototype — the upload comes with the real app')">📄 Upload the PDF</button><button class="ghost" type="button" onclick="toast('Prototype — photos come with the real app')">📷 Photograph it</button>${I("Ask your host teacher for the electronic copy first — Eureka/EngageNY, Illustrative Math, Bridges, enVision all have one. Photos are the fallback. Crop out any student names.")}${g.scriptName?`<span class="small" style="margin-left:6px"><b>${esc(g.scriptName)}</b></span>`:""}</div>
+      ${g.scriptName?`<div class="pdf"><iframe src="samples/engageny-g2-m1-lesson-3.pdf#view=FitH" title="Your lesson"></iframe></div>`:``}`:""}
+    ${state.door==="idea"?`<label>The idea, in a sentence or two</label><textarea data-bg="idea" style="min-height:140px">${esc(g.idea||"")}</textarea><div class="grow"></div>`:""}
+    <div class="next" style="display:flex;justify-content:flex-end"><button class="primary" data-goto="during" ${done.every(Boolean)?"":"disabled"}>Go to the During tab →</button></div>`;
+  const wrap=document.getElementById("tiles"); wrap.innerHTML=`<div class="tile ${done[0]?"done":""}">${left}</div><div class="tile lesson ${done[1]?"done":""}">${right}</div>`;
+  const refresh=()=>{ const d=bgDone(); wrap.querySelectorAll(".tile").forEach((t,i)=>{ t.classList.toggle("done",d[i]); t.querySelector(".n").textContent=d[i]?"✓":i+1; }); const go=wrap.querySelector("[data-goto]"); if(go) go.disabled=!d.every(Boolean); };
+  wrap.querySelectorAll("[data-bg]").forEach(inp=>{ inp.oninput=e=>{ const k=inp.dataset.bg; if(k==="block"){ state.block=Math.max(20,Math.min(120,+e.target.value||45)); } else state.bg[k]=e.target.value; save(); refresh(); }; if(inp.dataset.bg==="grade") inp.onchange=()=>{ state.bg.standards=[]; save(); renderBackground(); }; });
+  wrap.querySelectorAll(".stds label span").forEach(sp=>sp.onclick=e=>{ e.preventDefault(); sp.parentElement.classList.toggle("open"); });
+  wrap.querySelectorAll("[data-mp]").forEach(cb=>cb.onchange=()=>{ const c=cb.dataset.mp; state.bg.practices=state.bg.practices||[]; if(cb.checked){ if(state.bg.practices.length>=2){ cb.checked=false; toast("One or two practices — the ones this lesson really leans on."); return; } state.bg.practices.push(c); } else state.bg.practices=state.bg.practices.filter(x=>x!==c); save(); });
+  wrap.querySelectorAll("[data-std]").forEach(cb=>cb.onchange=()=>{ const c=cb.dataset.std; if(cb.checked){ if(state.bg.standards.length>=3){ cb.checked=false; toast("Three standards at most — a lesson can't be about everything."); return; } state.bg.standards.push(c); } else state.bg.standards=state.bg.standards.filter(x=>x!==c); save(); });
+  wrap.querySelectorAll("[data-goto]").forEach(b=>b.onclick=()=>showPhase("during"));
+  wrap.querySelectorAll("[data-door]").forEach(b=>b.onclick=()=>{ const w=b.dataset.door; if(state.door===w) return; if(!confirm("Switch? In the prototype this loads the other sample.")) return; state=JSON.parse(JSON.stringify(SAMPLES[w])); selId=null; save(); renderAll(); });
+  wireInfo();
 }
-document.querySelectorAll(".door").forEach(d=>d.onclick=()=>{
-  const which=d.dataset.door; if(state.door===which) return;
-  if(!confirm("Switch doors? In the prototype this loads the other sample. Your edits to this one are kept in the browser only until you reset.")) return;
-  state=JSON.parse(JSON.stringify(SAMPLES[which])); selId=null; save(); renderAll();
-});
-document.getElementById("blockMin").onchange=e=>{ state.block=Math.max(20,Math.min(120,+e.target.value||45)); save(); renderTimeline(); };
+function wireInfo(){ document.querySelectorAll(".i").forEach(el=>{ if(el.dataset.w) return; el.dataset.w=1; el.onclick=e=>{ e.stopPropagation(); const on=el.classList.contains("on"); document.querySelectorAll(".i.on").forEach(x=>x.classList.remove("on")); if(!on) el.classList.add("on"); }; }); }
+document.addEventListener("click",()=>document.querySelectorAll(".i.on").forEach(x=>x.classList.remove("on")));
+function renderToolbar(){ const g=state.bg||{}; document.getElementById("tbNames").value=g.names||""; document.getElementById("tbSection").value=g.section||""; }
+document.getElementById("tbNames").oninput=e=>{ state.bg.names=e.target.value; save(); };
+document.getElementById("tbSection").onchange=e=>{ state.bg.section=e.target.value; save(); };
+function renderChips(){
+  const g=state.bg||{}; const d=document.getElementById("duringChips");
+  d.innerHTML=`<span class="chip"><b>${esc(g.grade||"—")}</b> · ${state.block} min<a href="#" data-goto="background" title="Change on the Background tab">change</a></span><span class="chip">${state.door==="lesson"?"Host teacher's lesson":"My own idea"}${g.scriptName?` · <b>${esc(g.scriptName)}</b>`:""}</span><span class="chip">${esc(g.concept||"")}${(g.standards||[]).length?` · <b title="${esc(g.standards.map(c=>c+" — "+stdText(c)).join("\n"))}">${g.standards.join(", ")}</b>`:""}${(g.practices||[]).length?` · ${g.practices.join(", ")}`:""}</span>`;
+  d.querySelectorAll("[data-goto]").forEach(a=>a.onclick=e=>{ e.preventDefault(); showPhase("background"); });
+}
+function showPhase(name){ document.querySelectorAll(".phase[data-phase]").forEach(b=>b.classList.toggle("on",b.dataset.phase===name)); document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("on",p.dataset.panel===name)); try{localStorage.setItem(STORE+"-phase",name);}catch(e){} if(name==="during") renderChips(); window.scrollTo(0,0); }
+document.querySelectorAll(".phase[data-phase]").forEach(b=>b.onclick=()=>showPhase(b.dataset.phase));
+
+/* ---------- render: doors + block (old, kept for the hidden card) ---------- */
+function renderTop(){ renderToolbar(); renderBackground(); renderChips(); }
+
 
 /* ---------- render: timeline ---------- */
 function renderTimeline(){
@@ -387,9 +519,7 @@ function renderEditor(){
   if(kind==="during") h+=`<label>Activity type</label><select id="f_type">${Object.entries(ACTIVITIES).map(([k,v])=>`<option value="${k}" ${k===b.type?"selected":""}>${v.name}</option>`).join("")}</select><div class="tip" style="margin-top:4px">${esc(A.sub||"")}${A.link?` · <a href="${A.link}" target="_blank" rel="noopener">See examples</a>`:""}</div>`;
   h+=`<div class="row"><div><label>Title<span class="req">*</span> <span class="tip">— what you'd call it on the plan</span></label><input type="text" id="f_title" value="${esc(b.title)}"></div><div class="narrow"><label>Minutes<span class="req">*</span></label><input type="text" id="f_min" inputmode="numeric" value="${b.min}"></div></div>`;
   if(kind==="during"&&b.type==="script"){
-    h+=`<label>The lesson, as your host teacher gave it</label>
-      <div class="uprow"><button class="ghost" type="button" onclick="toast('Prototype — upload comes with the real app')">📄 Upload the electronic copy (PDF)</button><button class="ghost" type="button" onclick="toast('Prototype — photos come with the real app')">📷 No electronic copy? Photograph it</button></div>
-      <div class="tip" style="margin-top:4px">Ask your host teacher for the electronic copy first — Eureka/EngageNY, Illustrative Math, Bridges, enVision all have one. Crop out any student names.</div>
+    h+=`<div class="small" style="margin-top:10px">Working from: <b>${esc((state.bg||{}).scriptName||"your host teacher's lesson (upload it on the Background tab)")}</b>. In the real app its text sits here, beside the questions.</div>
       <div class="guide"><b>The four questions.</b> Read each part of the script and ask: where do students get room? <i>Delivery for engagement, structure for evidence.</i></div>
       <div class="four">
         <div><b>1 · Collaborate</b> — do students have room to work on it together?<textarea id="f_four_collab">${esc(b.four.collab)}</textarea></div>
@@ -403,7 +533,7 @@ function renderEditor(){
   }
   h+=`<div class="two"><div><label>What students do<span class="req">*</span></label><textarea id="f_students">${esc(b.students||"")}</textarea></div><div><label>What I do</label><textarea id="f_teacher">${esc(b.teacher||"")}</textarea></div></div>`;
   h+=`<label>Objective<span class="req">*</span> <span class="hint">— what students should be able to do or understand by the end of this part</span></label><input type="text" id="f_objective" value="${esc(b.objective||"")}">
-      <div class="small" style="margin-top:4px">Standards are what the state expects by the end of the year; an objective is what <i>you</i> expect by the end of these ${b.min} minutes. You write objectives. The lesson's standards live on the Profile.</div>`;
+      <div class="small" style="margin-top:4px">Standards are what the state expects by the end of the year; an objective is what <i>you</i> expect by the end of these ${b.min} minutes. You write objectives. The lesson's standards are on the Background tab.</div>`;
   h+=`<label>Key questions <span class="deep">go deeper</span><span class="tip"> — what <i>you</i> ask while they work</span></label><textarea id="f_questions">${esc(b.questions||"")}</textarea>`;
   h+=`<label>Anticipated student responses <span class="deep">go deeper</span><span class="tip"> — by pseudonym, from your work samples</span></label><textarea id="f_anticipate">${esc(b.anticipate||"")}</textarea>`;
   h+=`<label>Materials <span class="deep">go deeper</span></label><input type="text" id="f_materials" value="${esc(b.materials||"")}">`;
@@ -435,10 +565,10 @@ document.getElementById("resetProj").onclick=()=>{ if(!confirm("Put the sample d
 /* ---------- misc ---------- */
 function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 let toastT; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.style.opacity=1; clearTimeout(toastT); toastT=setTimeout(()=>t.style.opacity=0,2600); }
-document.getElementById("tipsBtn").onclick=()=>{ document.body.classList.toggle("tips"); try{localStorage.setItem(STORE+"-tips",document.body.classList.contains("tips")?"1":"0");}catch(e){} document.getElementById("tipsBtn").textContent=document.body.classList.contains("tips")?"💡 Hide tips":"💡 Show tips"; };
-try{ if(localStorage.getItem(STORE+"-tips")!=="0"){ document.body.classList.add("tips"); document.getElementById("tipsBtn").textContent="💡 Hide tips"; } }catch(e){}
+document.getElementById("tipsBtn").onclick=()=>{ document.body.classList.toggle("tips"); try{localStorage.setItem(STORE+"-tips",document.body.classList.contains("tips")?"1":"0");}catch(e){}  };
+try{ if(localStorage.getItem(STORE+"-tips")!=="0"){ document.body.classList.add("tips");  } }catch(e){}
 function renderAll(){ renderTop(); renderTimeline(); renderEditor(); renderDrawer(); }
-load(); if(!selId) selId=(state.during[0]||{}).id||null; renderAll();
+load(); if(!selId) selId=(state.during[0]||{}).id||null; renderAll(); try{ showPhase(localStorage.getItem(STORE+"-phase")||"background"); }catch(e){ showPhase("background"); }
 </script>
 </body>
 </html>
