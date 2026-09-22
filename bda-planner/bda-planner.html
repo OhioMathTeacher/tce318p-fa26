@@ -229,6 +229,7 @@
   #actModal details.more summary{cursor:pointer;font-weight:700;color:var(--outline);font-size:14px}
   .slice .prog{position:absolute;top:7px;right:30px;font-size:11px;font-weight:700;color:var(--muted)}
   .slice .prog.done{color:var(--ok)}
+  #build{position:fixed;right:10px;bottom:8px;font-size:11.5px;color:var(--muted);opacity:.55;z-index:30;pointer-events:none;font-weight:600}
   #nvokeModal{position:fixed;inset:0;background:#0008;z-index:70;display:none;padding:14px}
   #nvokeModal.open{display:flex}
   #nvokeModal .box{flex:1;background:#fff;border-radius:12px;display:flex;flex-direction:column;overflow:hidden}
@@ -318,7 +319,7 @@
   #profilePrint{display:none}
   @media print{
     body{background:#fff;font-size:12pt;line-height:1.35}
-    body>.wrap, #toast, #pdfModal, #pickModal, #actModal, #nvokeModal{display:none!important}
+    body>.wrap, #toast, #pdfModal, #pickModal, #actModal, #nvokeModal, #build{display:none!important}
     #profilePrint{display:block;max-width:7in;margin:0 auto;color:#000}
     #profilePrint h1{font-size:17pt;margin:0 0 2pt}
     #profilePrint .meta{font-size:10.5pt;color:#333;margin:0 0 14pt}
@@ -444,6 +445,7 @@
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
+<div id="build">Build 25</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
