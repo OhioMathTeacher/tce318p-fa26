@@ -589,7 +589,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 56</div>
+<div id="build">Build 57</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -609,7 +609,7 @@ async function askWorker(payload){
   const r=await fetch(WORKER_URL+"/chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(Object.assign({passcode:pc,sid:sid(),name:g.names||"",section:g.section||"",profile},payload))});
   const j=await r.json().catch(()=>({error:"bad reply"}));
   if(r.status===401){ try{localStorage.removeItem("bda-passcode");}catch(e){} logEvent("ai","passcode refused"); toast("That passcode didn't work — try again."); return null; }
-  if(r.status===429){ logEvent("ai","daily turn cap reached"); toast(`You've used today's ${j.cap} turns. Tomorrow.`); return null; }
+  if(r.status===429){ const shared=j.error==="cap-network"||j.error==="cap-course"; logEvent("ai",shared?"shared cap reached ("+j.error+")":"daily turn cap reached"); toast(shared?"The planning partner has hit a shared daily limit — tell your instructor; this shouldn't happen in normal use.":`You've used today's ${j.cap} turns. Tomorrow.`); return null; }
   if(!j.ok){ logEvent("error","ai: "+(j.error||"?")+" (http "+r.status+")"); toast("The planning partner is unavailable right now ("+(j.error||"?")+")."); return null; }
   return j;
 }
