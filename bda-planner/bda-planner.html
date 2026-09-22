@@ -309,7 +309,7 @@
   .i{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--outline);color:var(--outline);font-size:11px;font-weight:800;font-style:normal;cursor:pointer;margin-left:6px;vertical-align:middle;background:#fff;position:relative;user-select:none}
   .i .pop{display:none;position:absolute;left:24px;top:-8px;z-index:30;width:min(320px,70vw);background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 22px #0002;padding:10px 12px;font-size:13px;font-weight:400;color:var(--ink);line-height:1.45;text-align:left}
   .i:hover .pop,.i.on .pop{display:block}
-  .stds{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:9px;padding:6px 10px;margin-top:4px}
+  .stds{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:9px;padding:6px 10px;margin-top:4px}
   .stds .gh{font-weight:800;font-size:12.5px;color:var(--ink);margin:8px 0 2px;text-transform:uppercase;letter-spacing:.3px}
   .stds .gh.now{color:var(--outline)}
   .stds .dh{font-weight:600;font-size:12px;color:var(--muted);margin:6px 0 0}
@@ -398,6 +398,35 @@
 const OM = window.OHIO_MATH || {grades:[],standards:{},practices:[]};
 function gradeSpan(g){ const i=OM.grades.indexOf(g); if(i<0) return []; return [OM.grades[i-1],OM.grades[i],OM.grades[i+1]].filter(Boolean); }
 function stdText(code){ for(const g of OM.grades){ const hit=(OM.standards[g]||[]).find(x=>x[0]===code); if(hit) return hit[2]; } return ""; }
+
+/* ---------- the Worker (AI) ---------- */
+const WORKER_URL="https://bda-planner.ohiomathteacher.workers.dev";
+function sid(){ try{ let v=localStorage.getItem("bda-sid"); if(!v){ v=Math.random().toString(36).slice(2)+Date.now().toString(36); localStorage.setItem("bda-sid",v); } return v; }catch(e){ return "nosid"; } }
+function passcode(){ try{ let p=localStorage.getItem("bda-passcode"); if(!p){ p=prompt("The course passcode (from class):"); if(!p) return null; localStorage.setItem("bda-passcode",p.trim()); } return p; }catch(e){ return prompt("The course passcode:"); } }
+async function askWorker(payload){
+  const pc=passcode(); if(!pc) return null;
+  const g=state.bg||{};
+  const profile={grade:g.grade,context:g.host,concept:g.concept,students:(g.studentsRows||[]).map(r=>r.join(" — ")).join("; "),first_question:g.question,samples:(g.samplesRows||[]).map(r=>r.slice(0,3).join(" · ")).join("\n"),standards:(g.standards||[]).map(c=>c+" "+stdText(c)).join("\n")};
+  const r=await fetch(WORKER_URL+"/chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(Object.assign({passcode:pc,sid:sid(),name:g.names||"",section:g.section||"",profile},payload))});
+  const j=await r.json().catch(()=>({error:"bad reply"}));
+  if(r.status===401){ try{localStorage.removeItem("bda-passcode");}catch(e){} toast("That passcode didn't work — try again."); return null; }
+  if(r.status===429){ toast(`You've used today's ${j.cap} turns. Tomorrow.`); return null; }
+  if(!j.ok){ toast("The planning partner is unavailable right now ("+(j.error||"?")+")."); return null; }
+  return j;
+}
+async function findStandards(btn){
+  const g=state.bg||{}; if(!g.grade){ toast("Pick a grade first."); return; } if(!(g.concept||"").trim()){ toast("Type the concept first."); return; }
+  const span=gradeSpan(g.grade); const list=span.map(gr=>`— ${gr} —\n`+(OM.standards[gr]||[]).map(r=>`${r[0]} ${r[2]}`).join("\n")).join("\n");
+  btn.disabled=true; btn.textContent="Finding…";
+  const j=await askWorker({mode:"standards",tab:"standards",content:{concept:g.concept,grade:g.grade},list});
+  btn.disabled=false; btn.textContent="Find the standards";
+  if(!j) return;
+  const codes=(j.data.matches||[]).map(m=>m.code.trim()).filter(c=>stdText(c));
+  if(!codes.length){ toast("No match found in the list — pick by hand."); return; }
+  state.bg.standards=codes.slice(0,3); save(); renderBackground();
+  const why=(j.data.matches||[]).filter(m=>stdText(m.code.trim())).map(m=>`${m.code.trim()} — ${m.why}`).join("\n");
+  setTimeout(()=>alert("Matched from your concept — uncheck any that don't fit:\n\n"+why),50);
+}
 
 /* ---------- the palette ---------- */
 const ACTIVITIES = {
@@ -500,7 +529,7 @@ function used(){ return planTotal(); }
 /* ---------- render: Background accordion ---------- */
 
 function bgDone(){ const g=state.bg||{}; const rows=(g.samplesRows||[]).filter(r=>r.some(x=>x&&x.trim())); return [ !!(g.grade&&state.block&&g.concept&&(g.studentsRows||[]).some(r=>r[0])&&rows.length>=3&&g.question), !!(state.door==="idea"||(state.door==="lesson"&&g.scriptName)) ]; }
-function profileWords(){ const g=state.bg||{}; const parts=[g.host,g.concept,g.before,g.after,g.think,...(g.sources||[]).map(r=>r[1]),g.question,g.why,...(g.studentsRows||[]).flat(),...(g.samplesRows||[]).map(r=>r.slice(0,3)).flat()]; return parts.join(' ').split(/\s+/).filter(Boolean).length; }
+function profileWords(){ const g=state.bg||{}; const parts=[g.host,g.concept,g.think,...(g.sources||[]).map(r=>r[1]),g.question,g.why,...(g.studentsRows||[]).flat(),...(g.samplesRows||[]).map(r=>r.slice(0,3)).flat()]; return parts.join(' ').split(/\s+/).filter(Boolean).length; }
 function I(text){ return `<span class="i" tabindex="0">i<span class="pop">${text}</span></span>`; }
 function renderBackground(){
   const g=state.bg=state.bg||{}; if(!Array.isArray(g.standards)) g.standards=[]; const done=bgDone();
@@ -531,8 +560,8 @@ function renderBackground(){
     <div class="cols">
       <div class="sec"><h3><span class="k">2a</span>The concept${I("One specific, grade-appropriate mathematical concept — an idea students build understanding of. Not a whole strand (“fractions”), not a bare skill (“adding fractions”). Chosen with your host teacher, from what the class is actually doing.")}</h3>
         <label>The concept, in a sentence</label><input type="text" data-bg="concept" value="${esc(g.concept||"")}">
-        <label>Standards ${I("One or two Ohio standards the concept lives in. The LESSON is aligned to these; later, each part of the lesson gets an objective you write. Pick from the list, or type your concept and press Find the standards.")} <button class="tbtn" style="margin-left:8px" type="button" onclick="toast('Prototype — in the real app this matches your concept against the grade\\'s standards')">Find the standards</button><button class="tbtn" style="margin-left:6px" type="button" onclick="document.getElementById('pdfModal').classList.add('open')">Ohio's standards (PDF)</button></label>${stdHtml}
-        <div class="row" style="margin-top:2px"><div><label>What math background knowledge do students need for this lesson? ${I("The ideas this concept is built on — often in the grade below. The grade-below list is right above for exactly this.")}</label><textarea data-bg="before" style="min-height:60px">${esc(g.before||"")}</textarea></div><div><label>What future math content will this lesson prepare students to do successfully? ${I("Where the concept goes next — often the grade above.")}</label><textarea data-bg="after" style="min-height:60px">${esc(g.after||"")}</textarea></div></div></div>
+        <label>Standards ${I("One or two Ohio standards the concept lives in. The LESSON is aligned to these; later, each part of the lesson gets an objective you write. Pick from the list, or type your concept and press Find the standards.")} <button class="tbtn" style="margin-left:8px" type="button" onclick="findStandards(this)">Find the standards</button><button class="tbtn" style="margin-left:6px" type="button" onclick="document.getElementById('pdfModal').classList.add('open')">Ohio's standards (PDF)</button></label>${stdHtml}
+      </div>
       <div class="sec"><h3><span class="k">2b</span>What the research — and your host teacher — say${I("One to three sources on the misconceptions and challenges students have with this concept. At least one from JSTOR (Miami's library gives you access): the permanent link or DOI, and three or four sentences on what it describes. Your host teacher can be one source — what they have seen students do with this concept, in your words. This seeds the “What Does Research Say?” section of your Final Report.")}</h3>
         <div class="why">At least one JSTOR source — the permanent link (jstor.org/stable/…) or a DOI (doi.org/…). <a href="https://www.jstor.org/" target="_blank" rel="noopener">Open JSTOR</a>. Your host teacher counts as one source.</div>
         <div class="rows">${g.sources.map((r,i)=>{ const host=r[2]==="host"; const ok=/^(https?:\/\/)?(www\.)?(jstor\.org\/stable\/|doi\.org\/10\.)\S+$/i.test((r[0]||"").trim()); return `<div class="rrow" style="grid-template-columns:1fr 1.6fr"><div><div class="yn" style="margin:0 0 6px;flex-direction:row"><button type="button" data-stype="${i}:jstor" class="${host?"":"on"}" style="padding:6px 10px;font-size:13px">JSTOR</button><button type="button" data-stype="${i}:host" class="${host?"on":""}" style="padding:6px 10px;font-size:13px">Host teacher</button></div>${host?`<div class="small">What your host teacher has seen students do with this concept — in your words. No name needed.</div>`:`<input type="text" placeholder="https://www.jstor.org/stable/… or https://doi.org/10.…" data-src="${i}:0" value="${esc(r[0])}"><div class="small" style="margin-top:3px">${r[0]?(ok?"✓ JSTOR link or DOI":"✗ not a JSTOR permanent link or DOI"):""}</div>`}</div><textarea placeholder="${host?"Three or four sentences: what does your host teacher say students commonly do, believe, or struggle with here?":"Three or four sentences: what misconceptions and challenges does this source describe for this concept?"}" data-src="${i}:1" style="min-height:96px">${esc(r[1])}</textarea></div>`; }).join("")}</div>
@@ -572,7 +601,7 @@ function exportProfile(){
     <h2>1b · The students</h2>${srows}
     <h2>1c · The collected work</h2>${wrows}
     <h2>1d · What shows up in the work</h2><p>${esc(g.think||"")}</p>
-    <h2>2a · The concept</h2><p>${esc(g.concept||"")}</p>${stds}${mps}<p style="margin-top:6pt"><b>Background knowledge students need:</b> ${esc(g.before||"")}</p><p><b>Future content this prepares them for:</b> ${esc(g.after||"")}</p>
+    <h2>2a · The concept</h2><p>${esc(g.concept||"")}</p>${stds}${mps}
     <h2>2b · What the research — and your host teacher — say</h2>${(g.sources||[]).filter(r=>r[0]||r[1]).map(r=>`<p><i>${r[2]==="host"?"Host teacher":esc(r[0])}</i><br>${esc(r[1])}</p>`).join("")||"<p>—</p>"}
     <h2>2c · The question I'm asking</h2><p><b>${esc(g.question||"")}</b></p><p>${esc(g.why||"")}</p>
     <div class="note">Pseudonyms only. Work samples de-identified. Written in BDA Planner.</div>${app}`;
