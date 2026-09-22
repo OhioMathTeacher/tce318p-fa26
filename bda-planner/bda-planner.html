@@ -180,7 +180,7 @@
   .sum b{color:var(--ink)}
   .sum.over b{color:var(--mark)}.sum.under b{color:#8a6a1a}
   .panes{display:grid;gap:18px;margin-top:10px;align-items:start}
-  .pane{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px 16px;min-height:420px}
+  .pane{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px 16px}
   .pane .ph{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
   .pane .ph h2{margin:0;font-size:19px;flex:1}
   .pane.before .ph h2{color:var(--before)}.pane.during .ph h2{color:var(--during)}.pane.after .ph h2{color:var(--after)}
@@ -509,10 +509,14 @@ const ROUTINE_LIST=[
   ["Splat!","Dots, some covered by a splat. How many are under it? How do you know?","https://stevewyborney.com/"]];
 const ROUTINES=ROUTINE_LIST.map(r=>r[0]);
 const AFTER_SUB={exit:"One to three prompts on paper at the end; you keep every response.",transcript:"Two or three questions you ask in the closing discussion; you record what students actually say.",gallery:"Chosen solutions go to the board in an order you set; the artifact is the annotated photo.",probe:"Three questions for one focus student, one on one, with a jot-your-reasoning prompt."};
-let beforeOther=false;
 function blankBefore(){ return {id:"before",type:"before",name:"",prompt:"",cards:[],min:"",objective:"",withhold:"",entry:"",guard:"",students:"",teacher:"",thread:""}; }
-function blankAfter(){ return {id:"after",type:"after",kind:"exit",min:"",objective:"",prompts:[["",""],["",""]],questions:"",order:"",captures:"",answers:"",students:"",teacher:""}; }
+function blankAfter(){ return {id:"after",type:"after",kind:"",min:"",objective:"",prompts:[["",""],["",""]],questions:"",order:"",captures:"",answers:"",students:"",teacher:""}; }
 const AFTER_KINDS={exit:"Exit slip",transcript:"Discussion transcript",gallery:"Strategy gallery",probe:"One-on-one probe"};
+const AFTER_META={exit:{icon:"📝",tint:"#e6f4ea"},transcript:{icon:"🎙️",tint:"#e3f1ff"},gallery:{icon:"🖼️",tint:"#fff3d6"},probe:{icon:"👤",tint:"#f3e8ff"}};
+const ROUTINE_ICON="🖐";
+function beforeProgress(b){ const need=[(b.prompt||"").trim()||(b.cards||[]).some(c=>c&&c.trim()), b.students, b.objective, b.thread]; return [need.filter(v=>v&&String(v).trim()).length, need.length]; }
+function afterProgress(a){ const art=a.kind==="exit"?(a.prompts||[]).some(r=>r[0]&&r[0].trim()):a.kind==="gallery"?a.order:a.questions; const need=[art, a.students, a.objective, a.answers]; return [need.filter(v=>v&&String(v).trim()).length, need.length]; }
+function progLabel(pr){ return pr[0]===pr[1]?"✓ done":pr.join(" of "); }
 let seq=0; function uid(){ return "a"+(++seq)+"_"+Math.random().toString(36).slice(2,6); }
 
 const SAMPLES = {
@@ -576,7 +580,7 @@ const SAMPLES = {
 const STORE="bda-planner-proto-v10";
 let state=null, selId=null;
 function blankState(){ return {door:"", block:0, bg:{names:"",section:"",grade:"",host:"",concept:"",standards:[],practices:[],before:"",after:"",sources:[["",""]],studentsRows:[["",""],["",""],["",""]],samplesRows:[["","","",""],["","","",""],["","","",""]],think:"",question:"",why:"",scriptName:"",read:null,idea:""}, before:blankBefore(), during:[blankAct(null),blankAct(null),blankAct(null)], after:blankAfter(), view:"before"}; }
-function load(){ try{ const s=localStorage.getItem(STORE); if(s){ state=JSON.parse(s); if(state.views&&!state.view){ delete state.views; state.view="before"; } if(!state.migrated2){ state.migrated2=true; (state.during||[]).forEach(a=>{ const four=Object.values(a.four||{}).some(v=>v&&v.trim()); if(!a.title&&!a.students&&!a.teacher&&!a.objective&&!a.extra&&!a.thread&&!a.questions&&!a.anticipate&&!four) a.type=null; }); } return; } }catch(e){} state=blankState(); }
+function load(){ try{ const s=localStorage.getItem(STORE); if(s){ state=JSON.parse(s); if(state.views&&!state.view){ delete state.views; state.view="before"; } if(!state.migrated3){ state.migrated3=true; const a=state.after||{}; if(a.kind==="exit"&&!(a.prompts||[]).some(r=>(r[0]||"").trim()||(r[1]||"").trim())&&!a.students&&!a.teacher&&!a.objective&&!a.captures&&!a.answers) a.kind=""; } if(!state.migrated2){ state.migrated2=true; (state.during||[]).forEach(a=>{ const four=Object.values(a.four||{}).some(v=>v&&v.trim()); if(!a.title&&!a.students&&!a.teacher&&!a.objective&&!a.extra&&!a.thread&&!a.questions&&!a.anticipate&&!four) a.type=null; }); } return; } }catch(e){} state=blankState(); }
 function save(){ try{ localStorage.setItem(STORE,JSON.stringify(state)); document.getElementById("saveNote").textContent="Autosaved "+new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}); }catch(e){} }
 function allBlocks(){ return [state.before, ...state.during, state.after]; }
 function byId(id){ return allBlocks().find(b=>b.id===id); }
@@ -763,20 +767,15 @@ function renderPlan(){
 document.querySelectorAll("#views button").forEach(b=>b.onclick=()=>{ state.view=b.dataset.v; save(); renderPlan(); });
 const readsBar=`<div class="reads"><span>Second reads:</span><button class="ghost" onclick="toast('Hand it over — a classmate runs it. Prints the review sheet in the real app.')">Hand it over ▶</button><button class="ghost" disabled>Ask me</button><button class="ghost" disabled>Show me options</button><button class="ghost" disabled>Check this</button><span class="later">AI wired in the real app — optional</span></div>`;
 
+function routineMeta(name){ return ROUTINE_LIST.find(r=>r[0]===name); }
 function renderBefore(){
   const b=state.before=Object.assign(blankBefore(),state.before||{});
-  const other=beforeOther||(!!b.name&&!ROUTINES.includes(b.name));
-  const cards=(b.cards||[]).map((c,i)=>`<div class="ncard"><textarea data-cardtext="${i}" placeholder="7 + 8">${esc(c)}</textarea><span class="num">${i+1}</span><button class="x" data-delcard="${i}" title="Remove this card">✕</button></div>`).join("");
-  return `<div class="pane before"><div class="ph"><span class="tag">Before</span><h2>One routine</h2><span class="mins"><input type="text" inputmode="numeric" placeholder="15" data-bmin value="${esc(b.min)}">min</span>${I("The routine that opens the lesson — one, short, and it primes the concept without giving away the move the During is meant to reveal. Build it like an nVoke pack: cards you show, one question you ask.")}</div>
-    <label>1 · Select a routine <a class="small" data-routines style="cursor:pointer;text-decoration:underline;font-weight:500">what are these?</a></label><div style="display:flex;gap:8px;align-items:center"><select data-bsel style="width:auto;flex:1;max-width:300px"><option value="">Choose one…</option>${ROUTINES.map(r=>`<option ${b.name===r?"selected":""}>${r}</option>`).join("")}<option value="__other" ${other?"selected":""}>Other…</option></select><input type="text" data-b="name" value="${esc(b.name)}" placeholder="Name it, and where it's from" style="flex:1;${other?"":"display:none"}"></div>
-    <div class="nv" style="margin-top:10px"><div class="striplabel">2 · Your cards — what students see, one card each. Type on a card.</div><div class="cards">${cards}<div class="ncard add" data-addcard title="Add a card and type what's on it: a number, an expression, a figure described">＋ card</div></div>
-      <div class="prompt"><label style="margin-top:4px">3 · What you say <span class="hint">— the posing question, exactly</span></label><input type="text" data-b="prompt" value="${esc(b.prompt)}" placeholder="What's the same? What's different?"></div></div>
-    <div class="two"><div><label>What students do</label><textarea data-b="students">${esc(b.students)}</textarea></div><div><label>What I do</label><textarea data-b="teacher">${esc(b.teacher)}</textarea></div></div>
-    <label>Objective <span class="hint">— by the end of these minutes, students can…</span></label><input type="text" data-b="objective" value="${esc(b.objective)}">
-    <label>What must NOT be given away ${I("The move the During is designed to reveal. Name it here so you can check the routine against it.")}</label><input type="text" data-b="withhold" value="${esc(b.withhold)}">
-    <label>What entry thinking should it surface?</label><input type="text" data-b="entry" value="${esc(b.entry)}">
-    <label>The over-scaffold check <span class="hint">— read your cards and your question against the line above. Does anything give it away?</span></label><textarea data-b="guard">${esc(b.guard)}</textarea>
-    <div class="conn"><b>How does this routine connect to the first During activity?</b><textarea data-b="thread" style="margin-top:4px">${esc(b.thread)}</textarea></div>
+  const pr=beforeProgress(b);
+  const card=b.name?`<div class="slice filled" data-bopen style="--tint:#f1e8ff;border-color:var(--before)"><div><div class="sicon">${ROUTINE_ICON}</div><div class="sn" style="color:var(--before)">${esc(b.name)}</div><div class="st">${esc(b.prompt)}</div></div><div class="sm"><input type="text" inputmode="numeric" placeholder="15" data-bmin value="${esc(b.min)}">min</div><span class="prog ${pr[0]===pr[1]?"done":""}">${progLabel(pr)}</span><button class="sx" data-bclear title="Clear this routine">✕</button></div>`
+    :`<div class="slice empty" data-brpick><div>Click to select<br>a routine</div></div>`;
+  return `<div class="pane before"><div class="ph"><span class="tag">Before</span><h2>One routine</h2>${I("The routine that opens the lesson — one, short, and it primes the concept without giving away the move the During is meant to reveal. Build it like an nVoke pack: cards you show, one question you ask.")}</div>
+    <div class="slices">${card}</div>
+    <div class="small" style="margin-top:8px">Click the card to write it: the cards you show, what you say, what students do, the objective, what must not be given away.</div>
     ${readsBar}</div>`;
 }
 function renderDuring(){
@@ -793,41 +792,41 @@ function renderDuring(){
 }
 function renderAfter(){
   const a=state.after=Object.assign(blankAfter(),state.after||{});
-  let body="";
-  if(a.kind==="exit"){ body=`<label>The prompts <span class="hint">— one to three; and for each, what a response would tell you</span></label><div class="rows">${a.prompts.map((r,i)=>`<div class="exitrow"><textarea placeholder="Prompt ${i+1}" data-p="${i}:0">${esc(r[0])}</textarea><textarea placeholder="What a response would tell me about my question" data-p="${i}:1">${esc(r[1])}</textarea></div>`).join("")}</div>${a.prompts.length<3?`<button class="tbtn" data-addp style="margin-top:6px">＋ prompt</button>`:""}`; }
-  else if(a.kind==="transcript"){ body=`<label>The questions you'll ask <span class="hint">— two or three, each with why</span></label><textarea data-af="questions" style="min-height:96px">${esc(a.questions)}</textarea><div class="tip">Prints as a transcript sheet in the real app: the questions, and lines for what the students actually say.</div>`; }
-  else if(a.kind==="gallery"){ body=`<label>Which solutions go to the board, in what order, and the connecting question</label><textarea data-af="order" style="min-height:96px">${esc(a.order)}</textarea><div class="tip">The artifact is the photo of the board, annotated.</div>`; }
-  else { body=`<label>Three questions for one focus student <span class="hint">— and a “jot your reasoning” prompt</span></label><textarea data-af="questions" style="min-height:96px">${esc(a.questions)}</textarea>`; }
-  return `<div class="pane after"><div class="ph"><span class="tag">After</span><h2>One artifact</h2><span class="mins"><input type="text" inputmode="numeric" placeholder="10" data-amin value="${esc(a.min)}">min</span>${I("How the lesson ends, and what you carry out of the room: an artifact that captures analyzable evidence — something a student's response could answer your question with.")}</div>
-    <label>Artifact type</label><select data-akind>${Object.entries(AFTER_KINDS).map(([k,v])=>`<option value="${k}" ${k===a.kind?"selected":""}>${v}</option>`).join("")}</select>
-    ${body}
-    <div class="two"><div><label>What students do</label><textarea data-af="students">${esc(a.students)}</textarea></div><div><label>What I do</label><textarea data-af="teacher">${esc(a.teacher)}</textarea></div></div>
-    <label>Objective <span class="hint">— by the end of these minutes, students can…</span></label><input type="text" data-af="objective" value="${esc(a.objective)}">
-    <label>What the artifact captures</label><input type="text" data-af="captures" value="${esc(a.captures)}">
-    <label>Would a student's response answer your research question? ${I("The one test the After has to pass. Your question is on the Profile tab.")}</label><textarea data-af="answers">${esc(a.answers)}</textarea>
+  const M=AFTER_META[a.kind]; const pr=afterProgress(a);
+  const card=M?`<div class="slice filled" data-aopen style="--tint:${M.tint};border-color:var(--after)"><div><div class="sicon">${M.icon}</div><div class="sn" style="color:var(--after)">${esc(AFTER_KINDS[a.kind])}</div><div class="st">${esc(a.captures)}</div></div><div class="sm"><input type="text" inputmode="numeric" placeholder="10" data-amin value="${esc(a.min)}">min</div><span class="prog ${pr[0]===pr[1]?"done":""}">${progLabel(pr)}</span><button class="sx" data-aclear title="Clear this artifact">✕</button></div>`
+    :`<div class="slice empty" data-arpick><div>Click to select<br>an artifact</div></div>`;
+  return `<div class="pane after"><div class="ph"><span class="tag">After</span><h2>One artifact</h2>${I("How the lesson ends, and what you carry out of the room: an artifact that captures analyzable evidence — something a student's response could answer your question with.")}</div>
+    <div class="slices">${card}</div>
+    <div class="small" style="margin-top:8px">Click the card to write it: the prompts or questions, what students do, the objective, what the artifact captures.</div>
     ${readsBar}</div>`;
 }
-function wirePlan(){
-  const P=document.getElementById("panes");
-  const bind=(sel,fn)=>P.querySelectorAll(sel).forEach(el=>{ el.oninput=e=>{ fn(el,e.target.value); save(); }; });
+function wireFields(root,rerender){
+  const bind=(sel,fn)=>root.querySelectorAll(sel).forEach(el=>{ el.oninput=e=>{ fn(el,e.target.value); save(); }; });
   bind("[data-b]",(el,v)=>{ state.before[el.dataset.b]=v; });
   bind("[data-af]",(el,v)=>{ state.after[el.dataset.af]=v; });
   bind("[data-p]",(el,v)=>{ const [i,j]=el.dataset.p.split(":").map(Number); state.after.prompts[i][j]=v; });
+  bind("[data-cardtext]",(el,v)=>{ state.before.cards[+el.dataset.cardtext]=v; });
+  root.querySelectorAll("[data-addcard]").forEach(el=>el.onclick=()=>{ state.before.cards.push(""); save(); rerender(); const ta=root.querySelectorAll("[data-cardtext]"); ta[ta.length-1]?.focus(); });
+  root.querySelectorAll("[data-delcard]").forEach(el=>el.onclick=()=>{ state.before.cards.splice(+el.dataset.delcard,1); save(); rerender(); });
+  root.querySelectorAll("[data-addp]").forEach(el=>el.onclick=()=>{ state.after.prompts.push(["",""]); save(); rerender(); });
+}
+function wirePlan(){
+  const P=document.getElementById("panes");
+  P.querySelectorAll("[data-bmin],[data-amin],[data-smin]").forEach(el=>{ el.onclick=e=>e.stopPropagation(); });
   P.querySelectorAll("[data-bmin]").forEach(el=>el.onchange=e=>{ state.before.min=e.target.value; save(); renderPlan(); });
   P.querySelectorAll("[data-amin]").forEach(el=>el.onchange=e=>{ state.after.min=e.target.value; save(); renderPlan(); });
-  P.querySelectorAll("[data-smin]").forEach(el=>{ el.onclick=e=>e.stopPropagation(); el.onchange=e=>{ const a=state.during.find(x=>x.id===el.dataset.smin); if(a) a.min=e.target.value; save(); renderPlan(); }; });
-  P.querySelectorAll(".slice.filled").forEach(el=>el.onclick=()=>{ selId=el.dataset.slice; openActivity(el.dataset.slice); });
+  P.querySelectorAll("[data-smin]").forEach(el=>el.onchange=e=>{ const a=state.during.find(x=>x.id===el.dataset.smin); if(a) a.min=e.target.value; save(); renderPlan(); });
+  P.querySelectorAll(".slice.filled[data-slice]").forEach(el=>el.onclick=()=>{ selId=el.dataset.slice; openActivity(el.dataset.slice); });
   P.querySelectorAll("[data-addslice]").forEach(el=>el.onclick=()=>{ if(state.during.length>=5) return; const a=blankAct(null); state.during.push(a); selId=a.id; save(); renderPlan(); pickActivity(a.id); });
   P.querySelectorAll("[data-remove]").forEach(el=>el.onclick=e=>{ e.stopPropagation(); if(state.during.length<=1) return; const a=state.during.find(x=>x.id===el.dataset.remove); if(a&&(a.title||a.students||a.objective||a.extra)&&!confirm(`Remove activity ${state.during.indexOf(a)+1}${a.title?` — "${a.title}"`:""}? What you typed in it is lost.`)) return; state.during=state.during.filter(x=>x.id!==el.dataset.remove); selId=null; save(); renderPlan(); });
-  P.querySelectorAll("[data-akind]").forEach(el=>el.onchange=e=>{ state.after.kind=e.target.value; save(); renderPlan(); });
-  P.querySelectorAll("[data-addp]").forEach(el=>el.onclick=()=>{ state.after.prompts.push(["",""]); save(); renderPlan(); });
-  bind("[data-cardtext]",(el,v)=>{ state.before.cards[+el.dataset.cardtext]=v; });
-  P.querySelectorAll("[data-addcard]").forEach(el=>el.onclick=()=>{ state.before.cards.push(""); save(); renderPlan(); const ta=P.querySelectorAll("[data-cardtext]"); ta[ta.length-1]?.focus(); });
-  P.querySelectorAll("[data-delcard]").forEach(el=>el.onclick=()=>{ state.before.cards.splice(+el.dataset.delcard,1); save(); renderPlan(); });
   P.querySelectorAll("[data-pick]").forEach(el=>el.onclick=e=>{ e.stopPropagation(); selId=el.dataset.pick; pickActivity(el.dataset.pick); });
-  P.querySelectorAll("[data-routines]").forEach(el=>el.onclick=pickRoutine);
   P.querySelectorAll("[data-shapes]").forEach(el=>el.onclick=pickShape);
-  P.querySelectorAll("[data-bsel]").forEach(el=>el.onchange=e=>{ const v=e.target.value; if(v==="__other"){ beforeOther=true; state.before.name=""; save(); renderPlan(); P.querySelector('[data-b="name"]')?.focus(); } else { beforeOther=false; state.before.name=v; save(); renderPlan(); } });
+  P.querySelectorAll("[data-brpick]").forEach(el=>el.onclick=pickRoutine);
+  P.querySelectorAll("[data-bopen]").forEach(el=>el.onclick=openBefore);
+  P.querySelectorAll("[data-bclear]").forEach(el=>el.onclick=e=>{ e.stopPropagation(); const b=state.before; if((b.prompt||b.students||b.objective||(b.cards||[]).some(c=>c))&&!confirm("Clear the routine? What you typed in it is lost.")) return; state.before=blankBefore(); save(); renderPlan(); });
+  P.querySelectorAll("[data-arpick]").forEach(el=>el.onclick=pickArtifact);
+  P.querySelectorAll("[data-aopen]").forEach(el=>el.onclick=openAfter);
+  P.querySelectorAll("[data-aclear]").forEach(el=>el.onclick=e=>{ e.stopPropagation(); const a=state.after; if(afterProgress(a)[0]&&!confirm("Clear the artifact? What you typed in it is lost.")) return; state.after=blankAfter(); save(); renderPlan(); });
 }
 
 /* ---------- the activity editor (popup per card) ---------- */
@@ -867,6 +866,68 @@ function openActivity(id){
   prog(); M.classList.add("open"); M.querySelector(".bb").scrollTop=0;
 }
 function closeActivity(){ document.getElementById("actModal").classList.remove("open"); renderPlan(); }
+function showModal(head,body,foot,progFn,rerender){
+  const M=document.getElementById("actModal");
+  document.getElementById("actHead").innerHTML=head; document.getElementById("actBody").innerHTML=body; document.getElementById("actFoot").innerHTML=foot;
+  const prog=()=>{ const el=M.querySelector("[data-prog]"); if(el){ const [d,t]=progFn(); el.textContent=d===t?"✓ all four written":`${d} of ${t} written`; } };
+  wireFields(M,rerender); M.querySelectorAll("[data-b],[data-af],[data-p],[data-cardtext]").forEach(el=>{ const f=el.oninput; el.oninput=e=>{ f(e); prog(); }; });
+  M.querySelectorAll("[data-close]").forEach(el=>el.onclick=closeActivity);
+  prog(); if(!M.classList.contains("open")){ M.classList.add("open"); M.querySelector(".bb").scrollTop=0; }
+  return M;
+}
+function openBefore(){
+  const b=state.before=Object.assign(blankBefore(),state.before||{}); const R=routineMeta(b.name);
+  const cards=(b.cards||[]).map((c,i)=>`<div class="ncard"><textarea data-cardtext="${i}" placeholder="7 + 8">${esc(c)}</textarea><span class="num">${i+1}</span><button class="x" data-delcard="${i}" title="Remove this card">✕</button></div>`).join("");
+  const head=`<h2>Before</h2><span class="sicon" style="font-size:24px">${ROUTINE_ICON}</span><input type="text" data-b="name" value="${esc(b.name)}" placeholder="The routine's name" style="width:auto;flex:1;max-width:280px;font-weight:800;padding:5px 8px;border:1px solid var(--line);border-radius:7px;font-size:15px"><a class="chg" data-chg style="font-size:12.5px;color:var(--outline);cursor:pointer;text-decoration:underline">change</a>${R&&R[2]?`<a href="${R[2]}" target="_blank" rel="noopener" class="small">examples</a>`:""}<span class="mins"><input type="text" inputmode="numeric" placeholder="15" data-b="min" value="${esc(b.min)}">min</span><button class="tbtn" data-close>✕</button>`;
+  const body=`<div class="tip" style="margin-top:8px">${esc(R?R[1]:"Your own routine — name it in the box above, and say where it's from.")}</div>
+    <div class="step">1 · The cards, and what you say</div>
+    <div class="nv" style="margin-top:6px"><div class="striplabel">Your cards — what students see, one card each. Type on a card.</div><div class="cards">${cards}<div class="ncard add" data-addcard title="Add a card and type what's on it: a number, an expression, a figure described">＋ card</div></div>
+      <div class="prompt"><label style="margin-top:4px">What you say <span class="hint">— the posing question, exactly</span></label><input type="text" data-b="prompt" value="${esc(b.prompt)}" placeholder="What's the same? What's different?"></div></div>
+    <div class="step">2 · Procedures</div>
+    <div class="two"><div><label>What students do<span class="req">*</span></label><textarea data-b="students">${esc(b.students)}</textarea></div><div><label>What I do</label><textarea data-b="teacher">${esc(b.teacher)}</textarea></div></div>
+    <div class="step">3 · Objective</div>
+    <label>By the end of these minutes, students can…<span class="req">*</span></label><input type="text" data-b="objective" value="${esc(b.objective)}">
+    <div class="step">4 · The guard</div>
+    <label>What must NOT be given away <span class="hint">— the move the During is designed to reveal</span></label><input type="text" data-b="withhold" value="${esc(b.withhold)}">
+    <label>What entry thinking should it surface?</label><input type="text" data-b="entry" value="${esc(b.entry)}">
+    <label>The over-scaffold check <span class="hint">— read your cards and your question against the line above. Does anything give it away?</span></label><textarea data-b="guard">${esc(b.guard)}</textarea>
+    <div class="step">5 · The connection</div>
+    <div class="conn"><b>How does this routine connect to the first During activity?</b><textarea data-b="thread" style="margin-top:4px">${esc(b.thread)}</textarea></div>`;
+  const first=state.during[0];
+  const foot=`${first?`<button class="tbtn" data-go1>Activity 1 ▶</button>`:""}<span style="flex:1"></span><span class="small" data-prog></span><button class="primary" data-close>Done</button>`;
+  const M=showModal(head,body,foot,()=>beforeProgress(state.before),openBefore);
+  M.querySelector("[data-chg]").onclick=pickRoutine;
+  const g=M.querySelector("[data-go1]"); if(g) g.onclick=()=>{ renderPlan(); openActivity(first.id); };
+}
+function openAfter(){
+  const a=state.after=Object.assign(blankAfter(),state.after||{}); const Mt=AFTER_META[a.kind]; if(!Mt){ pickArtifact(); return; }
+  let art="";
+  if(a.kind==="exit"){ art=`<label>The prompts <span class="hint">— one to three; and for each, what a response would tell you</span></label><div class="rows">${a.prompts.map((r,i)=>`<div class="exitrow"><textarea placeholder="Prompt ${i+1}" data-p="${i}:0">${esc(r[0])}</textarea><textarea placeholder="What a response would tell me about my question" data-p="${i}:1">${esc(r[1])}</textarea></div>`).join("")}</div>${a.prompts.length<3?`<button class="tbtn" data-addp style="margin-top:6px">＋ prompt</button>`:""}`; }
+  else if(a.kind==="transcript"){ art=`<label>The questions you'll ask <span class="hint">— two or three, each with why</span></label><textarea data-af="questions" style="min-height:96px">${esc(a.questions)}</textarea><div class="tip">Prints as a transcript sheet in the real app: the questions, and lines for what the students actually say.</div>`; }
+  else if(a.kind==="gallery"){ art=`<label>Which solutions go to the board, in what order, and the connecting question</label><textarea data-af="order" style="min-height:96px">${esc(a.order)}</textarea><div class="tip">The artifact is the photo of the board, annotated.</div>`; }
+  else { art=`<label>Three questions for one focus student <span class="hint">— and a “jot your reasoning” prompt</span></label><textarea data-af="questions" style="min-height:96px">${esc(a.questions)}</textarea>`; }
+  const head=`<h2>After</h2><span class="sicon" style="font-size:24px">${Mt.icon}</span><span class="cur" style="font-weight:800;font-size:15px">${esc(AFTER_KINDS[a.kind])}</span><a class="chg" data-chg style="font-size:12.5px;color:var(--outline);cursor:pointer;text-decoration:underline">change</a><span class="mins"><input type="text" inputmode="numeric" placeholder="10" data-af="min" value="${esc(a.min)}">min</span><button class="tbtn" data-close>✕</button>`;
+  const body=`<div class="tip" style="margin-top:8px">${esc(AFTER_SUB[a.kind]||"")}</div>
+    <div class="step">1 · The artifact</div>${art}
+    <div class="step">2 · Procedures</div>
+    <div class="two"><div><label>What students do<span class="req">*</span></label><textarea data-af="students">${esc(a.students)}</textarea></div><div><label>What I do</label><textarea data-af="teacher">${esc(a.teacher)}</textarea></div></div>
+    <div class="step">3 · Objective</div>
+    <label>By the end of these minutes, students can…<span class="req">*</span></label><input type="text" data-af="objective" value="${esc(a.objective)}">
+    <div class="step">4 · What it captures</div>
+    <label>What the artifact captures</label><input type="text" data-af="captures" value="${esc(a.captures)}">
+    <label>Would a student's response answer your research question?<span class="req">*</span> <span class="hint">— the one test the After has to pass; your question is on the Profile tab</span></label><textarea data-af="answers">${esc(a.answers)}</textarea>`;
+  const last=state.during[state.during.length-1];
+  const foot=`${last?`<button class="tbtn" data-golast>◀ Activity ${state.during.length}</button>`:""}<span style="flex:1"></span><span class="small" data-prog></span><button class="primary" data-close>Done</button>`;
+  const M=showModal(head,body,foot,()=>afterProgress(state.after),openAfter);
+  M.querySelector("[data-chg]").onclick=pickArtifact;
+  const g=M.querySelector("[data-golast]"); if(g) g.onclick=()=>{ renderPlan(); openActivity(last.id); };
+}
+function pickArtifact(){
+  const a=state.after=Object.assign(blankAfter(),state.after||{});
+  const B=openPick("After — what artifact?","What you carry out of the room. Pick the one a student's response to could answer your research question.",
+    `<div class="ptiles">${Object.entries(AFTER_KINDS).map(([k,v])=>`<button class="ptile ${k===a.kind?"on":""}" data-k="${k}"><div class="pi">${AFTER_META[k].icon}</div><div class="pn">${esc(v)}</div><div class="ps">${esc(AFTER_SUB[k]||"")}</div></button>`).join("")}</div>`);
+  B.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{ state.after.kind=b.dataset.k; save(); renderPlan(); closePick(); openAfter(); });
+}
 
 /* ---------- pickers (one modal: activities · routines · shapes) ---------- */
 function openPick(title,sub,html){ document.getElementById("pickTitle").textContent=title; document.getElementById("pickSub").textContent=sub||""; document.getElementById("pickBody").innerHTML=html; document.getElementById("pickModal").classList.add("open"); return document.getElementById("pickBody"); }
@@ -879,10 +940,10 @@ function pickActivity(id){
   B.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{ a.type=b.dataset.k; selId=a.id; save(); renderPlan(); closePick(); openActivity(a.id); });
 }
 function pickRoutine(){
-  const B=openPick("Routines","A routine opens the lesson: cards you show, one question you ask.",
-    ROUTINE_LIST.map((r,i)=>`<div class="drow"><div class="dmeta"><div class="dname">${esc(r[0])}</div><div class="dsub">${esc(r[1])}${r[2]?` · <a href="${r[2]}" target="_blank" rel="noopener">examples</a>`:""}</div></div><button class="tbtn" data-routine="${i}">Use</button></div>`).join("")
-    +`<div class="drow"><div class="dmeta"><div class="dname">Other…</div><div class="dsub">One you know that isn't listed. Name it, and where it's from.</div></div><button class="tbtn" data-routine="-1">Name it</button></div>`);
-  B.querySelectorAll("[data-routine]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.routine; state.before=Object.assign(blankBefore(),state.before||{}); if(i<0){ beforeOther=true; state.before.name=""; } else { beforeOther=false; state.before.name=ROUTINES[i]; } save(); renderPlan(); closePick(); if(i<0) document.querySelector('#panes [data-b="name"]')?.focus(); });
+  const b=state.before=Object.assign(blankBefore(),state.before||{});
+  const B=openPick("Before — which routine?","A routine opens the lesson: cards you show, one question you ask.",
+    `<div class="ptiles">${ROUTINE_LIST.map((r,i)=>`<button class="ptile ${b.name===r[0]?"on":""}" data-i="${i}"><div class="pi">${ROUTINE_ICON}</div><div class="pn">${esc(r[0])}</div><div class="ps">${esc(r[1])}${r[2]?` · <a href="${r[2]}" target="_blank" rel="noopener" onclick="event.stopPropagation()">examples</a>`:""}</div></button>`).join("")}<button class="ptile ${b.name&&!routineMeta(b.name)?"on":""}" data-i="-1"><div class="pi">✏️</div><div class="pn">Other…</div><div class="ps">One you know that isn't listed. You'll name it, and say where it's from.</div></button></div>`);
+  B.querySelectorAll("[data-i]").forEach(el=>el.onclick=()=>{ const i=+el.dataset.i; state.before.name=i<0?(routineMeta(b.name)||!b.name?"My routine":b.name):ROUTINE_LIST[i][0]; save(); renderPlan(); closePick(); openBefore(); if(i<0){ const inp=document.querySelector('#actHead [data-b="name"]'); if(inp){ inp.focus(); inp.select(); } } });
 }
 function pickShape(){
   const B=openPick("Start from a shape","Two or three activities in a named order. It replaces your During slices; Before and After stay.",
