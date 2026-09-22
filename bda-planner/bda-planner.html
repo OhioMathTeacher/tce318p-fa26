@@ -179,8 +179,10 @@
   .sum{font-size:14px;color:var(--muted)}
   .sum b{color:var(--ink)}
   .sum.over b{color:var(--mark)}.sum.under b{color:#8a6a1a}
-  .panes{display:grid;gap:18px;margin-top:10px;align-items:start}
-  .pane{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px 16px}
+  .panes{display:grid;gap:18px;margin-top:10px;align-items:stretch}
+  .pane{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px 16px;display:flex;flex-direction:column}
+  .pane .reads{margin-top:auto;padding-top:10px}
+  .pane .slices{min-height:96px}
   .pane .ph{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
   .pane .ph h2{margin:0;font-size:19px;flex:1}
   .pane.before .ph h2{color:var(--before)}.pane.during .ph h2{color:var(--during)}.pane.after .ph h2{color:var(--after)}
@@ -276,7 +278,7 @@
   .sed .sedh h3{margin:0;font-size:15.5px;color:var(--outline)}
   .conn{background:#f6f8fb;border:1px solid var(--line);border-radius:9px;padding:8px 10px;margin-top:10px;font-size:13.5px}
   .conn .from{color:var(--muted);font-style:italic}
-  .reads{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;padding-top:10px;border-top:1px dashed var(--line);font-size:13px;color:var(--muted)}
+  .reads{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;row-gap:6px;padding-top:10px;border-top:1px dashed var(--line);font-size:13px;color:var(--muted)}
   .reads .later{margin-left:auto;font-size:11.5px;color:#a9b3c0;font-style:italic}
   .exitrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
   .exitrow textarea{min-height:56px}
@@ -448,7 +450,7 @@
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 30</div>
+<div id="build">Build 31</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
