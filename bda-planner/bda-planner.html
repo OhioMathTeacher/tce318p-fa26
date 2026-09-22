@@ -215,15 +215,22 @@
   .sedh .sicon{font-size:24px;margin:0}
   .sedh .cur{font-weight:800;font-size:15px}
   .sedh a.chg{font-size:12.5px;color:var(--outline);cursor:pointer;text-decoration:underline}
-  #actModal{position:fixed;inset:0;background:#0006;z-index:55;display:none;align-items:center;justify-content:center;padding:24px}
+  #actModal{position:fixed;inset:0;background:#0006;z-index:55;display:none;align-items:center;justify-content:center;padding:12px}
   #actModal.open{display:flex}
-  #actModal .box{background:#fff;border-radius:14px;width:min(900px,96vw);max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+  #actModal .box{background:#fff;border-radius:14px;width:min(900px,96vw);max-height:96vh;display:flex;flex-direction:column;overflow:hidden}
   #actModal .bh{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
   #actModal .bh h2{margin:0;font-size:18px;color:var(--outline)}
   #actModal .bh .mins{display:flex;align-items:center;gap:4px;font-size:13px;color:var(--muted);margin-left:auto}
   #actModal .bh .mins input{width:56px;text-align:right;padding:5px 7px;border:1px solid var(--line);border-radius:7px;font:inherit;font-weight:700;font-size:14px}
   #actModal .bb{flex:1;overflow:auto;padding:6px 18px 18px}
   #actModal .bf{display:flex;align-items:center;gap:10px;padding:10px 16px;border-top:1px solid var(--line)}
+  .ptabs{display:flex;gap:4px;margin:10px 0 6px;border-bottom:2px solid var(--line);flex-wrap:wrap}
+  .ptabs button{border:0;background:none;padding:8px 12px;font:inherit;font-weight:700;font-size:13.5px;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;cursor:pointer;border-radius:6px 6px 0 0}
+  .ptabs button:hover{background:#f4f8fd}
+  .ptabs button.on{color:var(--outline);border-bottom-color:var(--outline)}
+  .ptabs button .tk{margin-left:5px;color:var(--ok)}
+  .ptabs button .tk.no{color:#c9d2de}
+  .tabp{display:none} .tabp.on{display:block}
   #actModal .step{font-weight:800;color:var(--outline);font-size:13px;text-transform:uppercase;letter-spacing:.4px;margin-top:16px}
   #actModal details.more{margin-top:14px;border-top:1px dashed var(--line);padding-top:6px}
   #actModal details.more summary{cursor:pointer;font-weight:700;color:var(--outline);font-size:14px}
@@ -231,7 +238,7 @@
   .slice .prog.done{color:var(--ok)}
   #build{position:fixed;right:10px;bottom:8px;font-size:11.5px;color:var(--muted);opacity:.55;z-index:30;pointer-events:none;font-weight:600}
   #actModal .box.wide{width:min(1280px,97vw)}
-  iframe.nvinline{width:100%;height:640px;border:0;background:transparent;margin-top:4px;display:block}
+  iframe.nvinline{width:100%;height:600px;border:0;background:transparent;margin-top:4px;display:block}
   .nv .ncard.thumb{padding:3px;cursor:pointer;background:#fff}
   .nv .ncard.thumb svg{width:100%;height:100%}
   .slice .minithumbs{display:flex;gap:4px;margin:4px 0 2px}
@@ -441,7 +448,7 @@
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 27</div>
+<div id="build">Build 28</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -526,7 +533,8 @@ function blankAfter(){ return {id:"after",type:"after",kind:"",min:"",objective:
 const AFTER_KINDS={exit:"Exit slip",transcript:"Discussion transcript",gallery:"Strategy gallery",probe:"One-on-one probe"};
 const AFTER_META={exit:{icon:"📝",tint:"#e6f4ea"},transcript:{icon:"🎙️",tint:"#e3f1ff"},gallery:{icon:"🖼️",tint:"#fff3d6"},probe:{icon:"👤",tint:"#f3e8ff"}};
 const ROUTINE_ICON="🖐";
-function beforeProgress(b){ const need=[(b.pack&&b.pack.thumbs&&b.pack.thumbs.length)||(b.prompt||"").trim()||(b.cards||[]).some(c=>c&&c.trim()), b.students, b.objective, b.thread]; return [need.filter(v=>v&&String(v).trim()).length, need.length]; }
+function beforeParts(b){ return [(b.pack&&b.pack.thumbs&&b.pack.thumbs.length)||(b.prompt||"").trim()||(b.cards||[]).some(c=>c&&c.trim()), b.students, b.objective, b.withhold||b.entry||b.guard, b.thread].map(v=>!!(v&&String(v).trim())); }
+function beforeProgress(b){ const p=beforeParts(b); return [p.filter(Boolean).length, p.length]; }
 function afterProgress(a){ const art=a.kind==="exit"?(a.prompts||[]).some(r=>r[0]&&r[0].trim()):a.kind==="gallery"?a.order:a.questions; const need=[art, a.students, a.objective, a.answers]; return [need.filter(v=>v&&String(v).trim()).length, need.length]; }
 function progLabel(pr){ return pr[0]===pr[1]?"✓ done":pr.join(" of "); }
 let seq=0; function uid(){ return "a"+(++seq)+"_"+Math.random().toString(36).slice(2,6); }
@@ -881,37 +889,48 @@ function closeActivity(){ document.getElementById("actModal").classList.remove("
 function showModal(head,body,foot,progFn,rerender){
   const M=document.getElementById("actModal");
   document.getElementById("actHead").innerHTML=head; document.getElementById("actBody").innerHTML=body; document.getElementById("actFoot").innerHTML=foot;
-  const prog=()=>{ const el=M.querySelector("[data-prog]"); if(el){ const [d,t]=progFn(); el.textContent=d===t?"✓ all four written":`${d} of ${t} written`; } };
+  const prog=()=>{ const el=M.querySelector("[data-prog]"); if(el){ const [d,t]=progFn(); el.textContent=d===t?`✓ all ${t===5?"five":"four"} written`:`${d} of ${t} written`; } };
   wireFields(M,rerender); M.querySelectorAll("[data-b],[data-af],[data-p],[data-cardtext]").forEach(el=>{ const f=el.oninput; el.oninput=e=>{ f(e); prog(); }; });
   M.querySelectorAll("[data-close]").forEach(el=>el.onclick=closeActivity);
   prog(); if(!M.classList.contains("open")){ M.classList.add("open"); M.querySelector(".bb").scrollTop=0; }
   return M;
 }
+let beforeTab=0;
 function openBefore(){
   nvokeReady=false;
   const b=state.before=Object.assign(blankBefore(),state.before||{}); const R=routineMeta(b.name);
   const cards=(b.cards||[]).map((c,i)=>`<div class="ncard"><textarea data-cardtext="${i}" placeholder="7 + 8">${esc(c)}</textarea><span class="num">${i+1}</span><button class="x" data-delcard="${i}" title="Remove this card">✕</button></div>`).join("");
   const head=`<h2>Before</h2><span class="sicon" style="font-size:24px">${ROUTINE_ICON}</span><input type="text" data-b="name" value="${esc(b.name)}" placeholder="The routine's name" style="width:auto;flex:1;max-width:280px;font-weight:800;padding:5px 8px;border:1px solid var(--line);border-radius:7px;font-size:15px"><a class="chg" data-chg style="font-size:12.5px;color:var(--outline);cursor:pointer;text-decoration:underline">change</a>${R&&R[2]?`<a href="${R[2]}" target="_blank" rel="noopener" class="small">examples</a>`:""}<span class="mins"><input type="text" inputmode="numeric" placeholder="15" data-b="min" value="${esc(b.min)}">min</span><button class="tbtn" data-close>✕</button>`;
-  const body=`<div class="tip" style="margin-top:8px">${esc(R?R[1]:"Your own routine — name it in the box above, and say where it's from.")}</div>
-    <div class="step">1 · The cards, and what you say</div>
+  const TABS=["The cards & what you say","Procedures","Objective","The guard","The connection"]; const parts=beforeParts(b);
+  const body=`<div class="ptabs" style="margin-top:6px">${TABS.map((t,i)=>`<button data-tab="${i}" class="${i===beforeTab?"on":""}">${i+1} · ${t}<span class="tk ${parts[i]?"":"no"}" data-tk="${i}">✓</span></button>`).join("")}</div>
+    <div class="tabp ${beforeTab===0?"on":""}" data-tabp="0">
+    <div style="display:flex;gap:10px;align-items:center;margin:2px 0 6px"><label style="margin:0;white-space:nowrap">What you say <span class="hint">— the posing question, exactly</span></label><input type="text" data-b="prompt" value="${esc(b.prompt)}" placeholder="What's the same? What's different?" style="flex:1"></div>
     ${(R&&R[3])
       ?`<iframe class="nvinline" src="${NVOKE_URL}&tpl=${R[3]}&inline=1" title="Card editor"></iframe>
         <details style="margin-top:4px"><summary class="small" style="cursor:pointer">Or plain text cards — a number or an expression each</summary><div class="nv"><div class="cards">${cards}<div class="ncard add" data-addcard title="Add a card and type what's on it">＋ card</div></div></div></details>`
       :`<div class="nv" style="margin-top:6px"><div class="striplabel">🖐 Your cards — what students see, one card each. Type on a card.</div><div class="cards">${cards}<div class="ncard add" data-addcard title="Add a card and type what's on it: a number, an expression, a figure described">＋ card</div></div></div>`}
-    <label>What you say <span class="hint">— the posing question, exactly</span></label><input type="text" data-b="prompt" value="${esc(b.prompt)}" placeholder="What's the same? What's different?">
-    <div class="step">2 · Procedures</div>
-    <div class="two"><div><label>What students do<span class="req">*</span></label><textarea data-b="students">${esc(b.students)}</textarea></div><div><label>What I do</label><textarea data-b="teacher">${esc(b.teacher)}</textarea></div></div>
-    <div class="step">3 · Objective</div>
+    </div>
+    <div class="tabp ${beforeTab===1?"on":""}" data-tabp="1">
+    <div class="two"><div><label>What students do<span class="req">*</span></label><textarea data-b="students" style="min-height:160px">${esc(b.students)}</textarea></div><div><label>What I do</label><textarea data-b="teacher" style="min-height:160px">${esc(b.teacher)}</textarea></div></div>
+    </div>
+    <div class="tabp ${beforeTab===2?"on":""}" data-tabp="2">
     <label>By the end of these minutes, students can…<span class="req">*</span></label><input type="text" data-b="objective" value="${esc(b.objective)}">
-    <div class="step">4 · The guard</div>
+    <div class="tip" style="margin-top:6px">Standards are what the state expects by the end of the year; an objective is what <i>you</i> expect by the end of these minutes. You write objectives.</div>
+    </div>
+    <div class="tabp ${beforeTab===3?"on":""}" data-tabp="3">
     <label>What must NOT be given away <span class="hint">— the move the During is designed to reveal</span></label><input type="text" data-b="withhold" value="${esc(b.withhold)}">
     <label>What entry thinking should it surface?</label><input type="text" data-b="entry" value="${esc(b.entry)}">
     <label>The over-scaffold check <span class="hint">— read your cards and your question against the line above. Does anything give it away?</span></label><textarea data-b="guard">${esc(b.guard)}</textarea>
-    <div class="step">5 · The connection</div>
-    <div class="conn"><b>How does this routine connect to the first During activity?</b><textarea data-b="thread" style="margin-top:4px">${esc(b.thread)}</textarea></div>`;
+    </div>
+    <div class="tabp ${beforeTab===4?"on":""}" data-tabp="4">
+    <div class="conn"><b>How does this routine connect to the first During activity?</b><textarea data-b="thread" style="margin-top:4px;min-height:120px">${esc(b.thread)}</textarea></div>
+    </div>`;
   const first=state.during[0];
   const foot=`${first?`<button class="tbtn" data-go1>Activity 1 ▶</button>`:""}<span style="flex:1"></span><span class="small" data-prog></span><button class="primary" data-close>Done</button>`;
   const M=showModal(head,body,foot,()=>beforeProgress(state.before),openBefore); M.dataset.reopen="before"; M.querySelector(".box").classList.toggle("wide",!!(R&&R[3]));
+  M.querySelectorAll(".ptabs [data-tab]").forEach(bt=>bt.onclick=()=>{ beforeTab=+bt.dataset.tab; M.querySelectorAll(".ptabs [data-tab]").forEach(x=>x.classList.toggle("on",x===bt)); M.querySelectorAll(".tabp").forEach(x=>x.classList.toggle("on",+x.dataset.tabp===beforeTab)); });
+  const ticks=()=>{ const p=beforeParts(state.before); M.querySelectorAll("[data-tk]").forEach(t=>t.classList.toggle("no",!p[+t.dataset.tk])); };
+  M.querySelectorAll("[data-b],[data-cardtext]").forEach(el=>{ const f=el.oninput; el.oninput=e=>{ f(e); ticks(); }; });
   M.querySelector("[data-chg]").onclick=pickRoutine;
   const g=M.querySelector("[data-go1]"); if(g) g.onclick=()=>{ renderPlan(); openActivity(first.id); };
 }
@@ -948,7 +967,7 @@ window.addEventListener("message",e=>{
     state.before=Object.assign(blankBefore(),state.before||{});
     if(d.pack.cards.length) state.before.pack={pack:d.pack,thumbs:d.thumbs||[]}; else delete state.before.pack;
     if(!(state.before.prompt||"").trim()&&d.pack.cards[0]&&d.pack.cards[0].prompt){ state.before.prompt=d.pack.cards[0].prompt; const pi=document.querySelector('#actBody [data-b="prompt"]'); if(pi) pi.value=state.before.prompt; }
-    save(); const el=document.querySelector("#actFoot [data-prog]"); if(el){ const [n,t]=beforeProgress(state.before); el.textContent=n===t?"✓ all four written":`${n} of ${t} written`; }
+    save(); const el=document.querySelector("#actFoot [data-prog]"); if(el){ const [n,t]=beforeProgress(state.before); el.textContent=n===t?"✓ all five written":`${n} of ${t} written`; } const p=beforeParts(state.before); document.querySelectorAll("#actBody [data-tk]").forEach(t=>t.classList.toggle("no",!p[+t.dataset.tk]));
   }
 });
 function pickArtifact(){
@@ -973,7 +992,7 @@ function pickRoutine(){
   const b=state.before=Object.assign(blankBefore(),state.before||{});
   const B=openPick("Before — which routine?","A routine opens the lesson: cards you show, one question you ask.",
     `<div class="ptiles">${ROUTINE_LIST.map((r,i)=>`<button class="ptile ${b.name===r[0]?"on":""}" data-i="${i}"><div class="pi">${ROUTINE_ICON}</div><div class="pn">${esc(r[0])}</div><div class="ps">${esc(r[1])}${r[2]?` · <a href="${r[2]}" target="_blank" rel="noopener" onclick="event.stopPropagation()">examples</a>`:""}</div></button>`).join("")}<button class="ptile ${b.name&&!routineMeta(b.name)?"on":""}" data-i="-1"><div class="pi">✏️</div><div class="pn">Other…</div><div class="ps">One you know that isn't listed. You'll name it, and say where it's from.</div></button></div>`);
-  B.querySelectorAll("[data-i]").forEach(el=>el.onclick=()=>{ const i=+el.dataset.i; const changed=i>=0&&state.before.name!==ROUTINE_LIST[i][0]; state.before.name=i<0?(routineMeta(b.name)||!b.name?"My routine":b.name):ROUTINE_LIST[i][0]; if(changed&&state.before.pack) delete state.before.pack; save(); renderPlan(); closePick(); openBefore(); if(i<0){ const inp=document.querySelector('#actHead [data-b="name"]'); if(inp){ inp.focus(); inp.select(); } } });
+  B.querySelectorAll("[data-i]").forEach(el=>el.onclick=()=>{ const i=+el.dataset.i; const changed=i>=0&&state.before.name!==ROUTINE_LIST[i][0]; state.before.name=i<0?(routineMeta(b.name)||!b.name?"My routine":b.name):ROUTINE_LIST[i][0]; if(changed&&state.before.pack) delete state.before.pack; beforeTab=0; save(); renderPlan(); closePick(); openBefore(); if(i<0){ const inp=document.querySelector('#actHead [data-b="name"]'); if(inp){ inp.focus(); inp.select(); } } });
 }
 function pickShape(){
   const B=openPick("Start from a shape","Two or three activities in a named order. It replaces your During slices; Before and After stay.",
