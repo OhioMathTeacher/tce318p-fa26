@@ -41,6 +41,12 @@
   body.embed h1 small{display:none}
   body.embed .embednote{font-size:13px;color:var(--muted);margin:0 0 6px}
   body.embed #usePlanner{display:inline-block}
+  body.embed.inline #apphdr,body.embed.inline .bname,body.embed.inline #usePlanner,body.embed.inline .embednote{display:none}
+  body.embed.inline .wrap{padding:4px 6px 10px;max-width:none}
+  body.embed.inline .card.bhead{padding:10px 14px;margin:0 0 8px}
+  body.embed.inline .studio{margin-top:8px}
+  body.embed.inline .cardspanel{max-height:560px;position:static}
+  body.embed.inline .studio{grid-template-columns:230px 1fr}
   body.embed.tpllock #tplRail{display:none}
   body.embed.tpllock .studio{grid-template-columns:250px 1fr}
   body.embed.tpllock .embednote b{color:var(--outline)}
@@ -928,15 +934,19 @@ function initEmbed(){
     document.querySelectorAll("#tplRail .railbtn").forEach(x=>x.classList.toggle("on",x.dataset.tpl===(embedTpl||"wodb")));
     renderTplHint(); renderCanvas(); renderTool(); renderSetList(); switchPhase("build");
   });
+  if(new URLSearchParams(location.search).get("inline")) document.body.classList.add("inline");
   document.getElementById("usePlanner").onclick=()=>{
     if(!builder.sets.length){ toast("Add at least one card first (build it, then ＋ Add card)."); return; }
-    const name=(document.getElementById("presName").value||"").trim()||"Before cards";
-    const pack={packFormat:"provoke-cards/v1", name, mode:"see", builtWith:"builder", prompt:"What did you see? · How do you know?",
-      cards:builder.sets.map((st,i)=>({id:`${st.template}-${i+1}`, template:st.template, members:st.members, layout:st.layout, prompt:st.prompt||TEMPLATES[st.template].prompt}))};
-    const thumbs=builder.sets.map(st=>imageSetSVG(st,160));
-    window.parent.postMessage({type:"nvoke-pack", pack, thumbs}, "*");
+    syncToPlanner();
   };
   window.parent.postMessage({type:"nvoke-ready"}, "*");
+}
+function syncToPlanner(){
+  const name=(document.getElementById("presName").value||"").trim()||"Before cards";
+  const pack={packFormat:"provoke-cards/v1", name, mode:"see", builtWith:"builder", prompt:"What did you see? · How do you know?",
+    cards:builder.sets.map((st,i)=>({id:`${st.template}-${i+1}`, template:st.template, members:st.members, layout:st.layout, prompt:st.prompt||TEMPLATES[st.template].prompt}))};
+  const thumbs=builder.sets.map(st=>imageSetSVG(st,160));
+  window.parent.postMessage({type:"nvoke-pack", pack, thumbs, inline:document.body.classList.contains("inline")}, "*");
 }
 function toggleDrawer(open){
   document.getElementById("drawer").classList.toggle("open",open);
@@ -1126,6 +1136,7 @@ function newPresentation(){
   renderTplHint(); renderCanvas(); renderTool(); renderSetList(); toast("Started a new prompt pack.");
 }
 function renderSetList(){
+  if(document.body.classList.contains("inline")) syncToPlanner();
   const el=document.getElementById("setList");
   if(!builder.sets.length){el.innerHTML=`<span class="small">No cards yet — build one below, then <b>＋ Add card</b>. Click a saved one to edit it · drag to reorder.</span>`;return;}
   el.innerHTML=builder.sets.map((s,i)=>

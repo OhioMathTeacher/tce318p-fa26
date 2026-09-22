@@ -230,11 +230,7 @@
   .slice .prog{position:absolute;top:7px;right:30px;font-size:11px;font-weight:700;color:var(--muted)}
   .slice .prog.done{color:var(--ok)}
   #build{position:fixed;right:10px;bottom:8px;font-size:11.5px;color:var(--muted);opacity:.55;z-index:30;pointer-events:none;font-weight:600}
-  #nvokeModal{position:fixed;inset:0;background:#0008;z-index:70;display:none;padding:14px}
-  #nvokeModal.open{display:flex}
-  #nvokeModal .box{flex:1;background:#fff;border-radius:12px;display:flex;flex-direction:column;overflow:hidden}
-  #nvokeModal .bh{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:13.5px}
-  #nvokeModal iframe{flex:1;width:100%;border:0}
+  iframe.nvinline{width:100%;height:700px;border:1px solid var(--line);border-radius:12px;background:#fffdf5;margin-top:6px}
   .nv .ncard.thumb{padding:3px;cursor:pointer;background:#fff}
   .nv .ncard.thumb svg{width:100%;height:100%}
   .slice .minithumbs{display:flex;gap:4px;margin:4px 0 2px}
@@ -319,7 +315,7 @@
   #profilePrint{display:none}
   @media print{
     body{background:#fff;font-size:12pt;line-height:1.35}
-    body>.wrap, #toast, #pdfModal, #pickModal, #actModal, #nvokeModal, #build{display:none!important}
+    body>.wrap, #toast, #pdfModal, #pickModal, #actModal, #build{display:none!important}
     #profilePrint{display:block;max-width:7in;margin:0 auto;color:#000}
     #profilePrint h1{font-size:17pt;margin:0 0 2pt}
     #profilePrint .meta{font-size:10.5pt;color:#333;margin:0 0 14pt}
@@ -437,15 +433,14 @@
   </div><!-- /during panel -->
 </div>
 
-<div id="nvokeModal"><div class="box"><div class="bh"><b>nVoke</b><span class="small">— build the cards for your Before. Press <b>Use these cards in the Planner</b> when they're ready.</span><span style="flex:1"></span><button class="tbtn" onclick="closeNvoke()">✕ Close without using</button></div><iframe id="nvokeFrame" title="nVoke"></iframe></div></div>
 <div id="actModal" onclick="if(event.target===this)closeActivity()"><div class="box"><div class="bh" id="actHead"></div><div class="bb ed" id="actBody"></div><div class="bf" id="actFoot"></div></div></div>
-<div id="pickModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><h2 id="pickTitle"></h2><span class="small" id="pickSub"></span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pickModal').classList.remove('open')">✕</button></div><div class="bb" id="pickBody"></div></div></div>
+<div id="pickModal" onclick="if(event.target===this)closePick(true)"><div class="box"><div class="bh"><h2 id="pickTitle"></h2><span class="small" id="pickSub"></span><span style="flex:1"></span><button class="tbtn" onclick="closePick(true)">✕</button></div><div class="bb" id="pickBody"></div></div></div>
 <div id="stdModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><h2>Ohio's standards</h2><span class="small" id="stdModalSub"></span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pdfModal').classList.add('open')">The PDF</button><button class="tbtn" onclick="document.getElementById('stdModal').classList.remove('open')">✕</button></div><div class="bb" id="stdModalBody"></div><div class="bf"><span class="small" id="stdModalCount"></span><span style="flex:1"></span><button class="primary" onclick="document.getElementById('stdModal').classList.remove('open')">Done</button></div></div></div>
 <div id="pdfModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><b>Ohio's Learning Standards | Mathematics (2017)</b><span class="small">Ohio Department of Education</span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pdfModal').classList.remove('open')">✕</button></div><iframe src="standards/Ohio-Learning-Standards-Mathematics-2017.pdf" title="Ohio standards"></iframe></div></div>
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 25</div>
+<div id="build">Build 26</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -879,7 +874,7 @@ function openActivity(id){
   M.querySelectorAll("[data-close]").forEach(el=>el.onclick=closeActivity);
   M.querySelectorAll("[data-go]").forEach(el=>el.onclick=()=>{ renderPlan(); openActivity(el.dataset.go); });
   M.querySelector("[data-chg]").onclick=()=>pickActivity(a.id);
-  prog(); M.classList.add("open"); M.querySelector(".bb").scrollTop=0;
+  M.dataset.reopen=a.id; prog(); M.classList.add("open"); M.querySelector(".bb").scrollTop=0;
 }
 function closeActivity(){ document.getElementById("actModal").classList.remove("open"); renderPlan(); }
 function showModal(head,body,foot,progFn,rerender){
@@ -892,15 +887,15 @@ function showModal(head,body,foot,progFn,rerender){
   return M;
 }
 function openBefore(){
+  nvokeReady=false;
   const b=state.before=Object.assign(blankBefore(),state.before||{}); const R=routineMeta(b.name);
   const cards=(b.cards||[]).map((c,i)=>`<div class="ncard"><textarea data-cardtext="${i}" placeholder="7 + 8">${esc(c)}</textarea><span class="num">${i+1}</span><button class="x" data-delcard="${i}" title="Remove this card">✕</button></div>`).join("");
   const head=`<h2>Before</h2><span class="sicon" style="font-size:24px">${ROUTINE_ICON}</span><input type="text" data-b="name" value="${esc(b.name)}" placeholder="The routine's name" style="width:auto;flex:1;max-width:280px;font-weight:800;padding:5px 8px;border:1px solid var(--line);border-radius:7px;font-size:15px"><a class="chg" data-chg style="font-size:12.5px;color:var(--outline);cursor:pointer;text-decoration:underline">change</a>${R&&R[2]?`<a href="${R[2]}" target="_blank" rel="noopener" class="small">examples</a>`:""}<span class="mins"><input type="text" inputmode="numeric" placeholder="15" data-b="min" value="${esc(b.min)}">min</span><button class="tbtn" data-close>✕</button>`;
   const body=`<div class="tip" style="margin-top:8px">${esc(R?R[1]:"Your own routine — name it in the box above, and say where it's from.")}</div>
     <div class="step">1 · The cards, and what you say</div>
-    <div class="nv" style="margin-top:6px">${b.pack&&b.pack.thumbs&&b.pack.thumbs.length
-      ?`<div class="striplabel">🖐 Your cards — <b>${esc(b.pack.pack.name||"")}</b> · ${b.pack.thumbs.length} card${b.pack.thumbs.length===1?"":"s"} from nVoke. Click a card to edit the set.</div><div class="cards">${b.pack.thumbs.map((t,i)=>`<div class="ncard thumb" data-nvoke title="Edit in nVoke">${t}<span class="num">${i+1}</span></div>`).join("")}</div><div style="display:flex;gap:8px;margin-top:8px"><button class="tbtn" data-nvoke>✎ Edit the cards in nVoke</button><button class="tbtn" data-nvokeclear>Remove the cards</button></div>`
-      :(R&&R[3])?`<div class="striplabel">🖐 Your cards — what students see. Build them in the ${esc(ROUTINE_TPL_NAME[R[3]])} editor: drag shapes in, write the question, add each card.</div><button class="primary" data-nvoke>🖐 Build the cards</button>
-        <details style="margin-top:10px"><summary class="small" style="cursor:pointer">Or plain text cards — a number or an expression each</summary><div class="cards" style="margin-top:8px">${cards}<div class="ncard add" data-addcard title="Add a card and type what's on it">＋ card</div></div></details>`
+    <div class="nv" style="margin-top:6px">${(R&&R[3])
+      ?`<div class="striplabel">🖐 Your cards — what students see. Drag shapes into the slots, write the question, press <b>＋ Add card</b>; add as many cards as the routine needs. They save as you go.</div><iframe class="nvinline" src="${NVOKE_URL}&tpl=${R[3]}&inline=1" title="Card editor"></iframe>
+        <details style="margin-top:8px"><summary class="small" style="cursor:pointer">Or plain text cards — a number or an expression each</summary><div class="cards" style="margin-top:8px">${cards}<div class="ncard add" data-addcard title="Add a card and type what's on it">＋ card</div></div></details>`
       :`<div class="striplabel">🖐 Your cards — what students see, one card each. Type on a card.</div><div class="cards">${cards}<div class="ncard add" data-addcard title="Add a card and type what's on it: a number, an expression, a figure described">＋ card</div></div>`}
       <div class="prompt"><label style="margin-top:8px">What you say <span class="hint">— the posing question, exactly</span></label><input type="text" data-b="prompt" value="${esc(b.prompt)}" placeholder="What's the same? What's different?"></div></div>
     <div class="step">2 · Procedures</div>
@@ -915,10 +910,8 @@ function openBefore(){
     <div class="conn"><b>How does this routine connect to the first During activity?</b><textarea data-b="thread" style="margin-top:4px">${esc(b.thread)}</textarea></div>`;
   const first=state.during[0];
   const foot=`${first?`<button class="tbtn" data-go1>Activity 1 ▶</button>`:""}<span style="flex:1"></span><span class="small" data-prog></span><button class="primary" data-close>Done</button>`;
-  const M=showModal(head,body,foot,()=>beforeProgress(state.before),openBefore);
+  const M=showModal(head,body,foot,()=>beforeProgress(state.before),openBefore); M.dataset.reopen="before";
   M.querySelector("[data-chg]").onclick=pickRoutine;
-  M.querySelectorAll("[data-nvoke]").forEach(el=>el.onclick=openNvoke);
-  M.querySelectorAll("[data-nvokeclear]").forEach(el=>el.onclick=()=>{ if(!confirm("Remove these cards from the Before? (They stay in nVoke if you saved them there.)")) return; delete state.before.pack; save(); openBefore(); });
   const g=M.querySelector("[data-go1]"); if(g) g.onclick=()=>{ renderPlan(); openActivity(first.id); };
 }
 function openAfter(){
@@ -940,21 +933,22 @@ function openAfter(){
     <label>Would a student's response answer your research question?<span class="req">*</span> <span class="hint">— the one test the After has to pass; your question is on the Profile tab</span></label><textarea data-af="answers">${esc(a.answers)}</textarea>`;
   const last=state.during[state.during.length-1];
   const foot=`${last?`<button class="tbtn" data-golast>◀ Activity ${state.during.length}</button>`:""}<span style="flex:1"></span><span class="small" data-prog></span><button class="primary" data-close>Done</button>`;
-  const M=showModal(head,body,foot,()=>afterProgress(state.after),openAfter);
+  const M=showModal(head,body,foot,()=>afterProgress(state.after),openAfter); M.dataset.reopen="after";
   M.querySelector("[data-chg]").onclick=pickArtifact;
   const g=M.querySelector("[data-golast]"); if(g) g.onclick=()=>{ renderPlan(); openActivity(last.id); };
 }
-/* ---------- nVoke, embedded: the Before's cards are an nVoke prompt pack ---------- */
+/* ---------- nVoke, embedded inline in the Before popup: the cards are an nVoke prompt pack ---------- */
 const NVOKE_URL="../week-3-geometry-van-hiele/nvoke.html?embed=planner";
-let nvokeTpl=null;
-function openNvoke(){ const R=routineMeta((state.before||{}).name); const tpl=R&&R[3]?R[3]:null; const f=document.getElementById("nvokeFrame"); const url=NVOKE_URL+(tpl?"&tpl="+tpl:"");
-  if(!f.getAttribute("src")||tpl!==nvokeTpl){ nvokeTpl=tpl; f.setAttribute("src",url); } else if(state.before.pack) f.contentWindow.postMessage({type:"nvoke-load",pack:state.before.pack.pack},"*");
-  document.querySelector("#nvokeModal .bh b").textContent=tpl?ROUTINE_TPL_NAME[tpl]:"nVoke"; document.getElementById("nvokeModal").classList.add("open"); }
-function closeNvoke(){ document.getElementById("nvokeModal").classList.remove("open"); }
+let nvokeReady=false;
 window.addEventListener("message",e=>{
-  const f=document.getElementById("nvokeFrame"); if(!f||e.source!==f.contentWindow) return; const d=e.data||{};
-  if(d.type==="nvoke-ready"){ if(state.before&&state.before.pack) f.contentWindow.postMessage({type:"nvoke-load",pack:state.before.pack.pack},"*"); }
-  if(d.type==="nvoke-pack"&&d.pack){ state.before=Object.assign(blankBefore(),state.before||{}); state.before.pack={pack:d.pack,thumbs:d.thumbs||[]}; if(!(state.before.prompt||"").trim()&&d.pack.cards[0]&&d.pack.cards[0].prompt) state.before.prompt=d.pack.cards[0].prompt; save(); closeNvoke(); renderPlan(); openBefore(); toast(`${d.pack.cards.length} card${d.pack.cards.length===1?"":"s"} in your Before.`); }
+  const f=document.querySelector("#actBody iframe.nvinline"); if(!f||e.source!==f.contentWindow) return; const d=e.data||{};
+  if(d.type==="nvoke-ready"){ nvokeReady=true; if(state.before&&state.before.pack) f.contentWindow.postMessage({type:"nvoke-load",pack:state.before.pack.pack},"*"); }
+  if(d.type==="nvoke-pack"&&d.pack&&nvokeReady){
+    state.before=Object.assign(blankBefore(),state.before||{});
+    if(d.pack.cards.length) state.before.pack={pack:d.pack,thumbs:d.thumbs||[]}; else delete state.before.pack;
+    if(!(state.before.prompt||"").trim()&&d.pack.cards[0]&&d.pack.cards[0].prompt){ state.before.prompt=d.pack.cards[0].prompt; const pi=document.querySelector('#actBody [data-b="prompt"]'); if(pi) pi.value=state.before.prompt; }
+    save(); const el=document.querySelector("#actFoot [data-prog]"); if(el){ const [n,t]=beforeProgress(state.before); el.textContent=n===t?"✓ all four written":`${n} of ${t} written`; }
+  }
 });
 function pickArtifact(){
   const a=state.after=Object.assign(blankAfter(),state.after||{});
@@ -964,8 +958,9 @@ function pickArtifact(){
 }
 
 /* ---------- pickers (one modal: activities · routines · shapes) ---------- */
-function openPick(title,sub,html){ document.getElementById("pickTitle").textContent=title; document.getElementById("pickSub").textContent=sub||""; document.getElementById("pickBody").innerHTML=html; document.getElementById("pickModal").classList.add("open"); return document.getElementById("pickBody"); }
-function closePick(){ document.getElementById("pickModal").classList.remove("open"); }
+let pickReturn=null;
+function openPick(title,sub,html){ const A=document.getElementById("actModal"); if(A.classList.contains("open")){ A.classList.remove("open"); pickReturn=A.dataset.reopen||null; } else pickReturn=null; document.getElementById("pickTitle").textContent=title; document.getElementById("pickSub").textContent=sub||""; document.getElementById("pickBody").innerHTML=html; document.getElementById("pickModal").classList.add("open"); return document.getElementById("pickBody"); }
+function closePick(cancel){ document.getElementById("pickModal").classList.remove("open"); if(cancel&&pickReturn){ const r=pickReturn; pickReturn=null; if(r==="before") openBefore(); else if(r==="after") openAfter(); else if(r) openActivity(r); } pickReturn=null; }
 function pickActivity(id){
   const a=state.during.find(x=>x.id===id); if(!a) return; const idx=state.during.indexOf(a);
   const used=k=>state.during.map((x,i)=>x.type===k&&x.id!==id?i+1:0).filter(Boolean);
@@ -977,7 +972,7 @@ function pickRoutine(){
   const b=state.before=Object.assign(blankBefore(),state.before||{});
   const B=openPick("Before — which routine?","A routine opens the lesson: cards you show, one question you ask.",
     `<div class="ptiles">${ROUTINE_LIST.map((r,i)=>`<button class="ptile ${b.name===r[0]?"on":""}" data-i="${i}"><div class="pi">${ROUTINE_ICON}</div><div class="pn">${esc(r[0])}</div><div class="ps">${esc(r[1])}${r[2]?` · <a href="${r[2]}" target="_blank" rel="noopener" onclick="event.stopPropagation()">examples</a>`:""}</div></button>`).join("")}<button class="ptile ${b.name&&!routineMeta(b.name)?"on":""}" data-i="-1"><div class="pi">✏️</div><div class="pn">Other…</div><div class="ps">One you know that isn't listed. You'll name it, and say where it's from.</div></button></div>`);
-  B.querySelectorAll("[data-i]").forEach(el=>el.onclick=()=>{ const i=+el.dataset.i; const changed=i>=0&&state.before.name!==ROUTINE_LIST[i][0]; state.before.name=i<0?(routineMeta(b.name)||!b.name?"My routine":b.name):ROUTINE_LIST[i][0]; if(changed&&state.before.pack) delete state.before.pack; save(); renderPlan(); closePick(); openBefore(); if(i<0){ const inp=document.querySelector('#actHead [data-b="name"]'); if(inp){ inp.focus(); inp.select(); } } else if(ROUTINE_LIST[i][3]&&!state.before.pack) openNvoke(); });
+  B.querySelectorAll("[data-i]").forEach(el=>el.onclick=()=>{ const i=+el.dataset.i; const changed=i>=0&&state.before.name!==ROUTINE_LIST[i][0]; state.before.name=i<0?(routineMeta(b.name)||!b.name?"My routine":b.name):ROUTINE_LIST[i][0]; if(changed&&state.before.pack) delete state.before.pack; save(); renderPlan(); closePick(); openBefore(); if(i<0){ const inp=document.querySelector('#actHead [data-b="name"]'); if(inp){ inp.focus(); inp.select(); } } });
 }
 function pickShape(){
   const B=openPick("Start from a shape","Two or three activities in a named order. It replaces your During slices; Before and After stay.",
