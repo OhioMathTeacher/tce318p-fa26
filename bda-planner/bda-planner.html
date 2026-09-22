@@ -30,7 +30,10 @@
   h1 a:hover{text-decoration:underline}
   h1 small{font-weight:600;color:var(--muted);font-size:14px;margin-left:8px}
   .gear{position:relative}
-  .gear button.ghost{padding:8px 11px}
+  /* The gear was 13px inherited from button.ghost, which is the size a word wants
+     and not the size a lone glyph does: next to two icon buttons it read as the
+     smallest thing in the row, and it holds the examples and the passcode. */
+  .gear button.ghost{padding:5px 10px;font-size:19px;line-height:1.1}
   .gearMenu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 28px #0002;width:380px;padding:6px;display:none;z-index:45}
   .gearMenu.open{display:block}
   .gearMenu button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:none;font:inherit;font-size:14px;font-weight:700;padding:9px 12px;border-radius:8px;cursor:pointer;color:var(--outline);white-space:nowrap}
@@ -39,8 +42,35 @@
   .gearMenu .note{font-size:12px;color:var(--muted);font-style:italic;padding:0 12px 6px;font-weight:400}
   .gearMenu .sep{border-top:1px solid var(--line);margin:6px 4px}
   .gearMenu .hd{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:6px 12px 2px}
-  .hdrbar{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
-  .hdrbar .toolbar{align-items:baseline}
+  /* Shrink before wrapping. The parts of this header have intrinsic widths that
+     added up to more than a 13" laptop has, and flex-wrap:wrap answers that by
+     taking the first item that does not fit and starting a new line with it --
+     which put Load, My Progress and the gear in a row of their own under the
+     title, reading as a second toolbar rather than the end of the first.
+     min-width:0 is the part that does the work: without it a flex item will not
+     go below the width of its own content, so the name field could never give
+     any ground and something always had to wrap. A genuinely narrow screen -- a
+     phone -- is still allowed two rows, because there one row cannot be had. */
+  .hdrbar{display:flex;align-items:baseline;gap:14px;flex-wrap:nowrap}
+  .hdrbar .toolbar{align-items:baseline;flex:0 1 auto;min-width:0}
+  .hdrbar .toolbar input[type=text]{flex:0 1 240px;width:auto;min-width:110px}
+  @media (max-width:1180px){ h1 small{display:none} }
+  /* 960, not 820: with the tagline gone the row still needs about 890px for a
+     title, a name field at its floor, four controls and the gaps between them.
+     Wrapping has to resume before that, or nowrap buys a horizontal scrollbar
+     instead of a second line -- which is the worse of the two. */
+  @media (max-width:960px){ .hdrbar{flex-wrap:wrap} h1 small{display:inline} }
+  /* Icon-only buttons. The words cost about 90px of a header with none to spare;
+     the diskette carries the meaning, and title + aria-label carry it for anyone
+     the picture does not reach -- an icon-only control with no accessible name is
+     a button that screen readers announce as "button". */
+  .ic-btn{display:inline-flex;align-items:center;gap:3px;padding:6px 9px;line-height:1}
+  .ic-btn .disk{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linejoin:round}
+  .ic-btn .arw{font-size:12px;font-weight:700}
+  /* Empty until an autosave has something to report, and display:none while it is,
+     so the flex gap does not hold a space open for nothing. */
+  #saveNote:empty{display:none}
+  #saveNote.failed{color:var(--mark);font-weight:700}
   .proto{font-size:12px;color:#6b4a08;background:var(--gold-soft);border:1px solid #e7d3a1;border-radius:8px;padding:6px 10px;margin:10px 0 6px}
   /* phase strip (nVoke) */
   .phasebar{display:inline-flex;gap:0;margin:8px 0 4px;border:2px solid var(--outline);border-radius:12px;overflow:hidden;flex-wrap:wrap}
@@ -258,6 +288,12 @@
   #nag{display:none;align-items:center;gap:12px;margin:8px 0 0;padding:8px 14px;border:1px solid #e7d3a1;background:var(--gold-soft,#fff6dc);border-radius:10px;font-size:13.5px;color:#6b4a08}
   #nag.on{display:flex}
   #nag b{color:#5a3d00}
+  /* Gold is the colour of a nudge -- "you have not saved to a file lately". A
+     storage failure is not a nudge: nothing is being kept anywhere, so it does
+     not get to look like the same message in a different sentence. */
+  #nag.urgent{border-color:#e0b4b4;background:#fbeaea;color:#7a2b2b}
+  #nag.urgent b{color:#7a2b2b}
+  #nag.urgent .later{border-color:#e0b4b4;color:#7a2b2b}
   #nag .sp{flex:1}
   #nag button{font:inherit;font-size:13px;border-radius:8px;padding:6px 11px;cursor:pointer}
   #nag .go{background:var(--outline);color:#fff;border:0;font-weight:700}
@@ -507,9 +543,9 @@
     <h1><a href="https://github.com/OhioMathTeacher/tce318p-fa26/tree/main/bda-planner" target="_blank" rel="noopener" title="The app's source on GitHub">BDA Planner</a> <small>plan it · hand it over · teach it</small></h1>
     <span class="toolbar" style="margin-left:18px"><label for="tbNames" style="font-weight:600;font-size:14px">Name(s)</label><input type="text" id="tbNames" placeholder="you — or your whole team"><label for="tbSection" style="font-weight:600;font-size:14px">Section</label><select id="tbSection"><option value="">…</option><option value="oxford">Oxford</option><option value="hamilton">Hamilton</option></select><span class="i" tabindex="0">i<span class="pop">One plan per team; one planning record per person. Put every teammate's name here. Your section decides which day's class this is for.</span></span></span>
     <span style="flex:1"></span>
-    <span class="note small" id="saveNote">Autosaves in this browser</span>
-    <button class="ghost" id="saveProj" title="Download your project as a file — how it travels to another computer or a teammate">⬇ Save</button>
-    <label class="ghost" for="loadProj" style="cursor:pointer" title="Open a saved project file">⬆ Load<input type="file" id="loadProj" accept=".json" hidden></label>
+    <span class="note small" id="saveNote"></span>
+    <button class="ghost ic-btn" id="saveProj" aria-label="Save your project to a file" title="Save your project to a file — how it travels to another computer or a teammate"><svg class="disk" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.4 2.4h8.1l3.1 3.1v8.1a.9.9 0 0 1-.9.9H3.3a.9.9 0 0 1-.9-.9V3.3a.9.9 0 0 1 .9-.9z"/><path d="M5.2 2.4v3.3h5V2.4"/><rect x="4.6" y="9.1" width="6.8" height="5.4" rx=".5"/></svg><span class="arw">↓</span></button>
+    <label class="ghost ic-btn" for="loadProj" style="cursor:pointer" aria-label="Open a saved project file" title="Open a saved project file"><svg class="disk" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.4 2.4h8.1l3.1 3.1v8.1a.9.9 0 0 1-.9.9H3.3a.9.9 0 0 1-.9-.9V3.3a.9.9 0 0 1 .9-.9z"/><path d="M5.2 2.4v3.3h5V2.4"/><rect x="4.6" y="9.1" width="6.8" height="5.4" rx=".5"/></svg><span class="arw">↑</span><input type="file" id="loadProj" accept=".json" hidden></label>
     <button class="ghost" id="progBtn" title="Where you stand on the Concept Profile — what is written, what is still empty, and roughly how long it runs">▤ My Progress</button>
     <span class="gear"><button class="ghost" id="gearBtn" title="Options">⚙</button>
       <div class="gearMenu" id="gearMenu">
@@ -589,7 +625,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 57</div>
+<div id="build">Build 58</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -888,9 +924,42 @@ function statsTick(){
   (g.practices||[]).forEach(c=>seen.push("practice:"+c));
   seen.forEach(k=>{ if(!st.tried[k]) st.tried[k]=d; });
 }
-function save(){ try{ statsTick(); }catch(e){} try{ localStorage.setItem(STORE,JSON.stringify(state)); document.getElementById("saveNote").textContent="Autosaved "+new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}); const n=(+localStorage.getItem(STORE+"-unsaved")||0)+1; localStorage.setItem(STORE+"-unsaved",String(n)); updateNag(n); }catch(e){} }
-function updateNag(n){ const el=document.getElementById("nag"); if(!el) return; let last=null; try{ last=+localStorage.getItem(STORE+"-lastfile")||null; }catch(e){} const show=!nagSnoozed&&n>=NAG_AT; el.classList.toggle("on",show); if(show) document.getElementById("nagText").innerHTML=last?`<b>Changes since you last saved to a file</b> (${new Date(last).toLocaleString([],{weekday:"short",hour:"numeric",minute:"2-digit"})}). Autosave lives in this browser only — a file travels with you.`:`<b>You haven't saved this project to a file yet.</b> Autosave lives in this browser only — a file is how it survives a different computer or a cleared browser.`; }
-function recordFileSave(){ try{ state.stats&&(state.stats.saves=(state.stats.saves||0)+1); }catch(e){} try{ localStorage.setItem(STORE+"-lastfile",String(Date.now())); localStorage.setItem(STORE+"-unsaved","0"); }catch(e){} nagSnoozed=false; updateNag(0); }
+// The write, the reassurance and the nag counter used to share one
+// try{ ... }catch(e){}, so when setItem threw they died together and in silence.
+// Quota, private browsing, Safari evicting storage: the plan was not written,
+// "Autosaved 2:14 PM" went on showing the last time it HAD been written, and the
+// counter that escalates to "save this to a file" stopped advancing — three
+// failures at once, and the student whose browser was full was the one person
+// who could not tell. journaler learned this twice (persist, saveNotesToStorage).
+//
+// Its alert() is wrong here, though: save() runs on every keystroke, and a modal
+// per character is not a warning, it is a lockout. So the signal lives where the
+// reassurance used to be — the status line says the opposite of "Autosaved", and
+// the nag bar stops waiting for NAG_AT and comes up now.
+//
+// The count is held in memory as well, because a localStorage that cannot be
+// written is not a localStorage that can be trusted to remember how many writes
+// have failed.
+let unsavedCount=(()=>{ try{ return +localStorage.getItem(STORE+"-unsaved")||0; }catch(e){ return 0; } })();
+let storageFailed=false;
+function save(){
+  try{ statsTick(); }catch(e){}
+  unsavedCount++;
+  const note=document.getElementById("saveNote");
+  try{
+    localStorage.setItem(STORE,JSON.stringify(state));
+    storageFailed=false;
+    if(note){ note.textContent="Autosaved "+new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}); note.classList.remove("failed"); }
+  }catch(e){
+    storageFailed=true;
+    console.error("save",e);
+    if(note){ note.textContent="NOT saved — this browser is full"; note.classList.add("failed"); }
+  }
+  try{ localStorage.setItem(STORE+"-unsaved",String(unsavedCount)); }catch(e){}
+  updateNag(unsavedCount);
+}
+function updateNag(n){ const el=document.getElementById("nag"); if(!el) return; let last=null; try{ last=+localStorage.getItem(STORE+"-lastfile")||null; }catch(e){} const show=!nagSnoozed&&(storageFailed||n>=NAG_AT); el.classList.toggle("on",show); el.classList.toggle("urgent",storageFailed); if(show) document.getElementById("nagText").innerHTML=storageFailed?`<b>This browser's storage is full — your plan is no longer being autosaved.</b> Nothing typed since the last autosave is being kept anywhere. Save to a file now, before you type anything else.`:last?`<b>Changes since you last saved to a file</b> (${new Date(last).toLocaleString([],{weekday:"short",hour:"numeric",minute:"2-digit"})}). Autosave lives in this browser only — a file travels with you.`:`<b>You haven't saved this project to a file yet.</b> Autosave lives in this browser only — a file is how it survives a different computer or a cleared browser.`; }
+function recordFileSave(){ try{ state.stats&&(state.stats.saves=(state.stats.saves||0)+1); }catch(e){} unsavedCount=0; try{ localStorage.setItem(STORE+"-lastfile",String(Date.now())); localStorage.setItem(STORE+"-unsaved","0"); }catch(e){} nagSnoozed=false; updateNag(0); }
 document.getElementById("nagSave").onclick=()=>document.getElementById("saveProj").click();
 document.getElementById("nagLater").onclick=()=>{ nagSnoozed=true; updateNag(0); };
 function allBlocks(){ return [state.before, ...state.during, state.after]; }
