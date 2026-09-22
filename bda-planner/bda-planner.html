@@ -178,6 +178,33 @@
   .chip b{color:var(--ink)}
   .chip a{color:var(--outline);text-decoration:none;margin-left:6px}
   .panel{display:none}.panel.on{display:block}
+  .sec{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+  .sec:first-of-type{border-top:0;padding-top:0;margin-top:6px}
+  .sec h3{margin:0 0 2px;font-size:15.5px;color:var(--ink);display:flex;align-items:center}
+  .sec h3 .k{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--outline);color:#fff;font-size:12px;font-weight:800;margin-right:8px;flex:none}
+  .sec .why{font-size:13px;color:var(--muted);margin:0 0 6px}
+  .rows{margin-top:6px}
+  .rrow{display:grid;grid-template-columns:130px 1fr 1.4fr 100px;gap:10px;align-items:start;margin-top:8px}
+  .rrow.students{grid-template-columns:130px 1fr}
+  .rrow input,.rrow textarea{margin:0}
+  .rrow textarea{min-height:56px}
+  .rrow .ph{display:flex;flex-direction:column;gap:4px;align-items:stretch}
+  .rrow .ph img{width:96px;height:56px;object-fit:cover;border-radius:7px;border:1px solid var(--line);cursor:pointer}
+  .rrow .ph button{font-size:11.5px;padding:3px 6px}
+  .rhead{display:grid;grid-template-columns:130px 1fr 1.4fr 100px;gap:10px;font-size:12px;font-weight:700;color:var(--muted);margin-top:8px}
+  .gauge{font-size:13px;color:var(--muted);margin-right:10px}
+  .gauge b{color:var(--ink)}
+  .gauge.short b{color:#8a6a1a}
+  /* image editor */
+  #imgEd{position:fixed;inset:0;background:#0007;z-index:70;display:none;align-items:center;justify-content:center;padding:20px}
+  #imgEd.open{display:flex}
+  #imgEd .box{background:#fff;border-radius:14px;max-width:96vw;max-height:94vh;display:flex;flex-direction:column;overflow:hidden}
+  #imgEd .bh{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  #imgEd .bh .tool.on{border-color:var(--outline);color:var(--outline);background:#eef4fc}
+  #imgEd .stage{overflow:auto;padding:12px;background:#f3f4f6;flex:1}
+  #imgEd canvas{max-width:100%;display:block;cursor:crosshair;background:#fff}
+  #imgEd .hint{font-size:12.5px;color:var(--muted);margin-left:auto}
+  @media print{ #imgEd{display:none!important} #profilePrint .app{page-break-before:always} #profilePrint .app img{max-width:100%;max-height:8in;display:block;margin:6pt 0} #profilePrint .app .cap{font-size:10.5pt;color:#333} }
   /* "what we read" outline */
   .outline{margin-top:12px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
   .outline .orow{display:grid;grid-template-columns:44px 1fr 62px;gap:10px;padding:10px 14px;border-top:1px solid var(--line);align-items:start}
@@ -206,7 +233,7 @@
     @page{margin:0.8in}
   }
   /* tiles (Background) */
-  .tiles{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;margin-top:12px;align-items:stretch;height:calc(100vh - 150px);min-height:560px}
+  .tiles{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:22px;margin-top:12px;align-items:stretch;height:calc(100vh - 150px);min-height:560px}
   @media(max-width:900px){.tiles{grid-template-columns:1fr;height:auto}}
   .tile{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px 28px 20px;display:flex;flex-direction:column;min-height:0;overflow:auto}
   .tile h2{margin:0 0 2px;font-size:20px;color:var(--ink);display:flex;align-items:center;gap:10px}
@@ -221,8 +248,10 @@
   .tile .pdf{flex:1;min-height:0;border:1px solid var(--line);border-radius:10px;margin-top:12px;background:#f6f7f9;display:flex}
   .tile .pdf iframe{width:100%;height:100%;border:0;border-radius:10px;min-height:0}
   .tile.lesson{overflow:hidden}
-  .tile .cols{display:grid;grid-template-columns:1fr 1fr;gap:22px}
-  @media(max-width:1250px){.tile .cols{grid-template-columns:1fr}}
+  .tile .cols{display:block}
+  .tile .row{display:flex;gap:14px;flex-wrap:wrap}
+  .tile .row>div{flex:1;min-width:160px}
+  .tile .row>div.narrow{flex:0 0 170px;min-width:170px}
   .tile .cols label:first-child{margin-top:6px}
   /* info buttons */
   .i{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--outline);color:var(--outline);font-size:11px;font-weight:800;font-style:normal;cursor:pointer;margin-left:6px;vertical-align:middle;background:#fff;position:relative;user-select:none}
@@ -334,6 +363,7 @@
   <div id="shapeList"></div>
 </div>
 <div id="pdfModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><b>Ohio's Learning Standards | Mathematics (2017)</b><span class="small">Ohio Department of Education</span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pdfModal').classList.remove('open')">✕</button></div><iframe src="standards/Ohio-Learning-Standards-Mathematics-2017.pdf" title="Ohio standards"></iframe></div></div>
+<div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
 
@@ -374,7 +404,7 @@ let seq=0; function uid(){ return "a"+(++seq)+"_"+Math.random().toString(36).sli
 
 const SAMPLES = {
   lesson: {
-    door:"lesson", block:60, bg:{names:"Sam R.", section:"hamilton", grade:"Grade 2", host:"Ms. K. Eureka Math, whole-group, 60-minute block. Non-negotiable: every student talks math every day.", concept:"Making a ten to add within 20 — decomposing an addend to complete a ten", students:"Ava, Marcus, Lena", question:"When students make a ten to add, how do they decide which addend to break apart?", samples:"Ava: 9 + 4 — drew 9 dots, then 4, circled 10, wrote 13. Marcus: counted all 13 on fingers. Lena: wrote 13 with no ten shown.", standards:["2.OA.2"], practices:["MP.7"], sits:"Feeds from 1.OA.6 (strategies within 20, including making ten) and K.OA.4 (the number that makes ten). Leads to 2.NBT.5 — the same decomposition move, applied to tens when adding within 100.", scriptName:"EngageNY G2 M1 Lesson 3 — Make a ten to add within 20 (PDF)", read:[["Fluency Practice",15,"Four routines: 10+n call-and-response · Take Out a Part · Pairs to Make 10 · One More, Ten More sprint","I lead; students respond in chorus and on white boards","2.OA.2"],["Concept Development",30,"9 + 4 with counters, move one to complete the ten, record 10 + 3; repeat 9 + 5; white boards for 8 + 4, 8 + 5; turn-and-talk; fold the paper to symbols","Teacher models every move; students copy, then turn-and-talk","2.OA.2"],["Application Problem",5,"Ben and Chuck collect pennies and trade ten for a dime","Students solve; RDW","2.OA.2"],["Problem Set",10,"Make-ten solutions with number bonds, matched to 10 + n sentences","Students work alone","2.OA.2"],["Student Debrief",10,"Five discussion questions on the Problem Set","Teacher-led whole class","2.OA.2"],["Exit Ticket",3,"Two make-ten problems","Alone","2.OA.2"]]},
+    door:"lesson", block:60, bg:{names:"Sam R.", section:"hamilton", grade:"Grade 2", host:"Ms. K. Eureka Math, whole-group, 60-minute block. Non-negotiable: every student talks math every day.", concept:"Making a ten to add within 20 — decomposing an addend to complete a ten", studentsRows:[["Ava","Quick with facts to 10; talks a lot in number talks."],["Marcus","Counts on fingers; quiet; likes cubes."],["Lena","Writes answers fast, rarely shows work."]], question:"When students make a ten to add, how do they decide which addend to break apart?", why:"All three got 13 for 9 + 4, but only Ava made a ten — and she made it from the 9 because that's the one on the left. I want to know if it's a choice.", think:"Students often 'make ten' only from the larger addend because that's what was modeled (host teacher). Many count all or count on and never make a ten at all (Marcus). Some write the sum from memory with no visible strategy, so you can't tell (Lena). Research: children's fact strategies move from counting all → counting on → derived facts, and making ten is a derived-fact strategy that depends on knowing the ten-partners.", sources:[["https://www.jstor.org/stable/41198838","Baroody (2006) argues that fluency comes from reasoning strategies like making ten rather than drill. Children move through counting, reasoning, and mastery phases at different rates for different combinations. Students stuck in the counting phase never make a ten at all, and students who have memorized a sum may show no strategy — which is exactly what Marcus and Lena look like. The reasoning phase is where the choice of which addend to break lives."]], samplesRows:[["Ava","9 + 4 on white board","Drew 9 dots, then 4, circled 10, wrote 13. Made the ten from the 9."],["Marcus","9 + 4 on white board","Counted all 13 on fingers. No ten."],["Lena","8 + 5 on the exit ticket","Wrote 13 with no work shown. Can't tell how."]], before:"Ten-partners (K.OA.4); adding within 20 with counting on (1.OA.6).", after:"The same decomposition move applied to tens when adding within 100 (2.NBT.5).", standards:["2.OA.2"], practices:["MP.7"], scriptName:"EngageNY G2 M1 Lesson 3 — Make a ten to add within 20 (PDF)", read:[["Fluency Practice",15,"Four routines: 10+n call-and-response · Take Out a Part · Pairs to Make 10 · One More, Ten More sprint","I lead; students respond in chorus and on white boards","2.OA.2"],["Concept Development",30,"9 + 4 with counters, move one to complete the ten, record 10 + 3; repeat 9 + 5; white boards for 8 + 4, 8 + 5; turn-and-talk; fold the paper to symbols","Teacher models every move; students copy, then turn-and-talk","2.OA.2"],["Application Problem",5,"Ben and Chuck collect pennies and trade ten for a dime","Students solve; RDW","2.OA.2"],["Problem Set",10,"Make-ten solutions with number bonds, matched to 10 + n sentences","Students work alone","2.OA.2"],["Student Debrief",10,"Five discussion questions on the Problem Set","Teacher-led whole class","2.OA.2"],["Exit Ticket",3,"Two make-ten problems","Alone","2.OA.2"]]},
     before:{id:"before", type:"before", title:"Pairs to Make 10 (from the script's fluency block)", min:6, objective:"Recall the ten-partners quickly, without being shown which addend to break.", students:"Write the addition sentence that makes 10 on white boards; show me.", teacher:"I say a number. Six or seven numbers, no comment on which addend to break.", thread:"They have the ten-partners in hand; nobody has said what to do with them."},
     during:[
       Object.assign(blankAct("script"), {title:"Concept Development — make a ten (Lesson 3, EngageNY G2 M1)", min:25,
@@ -397,7 +427,7 @@ const SAMPLES = {
     after:{id:"after", type:"after", title:"Exit ticket (the script's) + one line: 'Which number did you break, and why?'", min:8, objective:"Each student shows one make-ten solution and names the addend they chose.", students:"The script's exit ticket as printed, plus one line at the bottom.", teacher:"Read aloud if needed. Collect.", thread:""},
   },
   idea: {
-    door:"idea", block:45, bg:{names:"Jordan P. & Casey L.", section:"oxford", grade:"Grade 4", host:"Mr. D. Bridges. 45-minute block, small groups. Non-negotiable: manipulatives on every table.", concept:"Fractions of a set", students:"Jordan, Maya, Eli", question:"How do students reason about equal shares of a set?", samples:"Jordan: 3/4 of 12 — grouped into 4 groups of 3, took 3 groups. Maya: circled 3 counters, said 'three fourths'. Eli: shaded 9 of 12, no grouping shown.", standards:["4.NF.4","4.NF.1"], practices:["MP.2","MP.3"], sits:"Feeds from 3.NF.1 (a fraction as parts of a whole) and 3.OA.2 (equal groups). Leads to 5.NF.4 — multiplying a fraction by a whole number as scaling.", scriptName:"", read:null},
+    door:"idea", block:45, bg:{names:"Jordan P. & Casey L.", section:"oxford", grade:"Grade 4", host:"Mr. D. Bridges. 45-minute block, small groups. Non-negotiable: manipulatives on every table.", concept:"Fractions of a set", studentsRows:[["Jordan","Confident with equal groups; explains out loud."],["Maya","Uses fraction words freely; unsure what they refer to."],["Eli","Shades and draws; rarely groups."]], question:"How do students reason about equal shares of a set?", why:"Three students, three different 'three-fourths' of the same twelve counters.", think:"Students treat the fraction as a count ('three' counters for three-fourths) rather than a relationship to the whole (Maya). Students who can partition a shape may not partition a set. Some shade the right number without any grouping — is that understanding or a memorized 9? Research: part-whole with sets is harder than with area models because the 'whole' is a group of discrete things.", sources:[["https://www.jstor.org/stable/41199366","Set models are harder for students than area models because the whole is not a single object but a group, and students lose track of what the whole is. A common challenge is treating the numerator as a count of objects (three counters for three-fourths) rather than as parts of the partitioned set. The authors recommend asking 'what is the whole?' constantly and changing the size of the set so that a fourth is not always the same number of counters."]], samplesRows:[["Jordan","3/4 of 12 counters","Grouped into 4 groups of 3, took 3 groups. Partitioned first."],["Maya","3/4 of 12 counters","Circled 3 counters and said 'three fourths'. Counted, didn't partition."],["Eli","3/4 of 12, drawn","Shaded 9 of 12, no grouping shown. Right count, unclear reasoning."]], before:"A fraction as equal parts of one whole (3.NF.1); equal groups (3.OA.2).", after:"Multiplying a fraction by a whole number as scaling (5.NF.4).", standards:["4.NF.4","4.NF.1"], practices:["MP.2","MP.3"], scriptName:"", read:null},
     before:{id:"before", type:"before", title:"Same or Different: 12 counters in 4 groups / 12 counters in 3 groups", min:6, objective:"Students describe a set as groups without being asked to name a fraction.", students:"Say what's the same and what's different about two images.", teacher:"Show both. Record their words; don't say 'fourths'.", thread:"'Groups' is in the room; 'fraction of' is not."},
     during:[
       Object.assign(blankAct("task"), {title:"Show 3/4 of 12 counters — in more than one way", min:15,
@@ -430,7 +460,7 @@ const SAMPLES = {
 };
 
 /* ---------- state ---------- */
-const STORE="bda-planner-proto-v6";
+const STORE="bda-planner-proto-v7";
 let state=null, selId=null;
 function load(){ try{ const s=localStorage.getItem(STORE); if(s){ state=JSON.parse(s); return; } }catch(e){} state=JSON.parse(JSON.stringify(SAMPLES.lesson)); }
 function save(){ try{ localStorage.setItem(STORE,JSON.stringify(state)); document.getElementById("saveNote").textContent="Autosaved "+new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}); }catch(e){} }
@@ -440,7 +470,8 @@ function used(){ return allBlocks().reduce((n,b)=>n+(+b.min||0),0); }
 
 /* ---------- render: Background accordion ---------- */
 
-function bgDone(){ const g=state.bg||{}; return [ !!(g.grade&&state.block&&g.concept&&g.students&&g.question), !!(state.door==="idea"||(state.door==="lesson"&&g.scriptName)) ]; }
+function bgDone(){ const g=state.bg||{}; const rows=(g.samplesRows||[]).filter(r=>r.some(x=>x&&x.trim())); return [ !!(g.grade&&state.block&&g.concept&&(g.studentsRows||[]).some(r=>r[0])&&rows.length>=3&&g.question), !!(state.door==="idea"||(state.door==="lesson"&&g.scriptName)) ]; }
+function profileWords(){ const g=state.bg||{}; const parts=[g.host,g.concept,g.before,g.after,g.think,...(g.sources||[]).map(r=>r[1]),g.question,g.why,...(g.studentsRows||[]).flat(),...(g.samplesRows||[]).map(r=>r.slice(0,3)).flat()]; return parts.join(' ').split(/\s+/).filter(Boolean).length; }
 function I(text){ return `<span class="i" tabindex="0">i<span class="pop">${text}</span></span>`; }
 function renderBackground(){
   const g=state.bg=state.bg||{}; if(!Array.isArray(g.standards)) g.standards=[]; const done=bgDone();
@@ -450,19 +481,34 @@ function renderBackground(){
     stdHtml='<div class="stds">'+span.map(gr=>{ const rows=OM.standards[gr]||[]; let last=""; const now=gr===g.grade; const body=rows.map(([c,d,t])=>{ const dh=d!==last?`<div class="dh">${d}</div>`:""; last=d; return dh+`<label title="${esc(t)}"><input type="checkbox" data-std="${c}" ${g.standards.includes(c)?"checked":""}><b>${c}</b><span>${esc(t)}</span></label>`; }).join(""); return `<details class="gr" ${now?"open":""}><summary>${gr}${now?"":" <span style='font-weight:400;text-transform:none;letter-spacing:0'>· one grade "+(OM.grades.indexOf(gr)<OM.grades.indexOf(g.grade)?"below":"above")+"</span>"}</summary>${body}</details>`; }).join("")
       +`<details><summary>Standards for Mathematical Practice — pick one or two the lesson leans on</summary>${OM.practices.map(([c,n,t])=>`<label title="${esc(t)}"><input type="checkbox" data-mp="${c}" ${(g.practices||[]).includes(c)?"checked":""}><b>${c}</b><span>${esc(n)}</span></label>`).join("")}</details></div>`;
   } else stdHtml=`<div class="small" style="margin-top:6px">Pick a grade to see its standards — with the grade below and the grade above.</div>`;
-  const left=`<h2><span class="n">${done[0]?"✓":"1"}</span>Your Concept Profile${I("This IS the Week 6 Concept Profile. Fill it here, press Export, submit the PDF in Canvas. Every later tab reads these fields. Pseudonyms only; the work samples themselves attach in Canvas, not here.")}<span style="flex:1"></span><button class="ghost" type="button" id="exportProfile" title="Renders the 1–2 page Concept Profile for Canvas">⬇ Export Concept Profile (PDF)</button></h2>
-    <div class="cols"><div>
-      <div class="row"><div class="narrow"><label>Grade</label><select data-bg="grade"><option value="">…</option>${["Kindergarten","Grade 1","Grade 2","Grade 3","Grade 4","Grade 5"].map(x=>`<option ${g.grade===x?"selected":""}>${x}</option>`).join("")}</select></div>
-      <div class="narrow"><label>Math block ${I("Minutes your host teacher gives to math. Ask — placements differ. The During tab's timeline is exactly this long.")}</label><input type="number" min="20" max="120" step="5" data-bg="block" value="${state.block}"></div></div>
-      <label>1 · Host teacher &amp; classroom context ${I("Their teaching style, one non-negotiable they hold for math, and the scope and sequence for the math your class will be working on during your Weeks 11–12 immersion.")}</label><textarea data-bg="host" style="min-height:96px">${esc(g.host||"")}</textarea>
-      <label>2 · The concept ${I("One specific, grade-appropriate mathematical concept — an idea students build understanding of. Not a whole strand (“fractions”), not a bare skill (“adding fractions”). Chosen with your host teacher.")}</label><input type="text" data-bg="concept" value="${esc(g.concept||"")}">
-      <label>3 · The students ${I("Two or three focus students, chosen with your host teacher, each with a pseudonym and enough context that a reader could follow them into the immersion. Real names never leave the classroom.")}</label><textarea data-bg="students" style="min-height:70px">${esc(g.students||"")}</textarea>
-      <label>4 · The question I'm asking ${I("A first read, one sentence: an open question about how students understand this concept — not whether they got it right, not a diagnosis of a child. Week 7 sharpens it.")}</label><input type="text" data-bg="question" value="${esc(g.question||"")}">
-    </div><div>
-      <label>5 · The collected work, described ${I("Three to five pieces of actual student work on this concept, across your focus students, described so a reader can see what each reveals about how the student currently understands it. Attach the de-identified samples in Canvas; only your descriptions live here.")}</label><textarea data-bg="samples" style="min-height:120px">${esc(g.samples||"")}</textarea>
-      <label>6 · Standards ${I("One or two accurate, grade-appropriate Ohio standards for the concept. The LESSON is aligned to these; the parts of the lesson get objectives, which you write. Pick from the list, or type your concept and press Find the standards.")} <button class="tbtn" style="margin-left:8px" type="button" onclick="toast('Prototype — in the real app this matches your concept against the grade\\'s standards')">Find the standards</button><button class="tbtn" style="margin-left:6px" type="button" onclick="document.getElementById('pdfModal').classList.add('open')">Ohio's standards (PDF)</button></label>${stdHtml}
-      <label>Where the math sits ${I("A paragraph: how the standard(s) relate to your concept and question, and where the math sits developmentally — what feeds it and what it leads to. The grade-below and grade-above lists are there for exactly this.")}</label><textarea data-bg="sits" style="min-height:70px">${esc(g.sits||"")}</textarea>
-    </div></div>`;
+  g.studentsRows=g.studentsRows||[["",""],["",""],["",""]]; g.sources=g.sources||[["",""]]; g.samplesRows=g.samplesRows||[["","","",""],["","","",""],["","","",""]];
+  const words=profileWords(), pages=(words/430).toFixed(1);
+  const left=`<h2><span class="n">${done[0]?"✓":"1"}</span>Your Concept Profile${I("This IS the Week 6 Concept Profile. Fill it here, press Export, submit the PDF in Canvas. Every later tab reads these fields. Pseudonyms only, everywhere.")}<span style="flex:1"></span><span class="gauge ${words<430?"short":""}">about <b>${pages} pages</b> · the assignment asks for 1–2</span><button class="ghost" type="button" id="exportProfile" title="Renders the Concept Profile for Canvas, with your work samples as an appendix">⬇ Export (PDF)</button></h2>
+    <div class="cols">
+      <div class="sec"><h3><span class="k">1</span>Your classroom${I("Where you'll teach in Weeks 11–12. Grade, how long the math block is, and what your host teacher is like — their style, one non-negotiable they hold for math, and what the class will be working on when you're there.")}</h3>
+        <div class="row"><div class="narrow"><label>Grade</label><select data-bg="grade"><option value="">…</option>${["Kindergarten","Grade 1","Grade 2","Grade 3","Grade 4","Grade 5"].map(x=>`<option ${g.grade===x?"selected":""}>${x}</option>`).join("")}</select></div>
+        <div class="narrow"><label>Math block <span class="hint">min</span></label><input type="number" min="20" max="120" step="5" data-bg="block" value="${state.block}"></div></div>
+        <label>Host teacher &amp; what the class is working on</label><textarea data-bg="host" style="min-height:96px">${esc(g.host||"")}</textarea></div>
+      <div class="sec"><h3><span class="k">2</span>The concept${I("One specific, grade-appropriate mathematical concept — an idea students build understanding of. Not a whole strand (“fractions”), not a bare skill (“adding fractions”). Chosen with your host teacher, from what the class is actually doing.")}</h3>
+        <label>The concept, in a sentence</label><input type="text" data-bg="concept" value="${esc(g.concept||"")}">
+        <label>Standards ${I("One or two Ohio standards the concept lives in. The LESSON is aligned to these; later, each part of the lesson gets an objective you write. Pick from the list, or type your concept and press Find the standards.")} <button class="tbtn" style="margin-left:8px" type="button" onclick="toast('Prototype — in the real app this matches your concept against the grade\\'s standards')">Find the standards</button><button class="tbtn" style="margin-left:6px" type="button" onclick="document.getElementById('pdfModal').classList.add('open')">Ohio's standards (PDF)</button></label>${stdHtml}
+        <div class="row" style="margin-top:2px"><div><label>What students need to already have ${I("The ideas this concept is built on — often in the grade below. The grade-below list is open above for exactly this.")}</label><textarea data-bg="before" style="min-height:60px">${esc(g.before||"")}</textarea></div><div><label>What this leads to ${I("Where the concept goes next — often the grade above.")}</label><textarea data-bg="after" style="min-height:60px">${esc(g.after||"")}</textarea></div></div></div>
+      <div class="sec"><h3><span class="k">3</span>How students think about it${I("Before you look closely at your samples: what do students commonly do, say, or believe about this concept — including the misconceptions? Say where each came from: your host teacher, the reading, your own samples. A paragraph.")}</h3>
+        <textarea data-bg="think" style="min-height:120px" placeholder="What students commonly do, say, or believe about this concept — and the misconceptions. Where did each come from?">${esc(g.think||"")}</textarea></div>
+      <div class="sec"><h3><span class="k">4</span>What the research says${I("One to three sources from JSTOR (Miami's library gives you access). For each: the permanent JSTOR link or DOI, and three or four sentences on the misconceptions and challenges the source describes for this concept. This seeds the “What Does Research Say?” section of your Final Report.")}</h3>
+        <div class="why">JSTOR sources only — the permanent link (jstor.org/stable/…) or a DOI (doi.org/…). <a href="https://www.jstor.org/" target="_blank" rel="noopener">Open JSTOR</a></div>
+        <div class="rows">${g.sources.map((r,i)=>{ const ok=/^(https?:\/\/)?(www\.)?(jstor\.org\/stable\/|doi\.org\/10\.)\S+$/i.test((r[0]||"").trim()); return `<div class="rrow" style="grid-template-columns:1fr 1.6fr"><div><input type="text" placeholder="https://www.jstor.org/stable/… or https://doi.org/10.…" data-src="${i}:0" value="${esc(r[0])}"><div class="small" style="margin-top:3px">${r[0]?(ok?"✓ JSTOR link or DOI":"✗ not a JSTOR permanent link or DOI"):""}</div></div><textarea placeholder="Three or four sentences: what misconceptions and challenges does this source describe for this concept?" data-src="${i}:1" style="min-height:96px">${esc(r[1])}</textarea></div>`; }).join("")}</div>
+        <div style="margin-top:8px"><button class="tbtn" id="addSource" ${g.sources.length>=3?"disabled":""}>＋ another source</button></div></div>
+      <div class="sec"><h3><span class="k">5</span>The students${I("Two or three focus students, chosen with your host teacher, whose work on this concept you'll follow. A pseudonym and a line of context each — enough that a reader could follow them into the immersion. Real names never leave the classroom.")}</h3>
+        <div class="rows">${g.studentsRows.map((r,i)=>`<div class="rrow students"><input type="text" placeholder="Pseudonym" data-sr="${i}:0" value="${esc(r[0])}"><input type="text" placeholder="A line of context" data-sr="${i}:1" value="${esc(r[1])}"></div>`).join("")}</div></div>
+      <div class="sec"><h3><span class="k">6</span>The collected work${I("Three to five pieces of actual student work on this concept, across your focus students. For each: who, what the task was, and what the work reveals about how that student understands the concept — that last column is the whole point. Add a photo: crop it, black out the name, and it goes into your PDF as an appendix.")}</h3>
+        <div class="rhead"><span>Student</span><span>What the work was</span><span>What it reveals</span><span>Photo</span></div>
+        <div class="rows">${g.samplesRows.map((r,i)=>`<div class="rrow"><input type="text" placeholder="Pseudonym" data-wr="${i}:0" value="${esc(r[0])}"><textarea placeholder="The task, the setting" data-wr="${i}:1">${esc(r[1])}</textarea><textarea placeholder="What this shows about their understanding" data-wr="${i}:2">${esc(r[2])}</textarea><div class="ph">${r[3]?`<img src="${r[3]}" data-edit="${i}" title="Click to crop or black out"><button class="tbtn" data-clear="${i}">remove</button>`:`<button class="tbtn" data-photo="${i}">＋ photo</button>`}</div></div>`).join("")}</div>
+        <div style="margin-top:8px"><button class="tbtn" id="addSample" ${g.samplesRows.length>=5?"disabled":""}>＋ another sample</button></div></div>
+      <div class="sec"><h3><span class="k">7</span>The question I'm asking${I("A first read, one sentence: an open question about how students understand this concept — not whether they got it right, not a diagnosis of a child. It should grow out of everything above. Week 7 sharpens it.")}</h3>
+        <input type="text" data-bg="question" placeholder="How do students … ?" value="${esc(g.question||"")}">
+        <label>Why this question</label><textarea data-bg="why" style="min-height:60px">${esc(g.why||"")}</textarea></div>
+    </div>`;
   const rd=g.read; const readTotal=rd?rd.reduce((n,r)=>n+(+r[1]||0),0):0;
   const cited=rd?[...new Set(rd.map(r=>r[4]).filter(Boolean))]:[]; const mismatch=cited.length&&g.standards.length&&!cited.some(c=>g.standards.includes(c));
   const right=`<h2><span class="n">${done[1]?"✓":"2"}</span>Your lesson${I("Do you have a lesson from your host teacher? If yes, upload it — the app reads it into sections you can keep, bend, or replace. If no, say the idea in a sentence; the During tab grows it.")}</h2>
@@ -476,11 +522,19 @@ function renderBackground(){
     ${state.door==="idea"?`<label>The idea, in a sentence or two</label><textarea data-bg="idea" style="min-height:140px">${esc(g.idea||"")}</textarea><div class="grow"></div><div class="next" style="display:flex;justify-content:flex-end"><button class="primary" data-goto="during" ${done.every(Boolean)?"":"disabled"}>Go to the During tab →</button></div>`:""}`;
   const wrap=document.getElementById("tiles"); wrap.innerHTML=`<div class="tile ${done[0]?"done":""}">${left}</div><div class="tile lesson ${done[1]?"done":""}">${right}</div>`;
   const refresh=()=>{ const d=bgDone(); wrap.querySelectorAll(".tile").forEach((t,i)=>{ t.classList.toggle("done",d[i]); t.querySelector(".n").textContent=d[i]?"✓":i+1; }); const go=wrap.querySelector("[data-goto]"); if(go) go.disabled=!d.every(Boolean); };
-  wrap.querySelectorAll("[data-bg]").forEach(inp=>{ inp.oninput=e=>{ const k=inp.dataset.bg; if(k==="block"){ state.block=Math.max(20,Math.min(120,+e.target.value||45)); } else state.bg[k]=e.target.value; save(); refresh(); }; if(inp.dataset.bg==="grade") inp.onchange=()=>{ state.bg.standards=[]; save(); renderBackground(); }; });
+  wrap.querySelectorAll("[data-bg]").forEach(inp=>{ inp.oninput=e=>{ const k=inp.dataset.bg; if(k==="block"){ state.block=Math.max(20,Math.min(120,+e.target.value||45)); } else state.bg[k]=e.target.value; save(); refresh(); const gg=wrap.querySelector(".gauge"); if(gg){ const w=profileWords(); gg.className="gauge "+(w<430?"short":""); gg.innerHTML=`about <b>${(w/430).toFixed(1)} pages</b> · the assignment asks for 1–2`; } }; if(inp.dataset.bg==="grade") inp.onchange=()=>{ state.bg.standards=[]; save(); renderBackground(); }; });
   wrap.querySelectorAll(".stds label span").forEach(sp=>sp.onclick=e=>{ e.preventDefault(); sp.parentElement.classList.toggle("open"); });
   wrap.querySelectorAll("[data-mp]").forEach(cb=>cb.onchange=()=>{ const c=cb.dataset.mp; state.bg.practices=state.bg.practices||[]; if(cb.checked){ if(state.bg.practices.length>=2){ cb.checked=false; toast("One or two practices — the ones this lesson really leans on."); return; } state.bg.practices.push(c); } else state.bg.practices=state.bg.practices.filter(x=>x!==c); save(); });
   wrap.querySelectorAll("[data-std]").forEach(cb=>cb.onchange=()=>{ const c=cb.dataset.std; if(cb.checked){ if(state.bg.standards.length>=3){ cb.checked=false; toast("Three standards at most — a lesson can't be about everything."); return; } state.bg.standards.push(c); } else state.bg.standards=state.bg.standards.filter(x=>x!==c); save(); });
   wrap.querySelectorAll("[data-goto]").forEach(b=>b.onclick=()=>showPhase("during"));
+  wrap.querySelectorAll("[data-src]").forEach(inp=>{ inp.oninput=e=>{ const [i,j]=inp.dataset.src.split(":").map(Number); state.bg.sources[i][j]=e.target.value; save(); }; if(inp.dataset.src.endsWith(":0")) inp.onchange=()=>renderBackground(); });
+  const asrc=document.getElementById("addSource"); if(asrc) asrc.onclick=()=>{ if(state.bg.sources.length<3){ state.bg.sources.push(["",""]); save(); renderBackground(); } };
+  wrap.querySelectorAll("[data-sr]").forEach(inp=>inp.oninput=e=>{ const [i,j]=inp.dataset.sr.split(":").map(Number); state.bg.studentsRows[i][j]=e.target.value; save(); });
+  wrap.querySelectorAll("[data-wr]").forEach(inp=>inp.oninput=e=>{ const [i,j]=inp.dataset.wr.split(":").map(Number); state.bg.samplesRows[i][j]=e.target.value; save(); });
+  wrap.querySelectorAll("[data-photo]").forEach(b=>b.onclick=()=>pickPhoto(+b.dataset.photo));
+  wrap.querySelectorAll("[data-edit]").forEach(im=>im.onclick=()=>openImgEd(+im.dataset.edit));
+  wrap.querySelectorAll("[data-clear]").forEach(b=>b.onclick=()=>{ state.bg.samplesRows[+b.dataset.clear][3]=""; save(); renderBackground(); });
+  const as=document.getElementById("addSample"); if(as) as.onclick=()=>{ if(state.bg.samplesRows.length<5){ state.bg.samplesRows.push(["","","",""]); save(); renderBackground(); } };
   wrap.querySelectorAll("[data-rmin]").forEach(inp=>inp.onchange=e=>{ state.bg.read[+inp.dataset.rmin][1]=Math.max(1,parseInt(e.target.value)||1); save(); renderBackground(); });
   const ex=document.getElementById("exportProfile"); if(ex) ex.onclick=exportProfile;
   const bf=document.getElementById("buildFromRead"); if(bf) bf.onclick=buildFromRead;
@@ -491,16 +545,34 @@ function exportProfile(){
   const g=state.bg||{}; const el=document.getElementById("profilePrint");
   const stds=(g.standards||[]).map(c=>`<div class="std"><b>${esc(c)}</b> ${esc(stdText(c))}</div>`).join("")||"<p>—</p>";
   const mps=(g.practices||[]).map(c=>{ const p=OM.practices.find(x=>x[0]===c); return p?`<div class="std"><b>${c}</b> ${esc(p[1])}</div>`:""; }).join("");
-  el.innerHTML=`<h1>Concept Profile — Field Dip (Week 6)</h1><div class="meta">TCE 318P FA26 · ${esc(g.names||"")}${g.section?" · "+(g.section==="oxford"?"Oxford":"Hamilton"):""} · ${esc(g.grade||"")}${state.block?" · "+state.block+"-minute math block":""} · ${new Date().toLocaleDateString()}</div>
-    <h2>1 · Host teacher &amp; classroom context</h2><p>${esc(g.host||"")}</p>
-    <h2>2 · The concept</h2><p>${esc(g.concept||"")}</p>
-    <h2>3 · The students</h2><p>${esc(g.students||"")}</p>
-    <h2>4 · The question I'm asking</h2><p>${esc(g.question||"")}</p>
-    <h2>5 · The collected work, described</h2><p>${esc(g.samples||"")}</p>
-    <h2>6 · Standards &amp; where the math sits</h2>${stds}${mps}<p style="margin-top:6pt">${esc(g.sits||"")}</p>
-    <div class="note">Work samples (3–5, de-identified) are attached separately. Pseudonyms only. Written in BDA Planner.</div>`;
+  const srows=(g.studentsRows||[]).filter(r=>r[0]).map(r=>`<p><b>${esc(r[0])}</b> — ${esc(r[1])}</p>`).join("")||"<p>—</p>";
+  const wrows=(g.samplesRows||[]).filter(r=>r[0]||r[1]||r[2]).map((r,i)=>`<p><b>${esc(r[0])}</b> · ${esc(r[1])}<br>${esc(r[2])}${r[3]?` <i>(photo ${i+1}, appendix)</i>`:""}</p>`).join("")||"<p>—</p>";
+  const app=(g.samplesRows||[]).map((r,i)=>r[3]?`<div class="app"><div class="cap"><b>Appendix — sample ${i+1} · ${esc(r[0])}</b> · ${esc(r[1])}</div><img src="${r[3]}"><div class="cap">${esc(r[2])}</div></div>`:"").join("");
+  el.innerHTML=`<h1>Concept Profile — Field Dip (Week 6)</h1><div class="meta">TCE 318P FA26 · ${esc(g.names||"")}${g.section?" · "+(g.section==="oxford"?"Oxford":"Hamilton"):""} · ${new Date().toLocaleDateString()}</div>
+    <h2>1 · Your classroom</h2><p>${esc(g.grade||"")}${state.block?" · "+state.block+"-minute math block":""}</p><p>${esc(g.host||"")}</p>
+    <h2>2 · The concept</h2><p>${esc(g.concept||"")}</p>${stds}${mps}<p style="margin-top:6pt"><b>Builds on:</b> ${esc(g.before||"")}</p><p><b>Leads to:</b> ${esc(g.after||"")}</p>
+    <h2>3 · How students think about it</h2><p>${esc(g.think||"")}</p>
+    <h2>4 · What the research says</h2>${(g.sources||[]).filter(r=>r[0]||r[1]).map(r=>`<p><i>${esc(r[0])}</i><br>${esc(r[1])}</p>`).join("")||"<p>—</p>"}
+    <h2>5 · The students</h2>${srows}
+    <h2>6 · The collected work</h2>${wrows}
+    <h2>7 · The question I'm asking</h2><p><b>${esc(g.question||"")}</b></p><p>${esc(g.why||"")}</p>
+    <div class="note">Pseudonyms only. Work samples de-identified. Written in BDA Planner.</div>${app}`;
   window.print();
 }
+/* ---------- photos: pick, resize, crop / black out ---------- */
+let edIdx=null, edImg=null, edTool="black", edDrag=null;
+function pickPhoto(i){ const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*"; inp.onchange=()=>{ const f=inp.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ const im=new Image(); im.onload=()=>{ const max=1400, sc=Math.min(1,max/Math.max(im.width,im.height)); const c=document.createElement("canvas"); c.width=Math.round(im.width*sc); c.height=Math.round(im.height*sc); c.getContext("2d").drawImage(im,0,0,c.width,c.height); state.bg.samplesRows[i][3]=c.toDataURL("image/jpeg",0.85); save(); renderBackground(); openImgEd(i); }; im.src=r.result; }; r.readAsDataURL(f); }; inp.click(); }
+function openImgEd(i){ edIdx=i; edImg=new Image(); edImg.onload=()=>{ const c=document.getElementById("edCanvas"); c.width=edImg.width; c.height=edImg.height; c.getContext("2d").drawImage(edImg,0,0); document.getElementById("imgEd").classList.add("open"); }; edImg.src=state.bg.samplesRows[i][3]; }
+function edCommit(){ const c=document.getElementById("edCanvas"); state.bg.samplesRows[edIdx][3]=c.toDataURL("image/jpeg",0.85); save(); edImg=new Image(); edImg.src=state.bg.samplesRows[edIdx][3]; renderBackground(); }
+(function(){ const c=document.getElementById("edCanvas"); const pos=e=>{ const r=c.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return {x:(t.clientX-r.left)*c.width/r.width, y:(t.clientY-r.top)*c.height/r.height}; };
+  const down=e=>{ edDrag={a:pos(e)}; e.preventDefault(); }; const move=e=>{ if(!edDrag) return; const b=pos(e); const ctx=c.getContext("2d"); ctx.drawImage(edImg,0,0); ctx.save(); ctx.strokeStyle=edTool==="crop"?"#1F4E96":"#b23b3b"; ctx.lineWidth=3; ctx.setLineDash([8,6]); ctx.strokeRect(edDrag.a.x,edDrag.a.y,b.x-edDrag.a.x,b.y-edDrag.a.y); ctx.restore(); e.preventDefault(); };
+  const up=e=>{ if(!edDrag) return; const b=edDrag.b||pos(e.changedTouches?e.changedTouches[0]:e); const a=edDrag.a; edDrag=null; const x=Math.min(a.x,b.x),y=Math.min(a.y,b.y),w=Math.abs(b.x-a.x),h=Math.abs(b.y-a.y); const ctx=c.getContext("2d"); ctx.drawImage(edImg,0,0); if(w<4||h<4) return; if(edTool==="black"){ ctx.fillStyle="#000"; ctx.fillRect(x,y,w,h); } else { const t=document.createElement("canvas"); t.width=Math.round(w); t.height=Math.round(h); t.getContext("2d").drawImage(c,x,y,w,h,0,0,t.width,t.height); c.width=t.width; c.height=t.height; c.getContext("2d").drawImage(t,0,0); } edCommit(); };
+  c.addEventListener("mousedown",down); c.addEventListener("mousemove",move); window.addEventListener("mouseup",e=>{ if(edDrag) up(e); }); c.addEventListener("touchstart",down,{passive:false}); c.addEventListener("touchmove",move,{passive:false}); c.addEventListener("touchend",up);
+  document.getElementById("edBlack").onclick=()=>{ edTool="black"; document.getElementById("edBlack").classList.add("on"); document.getElementById("edCrop").classList.remove("on"); };
+  document.getElementById("edCrop").onclick=()=>{ edTool="crop"; document.getElementById("edCrop").classList.add("on"); document.getElementById("edBlack").classList.remove("on"); };
+  document.getElementById("edRotate").onclick=()=>{ const t=document.createElement("canvas"); t.width=c.height; t.height=c.width; const tc=t.getContext("2d"); tc.translate(t.width/2,t.height/2); tc.rotate(Math.PI/2); tc.drawImage(c,-c.width/2,-c.height/2); c.width=t.width; c.height=t.height; c.getContext("2d").drawImage(t,0,0); edCommit(); };
+  document.getElementById("edDone").onclick=()=>document.getElementById("imgEd").classList.remove("open");
+})();
 function buildFromRead(){
   const rd=(state.bg||{}).read; if(!rd||!rd.length) return;
   if(!confirm("Replace the timeline with the script's sections? Before = the first section, After = the last, the middle = up to three sections between.")) return;
