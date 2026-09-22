@@ -57,7 +57,11 @@
      the ⓘ dropped under the Section menu. One field was ever meant to give ground.
      So: nothing shrinks and nothing breaks, except the name input. */
   .hdrbar>*{flex:0 0 auto}
-  .hdrbar h1,.hdrbar label,.hdrbar button,.hdrbar .note{white-space:nowrap}
+  /* #saveNote by id, not .hdrbar .note by class. The gear menu is inside .hdrbar
+     and its italic lines are .note too, so the class form reached them and cut
+     them off mid-word at the 380px dropdown edge -- "save yours firs". Only the
+     save status line needs to hold one line; the menu's prose wants to wrap. */
+  .hdrbar h1,.hdrbar label,.hdrbar button,#saveNote{white-space:nowrap}
   .hdrbar .toolbar{align-items:baseline;flex:0 1 auto;min-width:0;flex-wrap:nowrap}
   .hdrbar .toolbar input[type=text]{flex:0 1 240px;width:auto;min-width:110px}
   /* 960, not 820: with the tagline gone the row still needs about 890px for a
@@ -634,7 +638,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 59</div>
+<div id="build">Build 60</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
