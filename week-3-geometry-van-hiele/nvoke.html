@@ -35,6 +35,13 @@
   button.ghost{background:#fff;border:1px solid var(--outline);color:var(--outline);border-radius:10px;
         padding:10px 18px;font:inherit;font-weight:600;cursor:pointer}
   button:disabled{opacity:.45;cursor:default}
+  /* embedded in BDA Planner (?embed=planner): Build only, hand the pack back */
+  body.embed #phasebar,body.embed #savePres,body.embed #exportPres,body.embed #newPres{display:none}
+  body.embed .wrap{padding-top:10px}
+  body.embed h1 small{display:none}
+  body.embed .embednote{font-size:13px;color:var(--muted);margin:0 0 6px}
+  body.embed #usePlanner{display:inline-block}
+  #usePlanner{display:none;background:var(--ok);color:#fff;border:0;border-radius:10px;padding:12px 22px;font:inherit;font-weight:700;cursor:pointer;font-size:16px}
   /* stage */
   #stage{display:none;position:fixed;inset:0;background:var(--ground);z-index:20;
         flex-direction:column;align-items:stretch;justify-content:flex-start;text-align:center;
@@ -298,6 +305,7 @@
       <div class="bname"><label>Prompt pack name</label><input id="presName" type="text" placeholder="Type a name for your prompt pack…"></div>
       <button class="ghost" id="newPres" title="Clear the builder and start a brand-new, empty prompt pack. Anything unsaved is lost.">＋ New pack</button>
       <button class="primary" id="savePres" title="Keep this pack on this device so you can pose it in Handoff. Save before you leave the Build tab.">💾 Save pack</button>
+      <button id="usePlanner" title="Send these cards back to the BDA Planner's Before.">✓ Use these cards in the Planner</button>
       <button class="ghost" id="exportPres" title="Download the pack itself as a .json file — the task only, nobody's answers. Use it to hand your pack to a classmate. This is NOT what you turn in: the PDF you submit comes from the Analyze tab.">⬇ Export pack (.json)</button>
     </div>
     <div class="striplabel">🖐 Your cards — <b>drag</b> to reorder · <b>click</b> a card to edit</div>
@@ -899,6 +907,31 @@ function wireUI(){
     if(!n||!PACKS[n]){toast("Save your prompt pack first, then export it.");return;}
     exportPresentation(n);
   };
+  initEmbed();
+}
+/* ---- embedded in the BDA Planner: the Planner sends a pack in (nvoke-load) and takes one back (nvoke-pack) ---- */
+function initEmbed(){
+  const embed=new URLSearchParams(location.search).get("embed"); if(!embed) return;
+  document.body.classList.add("embed");
+  const hdr=document.querySelector("#apphdr .hdrbar"); if(hdr){ const n=document.createElement("div"); n.className="embednote"; n.textContent="Build the cards for your Before routine, then press “Use these cards in the Planner.” Nothing here is turned in."; hdr.after(n); }
+  document.getElementById("presName").placeholder="Name these cards (e.g. Same or Different — triangles)…";
+  window.addEventListener("message",e=>{
+    const d=e.data||{}; if(d.type!=="nvoke-load"||!d.pack||!Array.isArray(d.pack.cards)) return;
+    builder.sets=d.pack.cards.map(cardToImageSet); builder.cur={template:"wodb", members:[], prompt:""}; builder.sel=-1; builder.editing=-1; builder.origName=null;
+    document.getElementById("addSet").textContent="＋ Add card";
+    document.getElementById("presName").value=d.pack.name||"";
+    document.querySelectorAll("#tplRail .railbtn").forEach(x=>x.classList.toggle("on",x.dataset.tpl==="wodb"));
+    renderTplHint(); renderCanvas(); renderTool(); renderSetList(); switchPhase("build");
+  });
+  document.getElementById("usePlanner").onclick=()=>{
+    if(!builder.sets.length){ toast("Add at least one card first (build it, then ＋ Add card)."); return; }
+    const name=(document.getElementById("presName").value||"").trim()||"Before cards";
+    const pack={packFormat:"provoke-cards/v1", name, mode:"see", builtWith:"builder", prompt:"What did you see? · How do you know?",
+      cards:builder.sets.map((st,i)=>({id:`${st.template}-${i+1}`, template:st.template, members:st.members, layout:st.layout, prompt:st.prompt||TEMPLATES[st.template].prompt}))};
+    const thumbs=builder.sets.map(st=>imageSetSVG(st,160));
+    window.parent.postMessage({type:"nvoke-pack", pack, thumbs}, "*");
+  };
+  window.parent.postMessage({type:"nvoke-ready"}, "*");
 }
 function toggleDrawer(open){
   document.getElementById("drawer").classList.toggle("open",open);

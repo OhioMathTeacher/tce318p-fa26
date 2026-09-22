@@ -229,6 +229,16 @@
   #actModal details.more summary{cursor:pointer;font-weight:700;color:var(--outline);font-size:14px}
   .slice .prog{position:absolute;top:7px;right:30px;font-size:11px;font-weight:700;color:var(--muted)}
   .slice .prog.done{color:var(--ok)}
+  #nvokeModal{position:fixed;inset:0;background:#0008;z-index:70;display:none;padding:14px}
+  #nvokeModal.open{display:flex}
+  #nvokeModal .box{flex:1;background:#fff;border-radius:12px;display:flex;flex-direction:column;overflow:hidden}
+  #nvokeModal .bh{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:13.5px}
+  #nvokeModal iframe{flex:1;width:100%;border:0}
+  .nv .ncard.thumb{padding:3px;cursor:pointer;background:#fff}
+  .nv .ncard.thumb svg{width:100%;height:100%}
+  .slice .minithumbs{display:flex;gap:4px;margin:4px 0 2px}
+  .slice .minithumbs span{width:38px;height:38px;border:1px solid var(--line);border-radius:6px;background:#fff;overflow:hidden;display:block}
+  .slice .minithumbs svg{width:100%;height:100%}
   #pickModal{position:fixed;inset:0;background:#0006;z-index:60;display:none;align-items:center;justify-content:center;padding:24px}
   #pickModal.open{display:flex}
   #pickModal .box{background:#fff;border-radius:14px;width:min(860px,96vw);max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
@@ -308,7 +318,7 @@
   #profilePrint{display:none}
   @media print{
     body{background:#fff;font-size:12pt;line-height:1.35}
-    body>.wrap, #toast, #pdfModal, #pickModal, #actModal{display:none!important}
+    body>.wrap, #toast, #pdfModal, #pickModal, #actModal, #nvokeModal{display:none!important}
     #profilePrint{display:block;max-width:7in;margin:0 auto;color:#000}
     #profilePrint h1{font-size:17pt;margin:0 0 2pt}
     #profilePrint .meta{font-size:10.5pt;color:#333;margin:0 0 14pt}
@@ -426,6 +436,7 @@
   </div><!-- /during panel -->
 </div>
 
+<div id="nvokeModal"><div class="box"><div class="bh"><b>nVoke</b><span class="small">— build the cards for your Before. Press <b>Use these cards in the Planner</b> when they're ready.</span><span style="flex:1"></span><button class="tbtn" onclick="closeNvoke()">✕ Close without using</button></div><iframe id="nvokeFrame" title="nVoke"></iframe></div></div>
 <div id="actModal" onclick="if(event.target===this)closeActivity()"><div class="box"><div class="bh" id="actHead"></div><div class="bb ed" id="actBody"></div><div class="bf" id="actFoot"></div></div></div>
 <div id="pickModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><h2 id="pickTitle"></h2><span class="small" id="pickSub"></span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pickModal').classList.remove('open')">✕</button></div><div class="bb" id="pickBody"></div></div></div>
 <div id="stdModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><h2>Ohio's standards</h2><span class="small" id="stdModalSub"></span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pdfModal').classList.add('open')">The PDF</button><button class="tbtn" onclick="document.getElementById('stdModal').classList.remove('open')">✕</button></div><div class="bb" id="stdModalBody"></div><div class="bf"><span class="small" id="stdModalCount"></span><span style="flex:1"></span><button class="primary" onclick="document.getElementById('stdModal').classList.remove('open')">Done</button></div></div></div>
@@ -514,7 +525,7 @@ function blankAfter(){ return {id:"after",type:"after",kind:"",min:"",objective:
 const AFTER_KINDS={exit:"Exit slip",transcript:"Discussion transcript",gallery:"Strategy gallery",probe:"One-on-one probe"};
 const AFTER_META={exit:{icon:"📝",tint:"#e6f4ea"},transcript:{icon:"🎙️",tint:"#e3f1ff"},gallery:{icon:"🖼️",tint:"#fff3d6"},probe:{icon:"👤",tint:"#f3e8ff"}};
 const ROUTINE_ICON="🖐";
-function beforeProgress(b){ const need=[(b.prompt||"").trim()||(b.cards||[]).some(c=>c&&c.trim()), b.students, b.objective, b.thread]; return [need.filter(v=>v&&String(v).trim()).length, need.length]; }
+function beforeProgress(b){ const need=[(b.pack&&b.pack.thumbs&&b.pack.thumbs.length)||(b.prompt||"").trim()||(b.cards||[]).some(c=>c&&c.trim()), b.students, b.objective, b.thread]; return [need.filter(v=>v&&String(v).trim()).length, need.length]; }
 function afterProgress(a){ const art=a.kind==="exit"?(a.prompts||[]).some(r=>r[0]&&r[0].trim()):a.kind==="gallery"?a.order:a.questions; const need=[art, a.students, a.objective, a.answers]; return [need.filter(v=>v&&String(v).trim()).length, need.length]; }
 function progLabel(pr){ return pr[0]===pr[1]?"✓ done":pr.join(" of "); }
 let seq=0; function uid(){ return "a"+(++seq)+"_"+Math.random().toString(36).slice(2,6); }
@@ -771,7 +782,7 @@ function routineMeta(name){ return ROUTINE_LIST.find(r=>r[0]===name); }
 function renderBefore(){
   const b=state.before=Object.assign(blankBefore(),state.before||{});
   const pr=beforeProgress(b);
-  const card=b.name?`<div class="slice filled" data-bopen style="--tint:#f1e8ff;border-color:var(--before)"><div><div class="sicon">${ROUTINE_ICON}</div><div class="sn" style="color:var(--before)">${esc(b.name)}</div><div class="st">${esc(b.prompt)}</div></div><div class="sm"><input type="text" inputmode="numeric" placeholder="15" data-bmin value="${esc(b.min)}">min</div><span class="prog ${pr[0]===pr[1]?"done":""}">${progLabel(pr)}</span><button class="sx" data-bclear title="Clear this routine">✕</button></div>`
+  const card=b.name?`<div class="slice filled" data-bopen style="--tint:#f1e8ff;border-color:var(--before)"><div><div class="sicon">${ROUTINE_ICON}</div><div class="sn" style="color:var(--before)">${esc(b.name)}</div>${b.pack&&b.pack.thumbs?`<div class="minithumbs">${b.pack.thumbs.slice(0,5).map(t=>`<span>${t}</span>`).join("")}${b.pack.thumbs.length>5?`<span class="small" style="border:0;width:auto;line-height:38px">+${b.pack.thumbs.length-5}</span>`:""}</div>`:""}<div class="st">${esc(b.prompt)}</div></div><div class="sm"><input type="text" inputmode="numeric" placeholder="15" data-bmin value="${esc(b.min)}">min</div><span class="prog ${pr[0]===pr[1]?"done":""}">${progLabel(pr)}</span><button class="sx" data-bclear title="Clear this routine">✕</button></div>`
     :`<div class="slice empty" data-brpick><div>Click to select<br>a routine</div></div>`;
   return `<div class="pane before"><div class="ph"><span class="tag">Before</span><h2>One routine</h2>${I("The routine that opens the lesson — one, short, and it primes the concept without giving away the move the During is meant to reveal. Build it like an nVoke pack: cards you show, one question you ask.")}</div>
     <div class="slices">${card}</div>
@@ -881,8 +892,11 @@ function openBefore(){
   const head=`<h2>Before</h2><span class="sicon" style="font-size:24px">${ROUTINE_ICON}</span><input type="text" data-b="name" value="${esc(b.name)}" placeholder="The routine's name" style="width:auto;flex:1;max-width:280px;font-weight:800;padding:5px 8px;border:1px solid var(--line);border-radius:7px;font-size:15px"><a class="chg" data-chg style="font-size:12.5px;color:var(--outline);cursor:pointer;text-decoration:underline">change</a>${R&&R[2]?`<a href="${R[2]}" target="_blank" rel="noopener" class="small">examples</a>`:""}<span class="mins"><input type="text" inputmode="numeric" placeholder="15" data-b="min" value="${esc(b.min)}">min</span><button class="tbtn" data-close>✕</button>`;
   const body=`<div class="tip" style="margin-top:8px">${esc(R?R[1]:"Your own routine — name it in the box above, and say where it's from.")}</div>
     <div class="step">1 · The cards, and what you say</div>
-    <div class="nv" style="margin-top:6px"><div class="striplabel">Your cards — what students see, one card each. Type on a card.</div><div class="cards">${cards}<div class="ncard add" data-addcard title="Add a card and type what's on it: a number, an expression, a figure described">＋ card</div></div>
-      <div class="prompt"><label style="margin-top:4px">What you say <span class="hint">— the posing question, exactly</span></label><input type="text" data-b="prompt" value="${esc(b.prompt)}" placeholder="What's the same? What's different?"></div></div>
+    <div class="nv" style="margin-top:6px">${b.pack&&b.pack.thumbs&&b.pack.thumbs.length
+      ?`<div class="striplabel">🖐 Your cards — <b>${esc(b.pack.pack.name||"")}</b> · ${b.pack.thumbs.length} card${b.pack.thumbs.length===1?"":"s"} from nVoke. Click a card to edit the set.</div><div class="cards">${b.pack.thumbs.map((t,i)=>`<div class="ncard thumb" data-nvoke title="Edit in nVoke">${t}<span class="num">${i+1}</span></div>`).join("")}</div><div style="display:flex;gap:8px;margin-top:8px"><button class="tbtn" data-nvoke>✎ Edit the cards in nVoke</button><button class="tbtn" data-nvokeclear>Remove the cards</button></div>`
+      :`<div class="striplabel">🖐 Your cards — what students see. Build them in nVoke: pick a layout (Which One Doesn't Belong · Same &amp; Different · Sort · I Spy · Single), drag shapes in, add each card.</div><button class="primary" data-nvoke>🖐 Build the cards in nVoke</button>
+        <details style="margin-top:10px"><summary class="small" style="cursor:pointer">Or plain text cards — a number or an expression each</summary><div class="cards" style="margin-top:8px">${cards}<div class="ncard add" data-addcard title="Add a card and type what's on it">＋ card</div></div></details>`}
+      <div class="prompt"><label style="margin-top:8px">What you say <span class="hint">— the posing question, exactly</span></label><input type="text" data-b="prompt" value="${esc(b.prompt)}" placeholder="What's the same? What's different?"></div></div>
     <div class="step">2 · Procedures</div>
     <div class="two"><div><label>What students do<span class="req">*</span></label><textarea data-b="students">${esc(b.students)}</textarea></div><div><label>What I do</label><textarea data-b="teacher">${esc(b.teacher)}</textarea></div></div>
     <div class="step">3 · Objective</div>
@@ -897,6 +911,8 @@ function openBefore(){
   const foot=`${first?`<button class="tbtn" data-go1>Activity 1 ▶</button>`:""}<span style="flex:1"></span><span class="small" data-prog></span><button class="primary" data-close>Done</button>`;
   const M=showModal(head,body,foot,()=>beforeProgress(state.before),openBefore);
   M.querySelector("[data-chg]").onclick=pickRoutine;
+  M.querySelectorAll("[data-nvoke]").forEach(el=>el.onclick=openNvoke);
+  M.querySelectorAll("[data-nvokeclear]").forEach(el=>el.onclick=()=>{ if(!confirm("Remove these cards from the Before? (They stay in nVoke if you saved them there.)")) return; delete state.before.pack; save(); openBefore(); });
   const g=M.querySelector("[data-go1]"); if(g) g.onclick=()=>{ renderPlan(); openActivity(first.id); };
 }
 function openAfter(){
@@ -922,6 +938,15 @@ function openAfter(){
   M.querySelector("[data-chg]").onclick=pickArtifact;
   const g=M.querySelector("[data-golast]"); if(g) g.onclick=()=>{ renderPlan(); openActivity(last.id); };
 }
+/* ---------- nVoke, embedded: the Before's cards are an nVoke prompt pack ---------- */
+const NVOKE_URL="../week-3-geometry-van-hiele/nvoke.html?embed=planner";
+function openNvoke(){ const f=document.getElementById("nvokeFrame"); if(!f.getAttribute("src")) f.setAttribute("src",NVOKE_URL); else if(state.before.pack) f.contentWindow.postMessage({type:"nvoke-load",pack:state.before.pack.pack},"*"); document.getElementById("nvokeModal").classList.add("open"); }
+function closeNvoke(){ document.getElementById("nvokeModal").classList.remove("open"); }
+window.addEventListener("message",e=>{
+  const f=document.getElementById("nvokeFrame"); if(!f||e.source!==f.contentWindow) return; const d=e.data||{};
+  if(d.type==="nvoke-ready"){ if(state.before&&state.before.pack) f.contentWindow.postMessage({type:"nvoke-load",pack:state.before.pack.pack},"*"); }
+  if(d.type==="nvoke-pack"&&d.pack){ state.before=Object.assign(blankBefore(),state.before||{}); state.before.pack={pack:d.pack,thumbs:d.thumbs||[]}; if(!(state.before.prompt||"").trim()&&d.pack.cards[0]&&d.pack.cards[0].prompt) state.before.prompt=d.pack.cards[0].prompt; save(); closeNvoke(); renderPlan(); openBefore(); toast(`${d.pack.cards.length} card${d.pack.cards.length===1?"":"s"} in your Before.`); }
+});
 function pickArtifact(){
   const a=state.after=Object.assign(blankAfter(),state.after||{});
   const B=openPick("After — what artifact?","What you carry out of the room. Pick the one a student's response to could answer your research question.",
