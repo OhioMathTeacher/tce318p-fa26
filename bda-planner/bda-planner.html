@@ -589,7 +589,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 54</div>
+<div id="build">Build 55</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -843,9 +843,54 @@ function load(){ try{ const s=localStorage.getItem(STORE); if(s){ state=JSON.par
       if(!state.migrated3){ state.migrated3=true; const a=state.after||{}; if(a.kind==="exit"&&!(a.prompts||[]).some(r=>(r[0]||"").trim()||(r[1]||"").trim())&&!a.students&&!a.teacher&&!a.objective&&!a.captures&&!a.answers) a.kind=""; } if(!state.migrated2){ state.migrated2=true; (state.during||[]).forEach(a=>{ const four=Object.values(a.four||{}).some(v=>v&&v.trim()); if(!a.title&&!a.students&&!a.teacher&&!a.objective&&!a.extra&&!a.thread&&!a.questions&&!a.anticipate&&!four) a.type=null; }); } return; } }catch(e){} state=blankState(); }
 const NAG_AT=40;            // autosaves since the last file save before the bar appears (≈ a few minutes of typing)
 let nagSnoozed=false;        // this page load only — "Later" is not "never"
-function save(){ try{ localStorage.setItem(STORE,JSON.stringify(state)); document.getElementById("saveNote").textContent="Autosaved "+new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}); const n=(+localStorage.getItem(STORE+"-unsaved")||0)+1; localStorage.setItem(STORE+"-unsaved",String(n)); updateNag(n); }catch(e){} }
+/* ---------- the accumulator ----------
+   For the end-of-semester report. Everything interesting about a semester is
+   longitudinal, and longitudinal data cannot be reconstructed in December — the event
+   log is a rolling 200 and will hold three days by then. So the counting starts now.
+
+   ⚠ NO TIMING. Todd, 2026-09-22: "Don't record time. Too Orwellian." There is no clock
+   here, no session length, no heartbeat, no idle detection. What is counted is what the
+   student DID: which days they worked, how their question changed, what they tried.
+
+   It lives in state, so it travels in their own file and is never transmitted — the
+   Worker still receives only what it received before.
+
+   Day granularity, deliberately. One snapshot per date means typing a question does not
+   record fifty versions of it, and "your question changed on six different days" is both
+   honest and the number worth seeing. */
+function today(){ const d=new Date(), p=n=>String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; }
+function statsTick(){
+  const st=state.stats=state.stats||{first:"",days:{},q:[],w:[],tried:{},saves:0,exports:0};
+  const d=today(), g=state.bg||{};
+  if(!st.first) st.first=d;
+  st.days[d]=(st.days[d]||0)+1;              // edits that day, not minutes
+
+  // The question, once per day it changed. The arc of the whole course.
+  const q=(g.question||"").trim();
+  if(q){ const last=st.q[st.q.length-1];
+    if(!last) st.q.push({d,t:q.slice(0,240)});
+    else if(last.d===d) last.t=q.slice(0,240);
+    else if(last.t!==q) st.q.push({d,t:q.slice(0,240)});
+  }
+  // How the profile grew, once per day.
+  const w=profileWords();
+  if(w){ const last=st.w[st.w.length-1];
+    if(last&&last.d===d) last.n=w; else st.w.push({d,n:w});
+  }
+  // Everything ever chosen, with the day it was first tried — including what was later
+  // dropped, which is the part that shows the thinking.
+  const seen=[];
+  if((state.before||{}).kind) seen.push("routine:"+state.before.kind);
+  (state.during||[]).forEach(a=>a&&a.type&&seen.push("activity:"+a.type));
+  if((state.after||{}).kind) seen.push("artifact:"+state.after.kind);
+  (g.standards||[]).forEach(c=>seen.push("standard:"+c));
+  (g.practices||[]).forEach(c=>seen.push("practice:"+c));
+  seen.forEach(k=>{ if(!st.tried[k]) st.tried[k]=d; });
+}
+function save(){ try{ statsTick(); }catch(e){} try{ localStorage.setItem(STORE,JSON.stringify(state)); document.getElementById("saveNote").textContent="Autosaved "+new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}); const n=(+localStorage.getItem(STORE+"-unsaved")||0)+1; localStorage.setItem(STORE+"-unsaved",String(n)); updateNag(n); }catch(e){} }
 function updateNag(n){ const el=document.getElementById("nag"); if(!el) return; let last=null; try{ last=+localStorage.getItem(STORE+"-lastfile")||null; }catch(e){} const show=!nagSnoozed&&n>=NAG_AT; el.classList.toggle("on",show); if(show) document.getElementById("nagText").innerHTML=last?`<b>Changes since you last saved to a file</b> (${new Date(last).toLocaleString([],{weekday:"short",hour:"numeric",minute:"2-digit"})}). Autosave lives in this browser only — a file travels with you.`:`<b>You haven't saved this project to a file yet.</b> Autosave lives in this browser only — a file is how it survives a different computer or a cleared browser.`; }
-function recordFileSave(){ try{ localStorage.setItem(STORE+"-lastfile",String(Date.now())); localStorage.setItem(STORE+"-unsaved","0"); }catch(e){} nagSnoozed=false; updateNag(0); }
+function recordFileSave(){ try{ state.stats&&(state.stats.saves=(state.stats.saves||0)+1); }catch(e){} try{ localStorage.setItem(STORE+"-lastfile",String(Date.now())); localStorage.setItem(STORE+"-unsaved","0"); }catch(e){} nagSnoozed=false; updateNag(0); }
 document.getElementById("nagSave").onclick=()=>document.getElementById("saveProj").click();
 document.getElementById("nagLater").onclick=()=>{ nagSnoozed=true; updateNag(0); };
 function allBlocks(){ return [state.before, ...state.during, state.after]; }
@@ -1097,6 +1142,7 @@ function exportProfile(){ try{ if((+localStorage.getItem(STORE+"-unsaved")||0)>0
     <h2>2b · What the research — and your host teacher — say</h2>${(g.sources||[]).filter(r=>r[0]||r[1]).map(r=>`<p><i>${r[2]==="host"?"Host teacher":esc(r[0])}</i><br>${esc(r[1])}</p>`).join("")||"<p>—</p>"}
     <h2>2c · The question I'm asking</h2><p><b>${esc(g.question||"")}</b></p><p>${esc(g.why||"")}</p>
     <div class="note">Pseudonyms only. Work samples de-identified. Written in BDA Planner.</div>${app}`;
+  try{ state.stats&&(state.stats.exports=(state.stats.exports||0)+1); }catch(e){}
   logEvent("export","Concept Profile → PDF");
   printAs("Concept Profile"+whoStamp()+" — "+fileStamp(), ()=>{});
 }
