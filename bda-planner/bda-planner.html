@@ -765,7 +765,7 @@ function renderDuring(){
   const n=state.during.length; if(!selId||!state.during.find(a=>a.id===selId)) selId=state.during[0]?.id||null;
   const total=state.during.reduce((t,a)=>t+mins(a.min),0)||1;
   const slices=state.during.map((a,i)=>{ const A=ACTIVITIES[a.type]; const w=Math.max(12, mins(a.min)?100*mins(a.min)/total:100/n);
-    const card=A?`<div class="slice filled ${a.id===selId?"sel":""}" data-slice="${a.id}" style="flex-basis:${w}%;--tint:${A.tint}"><div><div class="sicon">${A.icon}</div><div class="sn">${i+1} · ${esc(A.name)}</div><div class="st ${a.title?"":"empty"}">${esc(a.title)||"untitled"}</div></div><div class="sm"><input type="text" inputmode="numeric" placeholder="15" data-smin="${a.id}" value="${esc(a.min)}">min</div>${a.objective&&a.students?'<span class="ok">✓</span>':""}</div>`
+    const card=A?`<div class="slice filled ${a.id===selId?"sel":""}" data-slice="${a.id}" style="flex-basis:${w}%;--tint:${A.tint}"><div><div class="sicon">${A.icon}</div><div class="sn">${i+1} · ${esc(A.name)}</div><div class="st">${esc(a.title)}</div></div><div class="sm"><input type="text" inputmode="numeric" placeholder="15" data-smin="${a.id}" value="${esc(a.min)}">min</div>${a.objective&&a.students?'<span class="ok">✓</span>':""}</div>`
       :`<div class="slice empty ${a.id===selId?"sel":""}" data-slice="${a.id}" data-pick="${a.id}" style="flex-basis:${w}%"><div><div class="sno">${i+1}</div>＋ choose<br>an activity</div></div>`;
     return card+(i<n-1?'<span class="sarrow">→</span>':""); }).join("");
   const a=state.during.find(x=>x.id===selId); const A=a?(ACTIVITIES[a.type]||{}):{}; const idx=state.during.indexOf(a);
@@ -812,7 +812,7 @@ function wirePlan(){
   bind("[data-b]",(el,v)=>{ state.before[el.dataset.b]=v; });
   bind("[data-af]",(el,v)=>{ state.after[el.dataset.af]=v; });
   bind("[data-p]",(el,v)=>{ const [i,j]=el.dataset.p.split(":").map(Number); state.after.prompts[i][j]=v; });
-  bind("[data-a]",(el,v)=>{ const a=state.during.find(x=>x.id===selId); if(a) a[el.dataset.a]=v; if(el.dataset.a==="title"){ const sl=P.querySelector(`.slice[data-slice="${selId}"] .st`); if(sl){ sl.textContent=v||"untitled"; sl.classList.toggle("empty",!v); } } });
+  bind("[data-a]",(el,v)=>{ const a=state.during.find(x=>x.id===selId); if(a) a[el.dataset.a]=v; if(el.dataset.a==="title"){ const sl=P.querySelector(`.slice[data-slice="${selId}"] .st`); if(sl){ sl.textContent=v; } } });
   bind("[data-four]",(el,v)=>{ const a=state.during.find(x=>x.id===selId); if(a) a.four[el.dataset.four]=v; });
   P.querySelectorAll("[data-bmin]").forEach(el=>el.onchange=e=>{ state.before.min=e.target.value; save(); renderPlan(); });
   P.querySelectorAll("[data-amin]").forEach(el=>el.onchange=e=>{ state.after.min=e.target.value; save(); renderPlan(); });
