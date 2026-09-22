@@ -251,6 +251,13 @@
   #actModal details.more summary{cursor:pointer;font-weight:700;color:var(--outline);font-size:14px}
   .slice .prog{position:absolute;top:7px;right:30px;font-size:11px;font-weight:700;color:var(--muted)}
   .slice .prog.done{color:var(--ok)}
+  #nag{display:none;align-items:center;gap:12px;margin:8px 0 0;padding:8px 14px;border:1px solid #e7d3a1;background:var(--gold-soft,#fff6dc);border-radius:10px;font-size:13.5px;color:#6b4a08}
+  #nag.on{display:flex}
+  #nag b{color:#5a3d00}
+  #nag .sp{flex:1}
+  #nag button{font:inherit;font-size:13px;border-radius:8px;padding:6px 11px;cursor:pointer}
+  #nag .go{background:var(--outline);color:#fff;border:0;font-weight:700}
+  #nag .later{background:none;border:1px solid #e7d3a1;color:#6b4a08}
   #build{position:fixed;right:10px;bottom:8px;font-size:11.5px;color:var(--muted);opacity:.55;z-index:30;pointer-events:none;font-weight:600}
   #actModal .box.wide{width:min(1280px,97vw)}
   iframe.nvinline{width:100%;height:600px;border:0;background:transparent;margin-top:4px;display:block}
@@ -458,6 +465,7 @@
         <button data-gear="reset"><span class="ic">↺</span>Start over with an empty project</button>
       </div></span>
   </div>
+  <div id="nag"><span>💾</span><span id="nagText"></span><span class="sp"></span><button class="go" id="nagSave">⬇ Save to a file</button><button class="later" id="nagLater">Later</button></div>
   <div class="phasebar">
     <button class="phase on" data-phase="background" title="Weeks 6–7 — your Concept Profile, your question, and the lesson you have (or your idea)."><span class="pnum"><b>1</b></span> Profile</button>
     <button class="phase" data-phase="during" title="Weeks 8–10 — the lesson, minute by minute: the routine before, the activities, the artifact after."><span class="pnum"><b>2</b></span> Plan</button>
@@ -489,7 +497,7 @@
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 41</div>
+<div id="build">Build 42</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -642,7 +650,13 @@ const STORE="bda-planner-proto-v10";
 let state=null, selId=null;
 function blankState(){ return {door:"", block:0, bg:{names:"",section:"",grade:"",host:"",concept:"",standards:[],practices:[],before:"",after:"",sources:[["",""]],studentsRows:[["",""],["",""],["",""]],samplesRows:[["","","",""],["","","",""],["","","",""]],think:"",question:"",why:"",scriptName:"",read:null,idea:""}, before:blankBefore(), during:[blankAct(null),blankAct(null),blankAct(null)], after:blankAfter(), view:"before"}; }
 function load(){ try{ const s=localStorage.getItem(STORE); if(s){ state=JSON.parse(s); if(state.views&&!state.view){ delete state.views; state.view="before"; } if(!state.migrated3){ state.migrated3=true; const a=state.after||{}; if(a.kind==="exit"&&!(a.prompts||[]).some(r=>(r[0]||"").trim()||(r[1]||"").trim())&&!a.students&&!a.teacher&&!a.objective&&!a.captures&&!a.answers) a.kind=""; } if(!state.migrated2){ state.migrated2=true; (state.during||[]).forEach(a=>{ const four=Object.values(a.four||{}).some(v=>v&&v.trim()); if(!a.title&&!a.students&&!a.teacher&&!a.objective&&!a.extra&&!a.thread&&!a.questions&&!a.anticipate&&!four) a.type=null; }); } return; } }catch(e){} state=blankState(); }
-function save(){ try{ localStorage.setItem(STORE,JSON.stringify(state)); document.getElementById("saveNote").textContent="Autosaved "+new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}); }catch(e){} }
+const NAG_AT=40;            // autosaves since the last file save before the bar appears (≈ a few minutes of typing)
+let nagSnoozed=false;        // this page load only — "Later" is not "never"
+function save(){ try{ localStorage.setItem(STORE,JSON.stringify(state)); document.getElementById("saveNote").textContent="Autosaved "+new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}); const n=(+localStorage.getItem(STORE+"-unsaved")||0)+1; localStorage.setItem(STORE+"-unsaved",String(n)); updateNag(n); }catch(e){} }
+function updateNag(n){ const el=document.getElementById("nag"); if(!el) return; let last=null; try{ last=+localStorage.getItem(STORE+"-lastfile")||null; }catch(e){} const show=!nagSnoozed&&n>=NAG_AT; el.classList.toggle("on",show); if(show) document.getElementById("nagText").innerHTML=last?`<b>Changes since you last saved to a file</b> (${new Date(last).toLocaleString([],{weekday:"short",hour:"numeric",minute:"2-digit"})}). Autosave lives in this browser only — a file travels with you.`:`<b>You haven't saved this project to a file yet.</b> Autosave lives in this browser only — a file is how it survives a different computer or a cleared browser.`; }
+function recordFileSave(){ try{ localStorage.setItem(STORE+"-lastfile",String(Date.now())); localStorage.setItem(STORE+"-unsaved","0"); }catch(e){} nagSnoozed=false; updateNag(0); }
+document.getElementById("nagSave").onclick=()=>document.getElementById("saveProj").click();
+document.getElementById("nagLater").onclick=()=>{ nagSnoozed=true; updateNag(0); };
 function allBlocks(){ return [state.before, ...state.during, state.after]; }
 function byId(id){ return allBlocks().find(b=>b.id===id); }
 function used(){ return planTotal(); }
@@ -727,7 +741,7 @@ function renderBackground(){
   const ex=document.getElementById("exportProfile"); if(ex) ex.onclick=exportProfile;
   wireInfo();
 }
-function exportProfile(){
+function exportProfile(){ try{ if((+localStorage.getItem(STORE+"-unsaved")||0)>0) toast("Tip: Export makes the PDF; ⬇ Save keeps the project file. Do both."); }catch(e){}
   const g=state.bg||{}; const el=document.getElementById("profilePrint");
   const stds=(g.standards||[]).map(c=>`<div class="std"><b>${esc(c)}</b> ${esc(stdText(c))}</div>`).join("")||"<p>—</p>";
   const mps=(g.practices||[]).map(c=>{ const p=OM.practices.find(x=>x[0]===c); return p?`<div class="std"><b>${c}</b> ${esc(p[1])}</div>`:""; }).join("");
@@ -1109,7 +1123,7 @@ function pickShape(){
 }
 
 /* ---------- project bar ---------- */
-document.getElementById("saveProj").onclick=()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="bda-planner-project.json"; a.click(); toast("Saved. Keep this file — it's how your plan travels."); };
+document.getElementById("saveProj").onclick=()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); const nm=((state.bg||{}).names||"").trim().replace(/[^a-z0-9]+/gi,"-").replace(/^-+|-+$/g,""); a.download=`bda-planner${nm?"-"+nm:""}-${new Date().toISOString().slice(0,10)}.json`; a.click(); recordFileSave(); toast("Saved. Keep this file — it's how your plan travels."); };
 document.getElementById("loadProj").onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ state=JSON.parse(r.result); selId=null; save(); renderAll(); toast("Project loaded."); }catch(err){ toast("That file didn't read as a project."); } }; r.readAsText(f); e.target.value=""; };
 function resetProject(){ if(!confirm("Start over with an empty project? Your edits in this browser are lost (a saved .json file is not).")) return; state=blankState(); selId=null; save(); renderAll(); }
 (function(){ const m=document.getElementById("gearMenu"), b=document.getElementById("gearBtn"); b.onclick=e=>{ e.stopPropagation(); m.classList.toggle("open"); }; document.addEventListener("click",e=>{ if(!m.contains(e.target)) m.classList.remove("open"); });
@@ -1124,7 +1138,7 @@ function loadExample(n){ state=JSON.parse(JSON.stringify(n===2?SAMPLES.idea:SAMP
 function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 let toastT; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.style.opacity=1; clearTimeout(toastT); toastT=setTimeout(()=>t.style.opacity=0,2600); }
 function renderAll(){ renderTop(); renderPlan(); }
-load(); renderAll(); try{ showPhase(localStorage.getItem(STORE+"-phase")||"background"); }catch(e){ showPhase("background"); }
+load(); renderAll(); try{ updateNag(+localStorage.getItem(STORE+"-unsaved")||0); }catch(e){} try{ showPhase(localStorage.getItem(STORE+"-phase")||"background"); }catch(e){ showPhase("background"); }
 </script>
 </body>
 </html>
