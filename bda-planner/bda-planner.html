@@ -28,7 +28,6 @@
   h1{font-size:26px;margin:0;color:var(--outline);letter-spacing:.3px;display:flex;align-items:baseline;line-height:1.1}
   h1 a{color:inherit;text-decoration:none}
   h1 a:hover{text-decoration:underline}
-  h1 small{font-weight:600;color:var(--muted);font-size:14px;margin-left:8px}
   .gear{position:relative}
   /* The gear was 13px inherited from button.ghost, which is the size a word wants
      and not the size a lone glyph does: next to two icon buttons it read as the
@@ -52,14 +51,24 @@
      any ground and something always had to wrap. A genuinely narrow screen -- a
      phone -- is still allowed two rows, because there one row cannot be had. */
   .hdrbar{display:flex;align-items:baseline;gap:14px;flex-wrap:nowrap}
-  .hdrbar .toolbar{align-items:baseline;flex:0 1 auto;min-width:0}
+  /* nowrap alone made it worse before it made it better. Every flex item shrinks
+     by default, so with no line to break onto they all compressed below their own
+     text: the title broke after "BDA", "My Progress" split across two lines and
+     the ⓘ dropped under the Section menu. One field was ever meant to give ground.
+     So: nothing shrinks and nothing breaks, except the name input. */
+  .hdrbar>*{flex:0 0 auto}
+  .hdrbar h1,.hdrbar label,.hdrbar button,.hdrbar .note{white-space:nowrap}
+  .hdrbar .toolbar{align-items:baseline;flex:0 1 auto;min-width:0;flex-wrap:nowrap}
   .hdrbar .toolbar input[type=text]{flex:0 1 240px;width:auto;min-width:110px}
-  @media (max-width:1180px){ h1 small{display:none} }
   /* 960, not 820: with the tagline gone the row still needs about 890px for a
      title, a name field at its floor, four controls and the gaps between them.
      Wrapping has to resume before that, or nowrap buys a horizontal scrollbar
      instead of a second line -- which is the worse of the two. */
-  @media (max-width:960px){ .hdrbar{flex-wrap:wrap} h1 small{display:inline} }
+  /* 920: with the tagline gone the row still needs about 890px -- the title, the
+     name field at its 110px floor, four controls and the gaps. Below that it has
+     to be allowed two rows, because nowrap past its limit buys a horizontal
+     scrollbar instead, which is the worse of the two. */
+  @media (max-width:920px){ .hdrbar{flex-wrap:wrap} }
   /* Icon-only buttons. The words cost about 90px of a header with none to spare;
      the diskette carries the meaning, and title + aria-label carry it for anyone
      the picture does not reach -- an icon-only control with no accessible name is
@@ -540,7 +549,7 @@
 <body>
 <div class="wrap">
   <div class="hdrbar">
-    <h1><a href="https://github.com/OhioMathTeacher/tce318p-fa26/tree/main/bda-planner" target="_blank" rel="noopener" title="The app's source on GitHub">BDA Planner</a> <small>plan it · hand it over · teach it</small></h1>
+    <h1><a href="https://github.com/OhioMathTeacher/tce318p-fa26/tree/main/bda-planner" target="_blank" rel="noopener" title="The app's source on GitHub">BDA Planner</a></h1>
     <span class="toolbar" style="margin-left:18px"><label for="tbNames" style="font-weight:600;font-size:14px">Name(s)</label><input type="text" id="tbNames" placeholder="you — or your whole team"><label for="tbSection" style="font-weight:600;font-size:14px">Section</label><select id="tbSection"><option value="">…</option><option value="oxford">Oxford</option><option value="hamilton">Hamilton</option></select><span class="i" tabindex="0">i<span class="pop">One plan per team; one planning record per person. Put every teammate's name here. Your section decides which day's class this is for.</span></span></span>
     <span style="flex:1"></span>
     <span class="note small" id="saveNote"></span>
@@ -625,7 +634,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 58</div>
+<div id="build">Build 59</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
