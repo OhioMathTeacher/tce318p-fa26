@@ -13,6 +13,12 @@
  .block{padding:14px 16px;margin:14px 0;border-left:4px solid var(--red);border-radius:2px;}
  .b-set{background:#e8dcf0;} .b-share{background:#ffe8d6;} .b-work{background:#d6f0e8;} .b-early{background:#ffe8d6;}
  .block h2{font-size:15px;margin:0 0 8px;} .block .time{font-weight:400;color:#6b7280;}
+ details.block summary{cursor:pointer;list-style:none;display:flex;align-items:baseline;gap:8px;}
+ details.block summary::-webkit-details-marker{display:none;}
+ details.block summary::before{content:"▸";color:var(--red);font-size:13px;flex:none;transition:transform .15s;}
+ details.block[open] summary::before{transform:rotate(90deg);}
+ details.block summary h2{margin:0;}
+ details.block[open] summary{margin-bottom:8px;}
  .purpose{font-style:italic;color:#374151;margin:8px 0 0;}
  .tag{background:#fff3a8;padding:1px 4px;border-radius:3px;font-weight:600;}
  ul{margin:6px 0;padding-left:20px;} li{margin:3px 0;}
@@ -35,18 +41,18 @@
 
 <div class="goals"><strong>Today's goals:</strong> Debrief McGatha &amp; Darcy against the rubrics you scored with. Open the <strong>field investigation</strong>: the back half of the course, built on one mathematical concept and the students learning it. Then do the Assessor's move on your own — read one real learner's work, name its DOK, and write the question you would ask next.</div>
 
-<div class="block b-share">
- <h2>1 · Reading debrief — McGatha &amp; Darcy <span class="time">(~15 min)</span></h2>
+<details class="block b-share">
+ <summary><h2>1 · Reading debrief — McGatha &amp; Darcy <span class="time">(~15 min)</span></h2></summary>
  <ul>
   <li>Your journal prompt, out loud: what does an assessment make visible, what does it hide, and how do we use it <em>for</em> a learner, not just <em>about</em> them?</li>
   <li>Last class you sorted rubrics into the ones you'd reach for to decide what to teach next and the ones that only hand you a grade. How does McGatha sort them? Put our three rubrics where she would.</li>
   <li>Rubric 3 (Charles, Lester &amp; O'Daffer) is McGatha's Figure 3. Check your table's read of it against hers.</li>
  </ul>
  <p class="purpose">Purpose: close the studio before the course turns to real students — McGatha gives the pattern you built on the board its names.</p>
-</div>
+</details>
 
-<div class="block b-set">
- <h2>2 · Field investigation overview <span class="time">(~30 min)</span></h2>
+<details class="block b-set">
+ <summary><h2>2 · Field investigation overview <span class="time">(~30 min)</span></h2></summary>
  <ul>
   <li>The back half of the course is <strong>one field investigation</strong>: one mathematical concept, and two or three students whose work shows how they understand it. Concept → question → design → collect → analyze → share.</li>
   <li><strong>The shape of it.</strong> On the <a href="../index.html#act2">course home page</a>, Act II and Act III lay out every piece — what it is, what it's worth, and when it's due. We walk that table together.</li>
@@ -67,20 +73,20 @@
   <li><strong>Open it now <span class="time">(~10 min)</span>.</strong> On your laptop or iPad, open the <strong><a href="../bda-planner/bda-planner.html">BDA&nbsp;Planner</a></strong>. Put your <strong>name and section</strong> in the header — and your <strong>grade</strong>, if you know your placement. Then press <strong>▤ My Progress</strong>: those seven rows are what the Concept Profile needs, and most of them can only be answered in your classroom next week. <em>That list is what you are going to the field to collect.</em> Press <strong>⬇ Save</strong>, keep the file it gives you, and bring it back next week with your work samples.</li>
  </ul>
  <p class="purpose">Purpose: every role you built this block — learner, listener, poser, planner, assessor — was practice for aiming them at one concept and the real students learning it. This is where they meet.</p>
-</div>
+</details>
 
-<div class="block b-work">
- <h2>3 · One learner's work — a Misconception Quick Response <span class="time">(~30 min)</span></h2>
+<details class="block b-work">
+ <summary><h2>3 · One learner's work — a Misconception Quick Response <span class="time">(~30 min)</span></h2></summary>
  <ul>
   <li>Your second <strong>Misconception Quick Response</strong> — in class, on your own, no AI, collected as you finish. Everything you need is in <a href="week-5-pedagogical-excursion.docx">Pedagogical Excursion #5</a>.</li>
  </ul>
  <p class="purpose">Purpose: last class you explored the lens with your table; now you point it yourself, at one real learner's work. That is the Assessor's move.</p>
-</div>
+</details>
 
-<div class="block b-early">
- <h2>If you finish the MQR early</h2>
+<details class="block b-early">
+ <summary><h2>If you finish the MQR early</h2></summary>
  <ul><li>Swap with a neighbor and read their questions. Which one best invites the student's <em>own</em> reasoning — without nudging them toward the answer? Say why.</li></ul>
-</div>
+</details>
 
 <div class="wrap">
  <strong>Wrap-up &amp; looking ahead</strong> <span class="time">(~5 min — say this before handing out the MQR)</span>:
