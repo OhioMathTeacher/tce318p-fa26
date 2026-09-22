@@ -237,7 +237,9 @@
   .slice .st.empty{color:#a9b3c0;font-weight:500;font-style:italic}
   .slice .sm{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);margin-top:4px}
   .slice .sm input{width:44px;text-align:right;padding:2px 5px;border:1px solid var(--line);border-radius:6px;font:inherit;font-weight:700;font-size:13px}
-  .slice .ok{position:absolute;top:6px;right:8px;font-size:11px;color:var(--ok)}
+  .slice .ok{position:absolute;top:6px;right:30px;font-size:11px;color:var(--ok)}
+  .slice .sx{position:absolute;top:5px;right:6px;width:20px;height:20px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:11px;line-height:18px;padding:0;cursor:pointer;opacity:.55}
+  .slice .sx:hover{opacity:1;border-color:#c33;color:#c33}
   .sarrow{align-self:center;color:var(--outline);font-weight:800;font-size:16px}
   .sed{margin-top:12px;border-top:1px dashed var(--line);padding-top:8px}
   .sed .sedh{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -558,7 +560,7 @@ const SAMPLES = {
 const STORE="bda-planner-proto-v10";
 let state=null, selId=null;
 function blankState(){ return {door:"", block:0, bg:{names:"",section:"",grade:"",host:"",concept:"",standards:[],practices:[],before:"",after:"",sources:[["",""]],studentsRows:[["",""],["",""],["",""]],samplesRows:[["","","",""],["","","",""],["","","",""]],think:"",question:"",why:"",scriptName:"",read:null,idea:""}, before:blankBefore(), during:[blankAct(null),blankAct(null),blankAct(null)], after:blankAfter(), view:"before"}; }
-function load(){ try{ const s=localStorage.getItem(STORE); if(s){ state=JSON.parse(s); return; } }catch(e){} state=blankState(); }
+function load(){ try{ const s=localStorage.getItem(STORE); if(s){ state=JSON.parse(s); if(state.views&&!state.view){ delete state.views; state.view="before"; (state.during||[]).forEach(a=>{ if(!a.title&&!a.students&&!a.objective&&!a.extra&&!a.min) a.type=null; }); } return; } }catch(e){} state=blankState(); }
 function save(){ try{ localStorage.setItem(STORE,JSON.stringify(state)); document.getElementById("saveNote").textContent="Autosaved "+new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}); }catch(e){} }
 function allBlocks(){ return [state.before, ...state.during, state.after]; }
 function byId(id){ return allBlocks().find(b=>b.id===id); }
@@ -764,16 +766,16 @@ function renderBefore(){
 function renderDuring(){
   const n=state.during.length; if(!selId||!state.during.find(a=>a.id===selId)) selId=state.during[0]?.id||null;
   const total=state.during.reduce((t,a)=>t+mins(a.min),0)||1;
-  const slices=state.during.map((a,i)=>{ const A=ACTIVITIES[a.type]; const w=Math.max(12, mins(a.min)?100*mins(a.min)/total:100/n);
-    const card=A?`<div class="slice filled ${a.id===selId?"sel":""}" data-slice="${a.id}" style="flex-basis:${w}%;--tint:${A.tint}"><div><div class="sicon">${A.icon}</div><div class="sn">${i+1} · ${esc(A.name)}</div><div class="st">${esc(a.title)}</div></div><div class="sm"><input type="text" inputmode="numeric" placeholder="15" data-smin="${a.id}" value="${esc(a.min)}">min</div>${a.objective&&a.students?'<span class="ok">✓</span>':""}</div>`
-      :`<div class="slice empty ${a.id===selId?"sel":""}" data-slice="${a.id}" data-pick="${a.id}" style="flex-basis:${w}%"><div><div class="sno">${i+1}</div>＋ choose<br>an activity</div></div>`;
+  const slices=state.during.map((a,i)=>{ const A=ACTIVITIES[a.type]; const w=Math.max(12, mins(a.min)?100*mins(a.min)/total:100/n); const x=n>1?`<button class="sx" data-remove="${a.id}" title="Remove this card">✕</button>`:"";
+    const card=A?`<div class="slice filled ${a.id===selId?"sel":""}" data-slice="${a.id}" style="flex-basis:${w}%;--tint:${A.tint}"><div><div class="sicon">${A.icon}</div><div class="sn">${i+1} · ${esc(A.name)}</div><div class="st">${esc(a.title)}</div></div><div class="sm"><input type="text" inputmode="numeric" placeholder="15" data-smin="${a.id}" value="${esc(a.min)}">min</div>${a.objective&&a.students?'<span class="ok">✓</span>':""}${x}</div>`
+      :`<div class="slice empty ${a.id===selId?"sel":""}" data-slice="${a.id}" data-pick="${a.id}" style="flex-basis:${w}%"><div><div class="sno">${i+1}</div>Click to select<br>an activity</div>${x}</div>`;
     return card+(i<n-1?'<span class="sarrow">→</span>':""); }).join("");
   const a=state.during.find(x=>x.id===selId); const A=a?(ACTIVITIES[a.type]||{}):{}; const idx=state.during.indexOf(a);
   const prev=idx>0?state.during[idx-1]:null;
   let ed="";
   if(a){
-    if(!a.type) ed=`<div class="sed"><div class="sedh"><h3>Activity ${idx+1}</h3><span style="flex:1"></span>${n>1?`<button class="tbtn" data-remove="${a.id}">remove this slice</button>`:""}</div><div class="small" style="margin:6px 0 10px">This slice is empty. Choose what kind of activity it is; the fields for it appear here.</div><button class="primary" data-pick="${a.id}">Choose an activity</button></div>`;
-    else ed=`<div class="sed"><div class="sedh"><h3>Activity ${idx+1}</h3><span class="sicon">${A.icon}</span><span class="cur">${esc(A.name)}</span><a class="chg" data-pick="${a.id}">change</a>${A.link?`<a href="${A.link}" target="_blank" rel="noopener" class="small">examples</a>`:""}<span style="flex:1"></span>${n>1?`<button class="tbtn" data-remove="${a.id}">remove this slice</button>`:""}</div>
+    if(!a.type) ed=`<div class="sed"><div class="sedh"><h3>Activity ${idx+1}</h3></div><div class="small" style="margin:6px 0 10px">This slice is empty. Choose what kind of activity it is; the fields for it appear here.</div><button class="primary" data-pick="${a.id}">Choose an activity</button></div>`;
+    else ed=`<div class="sed"><div class="sedh"><h3>Activity ${idx+1}</h3><span class="sicon">${A.icon}</span><span class="cur">${esc(A.name)}</span><a class="chg" data-pick="${a.id}">change</a>${A.link?`<a href="${A.link}" target="_blank" rel="noopener" class="small">examples</a>`:""}</div>
       <div class="tip" style="margin-top:4px">${esc(A.sub||"")}</div>
       <label>Title <span class="hint">— what you'd call it on the plan</span></label><input type="text" data-a="title" value="${esc(a.title)}">
       ${a.type==="script"?`<div class="small" style="margin-top:8px">Working from: <b>${esc((state.bg||{}).scriptName||"your host teacher's lesson")}</b></div><div class="guide"><b>The four questions.</b> Read this part of the script and ask: where do students get room? <i>Delivery for engagement, structure for evidence.</i></div><div class="four" style="grid-template-columns:1fr 1fr"><div><b>1 · Collaborate</b> — room to work on it together?<textarea data-four="collab">${esc(a.four.collab)}</textarea></div><div><b>2 · Ask</b> — room to ask questions?<textarea data-four="ask">${esc(a.four.ask)}</textarea></div><div><b>3 · Share</b> — small group and whole class?<textarea data-four="share">${esc(a.four.share)}</textarea></div><div><b>4 · Think first</b> — their own approach before they're shown one?<textarea data-four="think">${esc(a.four.think)}</textarea></div></div>`:A.extra?`<label>${esc(A.extra.label)}</label><textarea data-a="extra">${esc(a.extra)}</textarea>${a.type==="task"?`<div class="guide warn"><b>Do it yourself first.</b> Your three <i>distinct</i> solutions go here in the real app — the third doesn't count until the representations differ.</div>`:""}`:""}
@@ -819,7 +821,7 @@ function wirePlan(){
   P.querySelectorAll("[data-smin]").forEach(el=>{ el.onclick=e=>e.stopPropagation(); el.onchange=e=>{ const a=state.during.find(x=>x.id===el.dataset.smin); if(a) a.min=e.target.value; save(); renderPlan(); }; });
   P.querySelectorAll(".slice").forEach(el=>el.onclick=()=>{ selId=el.dataset.slice; renderPlan(); });
   P.querySelectorAll("[data-nslices]").forEach(el=>el.onchange=e=>{ const k=+e.target.value; while(state.during.length<k) state.during.push(blankAct(null)); if(state.during.length>k){ if(!confirm(`Go down to ${k} slices? The last ${state.during.length-k} will be removed.`)){ renderPlan(); return; } state.during=state.during.slice(0,k); } save(); renderPlan(); });
-  P.querySelectorAll("[data-remove]").forEach(el=>el.onclick=()=>{ if(state.during.length<=1) return; state.during=state.during.filter(x=>x.id!==el.dataset.remove); selId=null; save(); renderPlan(); });
+  P.querySelectorAll("[data-remove]").forEach(el=>el.onclick=e=>{ e.stopPropagation(); if(state.during.length<=1) return; const a=state.during.find(x=>x.id===el.dataset.remove); if(a&&(a.title||a.students||a.objective||a.extra)&&!confirm(`Remove activity ${state.during.indexOf(a)+1}${a.title?` — "${a.title}"`:""}? What you typed in it is lost.`)) return; state.during=state.during.filter(x=>x.id!==el.dataset.remove); selId=null; save(); renderPlan(); });
   P.querySelectorAll("[data-akind]").forEach(el=>el.onchange=e=>{ state.after.kind=e.target.value; save(); renderPlan(); });
   P.querySelectorAll("[data-addp]").forEach(el=>el.onclick=()=>{ state.after.prompts.push(["",""]); save(); renderPlan(); });
   bind("[data-cardtext]",(el,v)=>{ state.before.cards[+el.dataset.cardtext]=v; });
