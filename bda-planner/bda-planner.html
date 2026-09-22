@@ -204,6 +204,8 @@
   .nv .ncard:focus-within{border-color:var(--before)}
   .nv .ncard .x{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:11px;line-height:18px;padding:0;cursor:pointer;display:none}
   .nv .ncard:hover .x,.nv .ncard:focus-within .x{display:block}
+  .slice.add{flex:0 0 auto;min-width:64px;border-style:dashed;justify-content:center;align-items:center;color:var(--muted);font-weight:700;font-size:12.5px;text-align:center;line-height:1.2;cursor:pointer}
+  .slice.add:hover{border-color:var(--outline);color:var(--outline)}
   .slice.empty{border-style:dashed;justify-content:center;align-items:center;text-align:center;color:var(--muted);font-weight:700;font-size:12.5px;line-height:1.25}
   .slice.empty:hover{border-color:var(--outline);color:var(--outline)}
   .slice.empty .sno{font-size:11px;font-weight:800;color:#a9b3c0;margin-bottom:4px}
@@ -789,8 +791,8 @@ function renderDuring(){
       ${idx<n-1?`<div class="conn"><b>How does this activity connect to the next one?</b><textarea data-a="thread" style="margin-top:4px">${esc(a.thread)}</textarea></div>`:`<div class="conn"><b>How does this activity connect to the After?</b><textarea data-a="thread" style="margin-top:4px">${esc(a.thread)}</textarea></div>`}
       ${readsBar}</div>`;
   }
-  return `<div class="pane during"><div class="ph"><span class="tag">During</span><h2>The activities</h2><span class="mins">slices <select data-nslices style="width:auto;padding:5px 6px">${[1,2,3,4,5].map(k=>`<option ${k===n?"selected":""}>${k}</option>`).join("")}</select> · <a class="small" data-shapes style="cursor:pointer;text-decoration:underline">start from a shape</a></span>${I("Two to five activities that build on each other — pick a type for each, give it your minutes, and say how each one connects to the next. Widths follow your minutes.")}</div>
-    <div class="slices">${slices}</div>${ed}</div>`;
+  return `<div class="pane during"><div class="ph"><span class="tag">During</span><h2>The activities</h2><span class="mins"><a class="small" data-shapes style="cursor:pointer;text-decoration:underline">start from a shape</a></span>${I("Two to five activities that build on each other — pick a type for each, give it your minutes, and say how each one connects to the next. Widths follow your minutes.")}</div>
+    <div class="slices">${slices}${n<5?`<div class="slice add" data-addslice title="Add a card">＋ add<br>a card</div>`:""}</div>${ed}</div>`;
 }
 function renderAfter(){
   const a=state.after=Object.assign(blankAfter(),state.after||{});
@@ -820,7 +822,7 @@ function wirePlan(){
   P.querySelectorAll("[data-amin]").forEach(el=>el.onchange=e=>{ state.after.min=e.target.value; save(); renderPlan(); });
   P.querySelectorAll("[data-smin]").forEach(el=>{ el.onclick=e=>e.stopPropagation(); el.onchange=e=>{ const a=state.during.find(x=>x.id===el.dataset.smin); if(a) a.min=e.target.value; save(); renderPlan(); }; });
   P.querySelectorAll(".slice").forEach(el=>el.onclick=()=>{ selId=el.dataset.slice; renderPlan(); });
-  P.querySelectorAll("[data-nslices]").forEach(el=>el.onchange=e=>{ const k=+e.target.value; while(state.during.length<k) state.during.push(blankAct(null)); if(state.during.length>k){ if(!confirm(`Go down to ${k} slices? The last ${state.during.length-k} will be removed.`)){ renderPlan(); return; } state.during=state.during.slice(0,k); } save(); renderPlan(); });
+  P.querySelectorAll("[data-addslice]").forEach(el=>el.onclick=()=>{ if(state.during.length>=5) return; const a=blankAct(null); state.during.push(a); selId=a.id; save(); renderPlan(); pickActivity(a.id); });
   P.querySelectorAll("[data-remove]").forEach(el=>el.onclick=e=>{ e.stopPropagation(); if(state.during.length<=1) return; const a=state.during.find(x=>x.id===el.dataset.remove); if(a&&(a.title||a.students||a.objective||a.extra)&&!confirm(`Remove activity ${state.during.indexOf(a)+1}${a.title?` — "${a.title}"`:""}? What you typed in it is lost.`)) return; state.during=state.during.filter(x=>x.id!==el.dataset.remove); selId=null; save(); renderPlan(); });
   P.querySelectorAll("[data-akind]").forEach(el=>el.onchange=e=>{ state.after.kind=e.target.value; save(); renderPlan(); });
   P.querySelectorAll("[data-addp]").forEach(el=>el.onclick=()=>{ state.after.prompts.push(["",""]); save(); renderPlan(); });
