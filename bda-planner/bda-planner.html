@@ -554,7 +554,7 @@
 <div class="wrap">
   <div class="hdrbar">
     <h1><a href="https://github.com/OhioMathTeacher/tce318p-fa26/tree/main/bda-planner" target="_blank" rel="noopener" title="The app's source on GitHub">BDA Planner</a></h1>
-    <span class="toolbar" style="margin-left:18px"><label for="tbNames" style="font-weight:600;font-size:14px">Name(s)</label><input type="text" id="tbNames" placeholder="you — or your whole team"><label for="tbSection" style="font-weight:600;font-size:14px">Section</label><select id="tbSection"><option value="">…</option><option value="oxford">Oxford</option><option value="hamilton">Hamilton</option></select><span class="i" tabindex="0">i<span class="pop">One plan per team; one planning record per person. Put every teammate's name here. Your section decides which day's class this is for.</span></span></span>
+    <span class="toolbar" style="margin-left:18px"><label for="tbNames" style="font-weight:600;font-size:14px">Name(s)</label><input type="text" id="tbNames" placeholder="you — or your whole team"><label for="tbSection" style="font-weight:600;font-size:14px">Section</label><select id="tbSection"><option value="">…</option><option value="oxford">Oxford</option><option value="hamilton">Hamilton</option></select><span class="i" tabindex="0">i<span class="pop">One Investigation Plan per team; each person writes their own Document 2. Put every teammate's name here. Your section decides which day's class this is for.</span></span></span>
     <span style="flex:1"></span>
     <span class="note small" id="saveNote"></span>
     <button class="ghost ic-btn" id="saveProj" aria-label="Save your project to a file" title="Save your project to a file — how it travels to another computer or a teammate"><svg class="disk" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.4 2.4h8.1l3.1 3.1v8.1a.9.9 0 0 1-.9.9H3.3a.9.9 0 0 1-.9-.9V3.3a.9.9 0 0 1 .9-.9z"/><path d="M5.2 2.4v3.3h5V2.4"/><rect x="4.6" y="9.1" width="6.8" height="5.4" rx=".5"/></svg><span class="arw">↓</span></button>
@@ -583,7 +583,7 @@
   <div class="phasebar">
     <button class="phase on" data-phase="background" title="Weeks 6–7 — your Concept Profile, your question, and the lesson you have (or your idea)."><span class="pnum"><b>1</b></span> Concept Profile</button>
     <button class="phase" data-phase="during" title="Weeks 8–10 — the lesson, minute by minute: the routine before, the activities, the artifact after."><span class="pnum"><b>2</b></span> Plan</button>
-    <button class="phase" data-phase="share" title="The plan as a Word file (the 3-Pager) and your planning record as a PDF — whenever there's something to share."><span class="pnum"><b>3</b></span> Share</button>
+    <button class="phase" data-phase="share" title="Document 1, your Investigation Plan, as Word or PDF; Document 2, how you used the feedback, as a PDF — whenever there's something to share."><span class="pnum"><b>3</b></span> Share</button>
   </div>
 
 
@@ -640,7 +640,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 61</div>
+<div id="build">Build 62</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1579,7 +1579,7 @@ function pickArtifact(){
   B.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{ state.after.kind=b.dataset.k; save(); renderPlan(); closePick(); openAfter(); });
 }
 
-/* ---------- ③ Share: the 3-Pager (.docx) and the planning record (.pdf) ---------- */
+/* ---------- ③ Share: Document 1 the Investigation Plan (.docx/.pdf) · Document 2 how you used the feedback (.pdf) ---------- */
 function planTitle(){ const g=state.bg||{}; return (state.share&&state.share.title)||g.scriptName||g.concept||""; }
 function teamNames(){ return ((state.bg||{}).names||"").split(/[,&·;\/]| and /i).map(x=>x.trim()).filter(Boolean); }
 function assemblePlan(){
@@ -1709,12 +1709,12 @@ function printPlan(){
   logEvent("export","Investigation Plan → PDF");
   printAs("Investigation Plan"+(planTitle()?" — "+planTitle().replace(/[\\/:*?"<>|]/g,"").slice(0,50):"")+" — "+fileStamp(), ()=>{});
 }
-/* --- the planning record: one person's PDF via the print stylesheet --- */
+/* --- Document 2: one person's PDF via the print stylesheet --- */
 function printRecord(who){
   const g=state.bg||{}, sh=state.share||{}, A=assemblePlan(); const el=document.getElementById("profilePrint");
   const modeName={ask:"Ask me",options:"Show me options",check:"Check this"};
   const logs=["before","during","after"].map(tab=>{ const L=(state.reads&&state.reads[tab]&&state.reads[tab].log)||[]; if(!L.length) return ""; return `<h2>${tab[0].toUpperCase()+tab.slice(1)} — the partner's reads (${L.length})</h2>`+L.map(e=>{ const d=e.data||{}; let body=""; if(e.mode==="ask") body=(d.questions||[]).map(q=>`<p><b>${esc(q.question)}</b><br><i>${esc(q.why)}</i></p>`).join(""); else if(e.mode==="check") body=(d.reads||[]).map(x=>`<p><b>${esc(x.criterion)}</b> — ${esc(x.read)}<br><i>${esc(x.question)}</i></p>`).join(""); else body=(d.cards||[]).map((c,i)=>`<p><b>${esc(c.direction)}</b> <span class="tag">${e.aside&&e.aside[i]?"set aside":"kept in view"}</span><br>surfaces: ${esc(c.surfaces)} · might give away: ${esc(c.gives_away)}</p>`).join(""); return `<div class="entry"><div class="when">${modeName[e.mode]||e.mode} · ${new Date(e.ts).toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}</div>${body}</div>`; }).join(""); }).join("");
-  el.innerHTML=`<h1>Planning Record — ${esc(who||g.names||"")}</h1><div class="meta">TCE 318P FA26 · ${esc(A.title||"")}${A.grade?" · "+esc(A.grade):""}${A.section?" · "+A.section:""}${teamNames().length>1?" · team: "+esc(g.names):""} · ${new Date().toLocaleDateString()}</div>
+  el.innerHTML=`<h1>Document 2 — How you used the feedback</h1><div class="meta">TCE 318P FA26 · ${esc(who||g.names||"")} · ${esc(A.title||"")}${A.grade?" · "+esc(A.grade):""}${A.section?" · "+A.section:""}${teamNames().length>1?" · team: "+esc(g.names):""} · ${new Date().toLocaleDateString()}</div>
     <h2>The question</h2><p>${esc(g.question||"")}</p>
     <h2>The plan, in brief</h2><p><b>Before</b> — ${esc(A.before.split("\n")[0]||"—")}</p><p><b>During</b> — ${esc(A.during.split("\n\n").map(x=>x.split("\n")[0]).join(" → ")||"—")}</p><p><b>After</b> — ${esc(A.after.split("\n")[0]||"—")}</p>
     ${logs||"<h2>The partner's reads</h2><p>None asked for.</p>"}
@@ -1722,31 +1722,31 @@ function printRecord(who){
     <h2>Document 2 — how I used the two reads</h2><p>${esc(sh.twoReads||"")||"<i>— not written —</i>"}</p>
     ${sh.reflection?`<h2>After teaching — reflection &amp; next steps</h2><p>${esc(sh.reflection)}</p>`:""}
     <p class="note">The record: what the planning partner asked, what I kept and set aside, what a classmate said, and what I made of it. The partner asks; it never writes the plan. Produced by BDA Planner.</p>`;
-  logEvent("export","Planning Record → PDF");
-  printAs("Planning Record"+(who?" — "+String(who).replace(/[\\/:*?"<>|]/g,"").slice(0,40):"")+" — "+fileStamp(), ()=>{});
+  logEvent("export","Document 2 → PDF");
+  printAs("Document 2"+(who?" — "+String(who).replace(/[\\/:*?"<>|]/g,"").slice(0,40):"")+" — "+fileStamp(), ()=>{});
 }
 function renderShare(){
   const g=state.bg||{}; state.share=state.share||{}; const sh=state.share; const A=assemblePlan(); const names=teamNames();
   const have=k=>A[k]&&A[k].trim()?"✓":"·";
   const wrap=document.getElementById("shareTiles");
   const rows=[["Your research question and the concept","Profile · 2a, 2c",A.focus],["Materials needed","Plan · every part",A.materials],["Learning objectives — one per part","Plan · Before, During, After",A.objectives],["Standards alignment, full text","Profile · 2a",A.standards],["Lesson flow — Before (baseline)","Plan · Before",A.before],["Lesson flow — During (primary instrument)","Plan · During",A.during],["Lesson flow — After (the capture)","Plan · After",A.after],["Assessment — name your read","Plan · After",A.assessment],["Reflection & next steps","Share · after teaching",A.reflection],["Handout — the Before's cards","Plan · Before",A.thumbs.length?"x":""],["Handout — the exit slip","Plan · After",A.exit.length?"x":""]];
-  wrap.innerHTML=`<div class="tile"><h2><span class="n">1</span>Investigation Plan — Document 1${I("Week 10's Document 1, in the course's 3-Pager placemat: prompts on the left, your plan on the right. What isn't written yet stays visibly empty — a starting point you revise, not a finished plan. One per team.")}</h2>
-      <p class="small" style="margin:4px 0 10px;font-size:14px;color:var(--ink)"><b>Generate Lesson Plan</b> gathers everything you've written on the Profile and Plan tabs and lays it out as the course's 3-Pager Investigation Plan. Sections you haven't written yet come out empty, ready for you to fill by hand.</p>
+  wrap.innerHTML=`<div class="tile"><h2><span class="n">1</span>Document 1 — your Investigation Plan${I("Week 10's Document 1, in the course's 3-Pager placemat: prompts on the left, your plan on the right. What isn't written yet stays visibly empty — a starting point you revise, not a finished plan. One per team.")}</h2>
+      <p class="small" style="margin:4px 0 10px;font-size:14px;color:var(--ink)"><b>Generate Investigation Plan</b> gathers everything you've written on the Profile and Plan tabs and lays it out as the course's 3-Pager Investigation Plan. Sections you haven't written yet come out empty, ready for you to fill by hand.</p>
       <label>Lesson title</label><input type="text" data-sh="title" value="${esc(planTitle())}" placeholder="What you'd call this lesson">
       <table class="fill">${rows.map(r=>`<tr><td class="st ${r[2]&&String(r[2]).trim()?"ok":"no"}">${r[2]&&String(r[2]).trim()?"✓":"○"}</td><td>${esc(r[0])}</td><td class="src">${esc(r[1])}</td></tr>`).join("")}</table>
-      <div class="dl"><div><button class="primary" id="mkDocx">⬇ Generate Lesson Plan — Word</button><div class="cap">.docx — choose this if you'll make your own edits afterwards</div></div><div><button id="mkPdf">🖨 Generate Lesson Plan — PDF</button><div class="cap">opens Print → Save as PDF — best for uploading straight to Canvas</div></div></div>
+      <div class="dl"><div><button class="primary" id="mkDocx">⬇ Generate Investigation Plan — Word</button><div class="cap">.docx — choose this if you'll make your own edits afterwards</div></div><div><button id="mkPdf">🖨 Generate Investigation Plan — PDF</button><div class="cap">opens Print → Save as PDF — best for uploading straight to Canvas</div></div></div>
     </div>
-    <div class="tile"><h2><span class="n">2</span>Planning record — Document 2${I("Week 10's Document 2: your account of the two reads — a classmate's and the planning partner's — and what you did with them. One per person; everybody submits their own.")}</h2>
-      <details class="about"><summary>About Document 2</summary><p class="small" style="margin:6px 0 10px;font-size:14px;color:var(--ink)">The Investigation Plan is submitted with a second document: <b>how you used the two reads</b>. Your plan gets read twice before you teach it — once by a classmate (<i>Hand it over</i>), once by the planning partner (<i>Ask me · Show me options · Check this</i>). Neither one designs the lesson; both push on it. Document 2 is your reasoning about what they saw and what you changed, or kept, and why. <b>Generate Planning Record</b> compiles your paragraphs with the evidence behind them.</p>
+    <div class="tile"><h2><span class="n">2</span>Document 2 — how you used the feedback${I("Week 10's Document 2: your account of the two reads — a classmate's and the planning partner's — and what you did with them. One per person; everybody submits their own.")}</h2>
+      <details class="about"><summary>About Document 2</summary><p class="small" style="margin:6px 0 10px;font-size:14px;color:var(--ink)">The Investigation Plan is submitted with a second document: <b>how you used the two reads</b>. Your plan gets read twice before you teach it — once by a classmate (<i>Hand it over</i>), once by the planning partner (<i>Ask me · Show me options · Check this</i>). Neither one designs the lesson; both push on it. Document 2 is your reasoning about what they saw and what you changed, or kept, and why. <b>Generate Document 2</b> compiles your paragraphs with the evidence behind them.</p>
       <table class="fill">${[["Your Document 2 — how I used the two reads","written below",(sh.twoReads||"").trim()],["Peer notes from Hand it over","written below",(sh.peer||"").trim()],...["before","during","after"].map(t=>{ const n=(((state.reads||{})[t]||{}).log||[]).length; return [`The planning partner's reads on the ${t[0].toUpperCase()+t.slice(1)} — with what you kept or set aside`,`Plan · ${t[0].toUpperCase()+t.slice(1)} · ${n} read${n===1?"":"s"}`,n?"x":""]; }),["After teaching — reflection & next steps","written below · Weeks 11–13",(sh.reflection||"").trim()]].map(r=>`<tr><td class="st ${r[2]?"ok":"no"}">${r[2]?"✓":"○"}</td><td>${esc(r[0])}</td><td class="src">${esc(r[1])}</td></tr>`).join("")}</table></details>
       ${names.length>1?`<label>Whose record <span class="hint">— each teammate generates their own</span></label><select data-sh="who">${names.map(n=>`<option ${sh.who===n?"selected":""}>${esc(n)}</option>`).join("")}</select>`:""}
       <label>How I used the two reads <span class="hint">— one to two paragraphs: which feedback you acted on, which you set aside, and why</span></label><textarea data-sh="twoReads" style="min-height:120px">${esc(sh.twoReads||"")}</textarea>
       <label>Peer notes <span class="hint">— what your classmate said when you handed it over</span></label><textarea data-sh="peer" style="min-height:80px">${esc(sh.peer||"")}</textarea>
       <label>After teaching — reflection &amp; next steps <span class="hint">— Weeks 11–13; also fills the last box of the plan</span></label><textarea data-sh="reflection" style="min-height:80px">${esc(sh.reflection||"")}</textarea>
-      <div class="dl" style="grid-template-columns:1fr"><div><button class="primary" id="mkRecord">🖨 Generate Planning Record — PDF</button><div class="cap">opens Print → Save as PDF — a record, not a draft, so PDF only · upload to Canvas with your plan</div></div></div>
+      <div class="dl" style="grid-template-columns:1fr"><div><button class="primary" id="mkRecord">🖨 Generate Document 2 — PDF</button><div class="cap">opens Print → Save as PDF — a record, not a draft, so PDF only · upload to Canvas with your plan</div></div></div>
     </div>`;
   wrap.querySelectorAll("[data-sh]").forEach(el=>{ el.oninput=()=>{ sh[el.dataset.sh]=el.value; save(); }; });
-  document.getElementById("mkDocx").onclick=async()=>{ const b=document.getElementById("mkDocx"); b.disabled=true; b.textContent="Building…"; try{ const blob=await buildDocx(); const kept=await saveBlob(blob,(slugify(planTitle())||"lesson-plan")+".docx"); if(kept) toast("Word file built — open it and keep writing."); logEvent("docx","built the Word plan"+(kept?"":" (cancelled)")); }catch(e){ logEvent("error","docx: "+e.message); toast("Couldn't build the Word file: "+e.message); } b.disabled=false; b.textContent="⬇ Generate Lesson Plan — Word"; };
+  document.getElementById("mkDocx").onclick=async()=>{ const b=document.getElementById("mkDocx"); b.disabled=true; b.textContent="Building…"; try{ const blob=await buildDocx(); const kept=await saveBlob(blob,(slugify(planTitle())||"investigation-plan")+".docx"); if(kept) toast("Word file built — open it and keep writing."); logEvent("docx","built the Word plan"+(kept?"":" (cancelled)")); }catch(e){ logEvent("error","docx: "+e.message); toast("Couldn't build the Word file: "+e.message); } b.disabled=false; b.textContent="⬇ Generate Investigation Plan — Word"; };
   document.getElementById("mkRecord").onclick=()=>printRecord(sh.who||names[0]||g.names);
   document.getElementById("mkPdf").onclick=printPlan;
   wireInfo();
