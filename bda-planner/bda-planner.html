@@ -589,7 +589,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 55</div>
+<div id="build">Build 56</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1064,7 +1064,8 @@ function renderBackground(){
         <div style="margin-top:8px"><button class="tbtn" id="addSource" ${g.sources.length>=3?"disabled":""}>＋ another source</button></div></div>
       <div class="sec"><h3><span class="k">2c</span>The question I'm asking${I("A first read, one sentence: an open question about how students understand this concept — not whether they got it right, not a diagnosis of a child. It should grow out of everything above. Week 7 sharpens it.")}</h3>
         <input type="text" data-bg="question" placeholder="How do students … ?" value="${esc(g.question||"")}">
-        <label>Why this question</label><textarea data-bg="why" style="min-height:60px">${esc(g.why||"")}</textarea></div>
+        <label>Why this question</label><textarea data-bg="why" style="min-height:60px">${esc(g.why||"")}</textarea>
+        ${readsBar("question")}</div>
     </div>`;
   const wrap=document.getElementById("tiles"); wrap.innerHTML=`<div class="tile ${done[0]?"done":""}">${left}</div><div class="tile ${done[0]?"done":""}">${right}</div>`;
   tabifyTiles(wrap);
@@ -1273,6 +1274,13 @@ function renderRead(tab,r){
 }
 function readContent(tab){
   const g=state.bg||{};
+  // Week 7. The question is read against the concept and the work that prompted it —
+  // without those, "is this open?" is unanswerable.
+  if(tab==="question") return {
+    question:g.question||"", why_im_asking:g.why||"", concept:g.concept||"",
+    what_the_work_shows:g.think||"",
+    collected_work:(g.samplesRows||[]).filter(r=>(r[0]||"").trim()).map(r=>`${r[0]}: ${r[1]} — ${r[2]}`).join("\n")
+  };
   if(tab==="before"){ const b=state.before||{}; const cards=b.pack&&b.pack.pack?`${b.pack.pack.cards.length} nVoke cards (${b.pack.pack.cards.map(c=>c.template).join(", ")}) — ${b.pack.pack.cards.map(c=>c.prompt).filter(Boolean).join(" / ")}`:(b.cards||[]).filter(Boolean).join(" · "); return {routine:b.name, cards, what_you_say:b.prompt, what_students_do:b.students, what_I_do:b.teacher, objective:b.objective, must_not_give_away:b.withhold, entry_thinking:b.entry, over_scaffold_check:b.guard, connection_to_activity_1:b.thread, minutes:String(b.min||"")}; }
   if(tab==="after"){ const a=state.after||{}; const art=a.kind==="exit"?(a.prompts||[]).filter(r=>r[0]).map((r,i)=>`Prompt ${i+1}: ${r[0]} — would tell me: ${r[1]}`).join("\n"):a.kind==="gallery"?a.order:a.questions; return {artifact:AFTER_KINDS[a.kind]||"", the_artifact:art, what_students_do:a.students, what_I_do:a.teacher, objective:a.objective, what_it_captures:a.captures, would_a_response_answer_the_RQ:a.answers, minutes:String(a.min||"")}; }
   const o={}; (state.during||[]).forEach((a,i)=>{ const A=ACTIVITIES[a.type]; if(!A){ o[`activity_${i+1}`]="(no activity chosen yet)"; return; } const own=a.type==="script"?`four questions — collaborate: ${a.four.collab} / ask: ${a.four.ask} / share: ${a.four.share} / think first: ${a.four.think}`:(A.extra?`${A.extra.label}: ${a.extra}`:""); o[`activity_${i+1}_${A.name}`]=[`title: ${a.title}`,`minutes: ${a.min}`,own,`what students do: ${a.students}`,`what I do: ${a.teacher}`,`objective: ${a.objective}`,`key questions: ${a.questions}`,`anticipated responses: ${a.anticipate}`,`connection to next: ${a.thread}`].filter(x=>x&&!/:\s*$/.test(x)).join("\n"); });
