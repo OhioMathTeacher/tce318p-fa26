@@ -589,7 +589,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 53</div>
+<div id="build">Build 54</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1072,6 +1072,13 @@ function printAs(name, build){
 }
 // Safe in a filename on every platform, and still readable.
 function fileStamp(){ return new Date().toISOString().slice(0,10); }
+// Date AND time, in the student's own clock. Two reasons, both found on Todd's iPhone:
+// toISOString() is UTC, so anyone saving after 8pm Eastern got tomorrow's date on today's
+// work; and a date alone collides on the second save of a day, leaving the browser to
+// append "(1)" and the student no way to tell which file is newer. This is the name on
+// the thing they carry from Week 6 to Week 10 — it has to sort.
+function fileStampTime(){ const d=new Date(), p=n=>String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`; }
 function whoStamp(){ const n=((state.bg||{}).names||"").trim(); return n?" — "+n.replace(/[\\/:*?"<>|]/g,"").slice(0,40):""; }
 
 function exportProfile(){ try{ if((+localStorage.getItem(STORE+"-unsaved")||0)>0) toast("Tip: Export makes the PDF; ⬇ Save keeps the project file. Do both."); }catch(e){}
@@ -1631,7 +1638,7 @@ function pickShape(){
 }
 
 /* ---------- project bar ---------- */
-document.getElementById("saveProj").onclick=async()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}); const nm=((state.bg||{}).names||"").trim().replace(/[^a-z0-9]+/gi,"-").replace(/^-+|-+$/g,""); const kept=await saveBlob(blob,`bda-planner${nm?"-"+nm:""}-${new Date().toISOString().slice(0,10)}.json`); if(!kept) return; recordFileSave(); logEvent("save","saved the project to a file"); toast("Saved. Keep this file — it's how your plan travels."); };
+document.getElementById("saveProj").onclick=async()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}); const nm=((state.bg||{}).names||"").trim().replace(/[^a-z0-9]+/gi,"-").replace(/^-+|-+$/g,""); const kept=await saveBlob(blob,`bda-planner${nm?"-"+nm:""}-${fileStampTime()}.json`); if(!kept) return; recordFileSave(); logEvent("save","saved the project to a file"); toast("Saved. Keep this file — it's how your plan travels."); };
 document.getElementById("loadProj").onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ state=JSON.parse(r.result); selId=null; save(); renderAll(); toast("Project loaded."); }catch(err){ toast("That file didn't read as a project."); } }; r.readAsText(f); e.target.value=""; };
 function resetProject(){ if(!confirm("Start over with an empty project? Your edits in this browser are lost (a saved .json file is not).")) return; state=blankState(); selId=null; save(); renderAll(); }
 (function(){ const m=document.getElementById("gearMenu"), b=document.getElementById("gearBtn"); b.onclick=e=>{ e.stopPropagation(); m.classList.toggle("open"); }; document.addEventListener("click",e=>{ if(!m.contains(e.target)) m.classList.remove("open"); });
