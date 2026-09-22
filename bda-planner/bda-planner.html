@@ -178,6 +178,57 @@
   .chip b{color:var(--ink)}
   .chip a{color:var(--outline);text-decoration:none;margin-left:6px}
   .panel{display:none}.panel.on{display:block}
+  /* Plan tab: three panes */
+  .planbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:10px 0 4px}
+  .views{display:inline-flex;border:2px solid var(--outline);border-radius:11px;overflow:hidden}
+  .views button{border:0;border-right:2px solid var(--outline);background:#fff;color:var(--outline);padding:8px 16px;font:inherit;font-weight:700;cursor:pointer}
+  .views button:last-child{border-right:0}
+  .views button.on{background:var(--outline);color:#fff}
+  .views button.b.on{background:var(--before)}.views button.a.on{background:var(--after)}
+  .sum{font-size:14px;color:var(--muted)}
+  .sum b{color:var(--ink)}
+  .sum.over b{color:var(--mark)}.sum.under b{color:#8a6a1a}
+  .panes{display:grid;gap:18px;margin-top:10px;align-items:start}
+  .pane{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px 16px;min-height:420px}
+  .pane .ph{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+  .pane .ph h2{margin:0;font-size:19px;flex:1}
+  .pane.before .ph h2{color:var(--before)}.pane.during .ph h2{color:var(--during)}.pane.after .ph h2{color:var(--after)}
+  .pane .ph .mins{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+  .pane .ph .mins input{width:64px;text-align:right;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;font-weight:700;font-size:15px}
+  .pane .ph .tag{font-size:11.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:2px 8px;border-radius:7px;color:#fff}
+  .pane.before .tag{background:var(--before)}.pane.during .tag{background:var(--during)}.pane.after .tag{background:var(--after)}
+  .pane label{display:block;font-weight:600;margin:12px 0 4px;font-size:14px}
+  .pane label .hint{font-weight:400;color:var(--muted);font-size:13px}
+  .pane input[type=text],.pane textarea,.pane select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:9px;font:inherit;background:#fff;color:var(--ink);font-size:14.5px}
+  .pane textarea{min-height:64px;resize:vertical}
+  .pane .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .pane .two label{margin-top:12px}
+  .nv{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--ground)}
+  .nv .striplabel{font-weight:700;font-size:13px;color:var(--before);margin:0 0 6px}
+  .nv .cards{display:flex;gap:8px;flex-wrap:wrap}
+  .nv .ncard{width:92px;height:92px;border:2px solid var(--line);border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;padding:6px;position:relative;cursor:pointer}
+  .nv .ncard .num{position:absolute;bottom:4px;left:6px;font-size:11px;font-weight:800;color:#fff;background:var(--before);border-radius:7px;padding:1px 6px}
+  .nv .ncard.add{border-style:dashed;color:var(--muted);font-weight:700}
+  .nv .prompt{margin-top:10px}
+  .slices{display:flex;gap:6px;align-items:stretch;margin:6px 0 2px;min-height:86px}
+  .slice{flex:1 1 0;border:2px solid #bcd0ea;border-radius:12px;background:#fff;padding:8px 10px;cursor:pointer;min-width:70px;position:relative;display:flex;flex-direction:column;justify-content:space-between}
+  .slice.sel{border-color:var(--outline);background:var(--during-soft)}
+  .slice .sn{font-size:11.5px;font-weight:800;color:var(--outline)}
+  .slice .st{font-weight:700;font-size:13px;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .slice .st.empty{color:#a9b3c0;font-weight:500;font-style:italic}
+  .slice .sm{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);margin-top:4px}
+  .slice .sm input{width:44px;text-align:right;padding:2px 5px;border:1px solid var(--line);border-radius:6px;font:inherit;font-weight:700;font-size:13px}
+  .slice .ok{position:absolute;top:6px;right:8px;font-size:11px;color:var(--ok)}
+  .sarrow{align-self:center;color:var(--outline);font-weight:800;font-size:16px}
+  .sed{margin-top:12px;border-top:1px dashed var(--line);padding-top:8px}
+  .sed .sedh{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .sed .sedh h3{margin:0;font-size:15.5px;color:var(--outline)}
+  .conn{background:#f6f8fb;border:1px solid var(--line);border-radius:9px;padding:8px 10px;margin-top:10px;font-size:13.5px}
+  .conn .from{color:var(--muted);font-style:italic}
+  .reads{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;padding-top:10px;border-top:1px dashed var(--line);font-size:13px;color:var(--muted)}
+  .reads .later{margin-left:auto;font-size:11.5px;color:#a9b3c0;font-style:italic}
+  .exitrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+  .exitrow textarea{min-height:56px}
   .sec{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
   .sec:first-of-type{border-top:0;padding-top:0;margin-top:6px}
   .sec h3{margin:0 0 2px;font-size:15.5px;color:var(--ink);display:flex;align-items:center}
@@ -237,8 +288,9 @@
   @media(max-width:900px){.tiles{grid-template-columns:1fr;height:auto}}
   .tile{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px 28px 20px;display:flex;flex-direction:column;min-height:0;overflow:auto}
   .tile h2{margin:0 0 2px;font-size:20px;color:var(--ink);display:flex;align-items:center;gap:10px}
-  .tile h2 .n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--line);color:var(--muted);font-weight:800;font-size:13px;flex:none}
+  .card h2 .n,.tile h2 .n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--line);color:var(--muted);font-weight:800;font-size:13px;flex:none}
   .tile.done h2 .n{background:var(--ok);color:#fff}
+  .card h2{display:flex;align-items:center;gap:10px;font-size:19px;margin:0 0 6px}
   .tile .sub{color:var(--muted);font-size:13.5px;margin:0 0 6px}
   .tile label{display:block;font-weight:600;margin:18px 0 6px;font-size:14px}
   .tile label .hint{font-weight:400;color:var(--muted);font-size:13px}
@@ -314,38 +366,13 @@
   <div class="panel" data-panel="during">
   <div class="card" id="lessonPane" style="margin:12px 0 10px"></div>
   <div id="duringChips" style="margin:0 0 4px"></div>
-  <div class="card" style="display:none">
-    <h2>② During — the shape of the lesson</h2>
-    <p class="lead">Set how much time you have. Then carve it: one routine before, one artifact after, and in the middle two or three <b>activities</b> that build on each other. <span class="tip">A <b>thread</b> is the line between two blocks — what the students now have that the next block needs.</span></p>
-    <div class="doors">
-      <div class="door" data-door="lesson" id="doorLesson">
-        <h3>I have a lesson</h3>
-        <p>Your host teacher gave you a lesson. Keep its spirit; change how it's delivered so the students do the thinking it had you doing. <i>Delivery for engagement, structure for evidence.</i></p>
-      </div>
-      <div class="door" data-door="idea" id="doorIdea">
-        <h3>I have an idea</h3>
-        <p>A task from NRICH, a routine you liked, something you noticed in a work sample. Grow it into a full Before–During–After lesson.</p>
-      </div>
-    </div>
-    <div class="blockrow">
-      <b>How long is your math block?</b>
-      <input type="number" id="blockMin" min="20" max="120" step="5"> <span>minutes</span>
-      <span class="tip">— ask your host teacher; placements differ. Change it later and the timeline rescales.</span>
-    </div>
+  <div class="planbar">
+    <span class="views" id="views"><button class="b on" data-v="before">Before</button><button class="on" data-v="during">During</button><button class="a on" data-v="after">After</button></span>
+    <span class="sum" id="planSum"></span>
+    <span style="flex:1"></span>
+    <button class="drawerToggle" id="drawerToggle" title="Activities you can put in a During slice, and shapes to start from.">🧩 Activities &amp; shapes</button>
   </div>
-
-  <div class="work">
-    <!-- timeline -->
-    <div class="card tl">
-      <div class="tlhead"><b>The lesson, minute by minute</b><span class="budget" id="budget"></span></div>
-      <div id="timeline"></div>
-      <div class="addrow"><button class="drawerToggle" id="drawerToggle" title="Activities you can put on the timeline, and shapes to start from.">🧩 Activities</button><button class="ghost" id="addAct">＋ Add</button><button class="ghost" id="openShapes">Start from a shape…</button></div>
-      <div class="small" style="margin:10px 0 0 14px">Before and After are one block each — that's the rule. Drag the middle activities to reorder, or use ▲▼. Click any block to edit it.</div>
-    </div>
-
-    <!-- editor -->
-    <div class="card ed" id="editor"><div class="empty">Click a block on the timeline to edit it.</div></div>
-  </div>
+  <div class="panes" id="panes"></div>
   </div><!-- /during panel -->
 </div>
 
@@ -397,13 +424,16 @@ const SHAPES = [
 ];
 
 /* ---------- sample projects ---------- */
-function blankAct(type){ return {id:uid(), type, title:"", min:15, students:"", teacher:"", questions:"", anticipate:"", objective:"", materials:"", extra:"", thread:"", four:{collab:"",ask:"",share:"",think:""}}; }
+function blankAct(type){ return {id:uid(), type, title:"", min:"", students:"", teacher:"", questions:"", anticipate:"", objective:"", materials:"", extra:"", thread:"", four:{collab:"",ask:"",share:"",think:""}}; }
+function blankBefore(){ return {id:"before",type:"before",name:"",prompt:"",cards:[],min:"",objective:"",withhold:"",entry:"",guard:"",students:"",teacher:"",thread:""}; }
+function blankAfter(){ return {id:"after",type:"after",kind:"exit",min:"",objective:"",prompts:[["",""],["",""]],questions:"",order:"",captures:"",answers:"",students:"",teacher:""}; }
+const AFTER_KINDS={exit:"Exit slip",transcript:"Discussion transcript",gallery:"Strategy gallery",probe:"One-on-one probe"};
 let seq=0; function uid(){ return "a"+(++seq)+"_"+Math.random().toString(36).slice(2,6); }
 
 const SAMPLES = {
   lesson: {
     door:"lesson", block:60, bg:{names:"Sam R.", section:"hamilton", grade:"Grade 2", host:"Ms. K. Eureka Math, whole-group, 60-minute block. Non-negotiable: every student talks math every day.", concept:"Making a ten to add within 20 — decomposing an addend to complete a ten", studentsRows:[["Ava","Quick with facts to 10; talks a lot in number talks."],["Marcus","Counts on fingers; quiet; likes cubes."],["Lena","Writes answers fast, rarely shows work."]], question:"When students make a ten to add, how do they decide which addend to break apart?", why:"All three got 13 for 9 + 4, but only Ava made a ten — and she made it from the 9 because that's the one on the left. I want to know if it's a choice.", think:"Baroody's counting phase is Marcus exactly — all 13 on fingers, no ten. Lena looks like his mastery phase from the outside (13, no work), but I can't tell if there's a strategy under it, which is the problem with the exit ticket as evidence. Ava is in the reasoning phase and made the ten from the 9 — the source says nothing about WHICH addend children break, and neither did my host teacher; that gap is my question.", sources:[["https://www.jstor.org/stable/41198838","Baroody (2006) argues that fluency comes from reasoning strategies like making ten rather than drill. Children move through counting, reasoning, and mastery phases at different rates for different combinations. Students stuck in the counting phase never make a ten at all, and students who have memorized a sum may show no strategy — which is exactly what Marcus and Lena look like. The reasoning phase is where the choice of which addend to break lives."],["","Ms. K. says most of her class makes a ten from whichever number is bigger because that's how the module shows it, and that a few students still count everything on their fingers in October. She has never seen a student break the bigger number on purpose. She thinks the ones who write the answer with no work have it memorized from first grade.","host"]], samplesRows:[["Ava","9 + 4 on white board","Drew 9 dots, then 4, circled 10, wrote 13. Made the ten from the 9."],["Marcus","9 + 4 on white board","Counted all 13 on fingers. No ten."],["Lena","8 + 5 on the exit ticket","Wrote 13 with no work shown. Can't tell how."]], before:"Ten-partners (K.OA.4); adding within 20 with counting on (1.OA.6).", after:"The same decomposition move applied to tens when adding within 100 (2.NBT.5).", standards:["2.OA.2"], practices:["MP.7"], scriptName:"EngageNY G2 M1 Lesson 3 — Make a ten to add within 20 (PDF)", read:[["Fluency Practice",15,"Four routines: 10+n call-and-response · Take Out a Part · Pairs to Make 10 · One More, Ten More sprint","I lead; students respond in chorus and on white boards","2.OA.2"],["Concept Development",30,"9 + 4 with counters, move one to complete the ten, record 10 + 3; repeat 9 + 5; white boards for 8 + 4, 8 + 5; turn-and-talk; fold the paper to symbols","Teacher models every move; students copy, then turn-and-talk","2.OA.2"],["Application Problem",5,"Ben and Chuck collect pennies and trade ten for a dime","Students solve; RDW","2.OA.2"],["Problem Set",10,"Make-ten solutions with number bonds, matched to 10 + n sentences","Students work alone","2.OA.2"],["Student Debrief",10,"Five discussion questions on the Problem Set","Teacher-led whole class","2.OA.2"],["Exit Ticket",3,"Two make-ten problems","Alone","2.OA.2"]]},
-    before:{id:"before", type:"before", title:"Pairs to Make 10 (from the script's fluency block)", min:6, objective:"Recall the ten-partners quickly, without being shown which addend to break.", students:"Write the addition sentence that makes 10 on white boards; show me.", teacher:"I say a number. Six or seven numbers, no comment on which addend to break.", thread:"They have the ten-partners in hand; nobody has said what to do with them."},
+    before:{id:"before", type:"before", name:"Pairs to Make 10", prompt:"I say a number. You write the addition sentence that makes 10. Show me.", cards:["5","8","9","1","6","4","7"], min:6, objective:"Recall the ten-partners quickly, without being shown which addend to break.", withhold:"Which addend to break. Nothing about 9 + 4.", entry:"Do they know the ten-partners cold, or count to them?", guard:"It only asks for partners of 10 — it never shows a ten being made from a sum. Safe.", students:"Write the sentence on white boards; show me.", teacher:"Say the number; no comment on which addend to break.", thread:"They have the ten-partners in hand; nobody has said what to do with them."},
     during:[
       Object.assign(blankAct("script"), {title:"Concept Development — make a ten (Lesson 3, EngageNY G2 M1)", min:25,
         students:"Answer the call-and-response; copy the move on white boards for 8 + 4 and 8 + 5; turn-and-talk same/different; fold the paper to symbols only.", teacher:"As written: present 9 + 4 with counters, move one to complete the ten, record 10 + 3; repeat 9 + 5; run the white-board round.",
@@ -422,11 +452,11 @@ const SAMPLES = {
         materials:"White boards, cubes available but not handed out.",
         thread:"Their own choice of addend is on the board in their own hand — the After asks them to explain it."}),
     ],
-    after:{id:"after", type:"after", title:"Exit ticket (the script's) + one line: 'Which number did you break, and why?'", min:8, objective:"Each student shows one make-ten solution and names the addend they chose.", students:"The script's exit ticket as printed, plus one line at the bottom.", teacher:"Read aloud if needed. Collect.", thread:""},
+    after:{id:"after", type:"after", kind:"exit", min:8, objective:"Each student shows one make-ten solution and names the addend they chose.", prompts:[["9 + 4 = ___  Show how you made a ten.","Whether they make a ten at all, and from which number."],["Which number did you break apart? Why that one?","Whether the choice is a choice — the research question, in their words."]], captures:"One solution with the ten visible, and a sentence naming the addend.", answers:"Yes — a student who breaks the 4 and says why has answered it; a student who breaks the 9 has answered it too.", students:"The script's exit ticket as printed, plus one line at the bottom.", teacher:"Read aloud if needed. Collect."},
   },
   idea: {
     door:"idea", block:45, bg:{names:"Jordan P. & Casey L.", section:"oxford", grade:"Grade 4", host:"Mr. D. Bridges. 45-minute block, small groups. Non-negotiable: manipulatives on every table.", concept:"Fractions of a set", studentsRows:[["Jordan","Confident with equal groups; explains out loud."],["Maya","Uses fraction words freely; unsure what they refer to."],["Eli","Shades and draws; rarely groups."]], question:"How do students reason about equal shares of a set?", why:"Three students, three different 'three-fourths' of the same twelve counters.", think:"The 'numerator as a count' challenge is Maya, exactly: three counters for three-fourths. Jordan partitioned first, which the source says is the move that shows the whole is understood as a group. Eli is the one the research doesn't explain — the right nine, no grouping — and my host teacher says he does this on shapes too. So two of the three cited challenges show up, and one student doesn't fit either.", sources:[["https://www.jstor.org/stable/41199366","Set models are harder for students than area models because the whole is not a single object but a group, and students lose track of what the whole is. A common challenge is treating the numerator as a count of objects (three counters for three-fourths) rather than as parts of the partitioned set. The authors recommend asking 'what is the whole?' constantly and changing the size of the set so that a fourth is not always the same number of counters."]], samplesRows:[["Jordan","3/4 of 12 counters","Grouped into 4 groups of 3, took 3 groups. Partitioned first."],["Maya","3/4 of 12 counters","Circled 3 counters and said 'three fourths'. Counted, didn't partition."],["Eli","3/4 of 12, drawn","Shaded 9 of 12, no grouping shown. Right count, unclear reasoning."]], before:"A fraction as equal parts of one whole (3.NF.1); equal groups (3.OA.2).", after:"Multiplying a fraction by a whole number as scaling (5.NF.4).", standards:["4.NF.4","4.NF.1"], practices:["MP.2","MP.3"], scriptName:"", read:null},
-    before:{id:"before", type:"before", title:"Same or Different: 12 counters in 4 groups / 12 counters in 3 groups", min:6, objective:"Students describe a set as groups without being asked to name a fraction.", students:"Say what's the same and what's different about two images.", teacher:"Show both. Record their words; don't say 'fourths'.", thread:"'Groups' is in the room; 'fraction of' is not."},
+    before:{id:"before", type:"before", name:"Same or Different", prompt:"What's the same? What's different?", cards:["12 counters in 4 groups","12 counters in 3 groups"], min:6, objective:"Students describe a set as groups without being asked to name a fraction.", withhold:"The word 'fourths', and any fraction-of-a-set language.", entry:"Do they see groups, or only the twelve?", guard:"Two images and two questions. Nobody says 'fraction'. Safe.", students:"Say what's the same and what's different.", teacher:"Show both. Record their words; don't say 'fourths'.", thread:"'Groups' is in the room; 'fraction of' is not."},
     during:[
       Object.assign(blankAct("task"), {title:"Show 3/4 of 12 counters — in more than one way", min:15,
         extra:"Here are 12 counters. Show me three-fourths of them. Then show me another way.",
@@ -453,19 +483,19 @@ const SAMPLES = {
         materials:"8 counters each.",
         thread:"Two sets, two different 'fourths' — the exit slip asks them to say why."}),
     ],
-    after:{id:"after", type:"after", title:"Exit slip: 'Is 3/4 of 8 the same as 3/4 of 12? Show and say why.'", min:6, objective:"Each student states whether the two are the same amount and gives a reason tied to the whole.", students:"Half-sheet, alone, counters allowed.", teacher:"Collect; sort by reason given.", thread:""},
+    after:{id:"after", type:"after", kind:"exit", min:6, objective:"Each student states whether the two are the same amount and gives a reason tied to the whole.", prompts:[["Is 3/4 of 8 the same amount as 3/4 of 12? Show and say why.","Whether 'the whole' is in their reasoning at all."]], captures:"A drawing or grouping, and a reason.", answers:"Yes if the reason mentions the whole; no if it's 'because 6 is less than 9'.", students:"Half-sheet, alone, counters allowed.", teacher:"Collect; sort by reason given."},
   },
 };
 
 /* ---------- state ---------- */
-const STORE="bda-planner-proto-v9";
+const STORE="bda-planner-proto-v10";
 let state=null, selId=null;
-function blankState(){ return {door:"", block:0, bg:{names:"",section:"",grade:"",host:"",concept:"",standards:[],practices:[],before:"",after:"",sources:[["",""]],studentsRows:[["",""],["",""],["",""]],samplesRows:[["","","",""],["","","",""],["","","",""]],think:"",question:"",why:"",scriptName:"",read:null,idea:""}, before:{id:"before",type:"before",title:"",min:8,objective:"",students:"",teacher:"",thread:""}, during:[Object.assign(blankAct("task"),{min:20})], after:{id:"after",type:"after",title:"",min:8,objective:"",students:"",teacher:"",thread:""}}; }
+function blankState(){ return {door:"", block:0, bg:{names:"",section:"",grade:"",host:"",concept:"",standards:[],practices:[],before:"",after:"",sources:[["",""]],studentsRows:[["",""],["",""],["",""]],samplesRows:[["","","",""],["","","",""],["","","",""]],think:"",question:"",why:"",scriptName:"",read:null,idea:""}, before:blankBefore(), during:[blankAct("task"),blankAct("compare"),blankAct("change")], after:blankAfter(), views:{before:true,during:true,after:true}}; }
 function load(){ try{ const s=localStorage.getItem(STORE); if(s){ state=JSON.parse(s); return; } }catch(e){} state=blankState(); }
 function save(){ try{ localStorage.setItem(STORE,JSON.stringify(state)); document.getElementById("saveNote").textContent="Autosaved "+new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}); }catch(e){} }
 function allBlocks(){ return [state.before, ...state.during, state.after]; }
 function byId(id){ return allBlocks().find(b=>b.id===id); }
-function used(){ return allBlocks().reduce((n,b)=>n+(+b.min||0),0); }
+function used(){ return planTotal(); }
 
 /* ---------- render: Background accordion ---------- */
 
@@ -567,11 +597,11 @@ function buildFromRead(){
   if(!confirm("Replace the timeline with the script's sections? Before = the first section, After = the last, the middle = up to three sections between.")) return;
   const first=rd[0], last=rd[rd.length-1]; let mid=rd.slice(1,-1);
   // fold the second-to-last into the After if it reads like a debrief
-  if(mid.length>3){ const merged=mid.slice(3); mid=mid.slice(0,3); mid[2]=[mid[2][0]+" + "+merged.map(m=>m[0]).join(" + "), mid[2][1]+merged.reduce((n,m)=>n+(+m[1]||0),0), mid[2][2], mid[2][3], mid[2][4]]; }
-  state.before={id:"before",type:"before",title:first[0]+" (from the script — pick ONE routine)",min:+first[1]||10,students:first[3],teacher:first[2],objective:"",thread:""};
-  state.during=mid.map(r=>Object.assign(blankAct("script"),{title:r[0]+" (as written)",min:+r[1]||10,students:r[3],teacher:r[2],materials:"",thread:""}));
-  state.after={id:"after",type:"after",title:last[0]+" (from the script)",min:+last[1]||8,students:last[3],teacher:last[2],objective:"",thread:""};
-  state.lessonOpen=false; selId=state.during[0]?state.during[0].id:null; save(); showPhase("during"); renderTimeline(); renderEditor(); toast("The script is on the timeline. Now: keep, bend, or replace each block.");
+  if(mid.length>5){ const merged=mid.slice(5); mid=mid.slice(0,5); mid[4]=[mid[4][0]+" + "+merged.map(m=>m[0]).join(" + "), mid[4][1]+merged.reduce((n,m)=>n+(+m[1]||0),0), mid[4][2], mid[4][3], mid[4][4]]; }
+  state.before=Object.assign(blankBefore(),{name:first[0]+" (from the script — pick ONE routine)",prompt:first[2],min:+first[1]||"",students:first[3],teacher:first[2]});
+  state.during=mid.map(r=>Object.assign(blankAct("script"),{title:r[0]+" (as written)",min:+r[1]||"",students:r[3],teacher:r[2],materials:"",thread:""}));
+  state.after=Object.assign(blankAfter(),{kind:"exit",min:+last[1]||"",students:last[3],teacher:last[2],prompts:[[last[0]+" (from the script)",""]]});
+  state.lessonOpen=false; selId=state.during[0]?state.during[0].id:null; save(); showPhase("during"); renderPlan(); toast("The script is on the timeline. Now: keep, bend, or replace each block.");
 }
 function wireInfo(){ document.querySelectorAll(".i").forEach(el=>{ if(el.dataset.w) return; el.dataset.w=1; el.onclick=e=>{ e.stopPropagation(); const on=el.classList.contains("on"); document.querySelectorAll(".i.on").forEach(x=>x.classList.remove("on")); if(!on) el.classList.add("on"); }; }); }
 document.addEventListener("click",()=>document.querySelectorAll(".i.on").forEach(x=>x.classList.remove("on")));
@@ -602,94 +632,114 @@ function renderLessonPane(){
 }
 function renderChips(){
   const g=state.bg||{}; const d=document.getElementById("duringChips");
+  if(!g.grade&&!state.block&&!state.door&&!g.concept){ d.innerHTML=""; return; }
   d.innerHTML=`<span class="chip"><b>${esc(g.grade||"—")}</b> · ${state.block} min<a href="#" data-goto="background" title="Change on the Background tab">change</a></span><span class="chip">${state.door==="lesson"?"Host teacher's lesson":"My own idea"}${g.scriptName?` · <b>${esc(g.scriptName)}</b>`:""}</span><span class="chip">${esc(g.concept||"")}${(g.standards||[]).length?` · <b title="${esc(g.standards.map(c=>c+" — "+stdText(c)).join("\n"))}">${g.standards.join(", ")}</b>`:""}${(g.practices||[]).length?` · ${g.practices.join(", ")}`:""}</span>`;
   d.querySelectorAll("[data-goto]").forEach(a=>a.onclick=e=>{ e.preventDefault(); showPhase("background"); });
 }
-function showPhase(name){ if(name==="during"&&!selId) selId=(state.during[0]||{}).id||null; document.querySelectorAll(".phase[data-phase]").forEach(b=>b.classList.toggle("on",b.dataset.phase===name)); document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("on",p.dataset.panel===name)); try{localStorage.setItem(STORE+"-phase",name);}catch(e){} if(name==="during"){ renderLessonPane(); renderChips(); } window.scrollTo(0,0); }
+function showPhase(name){ if(name==="during"&&!selId) selId=(state.during[0]||{}).id||null; document.querySelectorAll(".phase[data-phase]").forEach(b=>b.classList.toggle("on",b.dataset.phase===name)); document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("on",p.dataset.panel===name)); try{localStorage.setItem(STORE+"-phase",name);}catch(e){} if(name==="during"){ renderLessonPane(); renderChips(); renderPlan(); } window.scrollTo(0,0); }
 document.querySelectorAll(".phase[data-phase]").forEach(b=>b.onclick=()=>showPhase(b.dataset.phase));
 
 /* ---------- render: doors + block (old, kept for the hidden card) ---------- */
 function renderTop(){ renderToolbar(); renderBackground(); renderChips(); }
 
 
-/* ---------- render: timeline ---------- */
-function renderTimeline(){
-  const tl=document.getElementById("timeline"); tl.innerHTML="";
-  const total=state.block||45, u=used(), scale=Math.max(2.6, 300/total);   // px per minute, floor so short blocks stay clickable
-  const bud=document.getElementById("budget");
-  if(!state.block){ bud.className="budget under"; bud.textContent=`set your math block on the Profile tab`; }
-  else if(u>total){ bud.className="budget over"; bud.textContent=`${u} of ${total} min — ${u-total} over`; }
-  else if(u<total){ bud.className="budget under"; bud.textContent=`${u} of ${total} min — ${total-u} unallocated`; }
-  else { bud.className="budget"; bud.textContent=`${u} of ${total} min`; }
-  const blocks=allBlocks();
-  blocks.forEach((b,i)=>{
-    const el=document.createElement("div");
-    const kind=b.type==="before"?"before":b.type==="after"?"after":"during";
-    el.className="blk "+kind+(b.id===selId?" sel":""); el.dataset.id=b.id;
-    el.style.minHeight=Math.max(54, b.min*scale)+"px";
-    const typeName=kind==="during"?(ACTIVITIES[b.type]||{}).name||b.type:(kind==="before"?"Before · one routine":"After · one artifact");
-    el.innerHTML=`${kind==="during"?'<span class="grip">⋮⋮</span>':'<span class="locked" title="One block, by rule">🔒</span>'}
-      <span class="mins">${b.min} min</span>
-      <div class="type">${typeName}</div>
-      <div class="ttl">${esc(b.title)||"<i style='color:#a9b3c0'>untitled</i>"}</div>
-      <div class="done">${b.objective?"<b>✓ objective</b>":"<i>○ objective</i>"} · ${(b.students||b.do)?"<b>✓ what students do</b>":"<i>○ what students do</i>"}</div>
-      ${kind==="during"?'<button class="x" title="Remove this activity">✕</button><span class="ud"><button data-mv="-1" title="Move up">▲</button><button data-mv="1" title="Move down">▼</button></span>':''}`;
-    el.onclick=ev=>{ if(ev.target.classList.contains("x")){ removeAct(b.id); return; } if(ev.target.dataset.mv){ nudge(b.id,+ev.target.dataset.mv); return; } selId=b.id; renderTimeline(); renderEditor(); };
-    if(kind==="during"){ el.draggable=true; el.ondragstart=ev=>{ el.classList.add("dragging"); ev.dataTransfer.setData("text/plain",b.id); }; el.ondragend=()=>el.classList.remove("dragging");
-      el.ondragover=ev=>{ ev.preventDefault(); }; el.ondrop=ev=>{ ev.preventDefault(); const from=ev.dataTransfer.getData("text/plain"); moveAct(from,b.id); }; }
-    tl.appendChild(el);
-    if(i<blocks.length-1){
-      const th=document.createElement("div"); th.className="thread";
-      th.innerHTML=`<span class="arrow">↓</span><div class="tl2"><div class="tlab">Thread</div><textarea rows="1" placeholder="What do students now have that the next block needs?">${esc(b.thread||"")}</textarea></div>`;
-      const ta=th.querySelector("textarea"); const grow=()=>{ ta.style.height="auto"; ta.style.height=(ta.scrollHeight+2)+"px"; }; ta.oninput=e=>{ b.thread=e.target.value; grow(); save(); }; ta.onclick=e=>e.stopPropagation(); requestAnimationFrame(grow);
-      tl.appendChild(th);
-    }
-  });
+/* ---------- render: the Plan tab — Before | During | After ---------- */
+function mins(v){ const n=parseInt(v); return isNaN(n)?0:n; }
+function planTotal(){ return mins(state.before.min)+state.during.reduce((n,a)=>n+mins(a.min),0)+mins(state.after.min); }
+function renderPlan(){
+  state.views=state.views||{before:true,during:true,after:true};
+  if(!Object.values(state.views).some(Boolean)) state.views.during=true;
+  document.querySelectorAll("#views button").forEach(b=>b.classList.toggle("on",!!state.views[b.dataset.v]));
+  const tot=planTotal(), blk=state.block; const sum=document.getElementById("planSum");
+  const parts=`Before <b>${mins(state.before.min)||"–"}</b> + During <b>${state.during.reduce((n,a)=>n+mins(a.min),0)||"–"}</b> + After <b>${mins(state.after.min)||"–"}</b> = <b>${tot}</b>`;
+  if(!blk){ sum.className="sum under"; sum.innerHTML=parts+` min · <b>set your math block on the Profile tab</b>`; }
+  else if(tot>blk){ sum.className="sum over"; sum.innerHTML=parts+` of ${blk} min — <b>${tot-blk} over</b>`; }
+  else if(tot<blk){ sum.className="sum under"; sum.innerHTML=parts+` of ${blk} min — <b>${blk-tot} unallocated</b>`; }
+  else { sum.className="sum"; sum.innerHTML=parts+` of ${blk} min ✓`; }
+  const on=["before","during","after"].filter(k=>state.views[k]);
+  const panes=document.getElementById("panes");
+  panes.style.gridTemplateColumns=on.map(k=>k==="during"&&on.length>1?"minmax(0,1.6fr)":"minmax(0,1fr)").join(" ");
+  panes.innerHTML=on.map(k=>k==="before"?renderBefore():k==="during"?renderDuring():renderAfter()).join("");
+  wirePlan(); wireInfo();
 }
-function nudge(id,d){ const a=state.during; const i=a.findIndex(x=>x.id===id); const j=i+d; if(i<0||j<0||j>=a.length) return; [a[i],a[j]]=[a[j],a[i]]; save(); renderTimeline(); }
-function moveAct(fromId,toId){ if(fromId===toId) return; const a=state.during; const fi=a.findIndex(x=>x.id===fromId), ti=a.findIndex(x=>x.id===toId); if(fi<0||ti<0) return; const [m]=a.splice(fi,1); a.splice(ti,0,m); save(); renderTimeline(); }
-function removeAct(id){ if(state.during.length<=1){ toast("Keep at least one activity in the middle."); return; } state.during=state.during.filter(a=>a.id!==id); if(selId===id) selId=null; save(); renderTimeline(); renderEditor(); }
-function addAct(type){ if(state.during.length>=3){ toast("Three activities is the most the middle can hold. Remove one first."); return false; } const a=blankAct(type||"task"); const left=state.block-used(); a.min=Math.max(5, Math.min(20, left>0?left:15)); state.during.push(a); selId=a.id; save(); renderTimeline(); renderEditor(); return true; }
-document.getElementById("addAct").onclick=()=>openDrawer();
-document.getElementById("openShapes").onclick=()=>{ openDrawer(); document.getElementById("shapeList").scrollIntoView({behavior:"smooth"}); };
+document.querySelectorAll("#views button").forEach(b=>b.onclick=()=>{ state.views[b.dataset.v]=!state.views[b.dataset.v]; save(); renderPlan(); });
+const readsBar=`<div class="reads"><span>Second reads:</span><button class="ghost" onclick="toast('Hand it over — a classmate runs it. Prints the review sheet in the real app.')">Hand it over ▶</button><button class="ghost" disabled>Ask me</button><button class="ghost" disabled>Show me options</button><button class="ghost" disabled>Check this</button><span class="later">AI wired in the real app — optional</span></div>`;
 
-/* ---------- render: editor ---------- */
-function renderEditor(){
-  const ed=document.getElementById("editor"); const b=selId&&byId(selId);
-  if(!b){ ed.innerHTML='<div class="empty">Click a block on the timeline to edit it.</div>'; return; }
-  const kind=b.type==="before"?"before":b.type==="after"?"after":"during";
-  const A=ACTIVITIES[b.type]||{};
-  let h=`<div class="edhead"><h2>${kind==="before"?"Before — the routine":kind==="after"?"After — the artifact":"Activity"}</h2>${kind!=="during"?`<span class="badge ${kind}">${kind==="before"?"one routine":"one artifact"}</span>`:""}</div>`;
-  if(kind==="before") h+=`<div class="guide"><b>Built in nVoke.</b> In the real app this block reads your nVoke pack — the routine, its question, its cards — and adds the three things Week 9 asks: what must not be given away, the entry thinking it should surface, the over-scaffold check. Here it's a placeholder you can edit.</div>`;
-  if(kind==="after") h+=`<div class="guide"><b>Pick an artifact type.</b> In the real app: exit slip · discussion transcript · strategy gallery · one-on-one probe — each ending in <i>what it captures</i> and <i>would a student's response answer your question?</i> Here it's a placeholder you can edit.</div>`;
-  if(kind==="during") h+=`<label>Activity type</label><select id="f_type">${Object.entries(ACTIVITIES).map(([k,v])=>`<option value="${k}" ${k===b.type?"selected":""}>${v.name}</option>`).join("")}</select><div class="tip" style="margin-top:4px">${esc(A.sub||"")}${A.link?` · <a href="${A.link}" target="_blank" rel="noopener">See examples</a>`:""}</div>`;
-  h+=`<div class="row"><div><label>Title<span class="req">*</span> <span class="tip">— what you'd call it on the plan</span></label><input type="text" id="f_title" value="${esc(b.title)}"></div><div class="narrow"><label>Minutes<span class="req">*</span></label><input type="text" id="f_min" inputmode="numeric" value="${b.min}"></div></div>`;
-  if(kind==="during"&&b.type==="script"){
-    h+=`<div class="small" style="margin-top:10px">Working from: <b>${esc((state.bg||{}).scriptName||"your host teacher's lesson (upload it on the Background tab)")}</b>. In the real app its text sits here, beside the questions.</div>
-      <div class="guide"><b>The four questions.</b> Read each part of the script and ask: where do students get room? <i>Delivery for engagement, structure for evidence.</i></div>
-      <div class="four">
-        <div><b>1 · Collaborate</b> — do students have room to work on it together?<textarea id="f_four_collab">${esc(b.four.collab)}</textarea></div>
-        <div><b>2 · Ask</b> — do they have room to ask questions?<textarea id="f_four_ask">${esc(b.four.ask)}</textarea></div>
-        <div><b>3 · Share</b> — small group and whole class?<textarea id="f_four_share">${esc(b.four.share)}</textarea></div>
-        <div><b>4 · Think first</b> — do they get to come up with their own approach before they're shown one?<textarea id="f_four_think">${esc(b.four.think)}</textarea></div>
-      </div>`;
-  } else if(kind==="during"&&A.extra){
-    h+=`<label>${esc(A.extra.label)}</label><textarea id="f_extra">${esc(b.extra)}</textarea>`;
-    if(b.type==="task") h+=`<div class="guide warn"><b>Do it yourself first.</b> In the real app this is where your three solutions go — three <i>distinct</i> ways (objects · drawing · number line · table · guess-check · symbols · words · pattern), tagged, and the third doesn't count until the tags differ. Don't pose a task you haven't worked; doing it is how you anticipate.</div>`;
+function renderBefore(){
+  const b=state.before=Object.assign(blankBefore(),state.before||{});
+  const cards=(b.cards||[]).map((c,i)=>`<div class="ncard" data-card="${i}" title="Click to edit · shift-click to remove">${esc(c)||"…"}<span class="num">${i+1}</span></div>`).join("");
+  return `<div class="pane before"><div class="ph"><span class="tag">Before</span><h2>One routine</h2><span class="mins"><input type="text" inputmode="numeric" placeholder="min" data-bmin value="${esc(b.min)}">min</span>${I("The routine that opens the lesson — one, short, and it primes the concept without giving away the move the During is meant to reveal. Build it like an nVoke pack: cards you show, one question you ask.")}</div>
+    <div class="nv"><div class="striplabel">🖐 Your cards — click a card to edit, shift-click to remove</div><div class="cards">${cards}<div class="ncard add" data-addcard>＋ card</div></div>
+      <div class="prompt"><label style="margin-top:4px">The routine <span class="hint">— its name, and where it's from</span></label><input type="text" data-b="name" value="${esc(b.name)}" placeholder="Same or Different · Pairs to Make 10 · Fraction Talks …">
+      <label>What you say <span class="hint">— the posing question, exactly</span></label><input type="text" data-b="prompt" value="${esc(b.prompt)}" placeholder="What's the same? What's different?"></div></div>
+    <div class="two"><div><label>What students do</label><textarea data-b="students">${esc(b.students)}</textarea></div><div><label>What I do</label><textarea data-b="teacher">${esc(b.teacher)}</textarea></div></div>
+    <label>Objective <span class="hint">— by the end of these minutes, students can…</span></label><input type="text" data-b="objective" value="${esc(b.objective)}">
+    <label>What must NOT be given away ${I("The move the During is designed to reveal. Name it here so you can check the routine against it.")}</label><input type="text" data-b="withhold" value="${esc(b.withhold)}">
+    <label>What entry thinking should it surface?</label><input type="text" data-b="entry" value="${esc(b.entry)}">
+    <label>The over-scaffold check <span class="hint">— read your cards and your question against the line above. Does anything give it away?</span></label><textarea data-b="guard">${esc(b.guard)}</textarea>
+    <div class="conn"><b>How does this routine connect to the first During activity?</b><textarea data-b="thread" style="margin-top:4px">${esc(b.thread)}</textarea></div>
+    ${readsBar}</div>`;
+}
+function renderDuring(){
+  const n=state.during.length; if(!selId||!state.during.find(a=>a.id===selId)) selId=state.during[0]?.id||null;
+  const total=state.during.reduce((t,a)=>t+mins(a.min),0)||1;
+  const slices=state.during.map((a,i)=>{ const A=ACTIVITIES[a.type]||{}; const w=Math.max(12, mins(a.min)?100*mins(a.min)/total:100/n); return `<div class="slice ${a.id===selId?"sel":""}" data-slice="${a.id}" style="flex-basis:${w}%"><div><div class="sn">${i+1} · ${esc(A.name||"")}</div><div class="st ${a.title?"":"empty"}">${esc(a.title)||"untitled"}</div></div><div class="sm"><input type="text" inputmode="numeric" placeholder="min" data-smin="${a.id}" value="${esc(a.min)}">min</div>${a.objective&&a.students?'<span class="ok">✓</span>':""}</div>`+(i<n-1?'<span class="sarrow">→</span>':""); }).join("");
+  const a=state.during.find(x=>x.id===selId); const A=a?(ACTIVITIES[a.type]||{}):{}; const idx=state.during.indexOf(a);
+  const prev=idx>0?state.during[idx-1]:null;
+  let ed="";
+  if(a){
+    ed=`<div class="sed"><div class="sedh"><h3>Activity ${idx+1}</h3><select data-atype style="width:auto;flex:1;max-width:340px">${Object.entries(ACTIVITIES).map(([k,v])=>`<option value="${k}" ${k===a.type?"selected":""}>${v.name}</option>`).join("")}</select>${A.link?`<a href="${A.link}" target="_blank" rel="noopener" class="small">examples</a>`:""}<span style="flex:1"></span>${n>1?`<button class="tbtn" data-remove="${a.id}">remove this slice</button>`:""}</div>
+      <div class="tip" style="margin-top:4px">${esc(A.sub||"")}</div>
+      <label>Title <span class="hint">— what you'd call it on the plan</span></label><input type="text" data-a="title" value="${esc(a.title)}">
+      ${a.type==="script"?`<div class="small" style="margin-top:8px">Working from: <b>${esc((state.bg||{}).scriptName||"your host teacher's lesson")}</b></div><div class="guide"><b>The four questions.</b> Read this part of the script and ask: where do students get room? <i>Delivery for engagement, structure for evidence.</i></div><div class="four" style="grid-template-columns:1fr 1fr"><div><b>1 · Collaborate</b> — room to work on it together?<textarea data-four="collab">${esc(a.four.collab)}</textarea></div><div><b>2 · Ask</b> — room to ask questions?<textarea data-four="ask">${esc(a.four.ask)}</textarea></div><div><b>3 · Share</b> — small group and whole class?<textarea data-four="share">${esc(a.four.share)}</textarea></div><div><b>4 · Think first</b> — their own approach before they're shown one?<textarea data-four="think">${esc(a.four.think)}</textarea></div></div>`:A.extra?`<label>${esc(A.extra.label)}</label><textarea data-a="extra">${esc(a.extra)}</textarea>${a.type==="task"?`<div class="guide warn"><b>Do it yourself first.</b> Your three <i>distinct</i> solutions go here in the real app — the third doesn't count until the representations differ.</div>`:""}`:""}
+      <div class="two"><div><label>What students do<span class="req">*</span></label><textarea data-a="students">${esc(a.students)}</textarea></div><div><label>What I do</label><textarea data-a="teacher">${esc(a.teacher)}</textarea></div></div>
+      <label>Objective<span class="req">*</span> <span class="hint">— by the end of these minutes, students can…</span></label><input type="text" data-a="objective" value="${esc(a.objective)}">
+      <div class="tip" style="margin-top:4px">Standards are what the state expects by the end of the year; an objective is what <i>you</i> expect by the end of this activity. You write objectives.</div>
+      <label>Key questions <span class="deep">go deeper</span><span class="tip"> — what <i>you</i> ask while they work</span></label><textarea data-a="questions">${esc(a.questions)}</textarea>
+      <label>Anticipated student responses <span class="deep">go deeper</span><span class="tip"> — by pseudonym, from your work samples</span></label><textarea data-a="anticipate">${esc(a.anticipate)}</textarea>
+      <label>Materials <span class="deep">go deeper</span></label><input type="text" data-a="materials" value="${esc(a.materials)}">
+      ${prev?`<div class="conn"><div class="from">From activity ${idx}: ${esc(prev.thread)||"(no connection written yet)"}</div></div>`:""}
+      ${idx<n-1?`<div class="conn"><b>How does this activity connect to the next one?</b><textarea data-a="thread" style="margin-top:4px">${esc(a.thread)}</textarea></div>`:`<div class="conn"><b>How does this activity connect to the After?</b><textarea data-a="thread" style="margin-top:4px">${esc(a.thread)}</textarea></div>`}
+      ${readsBar}</div>`;
   }
-  h+=`<div class="two"><div><label>What students do<span class="req">*</span></label><textarea id="f_students">${esc(b.students||"")}</textarea></div><div><label>What I do</label><textarea id="f_teacher">${esc(b.teacher||"")}</textarea></div></div>`;
-  h+=`<label>Objective<span class="req">*</span> <span class="hint">— what students should be able to do or understand by the end of this part</span></label><input type="text" id="f_objective" value="${esc(b.objective||"")}">
-      <div class="small" style="margin-top:4px">Standards are what the state expects by the end of the year; an objective is what <i>you</i> expect by the end of these ${b.min} minutes. You write objectives. The lesson's standards are on the Background tab.</div>`;
-  h+=`<label>Key questions <span class="deep">go deeper</span><span class="tip"> — what <i>you</i> ask while they work</span></label><textarea id="f_questions">${esc(b.questions||"")}</textarea>`;
-  h+=`<label>Anticipated student responses <span class="deep">go deeper</span><span class="tip"> — by pseudonym, from your work samples</span></label><textarea id="f_anticipate">${esc(b.anticipate||"")}</textarea>`;
-  h+=`<label>Materials <span class="deep">go deeper</span></label><input type="text" id="f_materials" value="${esc(b.materials||"")}">`;
-  h+=`<div class="aibar"><span class="lbl">Second reads:</span><button class="ghost" onclick="toast('Hand it over — the peer read. Prints a one-page review sheet in the real app.')">Hand it over ▶</button><button class="ghost" disabled>Ask me</button><button class="ghost" disabled>Show me options</button><button class="ghost" disabled>Check this</button><span class="later">AI is placed here; wired in the real app — optional, as much as you want</span></div>`;
-  ed.innerHTML=h;
-  const bind=(id,key,cb)=>{ const el=document.getElementById(id); if(!el) return; el.oninput=e=>{ if(key) b[key]=e.target.value; if(cb) cb(e.target.value); save(); renderTimeline(); }; };
-  bind("f_title","title"); bind("f_students","students"); bind("f_teacher","teacher"); bind("f_questions","questions"); bind("f_anticipate","anticipate"); bind("f_objective","objective"); bind("f_materials","materials"); bind("f_extra","extra");
-  bind("f_min",null,v=>{ b.min=Math.max(1,Math.min(120,parseInt(v)||1)); });
-  ["collab","ask","share","think"].forEach(k=>bind("f_four_"+k,null,v=>{ b.four[k]=v; }));
-  const t=document.getElementById("f_type"); if(t) t.onchange=e=>{ b.type=e.target.value; save(); renderTimeline(); renderEditor(); };
+  return `<div class="pane during"><div class="ph"><span class="tag">During</span><h2>The activities</h2><span class="mins">slices <select data-nslices style="width:auto;padding:5px 6px">${[1,2,3,4,5].map(k=>`<option ${k===n?"selected":""}>${k}</option>`).join("")}</select></span>${I("Two to five activities that build on each other — pick a type for each, give it your minutes, and say how each one connects to the next. Widths follow your minutes.")}</div>
+    <div class="slices">${slices}</div>${ed}</div>`;
+}
+function renderAfter(){
+  const a=state.after=Object.assign(blankAfter(),state.after||{});
+  let body="";
+  if(a.kind==="exit"){ body=`<label>The prompts <span class="hint">— one to three; and for each, what a response would tell you</span></label><div class="rows">${a.prompts.map((r,i)=>`<div class="exitrow"><textarea placeholder="Prompt ${i+1}" data-p="${i}:0">${esc(r[0])}</textarea><textarea placeholder="What a response would tell me about my question" data-p="${i}:1">${esc(r[1])}</textarea></div>`).join("")}</div>${a.prompts.length<3?`<button class="tbtn" data-addp style="margin-top:6px">＋ prompt</button>`:""}`; }
+  else if(a.kind==="transcript"){ body=`<label>The questions you'll ask <span class="hint">— two or three, each with why</span></label><textarea data-af="questions" style="min-height:96px">${esc(a.questions)}</textarea><div class="tip">Prints as a transcript sheet in the real app: the questions, and lines for what the students actually say.</div>`; }
+  else if(a.kind==="gallery"){ body=`<label>Which solutions go to the board, in what order, and the connecting question</label><textarea data-af="order" style="min-height:96px">${esc(a.order)}</textarea><div class="tip">The artifact is the photo of the board, annotated.</div>`; }
+  else { body=`<label>Three questions for one focus student <span class="hint">— and a “jot your reasoning” prompt</span></label><textarea data-af="questions" style="min-height:96px">${esc(a.questions)}</textarea>`; }
+  return `<div class="pane after"><div class="ph"><span class="tag">After</span><h2>One artifact</h2><span class="mins"><input type="text" inputmode="numeric" placeholder="min" data-amin value="${esc(a.min)}">min</span>${I("How the lesson ends, and what you carry out of the room: an artifact that captures analyzable evidence — something a student's response could answer your question with.")}</div>
+    <label>Artifact type</label><select data-akind>${Object.entries(AFTER_KINDS).map(([k,v])=>`<option value="${k}" ${k===a.kind?"selected":""}>${v}</option>`).join("")}</select>
+    ${body}
+    <div class="two"><div><label>What students do</label><textarea data-af="students">${esc(a.students)}</textarea></div><div><label>What I do</label><textarea data-af="teacher">${esc(a.teacher)}</textarea></div></div>
+    <label>Objective <span class="hint">— by the end of these minutes, students can…</span></label><input type="text" data-af="objective" value="${esc(a.objective)}">
+    <label>What the artifact captures</label><input type="text" data-af="captures" value="${esc(a.captures)}">
+    <label>Would a student's response answer your research question? ${I("The one test the After has to pass. Your question is on the Profile tab.")}</label><textarea data-af="answers">${esc(a.answers)}</textarea>
+    ${readsBar}</div>`;
+}
+function wirePlan(){
+  const P=document.getElementById("panes");
+  const bind=(sel,fn)=>P.querySelectorAll(sel).forEach(el=>{ el.oninput=e=>{ fn(el,e.target.value); save(); }; });
+  bind("[data-b]",(el,v)=>{ state.before[el.dataset.b]=v; });
+  bind("[data-af]",(el,v)=>{ state.after[el.dataset.af]=v; });
+  bind("[data-p]",(el,v)=>{ const [i,j]=el.dataset.p.split(":").map(Number); state.after.prompts[i][j]=v; });
+  bind("[data-a]",(el,v)=>{ const a=state.during.find(x=>x.id===selId); if(a) a[el.dataset.a]=v; if(el.dataset.a==="title"){ const sl=P.querySelector(`.slice[data-slice="${selId}"] .st`); if(sl){ sl.textContent=v||"untitled"; sl.classList.toggle("empty",!v); } } });
+  bind("[data-four]",(el,v)=>{ const a=state.during.find(x=>x.id===selId); if(a) a.four[el.dataset.four]=v; });
+  P.querySelectorAll("[data-bmin]").forEach(el=>el.onchange=e=>{ state.before.min=e.target.value; save(); renderPlan(); });
+  P.querySelectorAll("[data-amin]").forEach(el=>el.onchange=e=>{ state.after.min=e.target.value; save(); renderPlan(); });
+  P.querySelectorAll("[data-smin]").forEach(el=>{ el.onclick=e=>e.stopPropagation(); el.onchange=e=>{ const a=state.during.find(x=>x.id===el.dataset.smin); if(a) a.min=e.target.value; save(); renderPlan(); }; });
+  P.querySelectorAll(".slice").forEach(el=>el.onclick=()=>{ selId=el.dataset.slice; renderPlan(); });
+  P.querySelectorAll("[data-nslices]").forEach(el=>el.onchange=e=>{ const k=+e.target.value; while(state.during.length<k) state.during.push(blankAct("task")); if(state.during.length>k){ if(!confirm(`Go down to ${k} slices? The last ${state.during.length-k} will be removed.`)){ renderPlan(); return; } state.during=state.during.slice(0,k); } save(); renderPlan(); });
+  P.querySelectorAll("[data-atype]").forEach(el=>el.onchange=e=>{ const a=state.during.find(x=>x.id===selId); if(a) a.type=e.target.value; save(); renderPlan(); });
+  P.querySelectorAll("[data-remove]").forEach(el=>el.onclick=()=>{ if(state.during.length<=1) return; state.during=state.during.filter(x=>x.id!==el.dataset.remove); selId=null; save(); renderPlan(); });
+  P.querySelectorAll("[data-akind]").forEach(el=>el.onchange=e=>{ state.after.kind=e.target.value; save(); renderPlan(); });
+  P.querySelectorAll("[data-addp]").forEach(el=>el.onclick=()=>{ state.after.prompts.push(["",""]); save(); renderPlan(); });
+  P.querySelectorAll("[data-addcard]").forEach(el=>el.onclick=()=>{ const t=prompt("What's on this card? (a number, a figure described, an image caption)"); if(t==null) return; state.before.cards.push(t); save(); renderPlan(); });
+  P.querySelectorAll("[data-card]").forEach(el=>el.onclick=e=>{ const i=+el.dataset.card; if(e.shiftKey){ state.before.cards.splice(i,1); } else { const t=prompt("Edit the card", state.before.cards[i]); if(t==null) return; state.before.cards[i]=t; } save(); renderPlan(); });
 }
 
 /* ---------- drawer ---------- */
@@ -700,7 +750,7 @@ function renderDrawer(){
   document.getElementById("actList").innerHTML=Object.entries(ACTIVITIES).map(([k,v])=>`<div class="drow"><div class="dmeta"><div class="dname">${v.name}</div><div class="dsub">${esc(v.sub)}${v.link?` · <a href="${v.link}" target="_blank" rel="noopener">examples</a>`:""}</div></div><button class="tbtn" data-add="${k}">Add</button></div>`).join("");
   document.getElementById("shapeList").innerHTML=SHAPES.map((s,i)=>`<div class="drow"><div class="dmeta"><div class="dname">${s.name}</div><div class="dsub">${esc(s.sub)}<br><span style="color:var(--outline)">${s.seq.map(k=>ACTIVITIES[k].name).join(" → ")}</span></div></div><button class="tbtn" data-shape="${i}">Use</button></div>`).join("");
   document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{ if(addAct(b.dataset.add)) closeDrawer(); });
-  document.querySelectorAll("[data-shape]").forEach(b=>b.onclick=()=>{ const s=SHAPES[+b.dataset.shape]; if(!confirm(`Start from "${s.name}"? This replaces the middle activities. Before and After stay.`)) return; const left=state.block-state.before.min-state.after.min; state.during=s.seq.map(k=>{ const a=blankAct(k); a.min=Math.max(5,Math.round(left/s.seq.length)); return a; }); selId=state.during[0].id; save(); renderTimeline(); renderEditor(); closeDrawer(); });
+  document.querySelectorAll("[data-shape]").forEach(b=>b.onclick=()=>{ const s=SHAPES[+b.dataset.shape]; if(!confirm(`Start from "${s.name}"? This replaces the middle activities. Before and After stay.`)) return; state.during=s.seq.map(k=>blankAct(k)); selId=state.during[0].id; save(); renderPlan(); closeDrawer(); });
 }
 
 /* ---------- project bar ---------- */
@@ -715,7 +765,7 @@ function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,
 let toastT; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.style.opacity=1; clearTimeout(toastT); toastT=setTimeout(()=>t.style.opacity=0,2600); }
 document.getElementById("tipsBtn").onclick=()=>{ document.body.classList.toggle("tips"); try{localStorage.setItem(STORE+"-tips",document.body.classList.contains("tips")?"1":"0");}catch(e){}  };
 try{ if(localStorage.getItem(STORE+"-tips")!=="0"){ document.body.classList.add("tips");  } }catch(e){}
-function renderAll(){ renderTop(); renderTimeline(); renderEditor(); renderDrawer(); }
+function renderAll(){ renderTop(); renderPlan(); renderDrawer(); }
 load(); renderAll(); try{ showPhase(localStorage.getItem(STORE+"-phase")||"background"); }catch(e){ showPhase("background"); }
 </script>
 </body>
