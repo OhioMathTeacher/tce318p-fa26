@@ -41,6 +41,9 @@
   body.embed h1 small{display:none}
   body.embed .embednote{font-size:13px;color:var(--muted);margin:0 0 6px}
   body.embed #usePlanner{display:inline-block}
+  body.embed.tpllock #tplRail{display:none}
+  body.embed.tpllock .studio{grid-template-columns:250px 1fr}
+  body.embed.tpllock .embednote b{color:var(--outline)}
   #usePlanner{display:none;background:var(--ok);color:#fff;border:0;border-radius:10px;padding:12px 22px;font:inherit;font-weight:700;cursor:pointer;font-size:16px}
   /* stage */
   #stage{display:none;position:fixed;inset:0;background:var(--ground);z-index:20;
@@ -854,7 +857,7 @@ async function init(){
   PACKS[CURVES_PACK.name]=CURVES_PACK;
   PACKS[TEN_FRAMES_PACK.name]=TEN_FRAMES_PACK;
   PACKS[DOT_PATTERNS_PACK.name]=DOT_PATTERNS_PACK;
-  refreshPackSel(); wireUI(); updateHints(); initBuilder(); renderDrawer();
+  refreshPackSel(); wireUI(); updateHints(); initBuilder(); renderDrawer(); initEmbed();
   try{
     for(const k of await idbKeys()){ const p=await idbGet(k); if(p&&p.cards) PACKS[p.name||k]=p; }
     TRANSCRIPTS=await tsAll();
@@ -907,20 +910,22 @@ function wireUI(){
     if(!n||!PACKS[n]){toast("Save your prompt pack first, then export it.");return;}
     exportPresentation(n);
   };
-  initEmbed();
 }
 /* ---- embedded in the BDA Planner: the Planner sends a pack in (nvoke-load) and takes one back (nvoke-pack) ---- */
 function initEmbed(){
   const embed=new URLSearchParams(location.search).get("embed"); if(!embed) return;
   document.body.classList.add("embed");
-  const hdr=document.querySelector("#apphdr .hdrbar"); if(hdr){ const n=document.createElement("div"); n.className="embednote"; n.textContent="Build the cards for your Before routine, then press “Use these cards in the Planner.” Nothing here is turned in."; hdr.after(n); }
+  const tpl=new URLSearchParams(location.search).get("tpl"); const embedTpl=(tpl&&TEMPLATES[tpl])?tpl:null;
+  const pick=t=>{ const b=document.querySelector(`#tplRail .railbtn[data-tpl="${t}"]`); if(b) b.click(); };
+  if(embedTpl){ document.body.classList.add("tpllock"); pick(embedTpl); }
+  const hdr=document.querySelector("#apphdr .hdrbar"); if(hdr){ const n=document.createElement("div"); n.className="embednote"; n.innerHTML=(embedTpl?`<b>${escapeHtml(TEMPLATES[embedTpl].label||embedTpl)}</b> — `:"")+"build the cards for your Before routine, then press “Use these cards in the Planner.” Nothing here is turned in."; hdr.after(n); }
   document.getElementById("presName").placeholder="Name these cards (e.g. Same or Different — triangles)…";
   window.addEventListener("message",e=>{
     const d=e.data||{}; if(d.type!=="nvoke-load"||!d.pack||!Array.isArray(d.pack.cards)) return;
-    builder.sets=d.pack.cards.map(cardToImageSet); builder.cur={template:"wodb", members:[], prompt:""}; builder.sel=-1; builder.editing=-1; builder.origName=null;
+    builder.sets=d.pack.cards.map(cardToImageSet); builder.cur={template:embedTpl||"wodb", members:[], prompt:""}; builder.sel=-1; builder.editing=-1; builder.origName=null;
     document.getElementById("addSet").textContent="＋ Add card";
     document.getElementById("presName").value=d.pack.name||"";
-    document.querySelectorAll("#tplRail .railbtn").forEach(x=>x.classList.toggle("on",x.dataset.tpl==="wodb"));
+    document.querySelectorAll("#tplRail .railbtn").forEach(x=>x.classList.toggle("on",x.dataset.tpl===(embedTpl||"wodb")));
     renderTplHint(); renderCanvas(); renderTool(); renderSetList(); switchPhase("build");
   });
   document.getElementById("usePlanner").onclick=()=>{

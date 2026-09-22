@@ -508,16 +508,19 @@ const SHAPES = [
 /* ---------- sample projects ---------- */
 function blankAct(type){ return {id:uid(), type, title:"", min:"", students:"", teacher:"", questions:"", anticipate:"", objective:"", materials:"", extra:"", thread:"", four:{collab:"",ask:"",share:"",think:""}}; }
 const ROUTINE_LIST=[
-  ["Same or Different","Two images side by side. What's the same? What's different? Comparison forces a claim.","https://www.samebutdifferentmath.com/"],
-  ["Which One Doesn't Belong?","Four items; every one can be the odd one out. The reason is the math.","https://wodb.ca/"],
-  ["Number Talk","One expression, mental math, strategies shared and recorded on the board."],
-  ["Pairs to Make 10","Quick images — which two make ten? Fluency with the structure of ten."],
-  ["Fraction Talks","A partitioned image. What fraction is shaded? How do you know?","https://fractiontalks.com/"],
-  ["Notice & Wonder","One image or situation. What do you notice? What do you wonder?"],
-  ["Estimation","Too low, too high, just right — then the reveal.","https://estimation180.com/"],
-  ["Choral Counting","Count together while you record in rows. What patterns do you see?"],
-  ["Number Strings","A sequence of related problems; the earlier ones set up the later ones."],
-  ["Splat!","Dots, some covered by a splat. How many are under it? How do you know?","https://stevewyborney.com/"]];
+  ["Same or Different","Two images side by side. What's the same? What's different? Comparison forces a claim.","https://www.samebutdifferentmath.com/","same-diff"],
+  ["Which One Doesn't Belong?","Four items; every one can be the odd one out. The reason is the math.","https://wodb.ca/","wodb"],
+  ["Sort","A handful of figures. Group them and state the rule; then regroup another way.",null,"sort"],
+  ["I Spy","A field of figures. Name a property; they find everything that fits.",null,"ispy"],
+  ["Number Talk","One expression, mental math, strategies shared and recorded on the board.",null,null],
+  ["Pairs to Make 10","Quick images — which two make ten? Fluency with the structure of ten.",null,"single"],
+  ["Fraction Talks","A partitioned image. What fraction is shaded? How do you know?","https://fractiontalks.com/","single"],
+  ["Notice & Wonder","One image or situation. What do you notice? What do you wonder?",null,"single"],
+  ["Estimation","Too low, too high, just right — then the reveal.","https://estimation180.com/",null],
+  ["Choral Counting","Count together while you record in rows. What patterns do you see?",null,null],
+  ["Number Strings","A sequence of related problems; the earlier ones set up the later ones.",null,null],
+  ["Splat!","Dots, some covered by a splat. How many are under it? How do you know?","https://stevewyborney.com/","single"]];
+const ROUTINE_TPL_NAME={"same-diff":"Same & Different",wodb:"Which One Doesn't Belong?",sort:"Sort",ispy:"I Spy",single:"one card at a time"};
 const ROUTINES=ROUTINE_LIST.map(r=>r[0]);
 const AFTER_SUB={exit:"One to three prompts on paper at the end; you keep every response.",transcript:"Two or three questions you ask in the closing discussion; you record what students actually say.",gallery:"Chosen solutions go to the board in an order you set; the artifact is the annotated photo.",probe:"Three questions for one focus student, one on one, with a jot-your-reasoning prompt."};
 function blankBefore(){ return {id:"before",type:"before",name:"",prompt:"",cards:[],min:"",objective:"",withhold:"",entry:"",guard:"",students:"",teacher:"",thread:""}; }
@@ -894,8 +897,9 @@ function openBefore(){
     <div class="step">1 · The cards, and what you say</div>
     <div class="nv" style="margin-top:6px">${b.pack&&b.pack.thumbs&&b.pack.thumbs.length
       ?`<div class="striplabel">🖐 Your cards — <b>${esc(b.pack.pack.name||"")}</b> · ${b.pack.thumbs.length} card${b.pack.thumbs.length===1?"":"s"} from nVoke. Click a card to edit the set.</div><div class="cards">${b.pack.thumbs.map((t,i)=>`<div class="ncard thumb" data-nvoke title="Edit in nVoke">${t}<span class="num">${i+1}</span></div>`).join("")}</div><div style="display:flex;gap:8px;margin-top:8px"><button class="tbtn" data-nvoke>✎ Edit the cards in nVoke</button><button class="tbtn" data-nvokeclear>Remove the cards</button></div>`
-      :`<div class="striplabel">🖐 Your cards — what students see. Build them in nVoke: pick a layout (Which One Doesn't Belong · Same &amp; Different · Sort · I Spy · Single), drag shapes in, add each card.</div><button class="primary" data-nvoke>🖐 Build the cards in nVoke</button>
-        <details style="margin-top:10px"><summary class="small" style="cursor:pointer">Or plain text cards — a number or an expression each</summary><div class="cards" style="margin-top:8px">${cards}<div class="ncard add" data-addcard title="Add a card and type what's on it">＋ card</div></div></details>`}
+      :(R&&R[3])?`<div class="striplabel">🖐 Your cards — what students see. Build them in the ${esc(ROUTINE_TPL_NAME[R[3]])} editor: drag shapes in, write the question, add each card.</div><button class="primary" data-nvoke>🖐 Build the cards</button>
+        <details style="margin-top:10px"><summary class="small" style="cursor:pointer">Or plain text cards — a number or an expression each</summary><div class="cards" style="margin-top:8px">${cards}<div class="ncard add" data-addcard title="Add a card and type what's on it">＋ card</div></div></details>`
+      :`<div class="striplabel">🖐 Your cards — what students see, one card each. Type on a card.</div><div class="cards">${cards}<div class="ncard add" data-addcard title="Add a card and type what's on it: a number, an expression, a figure described">＋ card</div></div>`}
       <div class="prompt"><label style="margin-top:8px">What you say <span class="hint">— the posing question, exactly</span></label><input type="text" data-b="prompt" value="${esc(b.prompt)}" placeholder="What's the same? What's different?"></div></div>
     <div class="step">2 · Procedures</div>
     <div class="two"><div><label>What students do<span class="req">*</span></label><textarea data-b="students">${esc(b.students)}</textarea></div><div><label>What I do</label><textarea data-b="teacher">${esc(b.teacher)}</textarea></div></div>
@@ -940,7 +944,10 @@ function openAfter(){
 }
 /* ---------- nVoke, embedded: the Before's cards are an nVoke prompt pack ---------- */
 const NVOKE_URL="../week-3-geometry-van-hiele/nvoke.html?embed=planner";
-function openNvoke(){ const f=document.getElementById("nvokeFrame"); if(!f.getAttribute("src")) f.setAttribute("src",NVOKE_URL); else if(state.before.pack) f.contentWindow.postMessage({type:"nvoke-load",pack:state.before.pack.pack},"*"); document.getElementById("nvokeModal").classList.add("open"); }
+let nvokeTpl=null;
+function openNvoke(){ const R=routineMeta((state.before||{}).name); const tpl=R&&R[3]?R[3]:null; const f=document.getElementById("nvokeFrame"); const url=NVOKE_URL+(tpl?"&tpl="+tpl:"");
+  if(!f.getAttribute("src")||tpl!==nvokeTpl){ nvokeTpl=tpl; f.setAttribute("src",url); } else if(state.before.pack) f.contentWindow.postMessage({type:"nvoke-load",pack:state.before.pack.pack},"*");
+  document.querySelector("#nvokeModal .bh b").textContent=tpl?ROUTINE_TPL_NAME[tpl]:"nVoke"; document.getElementById("nvokeModal").classList.add("open"); }
 function closeNvoke(){ document.getElementById("nvokeModal").classList.remove("open"); }
 window.addEventListener("message",e=>{
   const f=document.getElementById("nvokeFrame"); if(!f||e.source!==f.contentWindow) return; const d=e.data||{};
@@ -968,7 +975,7 @@ function pickRoutine(){
   const b=state.before=Object.assign(blankBefore(),state.before||{});
   const B=openPick("Before — which routine?","A routine opens the lesson: cards you show, one question you ask.",
     `<div class="ptiles">${ROUTINE_LIST.map((r,i)=>`<button class="ptile ${b.name===r[0]?"on":""}" data-i="${i}"><div class="pi">${ROUTINE_ICON}</div><div class="pn">${esc(r[0])}</div><div class="ps">${esc(r[1])}${r[2]?` · <a href="${r[2]}" target="_blank" rel="noopener" onclick="event.stopPropagation()">examples</a>`:""}</div></button>`).join("")}<button class="ptile ${b.name&&!routineMeta(b.name)?"on":""}" data-i="-1"><div class="pi">✏️</div><div class="pn">Other…</div><div class="ps">One you know that isn't listed. You'll name it, and say where it's from.</div></button></div>`);
-  B.querySelectorAll("[data-i]").forEach(el=>el.onclick=()=>{ const i=+el.dataset.i; state.before.name=i<0?(routineMeta(b.name)||!b.name?"My routine":b.name):ROUTINE_LIST[i][0]; save(); renderPlan(); closePick(); openBefore(); if(i<0){ const inp=document.querySelector('#actHead [data-b="name"]'); if(inp){ inp.focus(); inp.select(); } } });
+  B.querySelectorAll("[data-i]").forEach(el=>el.onclick=()=>{ const i=+el.dataset.i; const changed=i>=0&&state.before.name!==ROUTINE_LIST[i][0]; state.before.name=i<0?(routineMeta(b.name)||!b.name?"My routine":b.name):ROUTINE_LIST[i][0]; if(changed&&state.before.pack) delete state.before.pack; save(); renderPlan(); closePick(); openBefore(); if(i<0){ const inp=document.querySelector('#actHead [data-b="name"]'); if(inp){ inp.focus(); inp.select(); } } else if(ROUTINE_LIST[i][3]&&!state.before.pack) openNvoke(); });
 }
 function pickShape(){
   const B=openPick("Start from a shape","Two or three activities in a named order. It replaces your During slices; Before and After stay.",
