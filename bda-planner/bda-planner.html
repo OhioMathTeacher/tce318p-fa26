@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BDA Planner — plan it · hand it over · teach it</title>
+<!--
+  BDA Planner — TCE 318P FA26 (Edwards)
+  PROTOTYPE v0.1 (2026-09-21): the During tab only, with sample data behind both doors.
+  No AI wired. Other tabs are placeholders. Built in nVoke's visual language (phase strip,
+  card strip, drawer) so it reads as one of the course apps. Design: fall-2026/TCE-318P/NEXT-STEPS.
+-->
+<style>
+  :root{
+    --outline:#1F4E96; --ground:#fffdf5; --ink:#1a2b4a; --muted:#4a5a70; --line:#d8e2ee; --mark:#b23b3b; --ok:#2e7d32;
+    --before:#7a4fb0; --before-soft:#f0e9f8; --during:#1F4E96; --during-soft:#e7f0fb; --after:#2b7a3d; --after-soft:#e5f2e8;
+    --gold:#b3730a; --gold-soft:#fbf1dd;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--ground);color:var(--ink);line-height:1.5;font-size:15px}
+  .wrap{max-width:1180px;margin:0 auto;padding:18px 20px 70px}
+  h1{font-size:26px;margin:0;color:var(--outline);letter-spacing:.3px}
+  h1 small{font-weight:600;color:var(--muted);font-size:14px;margin-left:8px}
+  .hdrbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .proto{font-size:12px;color:#6b4a08;background:var(--gold-soft);border:1px solid #e7d3a1;border-radius:8px;padding:6px 10px;margin:10px 0 6px}
+  /* phase strip (nVoke) */
+  .phasebar{display:inline-flex;gap:0;margin:8px 0 4px;border:2px solid var(--outline);border-radius:12px;overflow:hidden;flex-wrap:wrap}
+  .phase{border:0;border-right:2px solid var(--outline);background:#fff;color:var(--outline);padding:9px 16px;font:inherit;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:14px}
+  .phase:last-child{border-right:0}
+  .phase.on{background:var(--outline);color:#fff}
+  .phase .pnum{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:currentColor;font-size:11px;font-weight:800;flex:none}
+  .phase .pnum b{color:#fff}
+  .phase.on .pnum b{color:var(--outline)}
+  .phase:disabled{opacity:.4;cursor:not-allowed}
+  .phase.ref{font-weight:600;color:var(--muted)}
+  .drawerToggle{border:2px solid var(--outline);background:#fff;color:var(--outline);border-radius:11px;padding:9px 15px;font:inherit;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px}
+  .drawerToggle:hover{background:#eef4fc}
+  /* project bar */
+  .projbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:10px 0 12px;font-size:13px}
+  .projbar .grow{flex:1}
+  .projbar .note{color:var(--muted)}
+  button.ghost{background:#fff;border:1px solid var(--outline);color:var(--outline);border-radius:9px;padding:7px 13px;font:inherit;font-weight:600;cursor:pointer;font-size:13px}
+  button.ghost:hover{background:#eef4fc}
+  button.primary{background:var(--outline);color:#fff;border:0;border-radius:9px;padding:9px 16px;font:inherit;font-weight:700;cursor:pointer;font-size:14px}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0}
+  .card h2{font-size:18px;margin:0 0 4px;color:var(--outline)}
+  .lead{color:var(--muted);font-size:14px;margin:0 0 10px}
+  /* doors + block */
+  .doors{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
+  .door{flex:1 1 300px;border:2px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;background:#fff}
+  .door.on{border-color:var(--outline);background:#eef4fc}
+  .door h3{margin:0 0 4px;font-size:15px;color:var(--outline)}
+  .door p{margin:0;font-size:13px;color:var(--muted)}
+  .blockrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:14px}
+  .blockrow input{width:70px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:15px;font-weight:700;text-align:center}
+  .blockrow .hint{font-size:12.5px;color:var(--muted)}
+  /* work area */
+  .work{display:grid;grid-template-columns:400px 1fr;gap:18px;margin-top:12px;align-items:start}
+  .tl{position:sticky;top:10px;max-height:calc(100vh - 20px);overflow:auto}
+  @media(max-width:900px){.work{grid-template-columns:1fr}.tl{position:static;max-height:none}}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:700px){.two{grid-template-columns:1fr}}
+  .two label{margin-top:12px}
+  .two textarea{min-height:96px}
+  /* timeline */
+  .tl{position:relative}
+  .tlhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+  .tlhead b{color:var(--outline)}
+  .budget{font-size:12.5px;color:var(--muted)}
+  .budget.over{color:var(--mark);font-weight:700}
+  .budget.under{color:var(--gold);font-weight:700}
+  .blk{position:relative;border:2px solid var(--line);border-radius:12px;background:#fff;padding:8px 10px 8px 34px;margin:0;cursor:pointer;min-height:54px;display:flex;flex-direction:column;justify-content:center;transition:box-shadow .1s}
+  .blk:hover{box-shadow:0 3px 10px #0001}
+  .blk.sel{outline:3px solid var(--outline);outline-offset:2px}
+  .blk.before{border-color:var(--before);background:var(--before-soft)}
+  .blk.after{border-color:var(--after);background:var(--after-soft)}
+  .blk.during{border-color:#bcd0ea}
+  .blk.dragging{opacity:.55;transform:scale(.97)}
+  .blk .grip{position:absolute;top:6px;left:8px;color:#c3cbd6;font-size:15px;cursor:grab}
+  .blk .locked{position:absolute;top:6px;left:9px;color:#b9a7d6;font-size:13px}
+  .blk .mins{position:absolute;right:8px;top:6px;font-size:11px;font-weight:800;color:#fff;background:var(--outline);border-radius:7px;padding:1px 7px}
+  .blk.before .mins{background:var(--before)}.blk.after .mins{background:var(--after)}
+  .blk .type{font-size:11px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--muted)}
+  .blk.before .type{color:#5a3690}.blk.after .type{color:#1f5c2e}
+  .blk .ttl{font-weight:700;font-size:14.5px;margin:1px 0}
+  .blk .done{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .blk .done b{color:var(--ok);font-weight:600}
+  .blk .done i{color:#8a6a1a;font-style:normal}
+  .blk .ud{position:absolute;right:8px;bottom:6px;display:none;gap:3px}
+  .blk.during:hover .ud{display:flex}
+  .blk .ud button{border:1px solid var(--line);background:#fff;border-radius:6px;width:24px;height:22px;font-size:12px;cursor:pointer;line-height:1;padding:0}
+  .blk .x{position:absolute;bottom:-8px;right:-8px;background:var(--mark);color:#fff;border:0;border-radius:999px;width:20px;height:20px;cursor:pointer;font-weight:700;line-height:1;font-size:12px;display:none}
+  .blk.during:hover .x{display:block}
+  .thread{display:flex;align-items:flex-start;gap:8px;padding:6px 4px 6px 12px;font-size:13px;color:var(--muted)}
+  .thread .arrow{color:var(--outline);font-weight:800;padding-top:16px}
+  .thread .tl2{flex:1}
+  .thread .tlab{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--outline)}
+  .thread textarea{width:100%;border:1px dashed #bcd0ea;border-radius:7px;background:#fff;font:inherit;font-size:13.5px;padding:5px 7px;color:var(--ink);resize:vertical;min-height:36px}
+  .thread textarea::placeholder{color:#8a97a3;font-style:italic}
+  .thread textarea:focus{outline:0;border:1px solid var(--outline)}
+  .addrow{display:flex;gap:8px;margin:8px 0 0 14px}
+  .addrow button{font-size:12.5px;padding:6px 10px}
+  /* editor */
+  .ed label{display:block;font-weight:600;margin:12px 0 4px;font-size:14px}
+  .ed label .req{color:var(--mark);font-weight:700;margin-left:3px}
+  .ed label .deep{font-weight:500;color:var(--muted);font-size:12.5px;margin-left:6px}
+  .ed label .hint{font-weight:400;color:var(--muted);font-size:13px}
+  .ed input[type=text],.ed textarea,.ed select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:9px;font:inherit;background:#fff;color:var(--ink);font-size:14.5px}
+  .ed textarea{min-height:64px;resize:vertical}
+  .ed .row{display:flex;gap:12px;flex-wrap:wrap}
+  .ed .row>div{flex:1;min-width:160px}
+  .ed .row>div.narrow{flex:0 0 110px;min-width:110px}
+  .guide{font-size:13.5px;background:var(--during-soft);border:1px solid #cfe0f5;border-radius:8px;padding:8px 11px;margin:10px 0 0;color:#22333f}
+  .guide.warn{background:var(--gold-soft);border-color:#e7d3a1;color:#6b4a08}
+  .guide b{color:var(--outline)}
+  .four{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+  @media(max-width:700px){.four{grid-template-columns:1fr}}
+  .four>div{border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:#fbfcfe}
+  .four b{font-size:12.5px;color:var(--outline)}
+  .four textarea{min-height:48px;margin-top:4px}
+  .uprow{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .edhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .edhead h2{margin:0}
+  .badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:7px;color:#fff;background:var(--outline)}
+  .badge.before{background:var(--before)}.badge.after{background:var(--after)}
+  .empty{color:var(--muted);font-size:14px;padding:30px 10px;text-align:center}
+  /* AI + handoff strip */
+  .aibar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)}
+  .aibar .lbl{font-size:12.5px;color:var(--muted);margin-right:4px}
+  .aibar .later{font-size:11.5px;color:#a9b3c0;font-style:italic;margin-left:auto}
+  /* drawer (nVoke) */
+  #drawer{position:fixed;top:0;left:0;bottom:0;width:min(440px,92vw);background:#fff;z-index:40;border-right:1px solid var(--line);box-shadow:6px 0 26px #0002;transform:translateX(-102%);transition:transform .22s ease;overflow-y:auto;padding:18px 18px 40px}
+  #drawer.open{transform:translateX(0)}
+  #drawerBack{position:fixed;inset:0;background:#0004;z-index:39;display:none}
+  #drawerBack.open{display:block}
+  .drawerHd{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+  .drawerHd h2{font-size:19px;margin:0;color:var(--outline)}
+  .dsec{font-weight:700;font-size:13px;color:var(--outline);margin:16px 0 4px;text-transform:uppercase;letter-spacing:.4px}
+  .drow{border:1px solid var(--line);border-radius:12px;padding:9px 11px;margin-top:8px;display:flex;gap:11px;align-items:center}
+  .drow .dmeta{flex:1;min-width:0}
+  .drow .dname{font-weight:700;font-size:14px}
+  .drow .dsub{font-size:12px;color:var(--muted)}
+  .drow .dsub a{color:var(--outline)}
+  .drow button{flex:none}
+  .tbtn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 10px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--ink)}
+  .tbtn:hover{border-color:var(--outline);color:var(--outline)}
+  #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;z-index:50;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none}
+  .small{font-size:13px;color:var(--muted)}
+  .tip{font-size:13px;color:var(--muted)}
+  body:not(.tips) .tip{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdrbar">
+    <button class="drawerToggle" id="drawerToggle" title="Activities you can put on the timeline, and shapes to start from.">🧩 <span>Activities</span></button>
+    <h1>BDA Planner <small>plan it · hand it over · teach it</small></h1>
+  </div>
+  <div class="phasebar">
+    <button class="phase" disabled title="Week 6–7. Your Concept Profile, your question. (Not in this prototype.)"><span class="pnum"><b>1</b></span> Research Question</button>
+    <button class="phase on" data-phase="during" title="Week 8. The lesson's time, carved into activities."><span class="pnum"><b>2</b></span> During</button>
+    <button class="phase" disabled title="Week 9. The routine — built in nVoke. (Not yet.)"><span class="pnum"><b>3</b></span> Before</button>
+    <button class="phase" disabled title="Week 10. The artifact. (Not yet.)"><span class="pnum"><b>4</b></span> After</button>
+    <button class="phase" disabled title="Week 10. Assemble and export. (Not yet.)"><span class="pnum"><b>5</b></span> Lesson &amp; reflect</button>
+    <button class="phase ref" disabled title="Ohio PK–5 standards. (Not yet.)">Standards</button>
+    <button class="phase ref" disabled title="The 3-Pager. (Not yet.)">Template</button>
+  </div>
+  <div class="tip" style="margin:8px 0 0">Why During before Before? You plan the core of the lesson first, then the routine that opens it and the artifact that closes it — the same order the course builds it (Weeks 8, 9, 10).</div>
+  <div class="proto"><b>Prototype.</b> The During tab only, with sample data. Nothing here is saved anywhere but this browser. The AI buttons are placed but not wired.</div>
+
+  <div class="projbar">
+    <button class="ghost" id="saveProj">⬇ Save project (.json)</button>
+    <label class="ghost" for="loadProj" style="cursor:pointer">⬆ Load project (.json)<input type="file" id="loadProj" accept=".json" hidden></label>
+    <span class="grow"></span>
+    <button class="ghost" id="tipsBtn" title="Show or hide the explanations under the fields">💡 Show tips</button>
+    <span class="note" id="saveNote">Autosaves in this browser</span>
+    <button class="ghost" id="resetProj" title="Put the sample data back">↺ Reset sample</button>
+  </div>
+
+  <!-- ===== ② DURING ===== -->
+  <div class="card">
+    <h2>② During — the shape of the lesson</h2>
+    <p class="lead">Set how much time you have. Then carve it: one routine before, one artifact after, and in the middle two or three <b>activities</b> that build on each other. <span class="tip">A <b>thread</b> is the line between two blocks — what the students now have that the next block needs.</span></p>
+    <div class="doors">
+      <div class="door" data-door="lesson" id="doorLesson">
+        <h3>I have a lesson</h3>
+        <p>Your host teacher gave you a lesson. Keep its spirit; change how it's delivered so the students do the thinking it had you doing. <i>Delivery for engagement, structure for evidence.</i></p>
+      </div>
+      <div class="door" data-door="idea" id="doorIdea">
+        <h3>I have an idea</h3>
+        <p>A task from NRICH, a routine you liked, something you noticed in a work sample. Grow it into a full Before–During–After lesson.</p>
+      </div>
+    </div>
+    <div class="blockrow">
+      <b>How long is your math block?</b>
+      <input type="number" id="blockMin" min="20" max="120" step="5"> <span>minutes</span>
+      <span class="tip">— ask your host teacher; placements differ. Change it later and the timeline rescales.</span>
+    </div>
+  </div>
+
+  <div class="work">
+    <!-- timeline -->
+    <div class="card tl">
+      <div class="tlhead"><b>The lesson, minute by minute</b><span class="budget" id="budget"></span></div>
+      <div id="timeline"></div>
+      <div class="addrow"><button class="ghost" id="addAct">＋ Add an activity</button><button class="ghost" id="openShapes">Start from a shape…</button></div>
+      <div class="small" style="margin:10px 0 0 14px">Before and After are one block each — that's the rule. Drag the middle activities to reorder, or use ▲▼. Click any block to edit it.</div>
+    </div>
+
+    <!-- editor -->
+    <div class="card ed" id="editor"><div class="empty">Click a block on the timeline to edit it.</div></div>
+  </div>
+</div>
+
+<!-- drawer -->
+<div id="drawerBack"></div>
+<div id="drawer">
+  <div class="drawerHd"><h2>🧩 Activities</h2><button class="tbtn" id="drawerClose">✕</button></div>
+  <div class="small">An <b>activity</b> is one segment of the During. A <b>shape</b> is two or three activities in a named order. Pick activities one at a time, or start from a shape and change it.</div>
+  <div class="dsec">Activities</div>
+  <div id="actList"></div>
+  <div class="dsec">Start from a shape</div>
+  <div class="small">Replaces the middle of your timeline with the shape's activities. Before and After stay.</div>
+  <div id="shapeList"></div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ---------- the palette ---------- */
+const ACTIVITIES = {
+  notice:   {name:"Notice & wonder",          sub:"A situation or image, no question yet. What do you notice? What do you wonder?", extra:{key:"shown",label:"What is shown"}, link:"https://www.nctm.org/noticeandwonder/"},
+  estimate: {name:"Estimate, then reveal",    sub:"Commit to a guess, work it, then see the answer.", extra:{key:"reveal",label:"The reveal"}, link:"https://estimation180.com/"},
+  task:     {name:"Work the task",            sub:"Individual or small-group work on the rich task. You work it first — three distinct ways.", extra:{key:"task",label:"The task, as students will meet it"}, link:"https://nrich.maths.org/"},
+  compare:  {name:"Compare in pairs",         sub:"“How is yours different from mine?”", extra:{key:"compare",label:"What they compare"}, link:"https://www.samebutdifferentmath.com/"},
+  change:   {name:"Change one thing",         sub:"The same task with one feature shifted — a number, a representation, the context.", extra:{key:"changed",label:"What changed, and what stayed"}, link:"https://www.openmiddle.com/"},
+  sort:     {name:"Card sort",                sub:"Equivalent or not? Same or different? Sorting forces a claim.", extra:{key:"cards",label:"The cards"}, link:"https://www.samebutdifferentmath.com/"},
+  always:   {name:"Does it always work?",     sub:"A counterexample. Test the claim the students just made.", extra:{key:"claim",label:"The claim, and the counterexample"}, link:"https://wodb.ca/"},
+  share:    {name:"Curated share",            sub:"Selected strategies to the board, in an order you chose, with a connecting question.", extra:{key:"order",label:"Which strategies, in what order, and the connecting question"}, link:"https://www.nctm.org/store/Products/5-Practices-for-Orchestrating-Productive-Mathematics-Discussions/"},
+  script:   {name:"Host teacher's lesson, as written", sub:"The scripted piece, kept. You annotate where the students get room.", extra:null, link:null},
+  other:    {name:"Something else",           sub:"Your own. The thread line is still required.", extra:null, link:null},
+};
+const SHAPES = [
+  {name:"One task, three passes", seq:["task","compare","change"], sub:"Work it alone → compare in pairs → the class pushes a variation. The same task, deepening."},
+  {name:"Task string", seq:["task","change","change"], sub:"Task A → B with one feature changed → C with another. What changed and what stayed."},
+  {name:"Three-Act", seq:["notice","task","estimate"], sub:"A situation: notice, wonder, estimate → the information and the work → the reveal."},
+  {name:"Build → Break → Fix", seq:["task","always","share"], sub:"Build a representation or claim → a counterexample → repair it."},
+  {name:"Three representations", seq:["task","change","change"], sub:"Concrete → picture → symbols, same problem. Connecting each to the last."},
+  {name:"Sort → conjecture → test", seq:["sort","task","always"], sub:"Card sort → state a rule → try it on new cases."},
+  {name:"Curated share", seq:["task","share"], sub:"Everyone works → selected strategies shared in a chosen order → the connecting discussion."},
+  {name:"Wrap the script", seq:["notice","script","change"], sub:"Your opener → the host teacher's lesson, as written → your extension. The RQ enters through the segments you own."},
+];
+
+/* ---------- sample projects ---------- */
+function blankAct(type){ return {id:uid(), type, title:"", min:15, students:"", teacher:"", questions:"", anticipate:"", objective:"", materials:"", extra:"", thread:"", four:{collab:"",ask:"",share:"",think:""}}; }
+let seq=0; function uid(){ return "a"+(++seq)+"_"+Math.random().toString(36).slice(2,6); }
+
+const SAMPLES = {
+  lesson: {
+    door:"lesson", block:60,
+    before:{id:"before", type:"before", title:"Pairs to Make 10 (from the script's fluency block)", min:6, objective:"Recall the ten-partners quickly, without being shown which addend to break.", students:"Write the addition sentence that makes 10 on white boards; show me.", teacher:"I say a number. Six or seven numbers, no comment on which addend to break.", thread:"They have the ten-partners in hand; nobody has said what to do with them."},
+    during:[
+      Object.assign(blankAct("script"), {title:"Concept Development — make a ten (Lesson 3, EngageNY G2 M1)", min:25,
+        students:"Answer the call-and-response; copy the move on white boards for 8 + 4 and 8 + 5; turn-and-talk same/different; fold the paper to symbols only.", teacher:"As written: present 9 + 4 with counters, move one to complete the ten, record 10 + 3; repeat 9 + 5; run the white-board round.",
+        questions:"How many are here? What addition sentence combines these? How are 9 + 4 and 8 + 4 the same and different?",
+        anticipate:"Most will complete the ten from the larger addend because that's what was modeled. Marcus may count all. Ava may say 13 before the ten is made.",
+        objective:"Students can show 9 + 4 as 10 + 3 with objects and explain what the 1 and 3 refer to.",
+        materials:"Two-color counters, linking cubes, white boards, ten-frame cards (all in the script).",
+        four:{collab:"Turn-and-talk after 9 + 5; partner share after 8 + 5.", ask:"Not in the script. Add: 'What are you wondering?' after the first move.", share:"Whole class only, teacher-led.", think:"MISSING until the turn-and-talk. Before I model 9 + 5, let them try it."},
+        thread:"They have made a ten from the 9 and from the 8 — always the big addend, because that's what was modeled."}),
+      Object.assign(blankAct("change"), {title:"Now the big addend comes second: 4 + 9, 5 + 8", min:12,
+        extra:"The order of the addends. The numbers, the ten-frame, the cubes stay the same.",
+        students:"Solve 4 + 9 on white boards, then 5 + 8, any way they choose.", teacher:"Pose; no modeling. Walk and watch which number gets broken.",
+        questions:"Which number did you break? Why that one? Could you have broken the other?",
+        anticipate:"Some break the 4 (1 + 3) to make ten from the 9 — the strategy. Some break the 9 — an unlikely but revealing move. Some count on from 4. Lena may write 13 with no ten shown.",
+        objective:"Students choose which addend to decompose and can say why.",
+        materials:"White boards, cubes available but not handed out.",
+        thread:"Their own choice of addend is on the board in their own hand — the After asks them to explain it."}),
+    ],
+    after:{id:"after", type:"after", title:"Exit ticket (the script's) + one line: 'Which number did you break, and why?'", min:8, objective:"Each student shows one make-ten solution and names the addend they chose.", students:"The script's exit ticket as printed, plus one line at the bottom.", teacher:"Read aloud if needed. Collect.", thread:""},
+  },
+  idea: {
+    door:"idea", block:45,
+    before:{id:"before", type:"before", title:"Same or Different: 12 counters in 4 groups / 12 counters in 3 groups", min:6, objective:"Students describe a set as groups without being asked to name a fraction.", students:"Say what's the same and what's different about two images.", teacher:"Show both. Record their words; don't say 'fourths'.", thread:"'Groups' is in the room; 'fraction of' is not."},
+    during:[
+      Object.assign(blankAct("task"), {title:"Show 3/4 of 12 counters — in more than one way", min:15,
+        extra:"Here are 12 counters. Show me three-fourths of them. Then show me another way.",
+        students:"Counters on the table, paper beside them. Work alone first; show it two ways.", teacher:"I ask, I don't tell.",
+        questions:"What is the whole here? How did you decide how big a fourth is? Is there another way to see it?",
+        anticipate:"Jordan groups into 4 groups of 3 and takes 3 groups (the sample). Maya circles 3 counters and calls it three-fourths. Eli shades 9 with no grouping shown.",
+        objective:"Students can produce 3/4 of a set and say what the whole is.",
+        materials:"12 two-color counters per student, blank paper.",
+        thread:"Three different ways of seeing 3/4 of 12 are on the table — the pairs compare them."}),
+      Object.assign(blankAct("compare"), {title:"Compare: how is yours different from mine?", min:10,
+        extra:"Their two ways of showing 3/4 of 12 — and their partner's.",
+        students:"Pairs. Each explains their way; the partner says one thing that's the same and one that's different.", teacher:"Listen in; note who uses groups and who counts out.",
+        questions:"Did you both use groups? Did you both find a fourth first? Where is the whole in each?",
+        anticipate:"Grouping vs. counting-out comes up in almost every pair. Maya's partner may say 'but that's only 3'.",
+        objective:"Students can name what another student's method attends to.",
+        materials:"Their own work.",
+        thread:"They have seen a way that isn't theirs — now the set changes and they have to choose."}),
+      Object.assign(blankAct("change"), {title:"Same question, 8 counters", min:8,
+        extra:"The size of the set: 8, not 12. Still three-fourths.",
+        students:"Same prompt, 8 counters, alone.", teacher:"Watch who regroups and who reaches for '9 again'.",
+        questions:"What's a fourth of 8? Is it the same amount as a fourth of 12? Why not?",
+        anticipate:"Jordan regroups (4 groups of 2). Eli may shade 9 — the set can't. Maya circles 3 again.",
+        objective:"Students see that the size of a fourth depends on the whole.",
+        materials:"8 counters each.",
+        thread:"Two sets, two different 'fourths' — the exit slip asks them to say why."}),
+    ],
+    after:{id:"after", type:"after", title:"Exit slip: 'Is 3/4 of 8 the same as 3/4 of 12? Show and say why.'", min:6, objective:"Each student states whether the two are the same amount and gives a reason tied to the whole.", students:"Half-sheet, alone, counters allowed.", teacher:"Collect; sort by reason given.", thread:""},
+  },
+};
+
+/* ---------- state ---------- */
+const STORE="bda-planner-proto-v2";
+let state=null, selId=null;
+function load(){ try{ const s=localStorage.getItem(STORE); if(s){ state=JSON.parse(s); return; } }catch(e){} state=JSON.parse(JSON.stringify(SAMPLES.lesson)); }
+function save(){ try{ localStorage.setItem(STORE,JSON.stringify(state)); document.getElementById("saveNote").textContent="Autosaved "+new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}); }catch(e){} }
+function allBlocks(){ return [state.before, ...state.during, state.after]; }
+function byId(id){ return allBlocks().find(b=>b.id===id); }
+function used(){ return allBlocks().reduce((n,b)=>n+(+b.min||0),0); }
+
+/* ---------- render: doors + block ---------- */
+function renderTop(){
+  document.getElementById("doorLesson").classList.toggle("on", state.door==="lesson");
+  document.getElementById("doorIdea").classList.toggle("on", state.door==="idea");
+  document.getElementById("blockMin").value=state.block;
+}
+document.querySelectorAll(".door").forEach(d=>d.onclick=()=>{
+  const which=d.dataset.door; if(state.door===which) return;
+  if(!confirm("Switch doors? In the prototype this loads the other sample. Your edits to this one are kept in the browser only until you reset.")) return;
+  state=JSON.parse(JSON.stringify(SAMPLES[which])); selId=null; save(); renderAll();
+});
+document.getElementById("blockMin").onchange=e=>{ state.block=Math.max(20,Math.min(120,+e.target.value||45)); save(); renderTimeline(); };
+
+/* ---------- render: timeline ---------- */
+function renderTimeline(){
+  const tl=document.getElementById("timeline"); tl.innerHTML="";
+  const total=state.block, u=used(), scale=Math.max(2.6, 300/total);   // px per minute, floor so short blocks stay clickable
+  const bud=document.getElementById("budget");
+  if(u>total){ bud.className="budget over"; bud.textContent=`${u} of ${total} min — ${u-total} over`; }
+  else if(u<total){ bud.className="budget under"; bud.textContent=`${u} of ${total} min — ${total-u} unallocated`; }
+  else { bud.className="budget"; bud.textContent=`${u} of ${total} min`; }
+  const blocks=allBlocks();
+  blocks.forEach((b,i)=>{
+    const el=document.createElement("div");
+    const kind=b.type==="before"?"before":b.type==="after"?"after":"during";
+    el.className="blk "+kind+(b.id===selId?" sel":""); el.dataset.id=b.id;
+    el.style.minHeight=Math.max(54, b.min*scale)+"px";
+    const typeName=kind==="during"?(ACTIVITIES[b.type]||{}).name||b.type:(kind==="before"?"Before · one routine":"After · one artifact");
+    el.innerHTML=`${kind==="during"?'<span class="grip">⋮⋮</span>':'<span class="locked" title="One block, by rule">🔒</span>'}
+      <span class="mins">${b.min} min</span>
+      <div class="type">${typeName}</div>
+      <div class="ttl">${esc(b.title)||"<i style='color:#a9b3c0'>untitled</i>"}</div>
+      <div class="done">${b.objective?"<b>✓ objective</b>":"<i>○ objective</i>"} · ${(b.students||b.do)?"<b>✓ what students do</b>":"<i>○ what students do</i>"}</div>
+      ${kind==="during"?'<button class="x" title="Remove this activity">✕</button><span class="ud"><button data-mv="-1" title="Move up">▲</button><button data-mv="1" title="Move down">▼</button></span>':''}`;
+    el.onclick=ev=>{ if(ev.target.classList.contains("x")){ removeAct(b.id); return; } if(ev.target.dataset.mv){ nudge(b.id,+ev.target.dataset.mv); return; } selId=b.id; renderTimeline(); renderEditor(); };
+    if(kind==="during"){ el.draggable=true; el.ondragstart=ev=>{ el.classList.add("dragging"); ev.dataTransfer.setData("text/plain",b.id); }; el.ondragend=()=>el.classList.remove("dragging");
+      el.ondragover=ev=>{ ev.preventDefault(); }; el.ondrop=ev=>{ ev.preventDefault(); const from=ev.dataTransfer.getData("text/plain"); moveAct(from,b.id); }; }
+    tl.appendChild(el);
+    if(i<blocks.length-1){
+      const th=document.createElement("div"); th.className="thread";
+      th.innerHTML=`<span class="arrow">↓</span><div class="tl2"><div class="tlab">Thread</div><textarea rows="1" placeholder="What do students now have that the next block needs?">${esc(b.thread||"")}</textarea></div>`;
+      const ta=th.querySelector("textarea"); const grow=()=>{ ta.style.height="auto"; ta.style.height=(ta.scrollHeight+2)+"px"; }; ta.oninput=e=>{ b.thread=e.target.value; grow(); save(); }; ta.onclick=e=>e.stopPropagation(); requestAnimationFrame(grow);
+      tl.appendChild(th);
+    }
+  });
+}
+function nudge(id,d){ const a=state.during; const i=a.findIndex(x=>x.id===id); const j=i+d; if(i<0||j<0||j>=a.length) return; [a[i],a[j]]=[a[j],a[i]]; save(); renderTimeline(); }
+function moveAct(fromId,toId){ if(fromId===toId) return; const a=state.during; const fi=a.findIndex(x=>x.id===fromId), ti=a.findIndex(x=>x.id===toId); if(fi<0||ti<0) return; const [m]=a.splice(fi,1); a.splice(ti,0,m); save(); renderTimeline(); }
+function removeAct(id){ if(state.during.length<=1){ toast("Keep at least one activity in the middle."); return; } state.during=state.during.filter(a=>a.id!==id); if(selId===id) selId=null; save(); renderTimeline(); renderEditor(); }
+function addAct(type){ if(state.during.length>=3){ toast("Three activities is the most the middle can hold. Remove one first."); return false; } const a=blankAct(type||"task"); const left=state.block-used(); a.min=Math.max(5, Math.min(20, left>0?left:15)); state.during.push(a); selId=a.id; save(); renderTimeline(); renderEditor(); return true; }
+document.getElementById("addAct").onclick=()=>openDrawer();
+document.getElementById("openShapes").onclick=()=>{ openDrawer(); document.getElementById("shapeList").scrollIntoView({behavior:"smooth"}); };
+
+/* ---------- render: editor ---------- */
+function renderEditor(){
+  const ed=document.getElementById("editor"); const b=selId&&byId(selId);
+  if(!b){ ed.innerHTML='<div class="empty">Click a block on the timeline to edit it.</div>'; return; }
+  const kind=b.type==="before"?"before":b.type==="after"?"after":"during";
+  const A=ACTIVITIES[b.type]||{};
+  let h=`<div class="edhead"><h2>${kind==="before"?"Before — the routine":kind==="after"?"After — the artifact":"Activity"}</h2>${kind!=="during"?`<span class="badge ${kind}">${kind==="before"?"one routine":"one artifact"}</span>`:""}</div>`;
+  if(kind==="before") h+=`<div class="guide"><b>Built in nVoke.</b> In the real app this block reads your nVoke pack — the routine, its question, its cards — and adds the three things Week 9 asks: what must not be given away, the entry thinking it should surface, the over-scaffold check. Here it's a placeholder you can edit.</div>`;
+  if(kind==="after") h+=`<div class="guide"><b>Pick an artifact type.</b> In the real app: exit slip · discussion transcript · strategy gallery · one-on-one probe — each ending in <i>what it captures</i> and <i>would a student's response answer your question?</i> Here it's a placeholder you can edit.</div>`;
+  if(kind==="during") h+=`<label>Activity type</label><select id="f_type">${Object.entries(ACTIVITIES).map(([k,v])=>`<option value="${k}" ${k===b.type?"selected":""}>${v.name}</option>`).join("")}</select><div class="tip" style="margin-top:4px">${esc(A.sub||"")}${A.link?` · <a href="${A.link}" target="_blank" rel="noopener">See examples</a>`:""}</div>`;
+  h+=`<div class="row"><div><label>Title<span class="req">*</span> <span class="tip">— what you'd call it on the plan</span></label><input type="text" id="f_title" value="${esc(b.title)}"></div><div class="narrow"><label>Minutes<span class="req">*</span></label><input type="text" id="f_min" inputmode="numeric" value="${b.min}"></div></div>`;
+  if(kind==="during"&&b.type==="script"){
+    h+=`<label>The lesson, as your host teacher gave it</label>
+      <div class="uprow"><button class="ghost" type="button" onclick="toast('Prototype — upload comes with the real app')">📄 Upload the electronic copy (PDF)</button><button class="ghost" type="button" onclick="toast('Prototype — photos come with the real app')">📷 No electronic copy? Photograph it</button></div>
+      <div class="tip" style="margin-top:4px">Ask your host teacher for the electronic copy first — Eureka/EngageNY, Illustrative Math, Bridges, enVision all have one. Crop out any student names.</div>
+      <div class="guide"><b>The four questions.</b> Read each part of the script and ask: where do students get room? <i>Delivery for engagement, structure for evidence.</i></div>
+      <div class="four">
+        <div><b>1 · Collaborate</b> — do students have room to work on it together?<textarea id="f_four_collab">${esc(b.four.collab)}</textarea></div>
+        <div><b>2 · Ask</b> — do they have room to ask questions?<textarea id="f_four_ask">${esc(b.four.ask)}</textarea></div>
+        <div><b>3 · Share</b> — small group and whole class?<textarea id="f_four_share">${esc(b.four.share)}</textarea></div>
+        <div><b>4 · Think first</b> — do they get to come up with their own approach before they're shown one?<textarea id="f_four_think">${esc(b.four.think)}</textarea></div>
+      </div>`;
+  } else if(kind==="during"&&A.extra){
+    h+=`<label>${esc(A.extra.label)}</label><textarea id="f_extra">${esc(b.extra)}</textarea>`;
+    if(b.type==="task") h+=`<div class="guide warn"><b>Do it yourself first.</b> In the real app this is where your three solutions go — three <i>distinct</i> ways (objects · drawing · number line · table · guess-check · symbols · words · pattern), tagged, and the third doesn't count until the tags differ. Don't pose a task you haven't worked; doing it is how you anticipate.</div>`;
+  }
+  h+=`<div class="two"><div><label>What students do<span class="req">*</span></label><textarea id="f_students">${esc(b.students||"")}</textarea></div><div><label>What I do</label><textarea id="f_teacher">${esc(b.teacher||"")}</textarea></div></div>`;
+  h+=`<label>Objective<span class="req">*</span> <span class="hint">— what students should be able to do or understand by the end of this part</span></label><input type="text" id="f_objective" value="${esc(b.objective||"")}">
+      <div class="small" style="margin-top:4px">Standards are what the state expects by the end of the year; an objective is what <i>you</i> expect by the end of these ${b.min} minutes. You write objectives. The lesson's standards live on the Profile.</div>`;
+  h+=`<label>Key questions <span class="deep">go deeper</span><span class="tip"> — what <i>you</i> ask while they work</span></label><textarea id="f_questions">${esc(b.questions||"")}</textarea>`;
+  h+=`<label>Anticipated student responses <span class="deep">go deeper</span><span class="tip"> — by pseudonym, from your work samples</span></label><textarea id="f_anticipate">${esc(b.anticipate||"")}</textarea>`;
+  h+=`<label>Materials <span class="deep">go deeper</span></label><input type="text" id="f_materials" value="${esc(b.materials||"")}">`;
+  h+=`<div class="aibar"><span class="lbl">Second reads:</span><button class="ghost" onclick="toast('Hand it over — the peer read. Prints a one-page review sheet in the real app.')">Hand it over ▶</button><button class="ghost" disabled>Ask me</button><button class="ghost" disabled>Show me options</button><button class="ghost" disabled>Check this</button><span class="later">AI is placed here; wired in the real app — optional, as much as you want</span></div>`;
+  ed.innerHTML=h;
+  const bind=(id,key,cb)=>{ const el=document.getElementById(id); if(!el) return; el.oninput=e=>{ if(key) b[key]=e.target.value; if(cb) cb(e.target.value); save(); renderTimeline(); }; };
+  bind("f_title","title"); bind("f_students","students"); bind("f_teacher","teacher"); bind("f_questions","questions"); bind("f_anticipate","anticipate"); bind("f_objective","objective"); bind("f_materials","materials"); bind("f_extra","extra");
+  bind("f_min",null,v=>{ b.min=Math.max(1,Math.min(120,parseInt(v)||1)); });
+  ["collab","ask","share","think"].forEach(k=>bind("f_four_"+k,null,v=>{ b.four[k]=v; }));
+  const t=document.getElementById("f_type"); if(t) t.onchange=e=>{ b.type=e.target.value; save(); renderTimeline(); renderEditor(); };
+}
+
+/* ---------- drawer ---------- */
+function openDrawer(){ document.getElementById("drawer").classList.add("open"); document.getElementById("drawerBack").classList.add("open"); }
+function closeDrawer(){ document.getElementById("drawer").classList.remove("open"); document.getElementById("drawerBack").classList.remove("open"); }
+document.getElementById("drawerToggle").onclick=openDrawer; document.getElementById("drawerClose").onclick=closeDrawer; document.getElementById("drawerBack").onclick=closeDrawer;
+function renderDrawer(){
+  document.getElementById("actList").innerHTML=Object.entries(ACTIVITIES).map(([k,v])=>`<div class="drow"><div class="dmeta"><div class="dname">${v.name}</div><div class="dsub">${esc(v.sub)}${v.link?` · <a href="${v.link}" target="_blank" rel="noopener">examples</a>`:""}</div></div><button class="tbtn" data-add="${k}">Add</button></div>`).join("");
+  document.getElementById("shapeList").innerHTML=SHAPES.map((s,i)=>`<div class="drow"><div class="dmeta"><div class="dname">${s.name}</div><div class="dsub">${esc(s.sub)}<br><span style="color:var(--outline)">${s.seq.map(k=>ACTIVITIES[k].name).join(" → ")}</span></div></div><button class="tbtn" data-shape="${i}">Use</button></div>`).join("");
+  document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{ if(addAct(b.dataset.add)) closeDrawer(); });
+  document.querySelectorAll("[data-shape]").forEach(b=>b.onclick=()=>{ const s=SHAPES[+b.dataset.shape]; if(!confirm(`Start from "${s.name}"? This replaces the middle activities. Before and After stay.`)) return; const left=state.block-state.before.min-state.after.min; state.during=s.seq.map(k=>{ const a=blankAct(k); a.min=Math.max(5,Math.round(left/s.seq.length)); return a; }); selId=state.during[0].id; save(); renderTimeline(); renderEditor(); closeDrawer(); });
+}
+
+/* ---------- project bar ---------- */
+document.getElementById("saveProj").onclick=()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="bda-planner-project.json"; a.click(); toast("Saved. Keep this file — it's how your plan travels."); };
+document.getElementById("loadProj").onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ state=JSON.parse(r.result); selId=null; save(); renderAll(); toast("Project loaded."); }catch(err){ toast("That file didn't read as a project."); } }; r.readAsText(f); e.target.value=""; };
+document.getElementById("resetProj").onclick=()=>{ if(!confirm("Put the sample data back? Your edits in this browser are lost.")) return; state=JSON.parse(JSON.stringify(SAMPLES[state.door||"lesson"])); selId=null; save(); renderAll(); };
+
+/* ---------- misc ---------- */
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+let toastT; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.style.opacity=1; clearTimeout(toastT); toastT=setTimeout(()=>t.style.opacity=0,2600); }
+document.getElementById("tipsBtn").onclick=()=>{ document.body.classList.toggle("tips"); try{localStorage.setItem(STORE+"-tips",document.body.classList.contains("tips")?"1":"0");}catch(e){} document.getElementById("tipsBtn").textContent=document.body.classList.contains("tips")?"💡 Hide tips":"💡 Show tips"; };
+try{ if(localStorage.getItem(STORE+"-tips")!=="0"){ document.body.classList.add("tips"); document.getElementById("tipsBtn").textContent="💡 Hide tips"; } }catch(e){}
+function renderAll(){ renderTop(); renderTimeline(); renderEditor(); renderDrawer(); }
+load(); if(!selId) selId=(state.during[0]||{}).id||null; renderAll();
+</script>
+</body>
+</html>
