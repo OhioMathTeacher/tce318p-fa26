@@ -21,7 +21,7 @@
   body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--ground);color:var(--ink);line-height:1.5;font-size:15px}
   .wrap{max-width:none;margin:0;padding:16px 28px 70px}
   .wrap.narrow{max-width:900px;margin:0 auto}
-  h1{font-size:26px;margin:0;color:var(--outline);letter-spacing:.3px;display:flex;align-items:baseline;line-height:1;align-self:center;position:relative;top:1px}
+  h1{font-size:26px;margin:0;color:var(--outline);letter-spacing:.3px;display:flex;align-items:baseline;line-height:1.1}
   h1 a{color:inherit;text-decoration:none}
   h1 a:hover{text-decoration:underline}
   h1 small{font-weight:600;color:var(--muted);font-size:14px;margin-left:8px}
@@ -34,8 +34,7 @@
   .gearMenu .sep{border-top:1px solid var(--line);margin:6px 4px}
   .gearMenu .hd{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:6px 12px 2px}
   .hdrbar{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
-  .hdrbar .toolbar,.hdrbar .gear{align-self:center}
-  .hdrbar .toolbar{align-items:center}
+  .hdrbar .toolbar{align-items:baseline}
   .proto{font-size:12px;color:#6b4a08;background:var(--gold-soft);border:1px solid #e7d3a1;border-radius:8px;padding:6px 10px;margin:10px 0 6px}
   /* phase strip (nVoke) */
   .phasebar{display:inline-flex;gap:0;margin:8px 0 4px;border:2px solid var(--outline);border-radius:12px;overflow:hidden;flex-wrap:wrap}
@@ -488,7 +487,7 @@
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 39</div>
+<div id="build">Build 40</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
