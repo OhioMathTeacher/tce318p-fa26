@@ -35,8 +35,6 @@
   .phase.on .pnum b{color:var(--outline)}
   .phase:disabled{opacity:.4;cursor:not-allowed}
   .phase.ref{font-weight:600;color:var(--muted)}
-  .drawerToggle{border:2px solid var(--outline);background:#fff;color:var(--outline);border-radius:11px;padding:9px 15px;font:inherit;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px}
-  .drawerToggle:hover{background:#eef4fc}
   /* project bar */
   .projbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:10px 0 12px;font-size:13px}
   .projbar .grow{flex:1}
@@ -132,13 +130,6 @@
   .aibar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)}
   .aibar .lbl{font-size:12.5px;color:var(--muted);margin-right:4px}
   .aibar .later{font-size:11.5px;color:#a9b3c0;font-style:italic;margin-left:auto}
-  /* drawer (nVoke) */
-  #drawer{position:fixed;top:0;left:0;bottom:0;width:min(440px,92vw);background:#fff;z-index:40;border-right:1px solid var(--line);box-shadow:6px 0 26px #0002;transform:translateX(-102%);transition:transform .22s ease;overflow-y:auto;padding:18px 18px 40px}
-  #drawer.open{transform:translateX(0)}
-  #drawerBack{position:fixed;inset:0;background:#0004;z-index:39;display:none}
-  #drawerBack.open{display:block}
-  .drawerHd{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-  .drawerHd h2{font-size:19px;margin:0;color:var(--outline)}
   .dsec{font-weight:700;font-size:13px;color:var(--outline);margin:16px 0 4px;text-transform:uppercase;letter-spacing:.4px}
   .drow{border:1px solid var(--line);border-radius:12px;padding:9px 11px;margin-top:8px;display:flex;gap:11px;align-items:center}
   .drow .dmeta{flex:1;min-width:0}
@@ -190,7 +181,6 @@
   .sum.over b{color:var(--mark)}.sum.under b{color:#8a6a1a}
   .panes{display:grid;gap:18px;margin-top:10px;align-items:start}
   .pane{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px 16px;min-height:420px}
-  .pane.focus{box-shadow:0 0 0 2px var(--outline) inset}
   .pane .ph{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
   .pane .ph h2{margin:0;font-size:19px;flex:1}
   .pane.before .ph h2{color:var(--before)}.pane.during .ph h2{color:var(--during)}.pane.after .ph h2{color:var(--after)}
@@ -214,8 +204,30 @@
   .nv .ncard:focus-within{border-color:var(--before)}
   .nv .ncard .x{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:11px;line-height:18px;padding:0;cursor:pointer;display:none}
   .nv .ncard:hover .x,.nv .ncard:focus-within .x{display:block}
-  .slice.add{flex:0 0 auto;min-width:64px;border-style:dashed;justify-content:center;align-items:center;color:var(--muted);font-weight:700;font-size:12.5px;text-align:center;line-height:1.2}
-  .slice.add:hover{border-color:var(--outline);color:var(--outline)}
+  .slice.empty{border-style:dashed;justify-content:center;align-items:center;text-align:center;color:var(--muted);font-weight:700;font-size:12.5px;line-height:1.25}
+  .slice.empty:hover{border-color:var(--outline);color:var(--outline)}
+  .slice.empty .sno{font-size:11px;font-weight:800;color:#a9b3c0;margin-bottom:4px}
+  .slice.filled{border-color:var(--during);background:var(--tint,#fff)}
+  .slice.filled.sel{box-shadow:0 0 0 2px var(--outline)}
+  .slice .sicon{font-size:28px;line-height:1;margin-bottom:3px}
+  .sedh .sicon{font-size:24px;margin:0}
+  .sedh .cur{font-weight:800;font-size:15px}
+  .sedh a.chg{font-size:12.5px;color:var(--outline);cursor:pointer;text-decoration:underline}
+  #pickModal{position:fixed;inset:0;background:#0006;z-index:60;display:none;align-items:center;justify-content:center;padding:24px}
+  #pickModal.open{display:flex}
+  #pickModal .box{background:#fff;border-radius:14px;width:min(860px,96vw);max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+  #pickModal .bh{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+  #pickModal .bh h2{margin:0;font-size:18px;color:var(--outline)}
+  #pickModal .bb{flex:1;overflow:auto;padding:12px 18px 18px}
+  .ptiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:10px}
+  .ptile{border:2px solid var(--line);border-radius:12px;padding:12px 13px;cursor:pointer;background:#fff;text-align:left;font:inherit}
+  .ptile:hover{border-color:var(--outline);background:#f4f8fd}
+  .ptile.on{border-color:var(--during);background:var(--during-soft)}
+  .ptile .pi{font-size:30px;line-height:1;margin-bottom:6px}
+  .ptile .pn{font-weight:800;font-size:14px}
+  .ptile .ps{font-size:12px;color:var(--muted);margin-top:3px}
+  .ptile .pu{font-size:11px;color:var(--during);font-weight:700;margin-top:5px}
+  .ptile .ps a{color:var(--outline)}
   .nv .prompt{margin-top:10px}
   .slices{display:flex;gap:6px;align-items:stretch;margin:6px 0 2px;min-height:86px}
   .slice{flex:1 1 0;border:2px solid #bcd0ea;border-radius:12px;background:#fff;padding:8px 10px;cursor:pointer;min-width:70px;position:relative;display:flex;flex-direction:column;justify-content:space-between}
@@ -279,7 +291,7 @@
   #profilePrint{display:none}
   @media print{
     body{background:#fff;font-size:12pt;line-height:1.35}
-    body>.wrap, #drawer, #drawerBack, #toast, #pdfModal{display:none!important}
+    body>.wrap, #toast, #pdfModal, #pickModal{display:none!important}
     #profilePrint{display:block;max-width:7in;margin:0 auto;color:#000}
     #profilePrint h1{font-size:17pt;margin:0 0 2pt}
     #profilePrint .meta{font-size:10.5pt;color:#333;margin:0 0 14pt}
@@ -390,21 +402,14 @@
   <div class="card" id="lessonPane" style="margin:12px 0 10px"></div>
   <div id="duringChips" style="margin:0 0 4px"></div>
   <div class="planbar">
-    <span class="views" id="views"><button class="b on" data-v="before">Before</button><button class="on" data-v="during">During</button><button class="a on" data-v="after">After</button></span>
+    <span class="views" id="views"><button class="b" data-v="before">Before</button><button data-v="during">During</button><button class="a" data-v="after">After</button><button data-v="all">All three</button></span>
     <span class="sum" id="planSum"></span>
-    <span style="flex:1"></span>
-    <button class="drawerToggle" id="drawerToggle" title="What you can pick for the pane you're working in.">🧩 Activities &amp; shapes</button>
   </div>
   <div class="panes" id="panes"></div>
   </div><!-- /during panel -->
 </div>
 
-<!-- drawer -->
-<div id="drawerBack"></div>
-<div id="drawer">
-  <div class="drawerHd"><h2 id="drawerTitle">🧩 Activities</h2><button class="tbtn" id="drawerClose">✕</button></div>
-  <div id="drawerBody"></div>
-</div>
+<div id="pickModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><h2 id="pickTitle"></h2><span class="small" id="pickSub"></span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pickModal').classList.remove('open')">✕</button></div><div class="bb" id="pickBody"></div></div></div>
 <div id="stdModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><h2>Ohio's standards</h2><span class="small" id="stdModalSub"></span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pdfModal').classList.add('open')">The PDF</button><button class="tbtn" onclick="document.getElementById('stdModal').classList.remove('open')">✕</button></div><div class="bb" id="stdModalBody"></div><div class="bf"><span class="small" id="stdModalCount"></span><span style="flex:1"></span><button class="primary" onclick="document.getElementById('stdModal').classList.remove('open')">Done</button></div></div></div>
 <div id="pdfModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><b>Ohio's Learning Standards | Mathematics (2017)</b><span class="small">Ohio Department of Education</span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pdfModal').classList.remove('open')">✕</button></div><iframe src="standards/Ohio-Learning-Standards-Mathematics-2017.pdf" title="Ohio standards"></iframe></div></div>
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
@@ -449,16 +454,16 @@ async function findStandards(btn){
 
 /* ---------- the palette ---------- */
 const ACTIVITIES = {
-  notice:   {name:"Notice & wonder",          sub:"A situation or image, no question yet. What do you notice? What do you wonder?", extra:{key:"shown",label:"What is shown"}, link:"https://www.nctm.org/noticeandwonder/"},
-  estimate: {name:"Estimate, then reveal",    sub:"Commit to a guess, work it, then see the answer.", extra:{key:"reveal",label:"The reveal"}, link:"https://estimation180.com/"},
-  task:     {name:"Work the task",            sub:"Individual or small-group work on the rich task. You work it first — three distinct ways.", extra:{key:"task",label:"The task, as students will meet it"}, link:"https://nrich.maths.org/"},
-  compare:  {name:"Compare in pairs",         sub:"“How is yours different from mine?”", extra:{key:"compare",label:"What they compare"}, link:"https://www.samebutdifferentmath.com/"},
-  change:   {name:"Change one thing",         sub:"The same task with one feature shifted — a number, a representation, the context.", extra:{key:"changed",label:"What changed, and what stayed"}, link:"https://www.openmiddle.com/"},
-  sort:     {name:"Card sort",                sub:"Equivalent or not? Same or different? Sorting forces a claim.", extra:{key:"cards",label:"The cards"}, link:"https://www.samebutdifferentmath.com/"},
-  always:   {name:"Does it always work?",     sub:"A counterexample. Test the claim the students just made.", extra:{key:"claim",label:"The claim, and the counterexample"}, link:"https://wodb.ca/"},
-  share:    {name:"Curated share",            sub:"Selected strategies to the board, in an order you chose, with a connecting question.", extra:{key:"order",label:"Which strategies, in what order, and the connecting question"}, link:"https://www.nctm.org/store/Products/5-Practices-for-Orchestrating-Productive-Mathematics-Discussions/"},
-  script:   {name:"Host teacher's lesson, as written", sub:"The scripted piece, kept. You annotate where the students get room.", extra:null, link:null},
-  other:    {name:"Something else",           sub:"Your own. The thread line is still required.", extra:null, link:null},
+  notice:   {icon:"👀", tint:"#fff6d9", name:"Notice & wonder",          sub:"A situation or image, no question yet. What do you notice? What do you wonder?", extra:{key:"shown",label:"What is shown"}, link:"https://www.nctm.org/noticeandwonder/"},
+  estimate: {icon:"🎯", tint:"#ffe9d6", name:"Estimate, then reveal",    sub:"Commit to a guess, work it, then see the answer.", extra:{key:"reveal",label:"The reveal"}, link:"https://estimation180.com/"},
+  task:     {icon:"🧮", tint:"#dfeeff", name:"Work the task",            sub:"Individual or small-group work on the rich task. You work it first — three distinct ways.", extra:{key:"task",label:"The task, as students will meet it"}, link:"https://nrich.maths.org/"},
+  compare:  {icon:"🔍", tint:"#e3f7e6", name:"Compare in pairs",         sub:"“How is yours different from mine?”", extra:{key:"compare",label:"What they compare"}, link:"https://www.samebutdifferentmath.com/"},
+  change:   {icon:"🔁", tint:"#efe4ff", name:"Change one thing",         sub:"The same task with one feature shifted — a number, a representation, the context.", extra:{key:"changed",label:"What changed, and what stayed"}, link:"https://www.openmiddle.com/"},
+  sort:     {icon:"🃏", tint:"#ffe4ec", name:"Card sort",                sub:"Equivalent or not? Same or different? Sorting forces a claim.", extra:{key:"cards",label:"The cards"}, link:"https://www.samebutdifferentmath.com/"},
+  always:   {icon:"⚖️", tint:"#e6f4f1", name:"Does it always work?",     sub:"A counterexample. Test the claim the students just made.", extra:{key:"claim",label:"The claim, and the counterexample"}, link:"https://wodb.ca/"},
+  share:    {icon:"🗣️", tint:"#fdeccf", name:"Curated share",            sub:"Selected strategies to the board, in an order you chose, with a connecting question.", extra:{key:"order",label:"Which strategies, in what order, and the connecting question"}, link:"https://www.nctm.org/store/Products/5-Practices-for-Orchestrating-Productive-Mathematics-Discussions/"},
+  script:   {icon:"📄", tint:"#eeeeee", name:"Host teacher's lesson, as written", sub:"The scripted piece, kept. You annotate where the students get room.", extra:null, link:null},
+  other:    {icon:"✏️", tint:"#f3f0e6", name:"Something else",           sub:"Your own. The thread line is still required.", extra:null, link:null},
 };
 const SHAPES = [
   {name:"One task, three passes", seq:["task","compare","change"], sub:"Work it alone → compare in pairs → the class pushes a variation. The same task, deepening."},
@@ -552,7 +557,7 @@ const SAMPLES = {
 /* ---------- state ---------- */
 const STORE="bda-planner-proto-v10";
 let state=null, selId=null;
-function blankState(){ return {door:"", block:0, bg:{names:"",section:"",grade:"",host:"",concept:"",standards:[],practices:[],before:"",after:"",sources:[["",""]],studentsRows:[["",""],["",""],["",""]],samplesRows:[["","","",""],["","","",""],["","","",""]],think:"",question:"",why:"",scriptName:"",read:null,idea:""}, before:blankBefore(), during:[blankAct("task"),blankAct("compare"),blankAct("change")], after:blankAfter(), views:{before:true,during:true,after:true}}; }
+function blankState(){ return {door:"", block:0, bg:{names:"",section:"",grade:"",host:"",concept:"",standards:[],practices:[],before:"",after:"",sources:[["",""]],studentsRows:[["",""],["",""],["",""]],samplesRows:[["","","",""],["","","",""],["","","",""]],think:"",question:"",why:"",scriptName:"",read:null,idea:""}, before:blankBefore(), during:[blankAct(null),blankAct(null),blankAct(null)], after:blankAfter(), view:"before"}; }
 function load(){ try{ const s=localStorage.getItem(STORE); if(s){ state=JSON.parse(s); return; } }catch(e){} state=blankState(); }
 function save(){ try{ localStorage.setItem(STORE,JSON.stringify(state)); document.getElementById("saveNote").textContent="Autosaved "+new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}); }catch(e){} }
 function allBlocks(){ return [state.before, ...state.during, state.after]; }
@@ -723,22 +728,21 @@ function renderTop(){ renderToolbar(); renderBackground(); renderChips(); }
 function mins(v){ const n=parseInt(v); return isNaN(n)?0:n; }
 function planTotal(){ return mins(state.before.min)+state.during.reduce((n,a)=>n+mins(a.min),0)+mins(state.after.min); }
 function renderPlan(){
-  state.views=state.views||{before:true,during:true,after:true};
-  if(!Object.values(state.views).some(Boolean)) state.views.during=true;
-  document.querySelectorAll("#views button").forEach(b=>b.classList.toggle("on",!!state.views[b.dataset.v]));
+  if(!["before","during","after","all"].includes(state.view)) state.view="before";
+  document.querySelectorAll("#views button").forEach(b=>b.classList.toggle("on",b.dataset.v===state.view));
   const tot=planTotal(), blk=state.block; const sum=document.getElementById("planSum");
   const parts=`Before <b>${mins(state.before.min)||"–"}</b> + During <b>${state.during.reduce((n,a)=>n+mins(a.min),0)||"–"}</b> + After <b>${mins(state.after.min)||"–"}</b> = <b>${tot}</b>`;
   if(!blk){ sum.className="sum under"; sum.innerHTML=parts+` min · <b>set your math block on the Profile tab</b>`; }
   else if(tot>blk){ sum.className="sum over"; sum.innerHTML=parts+` of ${blk} min — <b>${tot-blk} over</b>`; }
   else if(tot<blk){ sum.className="sum under"; sum.innerHTML=parts+` of ${blk} min — <b>${blk-tot} unallocated</b>`; }
   else { sum.className="sum"; sum.innerHTML=parts+` of ${blk} min ✓`; }
-  const on=["before","during","after"].filter(k=>state.views[k]);
+  const on=state.view==="all"?["before","during","after"]:[state.view];
   const panes=document.getElementById("panes");
   panes.style.gridTemplateColumns=on.map(k=>k==="during"&&on.length>1?"minmax(0,1.6fr)":"minmax(0,1fr)").join(" ");
   panes.innerHTML=on.map(k=>k==="before"?renderBefore():k==="during"?renderDuring():renderAfter()).join("");
-  wirePlan(); wireInfo(); renderDrawer();
+  wirePlan(); wireInfo();
 }
-document.querySelectorAll("#views button").forEach(b=>b.onclick=()=>{ state.views[b.dataset.v]=!state.views[b.dataset.v]; save(); renderPlan(); });
+document.querySelectorAll("#views button").forEach(b=>b.onclick=()=>{ state.view=b.dataset.v; save(); renderPlan(); });
 const readsBar=`<div class="reads"><span>Second reads:</span><button class="ghost" onclick="toast('Hand it over — a classmate runs it. Prints the review sheet in the real app.')">Hand it over ▶</button><button class="ghost" disabled>Ask me</button><button class="ghost" disabled>Show me options</button><button class="ghost" disabled>Check this</button><span class="later">AI wired in the real app — optional</span></div>`;
 
 function renderBefore(){
@@ -746,7 +750,7 @@ function renderBefore(){
   const other=beforeOther||(!!b.name&&!ROUTINES.includes(b.name));
   const cards=(b.cards||[]).map((c,i)=>`<div class="ncard"><textarea data-cardtext="${i}" placeholder="7 + 8">${esc(c)}</textarea><span class="num">${i+1}</span><button class="x" data-delcard="${i}" title="Remove this card">✕</button></div>`).join("");
   return `<div class="pane before"><div class="ph"><span class="tag">Before</span><h2>One routine</h2><span class="mins"><input type="text" inputmode="numeric" placeholder="15" data-bmin value="${esc(b.min)}">min</span>${I("The routine that opens the lesson — one, short, and it primes the concept without giving away the move the During is meant to reveal. Build it like an nVoke pack: cards you show, one question you ask.")}</div>
-    <label>1 · Select a routine ${I("The warm-up's structure. Pick one you've seen or run; Other… lets you name your own.")}</label><div style="display:flex;gap:8px;align-items:center"><select data-bsel style="width:auto;flex:1;max-width:300px"><option value="">Choose one…</option>${ROUTINES.map(r=>`<option ${b.name===r?"selected":""}>${r}</option>`).join("")}<option value="__other" ${other?"selected":""}>Other…</option></select><input type="text" data-b="name" value="${esc(b.name)}" placeholder="Name it, and where it's from" style="flex:1;${other?"":"display:none"}"></div>
+    <label>1 · Select a routine <a class="small" data-routines style="cursor:pointer;text-decoration:underline;font-weight:500">what are these?</a></label><div style="display:flex;gap:8px;align-items:center"><select data-bsel style="width:auto;flex:1;max-width:300px"><option value="">Choose one…</option>${ROUTINES.map(r=>`<option ${b.name===r?"selected":""}>${r}</option>`).join("")}<option value="__other" ${other?"selected":""}>Other…</option></select><input type="text" data-b="name" value="${esc(b.name)}" placeholder="Name it, and where it's from" style="flex:1;${other?"":"display:none"}"></div>
     <div class="nv" style="margin-top:10px"><div class="striplabel">2 · Your cards — what students see, one card each. Type on a card.</div><div class="cards">${cards}<div class="ncard add" data-addcard title="Add a card and type what's on it: a number, an expression, a figure described">＋ card</div></div>
       <div class="prompt"><label style="margin-top:4px">3 · What you say <span class="hint">— the posing question, exactly</span></label><input type="text" data-b="prompt" value="${esc(b.prompt)}" placeholder="What's the same? What's different?"></div></div>
     <div class="two"><div><label>What students do</label><textarea data-b="students">${esc(b.students)}</textarea></div><div><label>What I do</label><textarea data-b="teacher">${esc(b.teacher)}</textarea></div></div>
@@ -760,12 +764,16 @@ function renderBefore(){
 function renderDuring(){
   const n=state.during.length; if(!selId||!state.during.find(a=>a.id===selId)) selId=state.during[0]?.id||null;
   const total=state.during.reduce((t,a)=>t+mins(a.min),0)||1;
-  const slices=state.during.map((a,i)=>{ const A=ACTIVITIES[a.type]||{}; const w=Math.max(12, mins(a.min)?100*mins(a.min)/total:100/n); return `<div class="slice ${a.id===selId?"sel":""}" data-slice="${a.id}" style="flex-basis:${w}%"><div><div class="sn">${i+1} · ${esc(A.name||"")}</div><div class="st ${a.title?"":"empty"}">${esc(a.title)||"untitled"}</div></div><div class="sm"><input type="text" inputmode="numeric" placeholder="15" data-smin="${a.id}" value="${esc(a.min)}">min</div>${a.objective&&a.students?'<span class="ok">✓</span>':""}</div>`+(i<n-1?'<span class="sarrow">→</span>':""); }).join("");
+  const slices=state.during.map((a,i)=>{ const A=ACTIVITIES[a.type]; const w=Math.max(12, mins(a.min)?100*mins(a.min)/total:100/n);
+    const card=A?`<div class="slice filled ${a.id===selId?"sel":""}" data-slice="${a.id}" style="flex-basis:${w}%;--tint:${A.tint}"><div><div class="sicon">${A.icon}</div><div class="sn">${i+1} · ${esc(A.name)}</div><div class="st ${a.title?"":"empty"}">${esc(a.title)||"untitled"}</div></div><div class="sm"><input type="text" inputmode="numeric" placeholder="15" data-smin="${a.id}" value="${esc(a.min)}">min</div>${a.objective&&a.students?'<span class="ok">✓</span>':""}</div>`
+      :`<div class="slice empty ${a.id===selId?"sel":""}" data-slice="${a.id}" data-pick="${a.id}" style="flex-basis:${w}%"><div><div class="sno">${i+1}</div>＋ choose<br>an activity</div></div>`;
+    return card+(i<n-1?'<span class="sarrow">→</span>':""); }).join("");
   const a=state.during.find(x=>x.id===selId); const A=a?(ACTIVITIES[a.type]||{}):{}; const idx=state.during.indexOf(a);
   const prev=idx>0?state.during[idx-1]:null;
   let ed="";
   if(a){
-    ed=`<div class="sed"><div class="sedh"><h3>Activity ${idx+1}</h3><select data-atype style="width:auto;flex:1;max-width:340px">${Object.entries(ACTIVITIES).map(([k,v])=>`<option value="${k}" ${k===a.type?"selected":""}>${v.name}</option>`).join("")}</select>${A.link?`<a href="${A.link}" target="_blank" rel="noopener" class="small">examples</a>`:""}<span style="flex:1"></span>${n>1?`<button class="tbtn" data-remove="${a.id}">remove this slice</button>`:""}</div>
+    if(!a.type) ed=`<div class="sed"><div class="sedh"><h3>Activity ${idx+1}</h3><span style="flex:1"></span>${n>1?`<button class="tbtn" data-remove="${a.id}">remove this slice</button>`:""}</div><div class="small" style="margin:6px 0 10px">This slice is empty. Choose what kind of activity it is; the fields for it appear here.</div><button class="primary" data-pick="${a.id}">Choose an activity</button></div>`;
+    else ed=`<div class="sed"><div class="sedh"><h3>Activity ${idx+1}</h3><span class="sicon">${A.icon}</span><span class="cur">${esc(A.name)}</span><a class="chg" data-pick="${a.id}">change</a>${A.link?`<a href="${A.link}" target="_blank" rel="noopener" class="small">examples</a>`:""}<span style="flex:1"></span>${n>1?`<button class="tbtn" data-remove="${a.id}">remove this slice</button>`:""}</div>
       <div class="tip" style="margin-top:4px">${esc(A.sub||"")}</div>
       <label>Title <span class="hint">— what you'd call it on the plan</span></label><input type="text" data-a="title" value="${esc(a.title)}">
       ${a.type==="script"?`<div class="small" style="margin-top:8px">Working from: <b>${esc((state.bg||{}).scriptName||"your host teacher's lesson")}</b></div><div class="guide"><b>The four questions.</b> Read this part of the script and ask: where do students get room? <i>Delivery for engagement, structure for evidence.</i></div><div class="four" style="grid-template-columns:1fr 1fr"><div><b>1 · Collaborate</b> — room to work on it together?<textarea data-four="collab">${esc(a.four.collab)}</textarea></div><div><b>2 · Ask</b> — room to ask questions?<textarea data-four="ask">${esc(a.four.ask)}</textarea></div><div><b>3 · Share</b> — small group and whole class?<textarea data-four="share">${esc(a.four.share)}</textarea></div><div><b>4 · Think first</b> — their own approach before they're shown one?<textarea data-four="think">${esc(a.four.think)}</textarea></div></div>`:A.extra?`<label>${esc(A.extra.label)}</label><textarea data-a="extra">${esc(a.extra)}</textarea>${a.type==="task"?`<div class="guide warn"><b>Do it yourself first.</b> Your three <i>distinct</i> solutions go here in the real app — the third doesn't count until the representations differ.</div>`:""}`:""}
@@ -779,8 +787,8 @@ function renderDuring(){
       ${idx<n-1?`<div class="conn"><b>How does this activity connect to the next one?</b><textarea data-a="thread" style="margin-top:4px">${esc(a.thread)}</textarea></div>`:`<div class="conn"><b>How does this activity connect to the After?</b><textarea data-a="thread" style="margin-top:4px">${esc(a.thread)}</textarea></div>`}
       ${readsBar}</div>`;
   }
-  return `<div class="pane during"><div class="ph"><span class="tag">During</span><h2>The activities</h2><span class="mins">slices <select data-nslices style="width:auto;padding:5px 6px">${[1,2,3,4,5].map(k=>`<option ${k===n?"selected":""}>${k}</option>`).join("")}</select></span>${I("Two to five activities that build on each other — pick a type for each, give it your minutes, and say how each one connects to the next. Widths follow your minutes.")}</div>
-    <div class="slices">${slices}${n<5?`<div class="slice add" data-opendrawer title="Pick an activity type for a new slice, or start from a shape">🧩 ＋ activity<br><span style="font-weight:500">or a shape</span></div>`:""}</div>${ed}</div>`;
+  return `<div class="pane during"><div class="ph"><span class="tag">During</span><h2>The activities</h2><span class="mins">slices <select data-nslices style="width:auto;padding:5px 6px">${[1,2,3,4,5].map(k=>`<option ${k===n?"selected":""}>${k}</option>`).join("")}</select> · <a class="small" data-shapes style="cursor:pointer;text-decoration:underline">start from a shape</a></span>${I("Two to five activities that build on each other — pick a type for each, give it your minutes, and say how each one connects to the next. Widths follow your minutes.")}</div>
+    <div class="slices">${slices}</div>${ed}</div>`;
 }
 function renderAfter(){
   const a=state.after=Object.assign(blankAfter(),state.after||{});
@@ -810,53 +818,39 @@ function wirePlan(){
   P.querySelectorAll("[data-amin]").forEach(el=>el.onchange=e=>{ state.after.min=e.target.value; save(); renderPlan(); });
   P.querySelectorAll("[data-smin]").forEach(el=>{ el.onclick=e=>e.stopPropagation(); el.onchange=e=>{ const a=state.during.find(x=>x.id===el.dataset.smin); if(a) a.min=e.target.value; save(); renderPlan(); }; });
   P.querySelectorAll(".slice").forEach(el=>el.onclick=()=>{ selId=el.dataset.slice; renderPlan(); });
-  P.querySelectorAll("[data-nslices]").forEach(el=>el.onchange=e=>{ const k=+e.target.value; while(state.during.length<k) state.during.push(blankAct("task")); if(state.during.length>k){ if(!confirm(`Go down to ${k} slices? The last ${state.during.length-k} will be removed.`)){ renderPlan(); return; } state.during=state.during.slice(0,k); } save(); renderPlan(); });
-  P.querySelectorAll("[data-atype]").forEach(el=>el.onchange=e=>{ const a=state.during.find(x=>x.id===selId); if(a) a.type=e.target.value; save(); renderPlan(); });
+  P.querySelectorAll("[data-nslices]").forEach(el=>el.onchange=e=>{ const k=+e.target.value; while(state.during.length<k) state.during.push(blankAct(null)); if(state.during.length>k){ if(!confirm(`Go down to ${k} slices? The last ${state.during.length-k} will be removed.`)){ renderPlan(); return; } state.during=state.during.slice(0,k); } save(); renderPlan(); });
   P.querySelectorAll("[data-remove]").forEach(el=>el.onclick=()=>{ if(state.during.length<=1) return; state.during=state.during.filter(x=>x.id!==el.dataset.remove); selId=null; save(); renderPlan(); });
   P.querySelectorAll("[data-akind]").forEach(el=>el.onchange=e=>{ state.after.kind=e.target.value; save(); renderPlan(); });
   P.querySelectorAll("[data-addp]").forEach(el=>el.onclick=()=>{ state.after.prompts.push(["",""]); save(); renderPlan(); });
   bind("[data-cardtext]",(el,v)=>{ state.before.cards[+el.dataset.cardtext]=v; });
   P.querySelectorAll("[data-addcard]").forEach(el=>el.onclick=()=>{ state.before.cards.push(""); save(); renderPlan(); const ta=P.querySelectorAll("[data-cardtext]"); ta[ta.length-1]?.focus(); });
   P.querySelectorAll("[data-delcard]").forEach(el=>el.onclick=()=>{ state.before.cards.splice(+el.dataset.delcard,1); save(); renderPlan(); });
-  P.querySelectorAll("[data-opendrawer]").forEach(el=>el.onclick=()=>{ setFocusPane("during"); openDrawer(); });
+  P.querySelectorAll("[data-pick]").forEach(el=>el.onclick=e=>{ e.stopPropagation(); selId=el.dataset.pick; pickActivity(el.dataset.pick); });
+  P.querySelectorAll("[data-routines]").forEach(el=>el.onclick=pickRoutine);
+  P.querySelectorAll("[data-shapes]").forEach(el=>el.onclick=pickShape);
   P.querySelectorAll("[data-bsel]").forEach(el=>el.onchange=e=>{ const v=e.target.value; if(v==="__other"){ beforeOther=true; state.before.name=""; save(); renderPlan(); P.querySelector('[data-b="name"]')?.focus(); } else { beforeOther=false; state.before.name=v; save(); renderPlan(); } });
 }
 
-/* ---------- drawer ---------- */
-function openDrawer(){ document.getElementById("drawer").classList.add("open"); document.getElementById("drawerBack").classList.add("open"); }
-function closeDrawer(){ document.getElementById("drawer").classList.remove("open"); document.getElementById("drawerBack").classList.remove("open"); }
-document.getElementById("drawerToggle").onclick=openDrawer; document.getElementById("drawerClose").onclick=closeDrawer; document.getElementById("drawerBack").onclick=closeDrawer;
-let focusPane="during";
-const DRAWER_LABEL={before:"🖐 Select a routine",during:"🧩 Activities & shapes",after:"📋 Choose an artifact"};
-function setFocusPane(k){ if(!k||k===focusPane) return; focusPane=k; document.querySelectorAll("#panes .pane").forEach(p=>p.classList.toggle("focus",p.classList.contains(k))); renderDrawer(); }
-document.getElementById("panes").addEventListener("focusin",e=>setFocusPane(e.target.closest(".pane")?.classList[1]));
-document.getElementById("panes").addEventListener("click",e=>setFocusPane(e.target.closest(".pane")?.classList[1]));
-function renderDrawer(){
-  const on=Object.keys(state.views||{}).filter(k=>state.views[k]);
-  if(on.length&&!on.includes(focusPane)) focusPane=on[0];
-  document.getElementById("drawerToggle").textContent=DRAWER_LABEL[focusPane];
-  document.querySelectorAll("#panes .pane").forEach(p=>p.classList.toggle("focus",p.classList.contains(focusPane)));
-  const T=document.getElementById("drawerTitle"), B=document.getElementById("drawerBody");
-  if(focusPane==="before"){
-    T.textContent="🖐 Routines";
-    B.innerHTML=`<div class="small">A routine opens the lesson: cards you show, one question you ask. Pick one — it goes in step 1 of the Before.</div><div class="dsec">Routines</div>`
-      +ROUTINE_LIST.map((r,i)=>`<div class="drow"><div class="dmeta"><div class="dname">${esc(r[0])}</div><div class="dsub">${esc(r[1])}${r[2]?` · <a href="${r[2]}" target="_blank" rel="noopener">examples</a>`:""}</div></div><button class="tbtn" data-routine="${i}">Use</button></div>`).join("")
-      +`<div class="drow"><div class="dmeta"><div class="dname">Other…</div><div class="dsub">One you know that isn't listed. Name it, and where it's from.</div></div><button class="tbtn" data-routine="-1">Name it</button></div>`;
-    B.querySelectorAll("[data-routine]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.routine; state.before=Object.assign(blankBefore(),state.before||{}); if(i<0){ beforeOther=true; state.before.name=""; } else { beforeOther=false; state.before.name=ROUTINES[i]; } save(); renderPlan(); closeDrawer(); if(i<0) document.querySelector('#panes [data-b="name"]')?.focus(); });
-  } else if(focusPane==="after"){
-    T.textContent="📋 Artifacts";
-    B.innerHTML=`<div class="small">What you carry out of the room. Pick the one a student's response to could answer your research question.</div><div class="dsec">Artifact types</div>`
-      +Object.entries(AFTER_KINDS).map(([k,v])=>`<div class="drow"><div class="dmeta"><div class="dname">${esc(v)}</div><div class="dsub">${esc(AFTER_SUB[k]||"")}</div></div><button class="tbtn" data-akindpick="${k}">Use</button></div>`).join("");
-    B.querySelectorAll("[data-akindpick]").forEach(b=>b.onclick=()=>{ state.after=Object.assign(blankAfter(),state.after||{}); state.after.kind=b.dataset.akindpick; save(); renderPlan(); closeDrawer(); });
-  } else {
-    T.textContent="🧩 Activities";
-    B.innerHTML=`<div class="small">An <b>activity</b> is one segment of the During. A <b>shape</b> is two or three activities in a named order. Pick activities one at a time, or start from a shape and change it.</div><div class="dsec">Activities</div>`
-      +Object.entries(ACTIVITIES).map(([k,v])=>`<div class="drow"><div class="dmeta"><div class="dname">${v.name}</div><div class="dsub">${esc(v.sub)}${v.link?` · <a href="${v.link}" target="_blank" rel="noopener">examples</a>`:""}</div></div><button class="tbtn" data-add="${k}">Add</button></div>`).join("")
-      +`<div class="dsec">Start from a shape</div><div class="small">Replaces the middle of your timeline with the shape's activities. Before and After stay.</div>`
-      +SHAPES.map((s,i)=>`<div class="drow"><div class="dmeta"><div class="dname">${s.name}</div><div class="dsub">${esc(s.sub)}<br><span style="color:var(--outline)">${s.seq.map(k=>ACTIVITIES[k].name).join(" → ")}</span></div></div><button class="tbtn" data-shape="${i}">Use</button></div>`).join("");
-    B.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{ if(addAct(b.dataset.add)) closeDrawer(); });
-    B.querySelectorAll("[data-shape]").forEach(b=>b.onclick=()=>{ const s=SHAPES[+b.dataset.shape]; if(!confirm(`Start from "${s.name}"? This replaces the middle activities. Before and After stay.`)) return; state.during=s.seq.map(k=>blankAct(k)); selId=state.during[0].id; save(); renderPlan(); closeDrawer(); });
-  }
+/* ---------- pickers (one modal: activities · routines · shapes) ---------- */
+function openPick(title,sub,html){ document.getElementById("pickTitle").textContent=title; document.getElementById("pickSub").textContent=sub||""; document.getElementById("pickBody").innerHTML=html; document.getElementById("pickModal").classList.add("open"); return document.getElementById("pickBody"); }
+function closePick(){ document.getElementById("pickModal").classList.remove("open"); }
+function pickActivity(id){
+  const a=state.during.find(x=>x.id===id); if(!a) return; const idx=state.during.indexOf(a);
+  const used=k=>state.during.map((x,i)=>x.type===k&&x.id!==id?i+1:0).filter(Boolean);
+  const B=openPick(`Activity ${idx+1} — what kind?`,"Pick one. You can change it later; the same kind can appear more than once.",
+    `<div class="ptiles">${Object.entries(ACTIVITIES).map(([k,v])=>`<button class="ptile ${k===a.type?"on":""}" data-k="${k}"><div class="pi">${v.icon}</div><div class="pn">${esc(v.name)}</div><div class="ps">${esc(v.sub)}${v.link?` · <a href="${v.link}" target="_blank" rel="noopener" onclick="event.stopPropagation()">examples</a>`:""}</div>${used(k).length?`<div class="pu">also in slice ${used(k).join(", ")}</div>`:""}</button>`).join("")}</div>`);
+  B.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{ a.type=b.dataset.k; selId=a.id; save(); renderPlan(); closePick(); });
+}
+function pickRoutine(){
+  const B=openPick("Routines","A routine opens the lesson: cards you show, one question you ask.",
+    ROUTINE_LIST.map((r,i)=>`<div class="drow"><div class="dmeta"><div class="dname">${esc(r[0])}</div><div class="dsub">${esc(r[1])}${r[2]?` · <a href="${r[2]}" target="_blank" rel="noopener">examples</a>`:""}</div></div><button class="tbtn" data-routine="${i}">Use</button></div>`).join("")
+    +`<div class="drow"><div class="dmeta"><div class="dname">Other…</div><div class="dsub">One you know that isn't listed. Name it, and where it's from.</div></div><button class="tbtn" data-routine="-1">Name it</button></div>`);
+  B.querySelectorAll("[data-routine]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.routine; state.before=Object.assign(blankBefore(),state.before||{}); if(i<0){ beforeOther=true; state.before.name=""; } else { beforeOther=false; state.before.name=ROUTINES[i]; } save(); renderPlan(); closePick(); if(i<0) document.querySelector('#panes [data-b="name"]')?.focus(); });
+}
+function pickShape(){
+  const B=openPick("Start from a shape","Two or three activities in a named order. It replaces your During slices; Before and After stay.",
+    SHAPES.map((sh,i)=>`<div class="drow"><div class="dmeta"><div class="dname">${esc(sh.name)}</div><div class="dsub">${esc(sh.sub)}<br><span style="color:var(--outline)">${sh.seq.map(k=>ACTIVITIES[k].icon+" "+ACTIVITIES[k].name).join(" → ")}</span></div></div><button class="tbtn" data-shape="${i}">Use</button></div>`).join(""));
+  B.querySelectorAll("[data-shape]").forEach(b=>b.onclick=()=>{ const sh=SHAPES[+b.dataset.shape]; const filled=state.during.some(x=>x.type||x.title||x.students); if(filled&&!confirm(`Start from "${sh.name}"? This replaces the During slices. Before and After stay.`)) return; state.during=sh.seq.map(k=>blankAct(k)); selId=state.during[0].id; save(); renderPlan(); closePick(); });
 }
 
 /* ---------- project bar ---------- */
