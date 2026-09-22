@@ -423,7 +423,7 @@ async function findStandards(btn){
   if(!j) return;
   const codes=(j.data.matches||[]).map(m=>m.code.trim()).filter(c=>stdText(c));
   if(!codes.length){ toast("No match found in the list — pick by hand."); return; }
-  state.bg.standards=codes.slice(0,3); save(); renderBackground();
+  state.bg.standards=codes.slice(0,4); save(); renderBackground();
   const why=(j.data.matches||[]).filter(m=>stdText(m.code.trim())).map(m=>`${m.code.trim()} — ${m.why}`).join("\n");
   setTimeout(()=>alert("Matched from your concept — uncheck any that don't fit:\n\n"+why),50);
 }
@@ -528,7 +528,7 @@ function used(){ return planTotal(); }
 
 /* ---------- render: Background accordion ---------- */
 
-function bgDone(){ const g=state.bg||{}; const rows=(g.samplesRows||[]).filter(r=>r.some(x=>x&&x.trim())); return [ !!(g.grade&&state.block&&g.concept&&(g.studentsRows||[]).some(r=>r[0])&&rows.length>=3&&g.question), !!(state.door==="idea"||(state.door==="lesson"&&g.scriptName)) ]; }
+function bgDone(){ const g=state.bg||{}; const rows=(g.samplesRows||[]).filter(r=>r.some(x=>x&&x.trim())); return [ !!(g.grade&&state.block&&g.concept&&(g.standards||[]).length>=2&&(g.studentsRows||[]).some(r=>r[0])&&rows.length>=3&&g.question), !!(state.door==="idea"||(state.door==="lesson"&&g.scriptName)) ]; }
 function profileWords(){ const g=state.bg||{}; const parts=[g.host,g.concept,g.think,...(g.sources||[]).map(r=>r[1]),g.question,g.why,...(g.studentsRows||[]).flat(),...(g.samplesRows||[]).map(r=>r.slice(0,3)).flat()]; return parts.join(' ').split(/\s+/).filter(Boolean).length; }
 function I(text){ return `<span class="i" tabindex="0">i<span class="pop">${text}</span></span>`; }
 function renderBackground(){
@@ -560,7 +560,7 @@ function renderBackground(){
     <div class="cols">
       <div class="sec"><h3><span class="k">2a</span>The concept${I("One specific, grade-appropriate mathematical concept — an idea students build understanding of. Not a whole strand (“fractions”), not a bare skill (“adding fractions”). Chosen with your host teacher, from what the class is actually doing.")}</h3>
         <label>The concept, in a sentence</label><input type="text" data-bg="concept" value="${esc(g.concept||"")}">
-        <label>Standards ${I("One or two Ohio standards the concept lives in. The LESSON is aligned to these; later, each part of the lesson gets an objective you write. Pick from the list, or type your concept and press Find the standards.")} <button class="tbtn" style="margin-left:8px" type="button" onclick="findStandards(this)">Find the standards</button><button class="tbtn" style="margin-left:6px" type="button" onclick="document.getElementById('pdfModal').classList.add('open')">Ohio's standards (PDF)</button></label>${stdHtml}
+        <label>Standards ${I("The LESSON is aligned to state standards; the parts of the lesson get objectives, which you write. Check the ones this lesson is really about — usually two, at most four. The list shows your grade with the grade below and the grade above, because students work at all three.")} <button class="tbtn" style="margin-left:8px" type="button" onclick="findStandards(this)">Find the standards</button><button class="tbtn" style="margin-left:6px" type="button" onclick="document.getElementById('pdfModal').classList.add('open')">Ohio's standards (PDF)</button></label><div class="why">Check the <b>2–4 standards</b> this lesson is aligned to. Type your concept and press <b>Find the standards</b> to have the list matched for you, then uncheck any that don't fit.</div>${stdHtml}
       </div>
       <div class="sec"><h3><span class="k">2b</span>What the research — and your host teacher — say${I("One to three sources on the misconceptions and challenges students have with this concept. At least one from JSTOR (Miami's library gives you access): the permanent link or DOI, and three or four sentences on what it describes. Your host teacher can be one source — what they have seen students do with this concept, in your words. This seeds the “What Does Research Say?” section of your Final Report.")}</h3>
         <div class="why">At least one JSTOR source — the permanent link (jstor.org/stable/…) or a DOI (doi.org/…). <a href="https://www.jstor.org/" target="_blank" rel="noopener">Open JSTOR</a>. Your host teacher counts as one source.</div>
@@ -575,7 +575,7 @@ function renderBackground(){
   wrap.querySelectorAll("[data-bg]").forEach(inp=>{ inp.oninput=e=>{ const k=inp.dataset.bg; if(k==="block"){ state.block=Math.max(20,Math.min(120,+e.target.value||45)); } else state.bg[k]=e.target.value; save(); refresh(); const gg=wrap.querySelector(".gauge"); if(gg){ const w=profileWords(); gg.className="gauge "+(w<430?"short":""); gg.innerHTML=`about <b>${(w/430).toFixed(1)} pages</b> · the assignment asks for 1–2`; } }; if(inp.dataset.bg==="grade") inp.onchange=()=>{ state.bg.standards=[]; save(); renderBackground(); }; });
   wrap.querySelectorAll(".stds label span").forEach(sp=>sp.onclick=e=>{ e.preventDefault(); sp.parentElement.classList.toggle("open"); });
   wrap.querySelectorAll("[data-mp]").forEach(cb=>cb.onchange=()=>{ const c=cb.dataset.mp; state.bg.practices=state.bg.practices||[]; if(cb.checked){ if(state.bg.practices.length>=2){ cb.checked=false; toast("One or two practices — the ones this lesson really leans on."); return; } state.bg.practices.push(c); } else state.bg.practices=state.bg.practices.filter(x=>x!==c); save(); });
-  wrap.querySelectorAll("[data-std]").forEach(cb=>cb.onchange=()=>{ const c=cb.dataset.std; if(cb.checked){ if(state.bg.standards.length>=3){ cb.checked=false; toast("Three standards at most — a lesson can't be about everything."); return; } state.bg.standards.push(c); } else state.bg.standards=state.bg.standards.filter(x=>x!==c); save(); });
+  wrap.querySelectorAll("[data-std]").forEach(cb=>cb.onchange=()=>{ const c=cb.dataset.std; if(cb.checked){ if(state.bg.standards.length>=4){ cb.checked=false; toast("Four standards at most — a lesson can't be about everything."); return; } state.bg.standards.push(c); } else state.bg.standards=state.bg.standards.filter(x=>x!==c); save(); });
   wrap.querySelectorAll("[data-goto]").forEach(b=>b.onclick=()=>showPhase("during"));
   wrap.querySelectorAll("[data-src]").forEach(inp=>{ inp.oninput=e=>{ const [i,j]=inp.dataset.src.split(":").map(Number); state.bg.sources[i][j]=e.target.value; save(); }; if(inp.dataset.src.endsWith(":0")) inp.onchange=()=>renderBackground(); });
   wrap.querySelectorAll("[data-stype]").forEach(b=>b.onclick=()=>{ const [i,t]=b.dataset.stype.split(":"); state.bg.sources[+i][2]=t==="host"?"host":""; if(t==="host") state.bg.sources[+i][0]=""; save(); renderBackground(); });
