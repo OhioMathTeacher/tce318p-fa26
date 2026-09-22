@@ -442,6 +442,18 @@
   .chosen .cs button{flex:none;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:14px;padding:0 2px}
   .chosen .cs button:hover{color:var(--mark)}
   .chosen .none{font-size:13px;color:var(--muted);font-style:italic;margin-top:6px}
+  #diagModal{position:fixed;inset:0;background:#0006;z-index:75;display:none;align-items:center;justify-content:center;padding:20px}
+  #diagModal.open{display:flex}
+  #diagModal .box{background:#fff;border-radius:14px;width:min(860px,96vw);max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+  #diagModal .bh{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+  #diagModal .bh h2{margin:0;font-size:18px;color:var(--outline)}
+  #diagModal .bb{flex:1;overflow:auto;padding:14px 18px}
+  #diagModal .bf{display:flex;align-items:center;gap:8px;padding:10px 16px;border-top:1px solid var(--line);flex-wrap:wrap}
+  #diagModal label{display:block;font-weight:700;font-size:14px;color:var(--outline);margin:0 0 4px}
+  #diagModal textarea{width:100%;min-height:80px;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;resize:vertical}
+  #diagModal pre{background:#f6f8fb;border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:10px 0 0;
+    font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-word;max-height:38vh;overflow:auto}
+  #diagModal .why{font-size:13px;color:var(--muted);margin:8px 0 0;line-height:1.5}
   #stdModal{position:fixed;inset:0;background:#0006;z-index:60;display:none;align-items:center;justify-content:center;padding:24px}
   #stdModal.open{display:flex}
   #stdModal .box{background:#fff;border-radius:14px;width:min(980px,96vw);height:90vh;display:flex;flex-direction:column;overflow:hidden}
@@ -494,6 +506,10 @@
         <div class="sep"></div>
         <div class="hd">This project</div>
         <button data-gear="reset"><span class="ic">↺</span>Start over with an empty project</button>
+        <div class="sep"></div>
+        <div class="hd">Something went wrong</div>
+        <div class="note">Makes a PDF that says what your device and this app were doing — submit it in Canvas.</div>
+        <button data-gear="diag"><span class="ic">🩺</span>Report a problem…</button>
       </div></span>
   </div>
   <div id="nag"><span>💾</span><span id="nagText"></span><span class="sp"></span><button class="go" id="nagSave">⬇ Save to a file</button><button class="later" id="nagLater">Later</button></div>
@@ -529,9 +545,28 @@
 <div id="stdModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><h2>Ohio's standards</h2><span class="small" id="stdModalSub"></span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pdfModal').classList.add('open')">The PDF</button><button class="tbtn" onclick="document.getElementById('stdModal').classList.remove('open')">✕</button></div><div class="bb" id="stdModalBody"></div><div class="bf"><span class="small" id="stdModalCount"></span><span style="flex:1"></span><button class="primary" onclick="document.getElementById('stdModal').classList.remove('open')">Done</button></div></div></div>
 <div id="pdfModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><b>Ohio's Learning Standards | Mathematics (2017)</b><span class="small">Ohio Department of Education</span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pdfModal').classList.remove('open')">✕</button></div><iframe src="standards/Ohio-Learning-Standards-Mathematics-2017.pdf" title="Ohio standards"></iframe></div></div>
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
+<div id="diagModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box">
+  <div class="bh"><h2>Something went wrong</h2><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('diagModal').classList.remove('open')">✕</button></div>
+  <div class="bb">
+    <label for="diagSaid">What were you doing when it went wrong?</label>
+    <textarea id="diagSaid" placeholder="I pressed Export and nothing happened. I'm on the school iPad."></textarea>
+    <p class="why">Save this as a PDF and submit it in Canvas. It tells Dr.&nbsp;Edwards which version you have,
+      what your device is, and what the app was doing — which is almost always what the answer turns on.</p>
+    <p class="why"><strong>This report does not contain your work.</strong> No concept, no question, no students,
+      no pictures — only settings and counts. Everything it will say is below; read it before you send it.</p>
+    <pre id="diagOut">…</pre>
+  </div>
+  <div class="bf">
+    <button class="primary" id="diagPdf">⤓ Save as PDF for Canvas</button>
+    <button class="ghost" id="diagCopy">Copy the text</button>
+    <button class="ghost" id="diagTxt">Save as a file</button>
+    <span style="flex:1"></span>
+    <button class="ghost" id="diagClear" title="Empties the record of what the app has been doing on this browser. Your work is not touched.">Clear the log</button>
+  </div>
+</div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 48</div>
+<div id="build">Build 49</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -550,9 +585,9 @@ async function askWorker(payload){
   const profile={grade:g.grade,context:g.host,concept:g.concept,students:(g.studentsRows||[]).map(r=>r.join(" — ")).join("; "),first_question:g.question,samples:(g.samplesRows||[]).map(r=>r.slice(0,3).join(" · ")).join("\n"),standards:(g.standards||[]).map(c=>c+" "+stdText(c)).join("\n")};
   const r=await fetch(WORKER_URL+"/chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(Object.assign({passcode:pc,sid:sid(),name:g.names||"",section:g.section||"",profile},payload))});
   const j=await r.json().catch(()=>({error:"bad reply"}));
-  if(r.status===401){ try{localStorage.removeItem("bda-passcode");}catch(e){} toast("That passcode didn't work — try again."); return null; }
-  if(r.status===429){ toast(`You've used today's ${j.cap} turns. Tomorrow.`); return null; }
-  if(!j.ok){ toast("The planning partner is unavailable right now ("+(j.error||"?")+")."); return null; }
+  if(r.status===401){ try{localStorage.removeItem("bda-passcode");}catch(e){} logEvent("ai","passcode refused"); toast("That passcode didn't work — try again."); return null; }
+  if(r.status===429){ logEvent("ai","daily turn cap reached"); toast(`You've used today's ${j.cap} turns. Tomorrow.`); return null; }
+  if(!j.ok){ logEvent("error","ai: "+(j.error||"?")+" (http "+r.status+")"); toast("The planning partner is unavailable right now ("+(j.error||"?")+")."); return null; }
   return j;
 }
 async function findStandards(btn){
@@ -681,6 +716,97 @@ const SAMPLES = {
 
 /* ---------- state ---------- */
 const STORE="bda-planner-proto-v10";
+
+/* ---------- diagnostics ----------
+   The app runs on ~25 machines and browsers nobody here chose, and "it isn't working" is
+   unanswerable without knowing which build loaded, whether storage is full, and what the
+   student had actually done. Journaler learned this the expensive way: one selection bug
+   cost an afternoon of reading a console over someone's shoulder, which does not scale to
+   a class. This is that idea, with the report going where the course already goes -- the
+   student saves a PDF and submits it in Canvas.
+
+   ⚠ PRIVACY, and this is the whole design constraint. The Profile holds pseudonyms, a host
+   teacher's name, and PHOTOGRAPHS OF REAL CHILDREN'S WORK. The report carries sizes, counts
+   and environment -- never the work. diagSnapshot() below is the entire contract: if you
+   add a field, add a count, not a value. The event log obeys the same rule; log that a
+   photo was added, never what was in it.
+
+   Nothing is sent anywhere on its own. The log lives in this browser, in its own key (NOT
+   in the project state -- ⬇ Save is a student's turn-in and should not carry a debug log),
+   and leaves only when the student opens ⚙ → Something went wrong, reads the report, and
+   saves it. */
+const LOGK="bda-planner-log", LOGMAX=200;
+let _log=(()=>{ try{ return JSON.parse(localStorage.getItem(LOGK))||[]; }catch(e){ return []; } })();
+let _logT;
+function logEvent(kind,msg){
+  _log.push({t:new Date().toISOString(),k:kind,m:String(msg==null?"":msg).slice(0,300)});
+  if(_log.length>LOGMAX) _log=_log.slice(-LOGMAX);
+  clearTimeout(_logT);
+  _logT=setTimeout(()=>{ try{ localStorage.setItem(LOGK,JSON.stringify(_log)); }catch(e){} },400);
+}
+// An error the student never saw is the one worth having. Both handlers, because a failed
+// promise (every await in this file -- the Worker, pdf.js, the docx build) never reaches
+// onerror at all, and those are exactly the paths that break on an unfamiliar device.
+window.addEventListener("error",e=>logEvent("error",(e.message||"error")+" @"+(e.filename||"").split("/").pop()+":"+(e.lineno||"")));
+window.addEventListener("unhandledrejection",e=>logEvent("error","promise: "+((e.reason&&e.reason.message)||e.reason||"")));
+
+function bytes(x){ try{ return new Blob([x]).size; }catch(e){ return (x||"").length; } }
+function fmtB(n){ return n>1048576?(n/1048576).toFixed(1)+" MB":n>1024?(n/1024).toFixed(0)+" KB":n+" B"; }
+// COUNTS AND SIZES ONLY. See the privacy note above.
+async function diagSnapshot(){
+  const o={}, g=state.bg||{};
+  o["Build"]=(document.getElementById("build")||{}).textContent||"?";
+  o["Page"]=location.href.split("?")[0];
+  o["Name (as typed)"]=g.names||"(blank)";
+  o["Section"]=g.section||"(not chosen)";
+  o["Tab open"]=(document.querySelector(".phase.on")||{}).textContent||"?";
+
+  let all=0; try{ for(const k in localStorage) if(Object.prototype.hasOwnProperty.call(localStorage,k)) all+=bytes(localStorage.getItem(k)||""); }catch(e){}
+  o["Your project"]=fmtB(bytes(localStorage.getItem(STORE)||""));
+  o["All app storage"]=fmtB(all);
+  // WebKit has no storage.estimate, and a MISSING line reads as "nothing to report" when it
+  // means "this browser will not say" -- Safari being both the silent one and the one most
+  // likely to evict. Say which.
+  if(navigator.storage&&navigator.storage.estimate){
+    try{ const e=await navigator.storage.estimate(); o["Storage quota"]=fmtB(e.usage||0)+" of "+fmtB(e.quota||0); }
+    catch(e){ o["Storage quota"]="unavailable — "+e.message; }
+  } else o["Storage quota"]="this browser does not report it (Safari/WebKit)";
+  try{ o["Autosaves since last ⬇ Save"]=localStorage.getItem(STORE+"-unsaved")||"0"; }catch(e){}
+  try{ const lf=localStorage.getItem(STORE+"-lastfile"); o["Last ⬇ Save to a file"]=lf?new Date(+lf).toLocaleString():"never on this browser"; }catch(e){}
+
+  // How far along, as numbers. Never the text.
+  const sr=(g.studentsRows||[]).filter(r=>(r||[]).join("").trim()).length;
+  const sa=(g.samplesRows||[]).filter(r=>(r||[]).join("").trim()).length;
+  const ph=(g.samplesRows||[]).filter(r=>(r||[])[3]).length;
+  o["Profile filled"]=`concept ${g.concept?"yes":"no"} · question ${g.question?"yes":"no"} · standards ${(g.standards||[]).length} · students ${sr} · work samples ${sa} (${ph} with a picture)`;
+  const dur=(state.during||[]).filter(a=>a&&a.type).length;
+  o["Plan filled"]=`before ${(state.before||{}).kind?"chosen":"empty"} · during ${dur} card(s) · after ${(state.after||{}).kind?"chosen":"empty"}`;
+
+  o["Passcode on this browser"]=(()=>{ try{ return localStorage.getItem("bda-passcode")?"yes":"no"; }catch(e){ return "?"; } })();
+  o["Browser"]=navigator.userAgent;
+  o["Window"]=`${window.innerWidth}×${window.innerHeight} · dpr ${window.devicePixelRatio||1}`;
+  o["Opened as"]=(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)?"installed app":"browser tab";
+  o["Secure context"]=String(window.isSecureContext);
+  o["Touch device"]=(window.matchMedia&&window.matchMedia("(pointer: coarse)").matches)?"yes":"no";
+  o["Share sheet (iOS saving)"]=(navigator.canShare?"available":"not available");
+  o["PDF reader loaded"]=window.pdfjsLib?"yes":"not yet (only loads when you add a PDF)";
+  o["Online"]=String(navigator.onLine);
+  return o;
+}
+async function diagText(said){
+  const snap=await diagSnapshot();
+  const L=["BDA PLANNER — PROBLEM REPORT","TCE 318P · "+new Date().toString(),"",
+    "WHAT WENT WRONG (in the student's words)",(said||"").trim()||"(nothing written)","",
+    "THE APP AND THIS DEVICE"];
+  for(const k in snap) L.push("  "+k.padEnd(28)+" "+snap[k]);
+  L.push("","WHAT HAPPENED (most recent last)");
+  if(!_log.length) L.push("  (nothing logged yet)");
+  else _log.slice(-60).forEach(e=>L.push("  "+e.t.slice(11,19)+"  "+e.k.padEnd(6)+" "+e.m));
+  L.push("","— This report holds settings and counts only. It does not contain your concept,",
+           "  your question, your students, or any of the work you collected.");
+  return L.join("\n");
+}
+
 let state=null, selId=null;
 function blankState(){ return {door:"", block:0, bg:{names:"",section:"",grade:"",host:"",concept:"",standards:[],practices:[],before:"",after:"",sources:[["",""]],studentsRows:[["",""],["",""],["",""]],samplesRows:[["","","",""],["","","",""],["","","",""]],think:"",question:"",why:"",scriptName:"",read:null,idea:""}, before:blankBefore(), during:[blankAct(null),blankAct(null),blankAct(null)], after:blankAfter(), view:"before"}; }
 function load(){ try{ const s=localStorage.getItem(STORE); if(s){ state=JSON.parse(s); if(state.views&&!state.view){ delete state.views; state.view="before"; } if(!state.migrated3){ state.migrated3=true; const a=state.after||{}; if(a.kind==="exit"&&!(a.prompts||[]).some(r=>(r[0]||"").trim()||(r[1]||"").trim())&&!a.students&&!a.teacher&&!a.objective&&!a.captures&&!a.answers) a.kind=""; } if(!state.migrated2){ state.migrated2=true; (state.during||[]).forEach(a=>{ const four=Object.values(a.four||{}).some(v=>v&&v.trim()); if(!a.title&&!a.students&&!a.teacher&&!a.objective&&!a.extra&&!a.thread&&!a.questions&&!a.anticipate&&!four) a.type=null; }); } return; } }catch(e){} state=blankState(); }
@@ -798,7 +924,7 @@ let edIdx=null, edImg=null, edTool="black", edDrag=null;
 function pickPhoto(i){ const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*,.pdf,application/pdf"; inp.onchange=()=>{ const f=inp.files[0]; if(!f) return; if(/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name)){ pdfToSamples(f,i); return; } const r=new FileReader(); r.onload=()=>{ const im=new Image(); im.onload=()=>{ const max=1400, sc=Math.min(1,max/Math.max(im.width,im.height)); const c=document.createElement("canvas"); c.width=Math.round(im.width*sc); c.height=Math.round(im.height*sc); c.getContext("2d").drawImage(im,0,0,c.width,c.height); state.bg.samplesRows[i][3]=c.toDataURL("image/jpeg",0.85); save(); renderBackground(); openImgEd(i); }; im.src=r.result; }; r.readAsDataURL(f); }; inp.click(); }
 /* PDFs: each page becomes a picture (pdf.js, loaded on first use), so it goes through the same crop / black-out editor and export as a photo */
 let pdfjsReady=null;
-function loadPdfjs(){ if(pdfjsReady) return pdfjsReady; pdfjsReady=new Promise((res,rej)=>{ const sc=document.createElement("script"); sc.src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"; sc.onload=()=>{ window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; res(window.pdfjsLib); }; sc.onerror=()=>rej(new Error("pdf.js")); document.head.appendChild(sc); }); return pdfjsReady; }
+function loadPdfjs(){ if(pdfjsReady) return pdfjsReady; pdfjsReady=new Promise((res,rej)=>{ const sc=document.createElement("script"); sc.src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"; logEvent("pdf","loading the PDF reader"); sc.onload=()=>{ window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; res(window.pdfjsLib); }; sc.onerror=()=>{ logEvent("error","pdf.js would not load (blocked network?)"); rej(new Error("pdf.js")); }; document.head.appendChild(sc); }); return pdfjsReady; }
 async function pdfToSamples(file,i){
   toast("Reading the PDF…");
   let lib; try{ lib=await loadPdfjs(); }catch(e){ toast("Couldn't load the PDF reader — try a photo, or check your connection."); return; }
@@ -1299,7 +1425,7 @@ function renderShare(){
       <div class="dl" style="grid-template-columns:1fr"><div><button class="primary" id="mkRecord">🖨 Generate Planning Record — PDF</button><div class="cap">opens Print → Save as PDF — a record, not a draft, so PDF only · upload to Canvas with your plan</div></div></div>
     </div>`;
   wrap.querySelectorAll("[data-sh]").forEach(el=>{ el.oninput=()=>{ sh[el.dataset.sh]=el.value; save(); }; });
-  document.getElementById("mkDocx").onclick=async()=>{ const b=document.getElementById("mkDocx"); b.disabled=true; b.textContent="Building…"; try{ const blob=await buildDocx(); const kept=await saveBlob(blob,(slugify(planTitle())||"lesson-plan")+".docx"); if(kept) toast("Word file built — open it and keep writing."); }catch(e){ toast("Couldn't build the Word file: "+e.message); } b.disabled=false; b.textContent="⬇ Generate Lesson Plan — Word"; };
+  document.getElementById("mkDocx").onclick=async()=>{ const b=document.getElementById("mkDocx"); b.disabled=true; b.textContent="Building…"; try{ const blob=await buildDocx(); const kept=await saveBlob(blob,(slugify(planTitle())||"lesson-plan")+".docx"); if(kept) toast("Word file built — open it and keep writing."); logEvent("docx","built the Word plan"+(kept?"":" (cancelled)")); }catch(e){ logEvent("error","docx: "+e.message); toast("Couldn't build the Word file: "+e.message); } b.disabled=false; b.textContent="⬇ Generate Lesson Plan — Word"; };
   document.getElementById("mkRecord").onclick=()=>printRecord(sh.who||names[0]||g.names);
   document.getElementById("mkPdf").onclick=printPlan;
   wireInfo();
@@ -1329,7 +1455,7 @@ function pickShape(){
 }
 
 /* ---------- project bar ---------- */
-document.getElementById("saveProj").onclick=async()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}); const nm=((state.bg||{}).names||"").trim().replace(/[^a-z0-9]+/gi,"-").replace(/^-+|-+$/g,""); const kept=await saveBlob(blob,`bda-planner${nm?"-"+nm:""}-${new Date().toISOString().slice(0,10)}.json`); if(!kept) return; recordFileSave(); toast("Saved. Keep this file — it's how your plan travels."); };
+document.getElementById("saveProj").onclick=async()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}); const nm=((state.bg||{}).names||"").trim().replace(/[^a-z0-9]+/gi,"-").replace(/^-+|-+$/g,""); const kept=await saveBlob(blob,`bda-planner${nm?"-"+nm:""}-${new Date().toISOString().slice(0,10)}.json`); if(!kept) return; recordFileSave(); logEvent("save","saved the project to a file"); toast("Saved. Keep this file — it's how your plan travels."); };
 document.getElementById("loadProj").onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ state=JSON.parse(r.result); selId=null; save(); renderAll(); toast("Project loaded."); }catch(err){ toast("That file didn't read as a project."); } }; r.readAsText(f); e.target.value=""; };
 function resetProject(){ if(!confirm("Start over with an empty project? Your edits in this browser are lost (a saved .json file is not).")) return; state=blankState(); selId=null; save(); renderAll(); }
 (function(){ const m=document.getElementById("gearMenu"), b=document.getElementById("gearBtn"); b.onclick=e=>{ e.stopPropagation(); m.classList.toggle("open"); }; document.addEventListener("click",e=>{ if(!m.contains(e.target)) m.classList.remove("open"); });
@@ -1337,8 +1463,67 @@ function resetProject(){ if(!confirm("Start over with an empty project? Your edi
     if(k==="ex1"||k==="ex2"){ if(!confirm("Open the finished example? It replaces what is here — press Save first if you want to keep your work.")) return; loadExample(k==="ex1"?1:2); toast("A finished example — look around; ↺ or Load brings your own work back."); }
     else if(k==="passcode"){ const p=prompt("The course passcode (from class):", ""); if(p&&p.trim()){ try{ localStorage.setItem("bda-passcode",p.trim()); }catch(e){} toast("Passcode saved on this browser."); } }
     else if(k==="forget"){ try{ localStorage.removeItem("bda-passcode"); }catch(e){} toast("Forgotten. You'll be asked next time."); }
+    else if(k==="diag") openDiag();
     else if(k==="reset") resetProject(); }); })();
-function loadExample(n){ state=JSON.parse(JSON.stringify(n===2?SAMPLES.idea:SAMPLES.lesson)); selId=null; save(); renderAll(); }
+function loadExample(n){ logEvent("example","loaded example "+n); state=JSON.parse(JSON.stringify(n===2?SAMPLES.idea:SAMPLES.lesson)); selId=null; save(); renderAll(); }
+
+/* ---------- the problem report ---------- */
+// Refreshed every time the panel opens, and again as they type, so the text on screen is
+// the text they save. Nothing here is sent: the student saves a PDF and submits it in
+// Canvas, which is where the course already lives and where Todd already looks.
+let _diagT;
+async function renderDiag(){
+  const out=document.getElementById("diagOut");
+  if(!out) return;
+  try{ out.textContent=await diagText(document.getElementById("diagSaid").value); }
+  catch(e){ out.textContent="Could not build the report: "+e.message; }
+}
+function openDiag(){
+  document.getElementById("diagModal").classList.add("open");
+  logEvent("diag","opened the problem report");
+  renderDiag();
+}
+// The print window, not a generated PDF: every browser can print to PDF, and a library
+// that builds one is another thing to go wrong on the device that is already going wrong.
+// On an iPad this is Share → Print → Save to Files; say so, because it is not obvious.
+async function diagPrint(){
+  const text=await diagText(document.getElementById("diagSaid").value);
+  const w=window.open("","_blank");
+  if(!w){ toast("Your browser blocked the window — use Copy the text instead."); logEvent("diag","print window blocked"); return; }
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>BDA Planner problem report</title><style>'+
+    'body{font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#1a2b4a;background:#fff;margin:2rem auto;max-width:44rem;padding:0 1.2rem}'+
+    'h1{font:700 15px/1.3 -apple-system,"Segoe UI",sans-serif;letter-spacing:.04em;text-transform:uppercase;margin:0 0 .2rem}'+
+    '.sub{font:12px/1.4 -apple-system,"Segoe UI",sans-serif;color:#4a5a70;margin-bottom:1.3rem}'+
+    'pre{white-space:pre-wrap;word-break:break-word;margin:0}'+
+    'button{font:600 13px/1 -apple-system,"Segoe UI",sans-serif;background:#1F4E96;color:#fff;border:0;border-radius:7px;padding:.6rem 1rem;cursor:pointer;margin-bottom:1.3rem}'+
+    '.tip{font:12px/1.4 -apple-system,"Segoe UI",sans-serif;color:#4a5a70;margin:0 0 1.3rem}'+
+    '@media print{.noprint{display:none}body{margin:0}}'+
+    '</style></head><body>'+
+    '<button class="noprint" onclick="window.print()">Save as PDF / Print</button>'+
+    '<p class="tip noprint">On an iPad or iPhone: the Share button, then Print, then Save to Files. Submit the PDF in Canvas.</p>'+
+    '<h1>BDA Planner problem report</h1><div class="sub">TCE 318P · '+esc(new Date().toString())+'</div>'+
+    '<pre>'+esc(text)+'</pre></body></html>');
+  w.document.close();
+  logEvent("diag","saved the report as a PDF");
+}
+(function(){
+  const said=document.getElementById("diagSaid");
+  said.oninput=()=>{ clearTimeout(_diagT); _diagT=setTimeout(renderDiag,250); };
+  document.getElementById("diagPdf").onclick=diagPrint;
+  document.getElementById("diagCopy").onclick=async()=>{
+    const t=await diagText(said.value);
+    try{ await navigator.clipboard.writeText(t); toast("Copied — paste it into Canvas or an email."); }
+    catch(e){ toast("This browser wouldn't let us copy — select the text and copy it by hand."); }
+  };
+  document.getElementById("diagTxt").onclick=async()=>{
+    const t=await diagText(said.value);
+    await saveBlob(new Blob([t],{type:"text/plain"}),"bda-planner-report-"+new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")+".txt");
+  };
+  document.getElementById("diagClear").onclick=()=>{
+    if(!confirm("Empty the record of what the app has been doing on this browser? Your work is not touched.")) return;
+    _log=[]; try{ localStorage.removeItem(LOGK); }catch(e){} renderDiag(); toast("Log cleared.");
+  };
+})();
 
 /* ---------- misc ---------- */
 function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
