@@ -419,7 +419,6 @@
   .tile .yn{flex-direction:column}
   .tile .yn button{flex:none}
   .tip{font-size:13px;color:var(--muted)}
-  body:not(.tips) .tip{display:none}
 </style>
 </head>
 <body>
@@ -431,8 +430,7 @@
     <span class="note small" id="saveNote">Autosaves in this browser</span>
     <button class="ghost" id="saveProj" title="Download your project as a file — how it travels to another computer or a teammate">⬇ Save</button>
     <label class="ghost" for="loadProj" style="cursor:pointer" title="Open a saved project file">⬆ Load<input type="file" id="loadProj" accept=".json" hidden></label>
-    <button class="ghost" id="tipsBtn" title="Show or hide the explanations under the fields">💡 Tips</button>
-    <button class="ghost" id="resetProj" title="Put the sample data back">↺</button>
+    <button class="ghost" id="resetProj" title="Start over with an empty project">↺</button>
   </div>
   <div class="phasebar">
     <button class="phase on" data-phase="background" title="Weeks 6–7 — your Concept Profile, your question, and the lesson you have (or your idea)."><span class="pnum"><b>1</b></span> Profile</button>
@@ -465,7 +463,7 @@
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 34</div>
+<div id="build">Build 35</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -658,8 +656,8 @@ function renderBackground(){
       <div class="sec"><h3><span class="k">1b</span>The students${I("Two or three focus students, chosen with your host teacher, whose work on this concept you'll follow. A pseudonym and a line of context each — enough that a reader could follow them into the immersion. Real names never leave the classroom.")}</h3>
         <div class="rows">${g.studentsRows.map((r,i)=>`<div class="rrow students"><input type="text" placeholder="Pseudonym" data-sr="${i}:0" value="${esc(r[0])}"><input type="text" placeholder="A line of context" data-sr="${i}:1" value="${esc(r[1])}"></div>`).join("")}</div></div>
       <div class="sec"><h3><span class="k">1c</span>The collected work${I("Three to five pieces of actual student work on this concept, across your focus students. For each: who, what the task was, and what the work reveals about how that student understands the concept — that last column is the whole point. Add a photo: crop it, black out the name, and it goes into your PDF as an appendix.")}</h3>
-        <div class="rhead"><span>Student</span><span>What the work was</span><span>What it reveals</span><span>Photo</span></div>
-        <div class="rows">${g.samplesRows.map((r,i)=>`<div class="rrow"><input type="text" placeholder="Pseudonym" data-wr="${i}:0" value="${esc(r[0])}"><textarea placeholder="The task, the setting" data-wr="${i}:1">${esc(r[1])}</textarea><textarea placeholder="What this shows about their understanding" data-wr="${i}:2">${esc(r[2])}</textarea><div class="ph">${r[3]?`<img src="${r[3]}" data-edit="${i}" title="Click to crop or black out"><button class="tbtn" data-clear="${i}">remove</button>`:`<button class="tbtn" data-photo="${i}">＋ photo</button>`}</div></div>`).join("")}</div>
+        <div class="rhead"><span>Student</span><span>What the work was</span><span>What it reveals</span><span>Photo / PDF</span></div>
+        <div class="rows">${g.samplesRows.map((r,i)=>`<div class="rrow"><input type="text" placeholder="Pseudonym" data-wr="${i}:0" value="${esc(r[0])}"><textarea placeholder="The task, the setting" data-wr="${i}:1">${esc(r[1])}</textarea><textarea placeholder="What this shows about their understanding" data-wr="${i}:2">${esc(r[2])}</textarea><div class="ph">${r[3]?`<img src="${r[3]}" data-edit="${i}" title="Click to crop or black out"><button class="tbtn" data-clear="${i}">remove</button>`:`<button class="tbtn" data-photo="${i}" title="A photo, or a PDF scan — each page becomes a picture you can crop and black out">＋ photo / PDF</button>`}</div></div>`).join("")}</div>
         <div style="margin-top:8px"><button class="tbtn" id="addSample" ${g.samplesRows.length>=5?"disabled":""}>＋ another sample</button></div></div>
       <div class="sec"><h3><span class="k">1d</span>What shows up in the work${I("Now put the two together. Which of the misconceptions and challenges your sources describe appear in your collected work — and which don't? Name the student and the sample. Add anything your host teacher has noticed that the research didn't. A paragraph.")}</h3>
         <textarea data-bg="think" style="min-height:120px" placeholder="What, if any, of the cited misconceptions appear in the collected work? Which student, which sample? What did you see that the research didn't predict?">${esc(g.think||"")}</textarea></div>
@@ -723,7 +721,29 @@ function exportProfile(){
 }
 /* ---------- photos: pick, resize, crop / black out ---------- */
 let edIdx=null, edImg=null, edTool="black", edDrag=null;
-function pickPhoto(i){ const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*"; inp.onchange=()=>{ const f=inp.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ const im=new Image(); im.onload=()=>{ const max=1400, sc=Math.min(1,max/Math.max(im.width,im.height)); const c=document.createElement("canvas"); c.width=Math.round(im.width*sc); c.height=Math.round(im.height*sc); c.getContext("2d").drawImage(im,0,0,c.width,c.height); state.bg.samplesRows[i][3]=c.toDataURL("image/jpeg",0.85); save(); renderBackground(); openImgEd(i); }; im.src=r.result; }; r.readAsDataURL(f); }; inp.click(); }
+function pickPhoto(i){ const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*,.pdf,application/pdf"; inp.onchange=()=>{ const f=inp.files[0]; if(!f) return; if(/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name)){ pdfToSamples(f,i); return; } const r=new FileReader(); r.onload=()=>{ const im=new Image(); im.onload=()=>{ const max=1400, sc=Math.min(1,max/Math.max(im.width,im.height)); const c=document.createElement("canvas"); c.width=Math.round(im.width*sc); c.height=Math.round(im.height*sc); c.getContext("2d").drawImage(im,0,0,c.width,c.height); state.bg.samplesRows[i][3]=c.toDataURL("image/jpeg",0.85); save(); renderBackground(); openImgEd(i); }; im.src=r.result; }; r.readAsDataURL(f); }; inp.click(); }
+/* PDFs: each page becomes a picture (pdf.js, loaded on first use), so it goes through the same crop / black-out editor and export as a photo */
+let pdfjsReady=null;
+function loadPdfjs(){ if(pdfjsReady) return pdfjsReady; pdfjsReady=new Promise((res,rej)=>{ const sc=document.createElement("script"); sc.src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"; sc.onload=()=>{ window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; res(window.pdfjsLib); }; sc.onerror=()=>rej(new Error("pdf.js")); document.head.appendChild(sc); }); return pdfjsReady; }
+async function pdfToSamples(file,i){
+  toast("Reading the PDF…");
+  let lib; try{ lib=await loadPdfjs(); }catch(e){ toast("Couldn't load the PDF reader — try a photo, or check your connection."); return; }
+  let doc; try{ doc=await lib.getDocument({data:await file.arrayBuffer()}).promise; }catch(e){ toast("That file didn't read as a PDF."); return; }
+  const rows=state.bg.samplesRows; const pages=Math.min(doc.numPages,5);
+  let target=i, placed=0;
+  for(let n=1;n<=pages;n++){
+    if(n>1){ // later pages: the next empty photo slot, or a new row while there's room
+      let t=rows.findIndex((r,k)=>k>target&&!r[3]); if(t<0){ if(rows.length>=5) break; rows.push(["","","",""]); t=rows.length-1; } target=t;
+    }
+    const page=await doc.getPage(n); const v0=page.getViewport({scale:1}); const sc=1400/Math.max(v0.width,v0.height); const vp=page.getViewport({scale:sc});
+    const c=document.createElement("canvas"); c.width=Math.round(vp.width); c.height=Math.round(vp.height); const ctx=c.getContext("2d"); ctx.fillStyle="#fff"; ctx.fillRect(0,0,c.width,c.height);
+    await page.render({canvasContext:ctx,viewport:vp}).promise;
+    rows[target][3]=c.toDataURL("image/jpeg",0.85); placed++;
+  }
+  save(); renderBackground();
+  toast(doc.numPages>1?`${placed} page${placed===1?"":"s"} added as sample photos${doc.numPages>placed?` (the PDF has ${doc.numPages}; ${placed} fit)`:""}. Black out names on each.`:"Page added. Black out any name.");
+  openImgEd(i);
+}
 function openImgEd(i){ edIdx=i; edImg=new Image(); edImg.onload=()=>{ const c=document.getElementById("edCanvas"); c.width=edImg.width; c.height=edImg.height; c.getContext("2d").drawImage(edImg,0,0); document.getElementById("imgEd").classList.add("open"); }; edImg.src=state.bg.samplesRows[i][3]; }
 function edCommit(){ const c=document.getElementById("edCanvas"); state.bg.samplesRows[edIdx][3]=c.toDataURL("image/jpeg",0.85); save(); edImg=new Image(); edImg.src=state.bg.samplesRows[edIdx][3]; renderBackground(); }
 (function(){ const c=document.getElementById("edCanvas"); const pos=e=>{ const r=c.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return {x:(t.clientX-r.left)*c.width/r.width, y:(t.clientY-r.top)*c.height/r.height}; };
@@ -1071,8 +1091,6 @@ function loadExample(n){ state=JSON.parse(JSON.stringify(n===2?SAMPLES.idea:SAMP
 /* ---------- misc ---------- */
 function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 let toastT; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.style.opacity=1; clearTimeout(toastT); toastT=setTimeout(()=>t.style.opacity=0,2600); }
-document.getElementById("tipsBtn").onclick=()=>{ document.body.classList.toggle("tips"); try{localStorage.setItem(STORE+"-tips",document.body.classList.contains("tips")?"1":"0");}catch(e){}  };
-try{ if(localStorage.getItem(STORE+"-tips")!=="0"){ document.body.classList.add("tips");  } }catch(e){}
 function renderAll(){ renderTop(); renderPlan(); }
 load(); renderAll(); try{ showPhase(localStorage.getItem(STORE+"-phase")||"background"); }catch(e){ showPhase("background"); }
 </script>
