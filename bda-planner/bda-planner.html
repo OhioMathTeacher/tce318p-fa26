@@ -190,6 +190,7 @@
   .sum.over b{color:var(--mark)}.sum.under b{color:#8a6a1a}
   .panes{display:grid;gap:18px;margin-top:10px;align-items:start}
   .pane{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px 16px;min-height:420px}
+  .pane.focus{box-shadow:0 0 0 2px var(--outline) inset}
   .pane .ph{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
   .pane .ph h2{margin:0;font-size:19px;flex:1}
   .pane.before .ph h2{color:var(--before)}.pane.during .ph h2{color:var(--during)}.pane.after .ph h2{color:var(--after)}
@@ -209,6 +210,12 @@
   .nv .ncard{width:92px;height:92px;border:2px solid var(--line);border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;padding:6px;position:relative;cursor:pointer}
   .nv .ncard .num{position:absolute;bottom:4px;left:6px;font-size:11px;font-weight:800;color:#fff;background:var(--before);border-radius:7px;padding:1px 6px}
   .nv .ncard.add{border-style:dashed;color:var(--muted);font-weight:700}
+  .nv .ncard textarea{width:100%;height:100%;border:0;background:transparent;font:inherit;font-size:12px;line-height:1.25;text-align:center;resize:none;padding:6px 2px 16px;outline:none;min-height:0}
+  .nv .ncard:focus-within{border-color:var(--before)}
+  .nv .ncard .x{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:11px;line-height:18px;padding:0;cursor:pointer;display:none}
+  .nv .ncard:hover .x,.nv .ncard:focus-within .x{display:block}
+  .slice.add{flex:0 0 auto;min-width:64px;border-style:dashed;justify-content:center;align-items:center;color:var(--muted);font-weight:700;font-size:12.5px;text-align:center;line-height:1.2}
+  .slice.add:hover{border-color:var(--outline);color:var(--outline)}
   .nv .prompt{margin-top:10px}
   .slices{display:flex;gap:6px;align-items:stretch;margin:6px 0 2px;min-height:86px}
   .slice{flex:1 1 0;border:2px solid #bcd0ea;border-radius:12px;background:#fff;padding:8px 10px;cursor:pointer;min-width:70px;position:relative;display:flex;flex-direction:column;justify-content:space-between}
@@ -386,7 +393,7 @@
     <span class="views" id="views"><button class="b on" data-v="before">Before</button><button class="on" data-v="during">During</button><button class="a on" data-v="after">After</button></span>
     <span class="sum" id="planSum"></span>
     <span style="flex:1"></span>
-    <button class="drawerToggle" id="drawerToggle" title="Activities you can put in a During slice, and shapes to start from.">🧩 Activities &amp; shapes</button>
+    <button class="drawerToggle" id="drawerToggle" title="What you can pick for the pane you're working in.">🧩 Activities &amp; shapes</button>
   </div>
   <div class="panes" id="panes"></div>
   </div><!-- /during panel -->
@@ -395,13 +402,8 @@
 <!-- drawer -->
 <div id="drawerBack"></div>
 <div id="drawer">
-  <div class="drawerHd"><h2>🧩 Activities</h2><button class="tbtn" id="drawerClose">✕</button></div>
-  <div class="small">An <b>activity</b> is one segment of the During. A <b>shape</b> is two or three activities in a named order. Pick activities one at a time, or start from a shape and change it.</div>
-  <div class="dsec">Activities</div>
-  <div id="actList"></div>
-  <div class="dsec">Start from a shape</div>
-  <div class="small">Replaces the middle of your timeline with the shape's activities. Before and After stay.</div>
-  <div id="shapeList"></div>
+  <div class="drawerHd"><h2 id="drawerTitle">🧩 Activities</h2><button class="tbtn" id="drawerClose">✕</button></div>
+  <div id="drawerBody"></div>
 </div>
 <div id="stdModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><h2>Ohio's standards</h2><span class="small" id="stdModalSub"></span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pdfModal').classList.add('open')">The PDF</button><button class="tbtn" onclick="document.getElementById('stdModal').classList.remove('open')">✕</button></div><div class="bb" id="stdModalBody"></div><div class="bf"><span class="small" id="stdModalCount"></span><span style="flex:1"></span><button class="primary" onclick="document.getElementById('stdModal').classList.remove('open')">Done</button></div></div></div>
 <div id="pdfModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><b>Ohio's Learning Standards | Mathematics (2017)</b><span class="small">Ohio Department of Education</span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pdfModal').classList.remove('open')">✕</button></div><iframe src="standards/Ohio-Learning-Standards-Mathematics-2017.pdf" title="Ohio standards"></iframe></div></div>
@@ -471,6 +473,20 @@ const SHAPES = [
 
 /* ---------- sample projects ---------- */
 function blankAct(type){ return {id:uid(), type, title:"", min:"", students:"", teacher:"", questions:"", anticipate:"", objective:"", materials:"", extra:"", thread:"", four:{collab:"",ask:"",share:"",think:""}}; }
+const ROUTINE_LIST=[
+  ["Same or Different","Two images side by side. What's the same? What's different? Comparison forces a claim.","https://www.samebutdifferentmath.com/"],
+  ["Which One Doesn't Belong?","Four items; every one can be the odd one out. The reason is the math.","https://wodb.ca/"],
+  ["Number Talk","One expression, mental math, strategies shared and recorded on the board."],
+  ["Pairs to Make 10","Quick images — which two make ten? Fluency with the structure of ten."],
+  ["Fraction Talks","A partitioned image. What fraction is shaded? How do you know?","https://fractiontalks.com/"],
+  ["Notice & Wonder","One image or situation. What do you notice? What do you wonder?"],
+  ["Estimation","Too low, too high, just right — then the reveal.","https://estimation180.com/"],
+  ["Choral Counting","Count together while you record in rows. What patterns do you see?"],
+  ["Number Strings","A sequence of related problems; the earlier ones set up the later ones."],
+  ["Splat!","Dots, some covered by a splat. How many are under it? How do you know?","https://stevewyborney.com/"]];
+const ROUTINES=ROUTINE_LIST.map(r=>r[0]);
+const AFTER_SUB={exit:"One to three prompts on paper at the end; you keep every response.",transcript:"Two or three questions you ask in the closing discussion; you record what students actually say.",gallery:"Chosen solutions go to the board in an order you set; the artifact is the annotated photo.",probe:"Three questions for one focus student, one on one, with a jot-your-reasoning prompt."};
+let beforeOther=false;
 function blankBefore(){ return {id:"before",type:"before",name:"",prompt:"",cards:[],min:"",objective:"",withhold:"",entry:"",guard:"",students:"",teacher:"",thread:""}; }
 function blankAfter(){ return {id:"after",type:"after",kind:"exit",min:"",objective:"",prompts:[["",""],["",""]],questions:"",order:"",captures:"",answers:"",students:"",teacher:""}; }
 const AFTER_KINDS={exit:"Exit slip",transcript:"Discussion transcript",gallery:"Strategy gallery",probe:"One-on-one probe"};
@@ -720,18 +736,19 @@ function renderPlan(){
   const panes=document.getElementById("panes");
   panes.style.gridTemplateColumns=on.map(k=>k==="during"&&on.length>1?"minmax(0,1.6fr)":"minmax(0,1fr)").join(" ");
   panes.innerHTML=on.map(k=>k==="before"?renderBefore():k==="during"?renderDuring():renderAfter()).join("");
-  wirePlan(); wireInfo();
+  wirePlan(); wireInfo(); renderDrawer();
 }
 document.querySelectorAll("#views button").forEach(b=>b.onclick=()=>{ state.views[b.dataset.v]=!state.views[b.dataset.v]; save(); renderPlan(); });
 const readsBar=`<div class="reads"><span>Second reads:</span><button class="ghost" onclick="toast('Hand it over — a classmate runs it. Prints the review sheet in the real app.')">Hand it over ▶</button><button class="ghost" disabled>Ask me</button><button class="ghost" disabled>Show me options</button><button class="ghost" disabled>Check this</button><span class="later">AI wired in the real app — optional</span></div>`;
 
 function renderBefore(){
   const b=state.before=Object.assign(blankBefore(),state.before||{});
-  const cards=(b.cards||[]).map((c,i)=>`<div class="ncard" data-card="${i}" title="Click to edit · shift-click to remove">${esc(c)||"…"}<span class="num">${i+1}</span></div>`).join("");
+  const other=beforeOther||(!!b.name&&!ROUTINES.includes(b.name));
+  const cards=(b.cards||[]).map((c,i)=>`<div class="ncard"><textarea data-cardtext="${i}" placeholder="7 + 8">${esc(c)}</textarea><span class="num">${i+1}</span><button class="x" data-delcard="${i}" title="Remove this card">✕</button></div>`).join("");
   return `<div class="pane before"><div class="ph"><span class="tag">Before</span><h2>One routine</h2><span class="mins"><input type="text" inputmode="numeric" placeholder="min" data-bmin value="${esc(b.min)}">min</span>${I("The routine that opens the lesson — one, short, and it primes the concept without giving away the move the During is meant to reveal. Build it like an nVoke pack: cards you show, one question you ask.")}</div>
-    <div class="nv"><div class="striplabel">🖐 Your cards — click a card to edit, shift-click to remove</div><div class="cards">${cards}<div class="ncard add" data-addcard>＋ card</div></div>
-      <div class="prompt"><label style="margin-top:4px">The routine <span class="hint">— its name, and where it's from</span></label><input type="text" data-b="name" value="${esc(b.name)}" placeholder="Same or Different · Pairs to Make 10 · Fraction Talks …">
-      <label>What you say <span class="hint">— the posing question, exactly</span></label><input type="text" data-b="prompt" value="${esc(b.prompt)}" placeholder="What's the same? What's different?"></div></div>
+    <label>1 · Select a routine ${I("The warm-up's structure. Pick one you've seen or run; Other… lets you name your own.")}</label><div style="display:flex;gap:8px;align-items:center"><select data-bsel style="width:auto;flex:1;max-width:300px"><option value="">Choose one…</option>${ROUTINES.map(r=>`<option ${b.name===r?"selected":""}>${r}</option>`).join("")}<option value="__other" ${other?"selected":""}>Other…</option></select><input type="text" data-b="name" value="${esc(b.name)}" placeholder="Name it, and where it's from" style="flex:1;${other?"":"display:none"}"></div>
+    <div class="nv" style="margin-top:10px"><div class="striplabel">2 · Your cards — what students see, one card each. Type on a card.</div><div class="cards">${cards}<div class="ncard add" data-addcard title="Add a card and type what's on it: a number, an expression, a figure described">＋ card</div></div>
+      <div class="prompt"><label style="margin-top:4px">3 · What you say <span class="hint">— the posing question, exactly</span></label><input type="text" data-b="prompt" value="${esc(b.prompt)}" placeholder="What's the same? What's different?"></div></div>
     <div class="two"><div><label>What students do</label><textarea data-b="students">${esc(b.students)}</textarea></div><div><label>What I do</label><textarea data-b="teacher">${esc(b.teacher)}</textarea></div></div>
     <label>Objective <span class="hint">— by the end of these minutes, students can…</span></label><input type="text" data-b="objective" value="${esc(b.objective)}">
     <label>What must NOT be given away ${I("The move the During is designed to reveal. Name it here so you can check the routine against it.")}</label><input type="text" data-b="withhold" value="${esc(b.withhold)}">
@@ -763,7 +780,7 @@ function renderDuring(){
       ${readsBar}</div>`;
   }
   return `<div class="pane during"><div class="ph"><span class="tag">During</span><h2>The activities</h2><span class="mins">slices <select data-nslices style="width:auto;padding:5px 6px">${[1,2,3,4,5].map(k=>`<option ${k===n?"selected":""}>${k}</option>`).join("")}</select></span>${I("Two to five activities that build on each other — pick a type for each, give it your minutes, and say how each one connects to the next. Widths follow your minutes.")}</div>
-    <div class="slices">${slices}</div>${ed}</div>`;
+    <div class="slices">${slices}${n<5?`<div class="slice add" data-opendrawer title="Pick an activity type for a new slice, or start from a shape">🧩 ＋ activity<br><span style="font-weight:500">or a shape</span></div>`:""}</div>${ed}</div>`;
 }
 function renderAfter(){
   const a=state.after=Object.assign(blankAfter(),state.after||{});
@@ -798,19 +815,48 @@ function wirePlan(){
   P.querySelectorAll("[data-remove]").forEach(el=>el.onclick=()=>{ if(state.during.length<=1) return; state.during=state.during.filter(x=>x.id!==el.dataset.remove); selId=null; save(); renderPlan(); });
   P.querySelectorAll("[data-akind]").forEach(el=>el.onchange=e=>{ state.after.kind=e.target.value; save(); renderPlan(); });
   P.querySelectorAll("[data-addp]").forEach(el=>el.onclick=()=>{ state.after.prompts.push(["",""]); save(); renderPlan(); });
-  P.querySelectorAll("[data-addcard]").forEach(el=>el.onclick=()=>{ const t=prompt("What's on this card? (a number, a figure described, an image caption)"); if(t==null) return; state.before.cards.push(t); save(); renderPlan(); });
-  P.querySelectorAll("[data-card]").forEach(el=>el.onclick=e=>{ const i=+el.dataset.card; if(e.shiftKey){ state.before.cards.splice(i,1); } else { const t=prompt("Edit the card", state.before.cards[i]); if(t==null) return; state.before.cards[i]=t; } save(); renderPlan(); });
+  bind("[data-cardtext]",(el,v)=>{ state.before.cards[+el.dataset.cardtext]=v; });
+  P.querySelectorAll("[data-addcard]").forEach(el=>el.onclick=()=>{ state.before.cards.push(""); save(); renderPlan(); const ta=P.querySelectorAll("[data-cardtext]"); ta[ta.length-1]?.focus(); });
+  P.querySelectorAll("[data-delcard]").forEach(el=>el.onclick=()=>{ state.before.cards.splice(+el.dataset.delcard,1); save(); renderPlan(); });
+  P.querySelectorAll("[data-opendrawer]").forEach(el=>el.onclick=()=>{ setFocusPane("during"); openDrawer(); });
+  P.querySelectorAll("[data-bsel]").forEach(el=>el.onchange=e=>{ const v=e.target.value; if(v==="__other"){ beforeOther=true; state.before.name=""; save(); renderPlan(); P.querySelector('[data-b="name"]')?.focus(); } else { beforeOther=false; state.before.name=v; save(); renderPlan(); } });
 }
 
 /* ---------- drawer ---------- */
 function openDrawer(){ document.getElementById("drawer").classList.add("open"); document.getElementById("drawerBack").classList.add("open"); }
 function closeDrawer(){ document.getElementById("drawer").classList.remove("open"); document.getElementById("drawerBack").classList.remove("open"); }
 document.getElementById("drawerToggle").onclick=openDrawer; document.getElementById("drawerClose").onclick=closeDrawer; document.getElementById("drawerBack").onclick=closeDrawer;
+let focusPane="during";
+const DRAWER_LABEL={before:"🖐 Select a routine",during:"🧩 Activities & shapes",after:"📋 Choose an artifact"};
+function setFocusPane(k){ if(!k||k===focusPane) return; focusPane=k; document.querySelectorAll("#panes .pane").forEach(p=>p.classList.toggle("focus",p.classList.contains(k))); renderDrawer(); }
+document.getElementById("panes").addEventListener("focusin",e=>setFocusPane(e.target.closest(".pane")?.classList[1]));
+document.getElementById("panes").addEventListener("click",e=>setFocusPane(e.target.closest(".pane")?.classList[1]));
 function renderDrawer(){
-  document.getElementById("actList").innerHTML=Object.entries(ACTIVITIES).map(([k,v])=>`<div class="drow"><div class="dmeta"><div class="dname">${v.name}</div><div class="dsub">${esc(v.sub)}${v.link?` · <a href="${v.link}" target="_blank" rel="noopener">examples</a>`:""}</div></div><button class="tbtn" data-add="${k}">Add</button></div>`).join("");
-  document.getElementById("shapeList").innerHTML=SHAPES.map((s,i)=>`<div class="drow"><div class="dmeta"><div class="dname">${s.name}</div><div class="dsub">${esc(s.sub)}<br><span style="color:var(--outline)">${s.seq.map(k=>ACTIVITIES[k].name).join(" → ")}</span></div></div><button class="tbtn" data-shape="${i}">Use</button></div>`).join("");
-  document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{ if(addAct(b.dataset.add)) closeDrawer(); });
-  document.querySelectorAll("[data-shape]").forEach(b=>b.onclick=()=>{ const s=SHAPES[+b.dataset.shape]; if(!confirm(`Start from "${s.name}"? This replaces the middle activities. Before and After stay.`)) return; state.during=s.seq.map(k=>blankAct(k)); selId=state.during[0].id; save(); renderPlan(); closeDrawer(); });
+  const on=Object.keys(state.views||{}).filter(k=>state.views[k]);
+  if(on.length&&!on.includes(focusPane)) focusPane=on[0];
+  document.getElementById("drawerToggle").textContent=DRAWER_LABEL[focusPane];
+  document.querySelectorAll("#panes .pane").forEach(p=>p.classList.toggle("focus",p.classList.contains(focusPane)));
+  const T=document.getElementById("drawerTitle"), B=document.getElementById("drawerBody");
+  if(focusPane==="before"){
+    T.textContent="🖐 Routines";
+    B.innerHTML=`<div class="small">A routine opens the lesson: cards you show, one question you ask. Pick one — it goes in step 1 of the Before.</div><div class="dsec">Routines</div>`
+      +ROUTINE_LIST.map((r,i)=>`<div class="drow"><div class="dmeta"><div class="dname">${esc(r[0])}</div><div class="dsub">${esc(r[1])}${r[2]?` · <a href="${r[2]}" target="_blank" rel="noopener">examples</a>`:""}</div></div><button class="tbtn" data-routine="${i}">Use</button></div>`).join("")
+      +`<div class="drow"><div class="dmeta"><div class="dname">Other…</div><div class="dsub">One you know that isn't listed. Name it, and where it's from.</div></div><button class="tbtn" data-routine="-1">Name it</button></div>`;
+    B.querySelectorAll("[data-routine]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.routine; state.before=Object.assign(blankBefore(),state.before||{}); if(i<0){ beforeOther=true; state.before.name=""; } else { beforeOther=false; state.before.name=ROUTINES[i]; } save(); renderPlan(); closeDrawer(); if(i<0) document.querySelector('#panes [data-b="name"]')?.focus(); });
+  } else if(focusPane==="after"){
+    T.textContent="📋 Artifacts";
+    B.innerHTML=`<div class="small">What you carry out of the room. Pick the one a student's response to could answer your research question.</div><div class="dsec">Artifact types</div>`
+      +Object.entries(AFTER_KINDS).map(([k,v])=>`<div class="drow"><div class="dmeta"><div class="dname">${esc(v)}</div><div class="dsub">${esc(AFTER_SUB[k]||"")}</div></div><button class="tbtn" data-akindpick="${k}">Use</button></div>`).join("");
+    B.querySelectorAll("[data-akindpick]").forEach(b=>b.onclick=()=>{ state.after=Object.assign(blankAfter(),state.after||{}); state.after.kind=b.dataset.akindpick; save(); renderPlan(); closeDrawer(); });
+  } else {
+    T.textContent="🧩 Activities";
+    B.innerHTML=`<div class="small">An <b>activity</b> is one segment of the During. A <b>shape</b> is two or three activities in a named order. Pick activities one at a time, or start from a shape and change it.</div><div class="dsec">Activities</div>`
+      +Object.entries(ACTIVITIES).map(([k,v])=>`<div class="drow"><div class="dmeta"><div class="dname">${v.name}</div><div class="dsub">${esc(v.sub)}${v.link?` · <a href="${v.link}" target="_blank" rel="noopener">examples</a>`:""}</div></div><button class="tbtn" data-add="${k}">Add</button></div>`).join("")
+      +`<div class="dsec">Start from a shape</div><div class="small">Replaces the middle of your timeline with the shape's activities. Before and After stay.</div>`
+      +SHAPES.map((s,i)=>`<div class="drow"><div class="dmeta"><div class="dname">${s.name}</div><div class="dsub">${esc(s.sub)}<br><span style="color:var(--outline)">${s.seq.map(k=>ACTIVITIES[k].name).join(" → ")}</span></div></div><button class="tbtn" data-shape="${i}">Use</button></div>`).join("");
+    B.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{ if(addAct(b.dataset.add)) closeDrawer(); });
+    B.querySelectorAll("[data-shape]").forEach(b=>b.onclick=()=>{ const s=SHAPES[+b.dataset.shape]; if(!confirm(`Start from "${s.name}"? This replaces the middle activities. Before and After stay.`)) return; state.during=s.seq.map(k=>blankAct(k)); selId=state.during[0].id; save(); renderPlan(); closeDrawer(); });
+  }
 }
 
 /* ---------- project bar ---------- */
@@ -825,7 +871,7 @@ function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,
 let toastT; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.style.opacity=1; clearTimeout(toastT); toastT=setTimeout(()=>t.style.opacity=0,2600); }
 document.getElementById("tipsBtn").onclick=()=>{ document.body.classList.toggle("tips"); try{localStorage.setItem(STORE+"-tips",document.body.classList.contains("tips")?"1":"0");}catch(e){}  };
 try{ if(localStorage.getItem(STORE+"-tips")!=="0"){ document.body.classList.add("tips");  } }catch(e){}
-function renderAll(){ renderTop(); renderPlan(); renderDrawer(); }
+function renderAll(){ renderTop(); renderPlan(); }
 load(); renderAll(); try{ showPhase(localStorage.getItem(STORE+"-phase")||"background"); }catch(e){ showPhase("background"); }
 </script>
 </body>
