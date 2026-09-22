@@ -370,6 +370,9 @@
     #profilePrint .std{margin:2pt 0 2pt 0}
     #profilePrint .std b{font-family:monospace}
     #profilePrint .note{font-size:10pt;color:#444;margin-top:12pt}
+    #profilePrint .entry{margin:4pt 0 8pt;padding-left:8pt;border-left:2px solid #bbb}
+    #profilePrint .entry .when{font-size:9.5pt;color:#555}
+    #profilePrint .tag{font-size:9pt;border:1px solid #888;border-radius:6pt;padding:0 5pt;margin-left:4pt}
     @page{margin:0.8in}
   }
   /* tiles (Background) */
@@ -469,7 +472,7 @@
   <div class="phasebar">
     <button class="phase on" data-phase="background" title="Weeks 6–7 — your Concept Profile, your question, and the lesson you have (or your idea)."><span class="pnum"><b>1</b></span> Profile</button>
     <button class="phase" data-phase="during" title="Weeks 8–10 — the lesson, minute by minute: the routine before, the activities, the artifact after."><span class="pnum"><b>2</b></span> Plan</button>
-    <button class="phase" disabled title="Week 10 — the plan as a Word file, your planning record, the reflection. Unlocks in Week 10."><span class="pnum"><b>3</b></span> Share</button>
+    <button class="phase" data-phase="share" title="The plan as a Word file (the 3-Pager) and your planning record as a PDF — whenever there's something to share."><span class="pnum"><b>3</b></span> Share</button>
   </div>
 
 
@@ -477,6 +480,9 @@
   <div class="panel on" data-panel="background">
     <div class="tiles" id="tiles"></div>
   </div>
+
+  <!-- ===== ③ SHARE ===== -->
+  <div class="panel" data-panel="share"><div class="tiles" id="shareTiles" style="height:auto;min-height:0;align-items:start"></div></div>
 
   <!-- ===== ③ DURING ===== -->
   <div class="panel" data-panel="during">
@@ -497,7 +503,7 @@
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 42</div>
+<div id="build">Build 43</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -849,7 +855,7 @@ function renderChips(){
   d.innerHTML=`<span class="chip"><b>${esc(g.grade||"—")}</b> · ${state.block} min<a href="#" data-goto="background" title="Change on the Background tab">change</a></span><span class="chip">${state.door==="lesson"?"Host teacher's lesson":"My own idea"}${g.scriptName?` · <b>${esc(g.scriptName)}</b>`:""}</span><span class="chip">${esc(g.concept||"")}${(g.standards||[]).length?` · <b title="${esc(g.standards.map(c=>c+" — "+stdText(c)).join("\n"))}">${g.standards.join(", ")}</b>`:""}${(g.practices||[]).length?` · ${g.practices.join(", ")}`:""}</span>`;
   d.querySelectorAll("[data-goto]").forEach(a=>a.onclick=e=>{ e.preventDefault(); showPhase("background"); });
 }
-function showPhase(name){ if(name==="during"&&!selId) selId=(state.during[0]||{}).id||null; document.querySelectorAll(".phase[data-phase]").forEach(b=>b.classList.toggle("on",b.dataset.phase===name)); document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("on",p.dataset.panel===name)); try{localStorage.setItem(STORE+"-phase",name);}catch(e){} if(name==="during"){ renderLessonPane(); renderChips(); renderPlan(); } window.scrollTo(0,0); }
+function showPhase(name){ if(name==="during"&&!selId) selId=(state.during[0]||{}).id||null; document.querySelectorAll(".phase[data-phase]").forEach(b=>b.classList.toggle("on",b.dataset.phase===name)); document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("on",p.dataset.panel===name)); try{localStorage.setItem(STORE+"-phase",name);}catch(e){} if(name==="during"){ renderLessonPane(); renderChips(); renderPlan(); } if(name==="share") renderShare(); window.scrollTo(0,0); }
 document.querySelectorAll(".phase[data-phase]").forEach(b=>b.onclick=()=>showPhase(b.dataset.phase));
 
 /* ---------- render: doors + block (old, kept for the hidden card) ---------- */
@@ -903,6 +909,7 @@ async function secondRead(mode,tab,btn){
   if(!j) return;
   R.history.push({role:"user",content:`[${mode}] `+flat.slice(0,1500)}); R.history.push({role:"assistant",content:JSON.stringify(j.data).slice(0,1500)}); R.history=R.history.slice(-8);
   R.last={mode,data:j.data,when:new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}),aside:[]};
+  R.log=R.log||[]; R.log.push({mode,ts:Date.now(),data:j.data,aside:R.last.aside,by:(state.bg||{}).names||""});
   save(); renderPlan();
 }
 
@@ -962,7 +969,7 @@ function wirePlan(){
   P.querySelectorAll("[data-shapes]").forEach(el=>el.onclick=pickShape);
   P.querySelectorAll("[data-read]").forEach(el=>el.onclick=()=>secondRead(el.dataset.read,el.dataset.tab,el));
   P.querySelectorAll("[data-dismiss]").forEach(el=>el.onclick=()=>{ if(state.reads&&state.reads[el.dataset.dismiss]) delete state.reads[el.dataset.dismiss].last; save(); renderPlan(); });
-  P.querySelectorAll("[data-aside]").forEach(el=>el.onclick=()=>{ const [t,i]=el.dataset.aside.split(":"); const R=state.reads[t]; if(!R||!R.last) return; R.last.aside=R.last.aside||[]; R.last.aside[+i]=!R.last.aside[+i]; save(); renderPlan(); });
+  P.querySelectorAll("[data-aside]").forEach(el=>el.onclick=()=>{ const [t,i]=el.dataset.aside.split(":"); const R=state.reads[t]; if(!R||!R.last) return; R.last.aside=R.last.aside||[]; R.last.aside[+i]=!R.last.aside[+i]; if(R.log&&R.log.length) R.log[R.log.length-1].aside=R.last.aside; save(); renderPlan(); });
   P.querySelectorAll("[data-brpick]").forEach(el=>el.onclick=pickRoutine);
   P.querySelectorAll("[data-bopen]").forEach(el=>el.onclick=openBefore);
   P.querySelectorAll("[data-bclear]").forEach(el=>el.onclick=e=>{ e.stopPropagation(); const b=state.before; if((b.prompt||b.students||b.objective||(b.cards||[]).some(c=>c))&&!confirm("Clear the routine? What you typed in it is lost.")) return; state.before=blankBefore(); save(); renderPlan(); });
@@ -1097,6 +1104,114 @@ function pickArtifact(){
   const B=openPick("After — what artifact?","What you carry out of the room. Pick the one a student's response to could answer your research question.",
     `<div class="ptiles">${Object.entries(AFTER_KINDS).map(([k,v])=>`<button class="ptile ${k===a.kind?"on":""}" data-k="${k}"><div class="pi">${AFTER_META[k].icon}</div><div class="pn">${esc(v)}</div><div class="ps">${esc(AFTER_SUB[k]||"")}</div></button>`).join("")}</div>`);
   B.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{ state.after.kind=b.dataset.k; save(); renderPlan(); closePick(); openAfter(); });
+}
+
+/* ---------- ③ Share: the 3-Pager (.docx) and the planning record (.pdf) ---------- */
+function planTitle(){ const g=state.bg||{}; return (state.share&&state.share.title)||g.scriptName||g.concept||""; }
+function teamNames(){ return ((state.bg||{}).names||"").split(/[,&·;\/]| and /i).map(x=>x.trim()).filter(Boolean); }
+function assemblePlan(){
+  const g=state.bg||{}, b=state.before||{}, af=state.after||{}, sh=state.share||{};
+  const nz=v=>(v==null?"":String(v)).trim();
+  const lines=arr=>arr.filter(x=>x&&nz(x)).join("\n");
+  const cardsNote=b.pack&&b.pack.thumbs&&b.pack.thumbs.length?`${b.pack.thumbs.length} card${b.pack.thumbs.length===1?"":"s"} (${b.pack.pack.name||"nVoke"}) — see the handout pages`:(b.cards||[]).filter(nz).length?"Cards: "+(b.cards||[]).filter(nz).join(" · "):"";
+  const durings=(state.during||[]).map((a,i)=>{ const A=ACTIVITIES[a.type]; if(!A) return null; const own=a.type==="script"?lines([a.four.collab&&"Collaborate: "+a.four.collab,a.four.ask&&"Ask: "+a.four.ask,a.four.share&&"Share: "+a.four.share,a.four.think&&"Think first: "+a.four.think]):(A.extra&&nz(a.extra)?A.extra.label+": "+a.extra:""); return {i:i+1,A,a,own}; }).filter(Boolean);
+  const artifact=af.kind==="exit"?(af.prompts||[]).filter(r=>nz(r[0])).map((r,i)=>`Prompt ${i+1}: ${r[0]}${nz(r[1])?` — would tell me: ${r[1]}`:""}`).join("\n"):af.kind==="gallery"?nz(af.order):nz(af.questions);
+  return {
+    title:planTitle(), grade:nz(g.grade), names:nz(g.names), section:g.section==="oxford"?"Oxford":g.section==="hamilton"?"Hamilton":"",
+    focus:lines([g.question, g.concept&&"The concept: "+g.concept]),
+    materials:lines([...new Set(durings.map(d=>nz(d.a.materials)).filter(Boolean)), cardsNote&&"Before: "+cardsNote, AFTER_KINDS[af.kind]&&"After: "+AFTER_KINDS[af.kind]]),
+    objectives:lines([nz(b.objective)&&"Before — "+b.objective, ...durings.map(d=>nz(d.a.objective)&&`Activity ${d.i} (${d.A.name}) — ${d.a.objective}`), nz(af.objective)&&"After — "+af.objective]),
+    standards:lines([...(g.standards||[]).map(c=>`${c}  ${stdText(c)}`), ...(g.practices||[]).map(c=>{ const p=OM.practices.find(x=>x[0]===c); return p?`${c}  ${p[1]}`:c; })]),
+    before:lines([nz(b.name)&&`${b.name}${nz(b.min)?` · ${b.min} min`:""}`, nz(b.prompt)&&"What I say: "+b.prompt, cardsNote, nz(b.students)&&"Students: "+b.students, nz(b.teacher)&&"Teacher: "+b.teacher, nz(b.withhold)&&"Not given away: "+b.withhold, nz(b.thread)&&"→ "+b.thread]),
+    during:durings.map(d=>lines([`${d.i} · ${d.A.name}${nz(d.a.title)?" — "+d.a.title:""}${nz(d.a.min)?` · ${d.a.min} min`:""}`, d.own, nz(d.a.students)&&"Students: "+d.a.students, nz(d.a.teacher)&&"Teacher: "+d.a.teacher, nz(d.a.questions)&&"Key questions: "+d.a.questions, nz(d.a.anticipate)&&"Anticipated: "+d.a.anticipate, nz(d.a.thread)&&"→ "+d.a.thread])).join("\n\n"),
+    after:lines([AFTER_KINDS[af.kind]&&`${AFTER_KINDS[af.kind]}${nz(af.min)?` · ${af.min} min`:""}`, artifact, nz(af.students)&&"Students: "+af.students, nz(af.teacher)&&"Teacher: "+af.teacher]),
+    assessment:lines([nz(af.captures)&&"What the artifact captures: "+af.captures, nz(af.answers)&&"Would a student's response answer the research question? "+af.answers, ...durings.map(d=>nz(d.a.anticipate)&&`During ${d.i}, anticipated: ${d.a.anticipate}`)]),
+    reflection:nz(sh.reflection),
+    thumbs:(b.pack&&b.pack.thumbs)||[], exit:af.kind==="exit"?(af.prompts||[]).filter(r=>nz(r[0])):[],
+  };
+}
+/* --- .docx, no library: a zip of three XML parts (+ media) --- */
+const crcTable=(function(){const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function crc32(bytes){let c=0xFFFFFFFF;for(let i=0;i<bytes.length;i++)c=crcTable[(c^bytes[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function zipStore(files){ const enc=new TextEncoder(); const u16=n=>[n&255,(n>>8)&255]; const u32=n=>[n&255,(n>>8)&255,(n>>16)&255,(n>>24)&255]; const DD=((2026-1980)<<9)|(9<<5)|22; const parts=[],central=[]; let off=0;
+  files.forEach(f=>{ const name=enc.encode(f.name), data=f.bytes?f.bytes:enc.encode(f.content), crc=crc32(data), n=data.length; const local=[].concat(u32(0x04034b50),u16(20),u16(0x0800),u16(0),u16(0),u16(DD),u32(crc),u32(n),u32(n),u16(name.length),u16(0)); parts.push(new Uint8Array(local),name,data); central.push({name,crc,n,off}); off+=local.length+name.length+n; });
+  const cd=[]; let cds=0; central.forEach(c=>{ const h=[].concat(u32(0x02014b50),u16(20),u16(20),u16(0x0800),u16(0),u16(0),u16(DD),u32(c.crc),u32(c.n),u32(c.n),u16(c.name.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(c.off)); cd.push(new Uint8Array(h),c.name); cds+=h.length+c.name.length; });
+  const eocd=[].concat(u32(0x06054b50),u16(0),u16(0),u16(central.length),u16(central.length),u32(cds),u32(off),u16(0));
+  return new Blob(parts.concat(cd,[new Uint8Array(eocd)]),{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"}); }
+const xesc=v=>String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+function wRuns(text,rPr){ const rp=rPr?"<w:rPr>"+rPr+"</w:rPr>":""; return String(text==null?"":text).split(/\r?\n/).map((ln,i)=>(i?"<w:r>"+rp+"<w:br/></w:r>":"")+"<w:r>"+rp+'<w:t xml:space="preserve">'+xesc(ln)+"</w:t></w:r>").join(""); }
+function wPara(text,o){ o=o||{}; let rPr=""; if(o.bold) rPr+="<w:b/>"; if(o.italic) rPr+="<w:i/>"; if(o.size) rPr+=`<w:sz w:val="${o.size}"/><w:szCs w:val="${o.size}"/>`; if(o.color) rPr+=`<w:color w:val="${o.color}"/>`; return `<w:p><w:pPr><w:spacing w:before="${o.before||0}" w:after="${o.after==null?60:o.after}"/></w:pPr>${wRuns(text,rPr)}</w:p>`; }
+const TBL_BORDERS='<w:tblBorders><w:top w:val="single" w:sz="8" w:color="1F2933"/><w:left w:val="single" w:sz="8" w:color="1F2933"/><w:bottom w:val="single" w:sz="8" w:color="1F2933"/><w:right w:val="single" w:sz="8" w:color="1F2933"/><w:insideH w:val="single" w:sz="8" w:color="1F2933"/><w:insideV w:val="single" w:sz="8" w:color="1F2933"/></w:tblBorders>';
+function wCell(w,inner,shade){ return `<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${shade?`<w:shd w:val="clear" w:color="auto" w:fill="${shade}"/>`:""}<w:tcMar><w:top w:w="80" w:type="dxa"/><w:left w:w="120" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/><w:right w:w="120" w:type="dxa"/></w:tcMar></w:tcPr>${inner||wPara("")}</w:tc>`; }
+/* one placemat row: the prompt (bold title + grey hint) on the left, the content on the right; empty stays visibly empty */
+function placemat(rows){ const W=[3000,7080]; return `<w:tbl><w:tblPr><w:tblW w:w="10080" w:type="dxa"/>${TBL_BORDERS}<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="${W[0]}"/><w:gridCol w:w="${W[1]}"/></w:tblGrid>`
+  +rows.map(r=>`<w:tr><w:trPr><w:cantSplit/></w:trPr>${wCell(W[0],wPara(r.label,{bold:true,size:22,after:20})+(r.hint?wPara(r.hint,{size:17,color:"52606D",after:0}):""),"EEF3FA")}${wCell(W[1],(r.text&&r.text.trim())?wPara(r.text,{size:21,after:0}):wPara("",{after:0}))}</w:tc></w:tr>`.replace("</w:tc></w:tr>","</w:tr>")).join("")+"</w:tbl>"+wPara("",{after:120}); }
+async function svgToPng(svg,px){ return new Promise(res=>{ const im=new Image(); im.onload=()=>{ const c=document.createElement("canvas"); c.width=px; c.height=px; const x=c.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,px,px); x.drawImage(im,0,0,px,px); res(c.toDataURL("image/png")); }; im.onerror=()=>res(null); im.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg); }); }
+function dataURLtoBytes(u){ const bin=atob(u.slice(u.indexOf(",")+1)); const b=new Uint8Array(bin.length); for(let j=0;j<bin.length;j++) b[j]=bin.charCodeAt(j); return b; }
+function imageXml(pngDataUrl,px,media,drels,caption){ const seq=media.length+1, rId="rIdImg"+seq, fname="image"+seq+".png"; media.push({name:"word/media/"+fname,bytes:dataURLtoBytes(pngDataUrl)}); drels.push(`<Relationship Id="${rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/${fname}"/>`); const cx=Math.round(2.6*914400), cy=cx;
+  return (caption?wPara(caption,{size:18,italic:true,color:"52606D",after:20}):"")+`<w:p><w:pPr><w:spacing w:before="40" w:after="160"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><wp:extent cx="${cx}" cy="${cy}"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="${seq}" name="Card ${seq}"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="${seq}" name="Card ${seq}"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="${rId}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`; }
+async function buildDocx(){
+  const A=assemblePlan(); const media=[], drels=[]; let body="";
+  body+=wPara("TCE 318P · 3-Pager Investigation Plan",{size:18,color:"52606D",after:40});
+  body+=wPara("Lesson Title: "+(A.title||""),{bold:true,size:28,after:20});
+  body+=wPara("Intended Grade Level(s): "+(A.grade||""),{size:22,after:20});
+  body+=wPara((A.names?A.names:"")+(A.section?" · "+A.section:"")+" · "+new Date().toLocaleDateString(),{size:18,color:"52606D",after:160});
+  body+=placemat([{label:"Your research question",hint:"The question about how students understand your concept that this lesson is built to investigate.",text:A.focus}]);
+  body+=placemat([{label:"Materials Needed",hint:"All physical and digital resources, manipulatives, handouts.",text:A.materials}]);
+  body+=placemat([{label:"Learning Objectives",hint:"Clear, measurable objectives — one per part, in order.",text:A.objectives}]);
+  body+=placemat([{label:"Standards Alignment",hint:"The 1 to 2 Ohio Mathematics standards your lesson addresses.",text:A.standards}]);
+  body+=placemat([{label:"Lesson Flow — Before (baseline)",hint:"The routine: what you show, what you say, what it primes and what it withholds.",text:A.before},{label:"Lesson Flow — During (primary instrument)",hint:"The activities in order: what students do, what you do, how each connects to the next.",text:A.during},{label:"Lesson Flow — After (the capture)",hint:"The discussion and the artifact you carry out of the room.",text:A.after}]);
+  body+=placemat([{label:"Assessment — name your read",hint:"How will you know what students understand? What you'll look for in the work on the task and the After — and what would not count as evidence.",text:A.assessment}]);
+  body+=placemat([{label:"Reflection & Next Steps",hint:"Complete after you teach in the field (Weeks 11 and 12): what worked, what didn't, surprising student thinking, what you'd change.",text:A.reflection}]);
+  body+=wPara("Attach student handouts and any printed materials students will need. The Before's cards and the exit slip, if built in the app, follow on the next pages.",{size:18,italic:true,color:"52606D",before:80,after:0});
+  if(A.thumbs.length){ body+='<w:p><w:r><w:br w:type="page"/></w:r></w:p>'+wPara("Handout — the Before's cards",{bold:true,size:26,after:40})+wPara((state.before.prompt||"")+"",{size:22,italic:true,after:120}); for(let i=0;i<A.thumbs.length;i++){ const png=await svgToPng(A.thumbs[i],900); if(png) body+=imageXml(png,900,media,drels,`Card ${i+1}`); } }
+  if(A.exit.length){ body+='<w:p><w:r><w:br w:type="page"/></w:r></w:p>'+wPara("Handout — exit slip",{bold:true,size:26,after:40})+wPara("Name: ____________________",{size:22,after:160})+A.exit.map((r,i)=>wPara(`${i+1}. ${r[0]}`,{size:24,after:40})+wPara("\n\n\n",{size:24,after:120})).join(""); }
+  const sect='<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1080" w:right="1080" w:bottom="1080" w:left="1080" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr>';
+  const doc='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>'+body+sect+'</w:body></w:document>';
+  const ct='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>'+(media.length?'<Default Extension="png" ContentType="image/png"/>':'')+'<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>';
+  const rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+  const files=[{name:"[Content_Types].xml",content:ct},{name:"_rels/.rels",content:rels},{name:"word/document.xml",content:doc}];
+  if(media.length){ files.push({name:"word/_rels/document.xml.rels",content:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+drels.join("")+'</Relationships>'}); media.forEach(m=>files.push({name:m.name,bytes:m.bytes})); }
+  return zipStore(files);
+}
+function slugify(t){ return (t||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); }
+/* --- the planning record: one person's PDF via the print stylesheet --- */
+function printRecord(who){
+  const g=state.bg||{}, sh=state.share||{}, A=assemblePlan(); const el=document.getElementById("profilePrint");
+  const modeName={ask:"Ask me",options:"Show me options",check:"Check this"};
+  const logs=["before","during","after"].map(tab=>{ const L=(state.reads&&state.reads[tab]&&state.reads[tab].log)||[]; if(!L.length) return ""; return `<h2>${tab[0].toUpperCase()+tab.slice(1)} — the partner's reads (${L.length})</h2>`+L.map(e=>{ const d=e.data||{}; let body=""; if(e.mode==="ask") body=(d.questions||[]).map(q=>`<p><b>${esc(q.question)}</b><br><i>${esc(q.why)}</i></p>`).join(""); else if(e.mode==="check") body=(d.reads||[]).map(x=>`<p><b>${esc(x.criterion)}</b> — ${esc(x.read)}<br><i>${esc(x.question)}</i></p>`).join(""); else body=(d.cards||[]).map((c,i)=>`<p><b>${esc(c.direction)}</b> <span class="tag">${e.aside&&e.aside[i]?"set aside":"kept in view"}</span><br>surfaces: ${esc(c.surfaces)} · might give away: ${esc(c.gives_away)}</p>`).join(""); return `<div class="entry"><div class="when">${modeName[e.mode]||e.mode} · ${new Date(e.ts).toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}</div>${body}</div>`; }).join(""); }).join("");
+  el.innerHTML=`<h1>Planning Record — ${esc(who||g.names||"")}</h1><div class="meta">TCE 318P FA26 · ${esc(A.title||"")}${A.grade?" · "+esc(A.grade):""}${A.section?" · "+A.section:""}${teamNames().length>1?" · team: "+esc(g.names):""} · ${new Date().toLocaleDateString()}</div>
+    <h2>The question</h2><p>${esc(g.question||"")}</p>
+    <h2>The plan, in brief</h2><p><b>Before</b> — ${esc(A.before.split("\n")[0]||"—")}</p><p><b>During</b> — ${esc(A.during.split("\n\n").map(x=>x.split("\n")[0]).join(" → ")||"—")}</p><p><b>After</b> — ${esc(A.after.split("\n")[0]||"—")}</p>
+    ${logs||"<h2>The partner's reads</h2><p>None asked for.</p>"}
+    <h2>Peer notes — from “Hand it over”</h2><p>${esc(sh.peer||"")||"<i>— none recorded —</i>"}</p>
+    <h2>Document 2 — how I used the two reads</h2><p>${esc(sh.twoReads||"")||"<i>— not written —</i>"}</p>
+    ${sh.reflection?`<h2>After teaching — reflection &amp; next steps</h2><p>${esc(sh.reflection)}</p>`:""}
+    <p class="note">The record: what the planning partner asked, what I kept and set aside, what a classmate said, and what I made of it. The partner asks; it never writes the plan. Produced by BDA Planner.</p>`;
+  window.print();
+}
+function renderShare(){
+  const g=state.bg||{}; state.share=state.share||{}; const sh=state.share; const A=assemblePlan(); const names=teamNames();
+  const have=k=>A[k]&&A[k].trim()?"✓":"·";
+  const wrap=document.getElementById("shareTiles");
+  wrap.innerHTML=`<div class="tile"><h2><span class="n">1</span>Investigation Plan — Document 1 (.docx)${I("Week 10's Document 1, in the course's 3-Pager placemat: prompts on the left, your plan on the right. What isn't written yet stays visibly empty — a starting point you revise, not a finished plan. One per team; export it to PDF for Canvas after revising.")}</h2>
+      <label>Lesson title</label><input type="text" data-sh="title" value="${esc(planTitle())}" placeholder="What you'd call this lesson">
+      <div class="small" style="margin-top:10px">What will fill in:</div>
+      <div class="small" style="line-height:1.7">${have("focus")} Your research question — and the concept<br>${have("materials")} Materials<br>${have("objectives")} Learning objectives — one per part<br>${have("standards")} Standards alignment — full text<br>${have("before")} Lesson flow · Before &nbsp; ${have("during")} During &nbsp; ${have("after")} After<br>${have("assessment")} Assessment — name your read<br>${A.reflection?"✓":"·"} Reflection &amp; next steps — after teaching<br>${A.thumbs.length?`✓ Handout: ${A.thumbs.length} card${A.thumbs.length===1?"":"s"}`:"· Handout: the Before's cards"} &nbsp; ${A.exit.length?`✓ Handout: exit slip`:"· Handout: exit slip"}</div>
+      <div style="margin-top:14px"><button class="primary" id="mkDocx">⬇ lesson-plan.docx</button></div>
+    </div>
+    <div class="tile"><h2><span class="n">2</span>Planning record — Document 2 (.pdf)${I("Week 10's Document 2: how you used the two reads. Your one-to-two-paragraph reflection, with the evidence behind it — every read the planning partner gave you and what you kept or set aside, and the classmate's notes from Hand it over. One per person; everybody submits their own. Print → Save as PDF.")}</h2>
+      ${names.length>1?`<label>Whose record</label><select data-sh="who">${names.map(n=>`<option ${sh.who===n?"selected":""}>${esc(n)}</option>`).join("")}</select>`:""}
+      <label>Peer notes <span class="hint">— what a classmate said when you handed it over</span></label><textarea data-sh="peer" style="min-height:90px">${esc(sh.peer||"")}</textarea>
+      <label>Document 2 — how I used the two reads <span class="hint">— one to two paragraphs: which feedback you acted on, which you set aside, and why</span></label><textarea data-sh="twoReads" style="min-height:120px">${esc(sh.twoReads||"")}</textarea>
+      <label>After teaching — reflection &amp; next steps <span class="hint">— Weeks 11–13; also fills the 3-Pager's last box</span></label><textarea data-sh="reflection" style="min-height:90px">${esc(sh.reflection||"")}</textarea>
+      <div class="small" style="margin-top:8px">${["before","during","after"].map(t=>{ const n=((state.reads||{})[t]||{}).log?state.reads[t].log.length:0; return `${t}: ${n} read${n===1?"":"s"}`; }).join(" · ")}</div>
+      <div style="margin-top:14px"><button class="primary" id="mkRecord">🖨 Print / save as PDF</button></div>
+    </div>`;
+  wrap.querySelectorAll("[data-sh]").forEach(el=>{ el.oninput=()=>{ sh[el.dataset.sh]=el.value; save(); }; });
+  document.getElementById("mkDocx").onclick=async()=>{ const b=document.getElementById("mkDocx"); b.disabled=true; b.textContent="Building…"; try{ const blob=await buildDocx(); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=(slugify(planTitle())||"lesson-plan")+".docx"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1500); toast("Word file built — open it and keep writing."); }catch(e){ toast("Couldn't build the Word file: "+e.message); } b.disabled=false; b.textContent="⬇ lesson-plan.docx"; };
+  document.getElementById("mkRecord").onclick=()=>printRecord(sh.who||names[0]||g.names);
+  wireInfo();
 }
 
 /* ---------- pickers (one modal: activities · routines · shapes) ---------- */
