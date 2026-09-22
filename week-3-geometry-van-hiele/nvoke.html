@@ -137,6 +137,18 @@
   .libgrid .lc{width:62px;height:62px;border:1px solid #eee;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:#fff}
   .libgrid .lc:hover{border-color:var(--outline)}
   .libgrid .ghdr{width:100%;font-size:12px;font-weight:700;color:var(--muted);margin:8px 2px 2px;display:flex;align-items:center;gap:6px}
+  .libgrid details.lgrp{width:100%}
+  .libgrid summary.ghdr{list-style:none;cursor:default}
+  .libgrid summary.ghdr::-webkit-details-marker{display:none}
+  .libgrid .ghdr .car,.libgrid .ghdr .cnt{display:none}
+  .libgrid .lbody{display:flex;flex-wrap:wrap;gap:6px}
+  body.embed.inline .libgrid summary.ghdr{cursor:pointer;padding:5px 6px;border-radius:7px;margin:2px 0}
+  body.embed.inline .libgrid summary.ghdr:hover{background:#eef4fc}
+  body.embed.inline .libgrid details[open]>summary.ghdr{color:var(--outline)}
+  body.embed.inline .libgrid .ghdr .car{display:inline-block;width:12px;transition:transform .12s}
+  body.embed.inline .libgrid details[open]>summary .car{transform:rotate(90deg)}
+  body.embed.inline .libgrid .ghdr .cnt{display:inline;font-weight:500;color:#a9b3c0;margin-left:auto;margin-right:4px}
+  body.embed.inline .libgrid .lbody{padding:2px 0 6px 4px}
   .mkbtn{padding:2px 8px;font-size:11px;font-weight:700}
   .setprev{border:1px solid var(--line);border-radius:10px;background:var(--ground);min-height:250px;display:flex;align-items:center;justify-content:center;padding:8px}
   .setprev svg{max-width:100%;max-height:300px}
@@ -949,7 +961,7 @@ function initEmbed(){
     document.querySelectorAll("#tplRail .railbtn").forEach(x=>x.classList.toggle("on",x.dataset.tpl===(embedTpl||"wodb")));
     renderTplHint(); renderCanvas(); renderTool(); renderSetList(); switchPhase("build");
   });
-  if(new URLSearchParams(location.search).get("inline")) document.body.classList.add("inline");
+  if(new URLSearchParams(location.search).get("inline")){ document.body.classList.add("inline"); renderLibGrid(); }
   document.getElementById("usePlanner").onclick=()=>{
     if(!builder.sets.length){ toast("Add at least one card first (build it, then ＋ Add card)."); return; }
     syncToPlanner();
@@ -1026,13 +1038,17 @@ function renderLibGrid(q){
   const gi=g=>{const i=GROUP_ORDER.indexOf(g);return i<0?99:i;};
   const keys=Object.keys(groups).sort((a,b)=>gi(a)-gi(b));
   const mk={"Dot patterns":"dots","Ten-frames":"tenframe"};
+  const acc=document.body.classList.contains("inline"); // the Planner's Before editor: groups fold, closed by default
+  const isOpen=g=>!acc||!!q||libOpen===g;
   el.innerHTML=keys.length ? keys.map(g=>
-    `<div class="ghdr">${g}${mk[g]?` <button class="tbtn mkbtn" data-make="${mk[g]}" title="${mk[g]==="dots"?"Draw your own dot arrangement — click cells to place dots, and mark some red to show a grouping.":"Fill your own ten-frame — click cells to add or remove counters."}">✏️ Make</button>`:``}</div>`
-    +groups[g].map(c=>`<div class="lc" data-id="${c.id}" title="${c.label}">${atomSVG(c.figure,46)}</div>`).join("")).join("")
+    `<details class="lgrp" data-g="${g}" ${isOpen(g)?"open":""}><summary class="ghdr"><span class="car">▸</span>${g}<span class="cnt">${groups[g].length}</span>${mk[g]?` <button class="tbtn mkbtn" data-make="${mk[g]}" title="${mk[g]==="dots"?"Draw your own dot arrangement — click cells to place dots, and mark some red to show a grouping.":"Fill your own ten-frame — click cells to add or remove counters."}">✏️ Make</button>`:``}</summary><div class="lbody">`
+    +groups[g].map(c=>`<div class="lc" data-id="${c.id}" title="${c.label}">${atomSVG(c.figure,46)}</div>`).join("")+`</div></details>`).join("")
     : `<div class="small" style="padding:8px">No shapes match “${q}”.</div>`;
   el.querySelectorAll(".lc").forEach(d=>d.onclick=()=>addCard(d.dataset.id));
-  el.querySelectorAll(".mkbtn").forEach(b=>b.onclick=()=>openEditor(b.dataset.make));
+  el.querySelectorAll(".mkbtn").forEach(b=>b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openEditor(b.dataset.make); });
+  if(acc) el.querySelectorAll("details.lgrp").forEach(d=>d.ontoggle=()=>{ if(d.open){ libOpen=d.dataset.g; el.querySelectorAll("details.lgrp").forEach(o=>{ if(o!==d) o.open=false; }); } else if(libOpen===d.dataset.g) libOpen=null; });
 }
+let libOpen=null;
 function addCard(id){
   const cur=builder.cur, max=TEMPLATES[cur.template].max;
   if(cur.members.length>=max){ toast(`That template holds up to ${max} cards.`); return; }
