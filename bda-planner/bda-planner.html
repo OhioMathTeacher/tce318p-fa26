@@ -442,6 +442,23 @@
   .chosen .cs button{flex:none;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:14px;padding:0 2px}
   .chosen .cs button:hover{color:var(--mark)}
   .chosen .none{font-size:13px;color:var(--muted);font-style:italic;margin-top:6px}
+  #progModal{position:fixed;inset:0;background:#0006;z-index:74;display:none;align-items:center;justify-content:center;padding:20px}
+  #progModal.open{display:flex}
+  #progModal .box{background:#fff;border-radius:14px;width:min(620px,96vw);max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+  #progModal .bh{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+  #progModal .bh h2{margin:0;font-size:18px;color:var(--outline)}
+  #progModal .bb{flex:1;overflow:auto;padding:14px 18px 18px}
+  #progModal .lede{font-size:14px;color:var(--ink);margin:0 0 10px;line-height:1.5}
+  #progModal .fine{font-size:12.5px;color:var(--muted);font-style:italic;line-height:1.5;margin:6px 0 0}
+  .prow{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;background:#fff;
+    border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin:0 0 6px;font:inherit;cursor:pointer}
+  .prow:hover{background:#eef4fc;border-color:var(--outline)}
+  .prow.ok{background:var(--after-soft);border-color:#bcd9c4}
+  .prow .pk{font-size:16px;font-weight:800;color:var(--muted);flex:none;width:18px}
+  .prow.ok .pk{color:var(--after)}
+  .prow .pl{display:flex;flex-direction:column;gap:2px}
+  .prow .pl b{font-size:14px;color:var(--outline)}
+  .prow .pl em{font-size:12.5px;color:var(--muted);font-style:normal}
   #diagModal{position:fixed;inset:0;background:#0006;z-index:75;display:none;align-items:center;justify-content:center;padding:20px}
   #diagModal.open{display:flex}
   #diagModal .box{background:#fff;border-radius:14px;width:min(860px,96vw);max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
@@ -493,6 +510,7 @@
     <span class="note small" id="saveNote">Autosaves in this browser</span>
     <button class="ghost" id="saveProj" title="Download your project as a file — how it travels to another computer or a teammate">⬇ Save</button>
     <label class="ghost" for="loadProj" style="cursor:pointer" title="Open a saved project file">⬆ Load<input type="file" id="loadProj" accept=".json" hidden></label>
+    <button class="ghost" id="progBtn" title="Where you stand on the Concept Profile — what is written, what is still empty, and roughly how long it runs">▤ My Progress</button>
     <span class="gear"><button class="ghost" id="gearBtn" title="Options">⚙</button>
       <div class="gearMenu" id="gearMenu">
         <div class="hd">See a finished example</div>
@@ -545,6 +563,10 @@
 <div id="stdModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><h2>Ohio's standards</h2><span class="small" id="stdModalSub"></span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pdfModal').classList.add('open')">The PDF</button><button class="tbtn" onclick="document.getElementById('stdModal').classList.remove('open')">✕</button></div><div class="bb" id="stdModalBody"></div><div class="bf"><span class="small" id="stdModalCount"></span><span style="flex:1"></span><button class="primary" onclick="document.getElementById('stdModal').classList.remove('open')">Done</button></div></div></div>
 <div id="pdfModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><b>Ohio's Learning Standards | Mathematics (2017)</b><span class="small">Ohio Department of Education</span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pdfModal').classList.remove('open')">✕</button></div><iframe src="standards/Ohio-Learning-Standards-Mathematics-2017.pdf" title="Ohio standards"></iframe></div></div>
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
+<div id="progModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box">
+  <div class="bh"><h2>My Progress</h2><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('progModal').classList.remove('open')">✕</button></div>
+  <div class="bb" id="progBody"></div>
+</div></div>
 <div id="diagModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box">
   <div class="bh"><h2>Something went wrong</h2><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('diagModal').classList.remove('open')">✕</button></div>
   <div class="bb">
@@ -567,7 +589,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 50</div>
+<div id="build">Build 51</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -830,6 +852,92 @@ function I(text){ return `<span class="i" tabindex="0">i<span class="pop">${text
 let profTab=[0,0];
 const PROF_TABS=[[["1a","Classroom"],["1b","Students"],["1c","Collected work"],["1d","What shows up"]],[["2a","Concept"],["2b","Research & host"],["2c","Question"]]];
 function profileParts(){ const g=state.bg||{}; const rows=(g.samplesRows||[]).filter(r=>r.slice(0,3).some(x=>x&&x.trim())); return [[!!(g.grade&&state.block&&(g.host||"").trim()), (g.studentsRows||[]).some(r=>(r[0]||"").trim()), rows.length>=3, !!(g.think||"").trim()],[!!((g.concept||"").trim()&&(g.standards||[]).length>=2), (g.sources||[]).some(r=>(r[1]||"").trim()), !!(g.question||"").trim()]]; }
+/* ---------- My Progress ----------
+   Journaler-284's panel, and two rules Todd wrote into it there:
+
+   "IDENTIFYING IS NOT COMPLETING." A tick that fires on a non-empty field reports that a
+   box was FILLED, which is filing, not the work. The sub-tab ✓ marks do exactly that —
+   one character turns 1d green — which is fine as a "you have been here" mark and useless
+   as an answer to "am I done?". So the rows below have floors.
+
+   "COMPLETE NEEDS A FLOOR." Length is a poor measure of thinking and a floor rewards
+   padding, so it gates COMPLETE and never quality. The numbers live HERE, once: change one
+   and the tick, the row and the explainer all move together, because they all read it.
+
+   ⚠ THESE NUMBERS ARE TODD'S TO SET. They are a first proposal, sized against the Week 6
+   assignment (1–2 pages) and the two worked examples, not against a class of real profiles.
+
+   And nothing the planning partner wrote counts toward any of it: every floor below reads
+   state.bg, which is only ever written by the student typing. The partner's replies live
+   in state.reads and are not consulted here -- which is what makes the numbers mean
+   something. */
+const FLOOR={ think:60, source:40, why:25, students:2, samples:3, standards:2 };
+const words=t=>String(t||"").trim().split(/\s+/).filter(Boolean).length;
+// One row per thing the Concept Profile asks for. [key, where it lives, label, what it
+// wants, is it done, what to say when it is not]
+function progressRows(){
+  const g=state.bg||{}, R=[];
+  const srows=(g.studentsRows||[]).filter(r=>(r[0]||"").trim()&&(r[1]||"").trim());
+  const wrows=(g.samplesRows||[]).filter(r=>(r[0]||"").trim()&&(r[1]||"").trim()&&(r[2]||"").trim());
+  const src=(g.sources||[]).map(r=>words(r[1])).sort((a,b)=>b-a)[0]||0;
+
+  R.push({go:[0,0], k:"1a", label:"Your classroom",
+    ok:!!(g.grade&&state.block&&(g.host||"").trim()),
+    say:!g.grade?"Grade is empty":!state.block?"No length for the math block":"Nothing about the host teacher yet",
+    done:"grade, block and host teacher"});
+  R.push({go:[0,1], k:"1b", label:"The students",
+    ok:srows.length>=FLOOR.students,
+    say:srows.length+" of "+FLOOR.students+" — each needs a pseudonym and a line about them",
+    done:srows.length+" students"});
+  R.push({go:[0,2], k:"1c", label:"The collected work",
+    ok:wrows.length>=FLOOR.samples,
+    say:wrows.length+" of "+FLOOR.samples+" — each needs the task and what it reveals",
+    done:wrows.length+" samples"});
+  R.push({go:[0,3], k:"1d", label:"What shows up in the work",
+    ok:words(g.think)>=FLOOR.think,
+    say:words(g.think)+" of "+FLOOR.think+" words — this is the reading of your samples against your sources",
+    done:words(g.think)+" words"});
+  R.push({go:[1,0], k:"2a", label:"The concept and its standards",
+    ok:!!((g.concept||"").trim())&&(g.standards||[]).length>=FLOOR.standards,
+    say:!(g.concept||"").trim()?"No concept named":(g.standards||[]).length+" of "+FLOOR.standards+" standards chosen",
+    done:(g.standards||[]).length+" standards"});
+  R.push({go:[1,1], k:"2b", label:"Research and your host teacher",
+    ok:src>=FLOOR.source,
+    say:src?src+" of "+FLOOR.source+" words on your fullest source":"Nothing written about a source yet",
+    done:src+" words"});
+  R.push({go:[1,2], k:"2c", label:"The question you're asking",
+    ok:!!((g.question||"").trim())&&words(g.why)>=FLOOR.why,
+    say:!(g.question||"").trim()?"No question written":words(g.why)+" of "+FLOOR.why+" words on why you're asking it",
+    done:"asked, and said why"});
+  return R;
+}
+// The page gauge is the assignment's own floor (1-2 pages) and the only whole-profile one.
+// No Math.max(1,…): an empty profile claiming "about 1 page" is the panel telling a
+// student they are a third of the way through an assignment they have not started.
+function progressPages(){ const w=profileWords(); return w?Math.round(w/430*10)/10:0; }
+function openProgress(){
+  const R=progressRows(), n=R.filter(r=>r.ok).length, pg=progressPages();
+  document.getElementById("progBody").innerHTML=
+    `<p class="lede">${n===R.length?"Every part of the Concept Profile is written.":n+" of "+R.length+" parts are written."}
+       Click any row to go straight to it.</p>`
+    +R.map((r,i)=>`<button class="prow ${r.ok?"ok":""}" data-go="${i}">
+        <span class="pk">${r.ok?"✓":"○"}</span>
+        <span class="pl"><b>${r.k} · ${r.label}</b><em>${esc(r.ok?r.done:r.say)}</em></span>
+      </button>`).join("")
+    +`<p class="lede" style="margin-top:12px">${pg?`About <b>${pg} page${pg===1?"":"s"}</b> so far`:"<b>Nothing written yet</b>"} — the assignment asks for 1–2.</p>
+      <p class="fine">A ✓ means there is enough here to read, not that it is good. That part is yours.
+      Nothing the planning partner wrote counts toward any of these.</p>`;
+  document.getElementById("progBody").querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{
+    const r=R[+b.dataset.go];
+    document.getElementById("progModal").classList.remove("open");
+    profTab[r.go[0]]=r.go[1];
+    showPhase("background");
+    renderTop();
+  });
+  document.getElementById("progModal").classList.add("open");
+  logEvent("progress",n+"/"+R.length+" parts, ~"+pg+" page(s)");
+}
+
 function tabifyTiles(wrap){
   const pp=profileParts();
   wrap.querySelectorAll(".tile").forEach((t,ti)=>{ const cols=t.querySelector(":scope > .cols"); if(!cols) return; const secs=[...cols.children].filter(x=>x.classList.contains("sec")); const strip=document.createElement("div"); strip.className="ptabs"; strip.style.margin="8px 0 4px";
@@ -1544,6 +1652,7 @@ async function diagPrint(){
 (function(){
   const said=document.getElementById("diagSaid");
   said.oninput=()=>{ clearTimeout(_diagT); _diagT=setTimeout(renderDiag,250); };
+  document.getElementById("progBtn").onclick=openProgress;
   document.getElementById("diagPdf").onclick=diagPrint;
   document.getElementById("diagCopy").onclick=async()=>{
     const t=await diagText(said.value);
