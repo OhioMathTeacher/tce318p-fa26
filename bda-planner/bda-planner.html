@@ -567,7 +567,7 @@
         <button data-gear="ex1"><span class="ic">📘</span>Grade 2 · make a ten (EngageNY lesson)</button>
         <button data-gear="ex2"><span class="ic">📗</span>Grade 4 · fractions of a set (original idea)</button>
         <div class="sep"></div>
-        <div class="hd">Planning partner (AI)</div>
+        <div class="hd">genAI planning partner</div>
         <button data-gear="passcode"><span class="ic">🔑</span>Enter the course passcode…</button>
         <button data-gear="forget"><span class="ic">🚫</span>Forget the passcode on this browser</button>
         <div class="sep"></div>
@@ -660,8 +660,8 @@ async function askWorker(payload){
   const r=await fetch(WORKER_URL+"/chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(Object.assign({passcode:pc,sid:sid(),name:g.names||"",section:g.section||"",profile},payload))});
   const j=await r.json().catch(()=>({error:"bad reply"}));
   if(r.status===401){ try{localStorage.removeItem("bda-passcode");}catch(e){} logEvent("ai","passcode refused"); toast("That passcode didn't work — try again."); return null; }
-  if(r.status===429){ const shared=j.error==="cap-network"||j.error==="cap-course"; logEvent("ai",shared?"shared cap reached ("+j.error+")":"daily turn cap reached"); toast(shared?"The planning partner has hit a shared daily limit — tell your instructor; this shouldn't happen in normal use.":`You've used today's ${j.cap} turns. Tomorrow.`); return null; }
-  if(!j.ok){ logEvent("error","ai: "+(j.error||"?")+" (http "+r.status+")"); toast("The planning partner is unavailable right now ("+(j.error||"?")+")."); return null; }
+  if(r.status===429){ const shared=j.error==="cap-network"||j.error==="cap-course"; logEvent("ai",shared?"shared cap reached ("+j.error+")":"daily turn cap reached"); toast(shared?"The genAI planning partner has hit a shared daily limit — tell your instructor; this shouldn't happen in normal use.":`You've used today's ${j.cap} turns. Tomorrow.`); return null; }
+  if(!j.ok){ logEvent("error","ai: "+(j.error||"?")+" (http "+r.status+")"); toast("The genAI planning partner is unavailable right now ("+(j.error||"?")+")."); return null; }
   return j;
 }
 async function findStandards(btn){
@@ -985,7 +985,7 @@ function used(){ return planTotal(); }
 
 function bgDone(){ const g=state.bg||{}; const rows=(g.samplesRows||[]).filter(r=>r.some(x=>x&&x.trim())); return [ !!(g.grade&&state.block&&g.concept&&(g.standards||[]).length>=FLOOR.content&&(g.practices||[]).length>=FLOOR.practice&&(g.studentsRows||[]).some(r=>r[0])&&rows.length>=3&&g.question), !!(state.door==="idea"||(state.door==="lesson"&&g.scriptName)) ]; }
 // The three boxes, as one block of prose — for the printed profile, the word count and
-// the partner's context. Written once so they cannot drift apart.
+// the genAI planning partner's context. Written once so they cannot drift apart.
 function hostText(g){ g=g||state.bg||{};
   return [ (g.hostStyle||"").trim(),
            (g.hostNonNeg||"").trim()?"Non-negotiable: "+(g.hostNonNeg||"").trim():"",
@@ -1010,8 +1010,8 @@ function profileParts(){ const g=state.bg||{}; const rows=(g.samplesRows||[]).fi
    ⚠ THESE NUMBERS ARE TODD'S TO SET. They are a first proposal, sized against the Week 6
    assignment (1–2 pages) and the two worked examples, not against a class of real profiles.
 
-   And nothing the planning partner wrote counts toward any of it: every floor below reads
-   state.bg, which is only ever written by the student typing. The partner's replies live
+   And nothing the genAI planning partner wrote counts toward any of it: every floor below reads
+   state.bg, which is only ever written by the student typing. The genAI planning partner's replies live
    in state.reads and are not consulted here -- which is what makes the numbers mean
    something. */
 const FLOOR={ think:60, source:40, why:25, students:2, samples:3, content:1, practice:1 };
@@ -1084,7 +1084,7 @@ function openProgress(){
       </button>`).join("")
     +`<p class="lede" style="margin-top:12px">${pg?`About <b>${pg} page${pg===1?"":"s"}</b> so far`:"<b>Nothing written yet</b>"} — the assignment asks for 1–2.</p>
       <p class="fine">A ✓ means there is enough here to read, not that it is good. That part is yours.
-      Nothing the planning partner wrote counts toward any of these.</p>`;
+      Nothing the genAI planning partner wrote counts toward any of these.</p>`;
   document.getElementById("progBody").querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{
     const r=R[+b.dataset.go];
     document.getElementById("progModal").classList.remove("open");
@@ -1138,8 +1138,8 @@ function renderBackground(){
       <div class="sec"><h3><span class="k">2a</span>The concept${I("One specific, grade-appropriate mathematical concept — an idea students build understanding of. Not a whole strand (“fractions”), not a bare skill (“adding fractions”). Chosen with your host teacher, from what the class is actually doing.")}</h3>
         <label>The concept, in a sentence</label><input type="text" data-bg="concept" value="${esc(g.concept||"")}">
         <label>Standards ${I("The LESSON is aligned to state standards; the parts of the lesson get objectives, which you write. Check the ones this lesson is really about — usually two, at most four. The list shows your grade with the grade below and the grade above, because students work at all three.")} </label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 6px"><button class="primary" type="button" id="chooseStd" style="padding:8px 14px;font-size:14px" ${g.grade?"":"disabled"} title="The full list for your grade, with the grade below and above.">${g.grade?"Browse all standards…":"Pick a grade first"}</button><button class="tbtn" type="button" onclick="findStandards(this)" title="The planning partner reads your concept and proposes 1–3 codes; you still check them.">✨ Suggest from my concept</button><button class="tbtn" type="button" onclick="document.getElementById('pdfModal').classList.add('open')">Ohio's standards (PDF)</button></div>
-        <div class="why">The <b>2–4 standards</b> this lesson is aligned to. <b>Browse</b> the full list for your grade (with the grade below and above), or let the partner <b>suggest</b> from your concept and check its picks.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 6px"><button class="primary" type="button" id="chooseStd" style="padding:8px 14px;font-size:14px" ${g.grade?"":"disabled"} title="The full list for your grade, with the grade below and above.">${g.grade?"Browse all standards…":"Pick a grade first"}</button><button class="tbtn" type="button" onclick="findStandards(this)" title="The genAI planning partner reads your concept and proposes 1–3 codes; you still check them.">✨ Suggest from my concept</button><button class="tbtn" type="button" onclick="document.getElementById('pdfModal').classList.add('open')">Ohio's standards (PDF)</button></div>
+        <div class="why">The <b>2–4 standards</b> this lesson is aligned to. <b>Browse</b> the full list for your grade (with the grade below and above), or let the genAI planning partner <b>suggest</b> from your concept and check its picks.</div>
         <div class="chosen">${(g.standards||[]).length?g.standards.map(c=>`<div class="cs"><b>${c}</b><span>${esc(stdText(c))}</span><button type="button" data-unstd="${c}" title="Remove">✕</button></div>`).join(""):`<div class="none">None chosen yet.</div>`}${(g.practices||[]).length?`<div class="small" style="margin-top:6px">Practices: <b>${g.practices.join(", ")}</b></div>`:""}</div>
       </div>
       <div class="sec"><h3><span class="k">2b</span>What the research — and your host teacher — say${I("One to three sources on the misconceptions and challenges students have with this concept. At least one from JSTOR (Miami's library gives you access): the permanent link or DOI, and three or four sentences on what it describes. Your host teacher can be one source — what they have seen students do with this concept, in your words. This seeds the “What Does Research Say?” section of your Final Report.")}</h3>
@@ -1347,7 +1347,7 @@ function renderPlan(){
   wirePlan(); wireInfo();
 }
 document.querySelectorAll("#views button").forEach(b=>b.onclick=()=>{ state.view=b.dataset.v; save(); renderPlan(); });
-function readsBar(tab){ const last=(state.reads&&state.reads[tab]&&state.reads[tab].last)||null; return `<div class="reads"><span>Second reads:</span><button class="ghost" onclick="toast('Hand it over — a classmate runs it. Prints the review sheet in the real app.')">Hand it over ▶</button><button class="ghost" data-read="ask" data-tab="${tab}" title="The planning partner asks you two or three questions about what you wrote here.">Ask me</button><button class="ghost" data-read="options" data-tab="${tab}" title="Three directions you could take instead of, or alongside, your first attempt. Needs a first attempt.">Show me options</button><button class="ghost" data-read="check" data-tab="${tab}" title="Reads what you wrote against the rubric for this part.">Check this</button><span class="later">AI · optional · asks, never writes</span></div>${last?renderRead(tab,last):""}`; }
+function readsBar(tab){ const last=(state.reads&&state.reads[tab]&&state.reads[tab].last)||null; return `<div class="reads"><span>Second reads:</span><button class="ghost" onclick="toast('Hand it over — a classmate runs it. Prints the review sheet in the real app.')">Hand it over ▶</button><button class="ghost" data-read="ask" data-tab="${tab}" title="The genAI planning partner asks you two or three questions about what you wrote here.">Ask me</button><button class="ghost" data-read="options" data-tab="${tab}" title="Three directions you could take instead of, or alongside, your first attempt. Needs a first attempt.">Show me options</button><button class="ghost" data-read="check" data-tab="${tab}" title="Reads what you wrote against the rubric for this part.">Check this</button><span class="later">AI · optional · asks, never writes</span></div>${last?renderRead(tab,last):""}`; }
 const READ_NAMES={ask:"Ask me",options:"Show me options",check:"Check this"};
 function renderRead(tab,r){
   const d=r.data||{}; let body="";
@@ -1713,7 +1713,7 @@ function printPlan(){
 function printRecord(who){
   const g=state.bg||{}, sh=state.share||{}, A=assemblePlan(); const el=document.getElementById("profilePrint");
   const modeName={ask:"Ask me",options:"Show me options",check:"Check this"};
-  const logs=["before","during","after"].map(tab=>{ const L=(state.reads&&state.reads[tab]&&state.reads[tab].log)||[]; if(!L.length) return ""; return `<h2>${tab[0].toUpperCase()+tab.slice(1)} — the partner's reads (${L.length})</h2>`+L.map(e=>{ const d=e.data||{}; let body=""; if(e.mode==="ask") body=(d.questions||[]).map(q=>`<p><b>${esc(q.question)}</b><br><i>${esc(q.why)}</i></p>`).join(""); else if(e.mode==="check") body=(d.reads||[]).map(x=>`<p><b>${esc(x.criterion)}</b> — ${esc(x.read)}<br><i>${esc(x.question)}</i></p>`).join(""); else body=(d.cards||[]).map((c,i)=>`<p><b>${esc(c.direction)}</b> <span class="tag">${e.aside&&e.aside[i]?"set aside":"kept in view"}</span><br>surfaces: ${esc(c.surfaces)} · might give away: ${esc(c.gives_away)}</p>`).join(""); return `<div class="entry"><div class="when">${modeName[e.mode]||e.mode} · ${new Date(e.ts).toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}</div>${body}</div>`; }).join(""); }).join("");
+  const logs=["before","during","after"].map(tab=>{ const L=(state.reads&&state.reads[tab]&&state.reads[tab].log)||[]; if(!L.length) return ""; return `<h2>${tab[0].toUpperCase()+tab.slice(1)} — the genAI planning partner's reads (${L.length})</h2>`+L.map(e=>{ const d=e.data||{}; let body=""; if(e.mode==="ask") body=(d.questions||[]).map(q=>`<p><b>${esc(q.question)}</b><br><i>${esc(q.why)}</i></p>`).join(""); else if(e.mode==="check") body=(d.reads||[]).map(x=>`<p><b>${esc(x.criterion)}</b> — ${esc(x.read)}<br><i>${esc(x.question)}</i></p>`).join(""); else body=(d.cards||[]).map((c,i)=>`<p><b>${esc(c.direction)}</b> <span class="tag">${e.aside&&e.aside[i]?"set aside":"kept in view"}</span><br>surfaces: ${esc(c.surfaces)} · might give away: ${esc(c.gives_away)}</p>`).join(""); return `<div class="entry"><div class="when">${modeName[e.mode]||e.mode} · ${new Date(e.ts).toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}</div>${body}</div>`; }).join(""); }).join("");
   el.innerHTML=`<h1>Document 2 — How you used the feedback</h1><div class="meta">TCE 318P FA26 · ${esc(who||g.names||"")} · ${esc(A.title||"")}${A.grade?" · "+esc(A.grade):""}${A.section?" · "+A.section:""}${teamNames().length>1?" · team: "+esc(g.names):""} · ${new Date().toLocaleDateString()}</div>
     <h2>The question</h2><p>${esc(g.question||"")}</p>
     <h2>The plan, in brief</h2><p><b>Before</b> — ${esc(A.before.split("\n")[0]||"—")}</p><p><b>During</b> — ${esc(A.during.split("\n\n").map(x=>x.split("\n")[0]).join(" → ")||"—")}</p><p><b>After</b> — ${esc(A.after.split("\n")[0]||"—")}</p>
@@ -1721,7 +1721,7 @@ function printRecord(who){
     <h2>Peer notes — from “Hand it over”</h2><p>${esc(sh.peer||"")||"<i>— none recorded —</i>"}</p>
     <h2>Document 2 — how I used the two reads</h2><p>${esc(sh.twoReads||"")||"<i>— not written —</i>"}</p>
     ${sh.reflection?`<h2>After teaching — reflection &amp; next steps</h2><p>${esc(sh.reflection)}</p>`:""}
-    <p class="note">The record: what the planning partner asked, what I kept and set aside, what a classmate said, and what I made of it. The partner asks; it never writes the plan. Produced by BDA Planner.</p>`;
+    <p class="note">The record: what the genAI planning partner asked, what I kept and set aside, what a classmate said, and what I made of it. The genAI planning partner asks; it never writes the plan. Produced by BDA Planner.</p>`;
   logEvent("export","Document 2 → PDF");
   printAs("Document 2"+(who?" — "+String(who).replace(/[\\/:*?"<>|]/g,"").slice(0,40):"")+" — "+fileStamp(), ()=>{});
 }
@@ -1736,9 +1736,9 @@ function renderShare(){
       <table class="fill">${rows.map(r=>`<tr><td class="st ${r[2]&&String(r[2]).trim()?"ok":"no"}">${r[2]&&String(r[2]).trim()?"✓":"○"}</td><td>${esc(r[0])}</td><td class="src">${esc(r[1])}</td></tr>`).join("")}</table>
       <div class="dl"><div><button class="primary" id="mkDocx">⬇ Generate Investigation Plan — Word</button><div class="cap">.docx — choose this if you'll make your own edits afterwards</div></div><div><button id="mkPdf">🖨 Generate Investigation Plan — PDF</button><div class="cap">opens Print → Save as PDF — best for uploading straight to Canvas</div></div></div>
     </div>
-    <div class="tile"><h2><span class="n">2</span>Document 2 — how you used the feedback${I("Week 10's Document 2: your account of the two reads — a classmate's and the planning partner's — and what you did with them. One per person; everybody submits their own.")}</h2>
-      <details class="about"><summary>About Document 2</summary><p class="small" style="margin:6px 0 10px;font-size:14px;color:var(--ink)">The Investigation Plan is submitted with a second document: <b>how you used the two reads</b>. Your plan gets read twice before you teach it — once by a classmate (<i>Hand it over</i>), once by the planning partner (<i>Ask me · Show me options · Check this</i>). Neither one designs the lesson; both push on it. Document 2 is your reasoning about what they saw and what you changed, or kept, and why. <b>Generate Document 2</b> compiles your paragraphs with the evidence behind them.</p>
-      <table class="fill">${[["Your Document 2 — how I used the two reads","written below",(sh.twoReads||"").trim()],["Peer notes from Hand it over","written below",(sh.peer||"").trim()],...["before","during","after"].map(t=>{ const n=(((state.reads||{})[t]||{}).log||[]).length; return [`The planning partner's reads on the ${t[0].toUpperCase()+t.slice(1)} — with what you kept or set aside`,`Plan · ${t[0].toUpperCase()+t.slice(1)} · ${n} read${n===1?"":"s"}`,n?"x":""]; }),["After teaching — reflection & next steps","written below · Weeks 11–13",(sh.reflection||"").trim()]].map(r=>`<tr><td class="st ${r[2]?"ok":"no"}">${r[2]?"✓":"○"}</td><td>${esc(r[0])}</td><td class="src">${esc(r[1])}</td></tr>`).join("")}</table></details>
+    <div class="tile"><h2><span class="n">2</span>Document 2 — how you used the feedback${I("Week 10's Document 2: your account of the two reads — a classmate's and the genAI planning partner's — and what you did with them. One per person; everybody submits their own.")}</h2>
+      <details class="about"><summary>About Document 2</summary><p class="small" style="margin:6px 0 10px;font-size:14px;color:var(--ink)">The Investigation Plan is submitted with a second document: <b>how you used the two reads</b>. Your plan gets read twice before you teach it — once by a classmate (<i>Hand it over</i>), once by the genAI planning partner (<i>Ask me · Show me options · Check this</i>). Neither one designs the lesson; both push on it. Document 2 is your reasoning about what they saw and what you changed, or kept, and why. <b>Generate Document 2</b> compiles your paragraphs with the evidence behind them.</p>
+      <table class="fill">${[["Your Document 2 — how I used the two reads","written below",(sh.twoReads||"").trim()],["Peer notes from Hand it over","written below",(sh.peer||"").trim()],...["before","during","after"].map(t=>{ const n=(((state.reads||{})[t]||{}).log||[]).length; return [`The genAI planning partner's reads on the ${t[0].toUpperCase()+t.slice(1)} — with what you kept or set aside`,`Plan · ${t[0].toUpperCase()+t.slice(1)} · ${n} read${n===1?"":"s"}`,n?"x":""]; }),["After teaching — reflection & next steps","written below · Weeks 11–13",(sh.reflection||"").trim()]].map(r=>`<tr><td class="st ${r[2]?"ok":"no"}">${r[2]?"✓":"○"}</td><td>${esc(r[0])}</td><td class="src">${esc(r[1])}</td></tr>`).join("")}</table></details>
       ${names.length>1?`<label>Whose record <span class="hint">— each teammate generates their own</span></label><select data-sh="who">${names.map(n=>`<option ${sh.who===n?"selected":""}>${esc(n)}</option>`).join("")}</select>`:""}
       <label>How I used the two reads <span class="hint">— one to two paragraphs: which feedback you acted on, which you set aside, and why</span></label><textarea data-sh="twoReads" style="min-height:120px">${esc(sh.twoReads||"")}</textarea>
       <label>Peer notes <span class="hint">— what your classmate said when you handed it over</span></label><textarea data-sh="peer" style="min-height:80px">${esc(sh.peer||"")}</textarea>
