@@ -69,6 +69,24 @@
         reflection box were drawn as one block sized to the text, so anything past the bottom of a
         page (about 25 typed lines) was lost. Both boxes now flow across pages, closing the border at
         the page edge and reopening it on the next page. Nothing typed is dropped.
+  v0.10.2: DOK STEM FIX — the suggested stems were steering students to prompts the assignment
+        then marked down. DOK 1 offered "Fill the frame with pentominoes" and "How many pieces fill
+        the frame?", but frame-filling has no rule to recall: the learner has to try, check and adjust,
+        which is DOK 2. Both moved to DOK 2, and DOK 1 gained two true recall stems (counting the
+        squares in a frame, how many squares one pentomino covers). DOK 4 offered four stems that ask
+        for a proof, an exhaustive answer, or an ambiguous one: "Design a frame that only these pieces
+        can fill" and "Find every way to tile this frame" both demand a proof the designer does not
+        have; "Build a piece 3x as large" does not say whether it is the area or the side lengths; and
+        "Compare two frames of equal area" is reasoning rather than designing, and presumes two frames
+        the designer was never told to build. All four are replaced with the doable versions: two or
+        three frames rather than the only one, every side three times as long, as many ways as you can
+        plus what you would still have to check, and build the second frame yourself and then compare.
+        DOK 3 lost its one false claim: "Why do all pentominoes have area 5 but different perimeters?"
+        told the learner the perimeters differ when eleven of the twelve are 12, so it now asks what
+        they notice about the perimeters, and why. Its other two stems gained the clause that makes
+        them reasoning tasks: "Convince a partner your solution is correct" now asks for the filling
+        first and for what makes it impossible if there is none, and "What has to be true about a
+        frame" now ends "How do you know?".
   v0.9.6: HOVER TIPS — every control has a plain-language tooltip, shown instantly in a styled bubble
         (the browser's native title tip is slow and easy to miss). Written for students: what it does,
         not just what it is called.
@@ -407,10 +425,10 @@ let baseU=30; // the author's chosen cell size (what gets saved). U itself may b
 const SIZES={22:[38,25],30:[28,18],42:[20,12],56:[15,10]}; // Size px -> [cols,rows] default board
 // DOK question stems — teacher-owned starters (the app never scores level). CRM / Simpson 2015.
 const STEMS={
- 1:["What is the area of this shape?","What is the perimeter of this shape?","Fill the frame with pentominoes.","How many pieces fill the frame?","Which pentomino is this? Name it.","Cover the shape — how many squares did you use?"],
- 2:["Fill the frame using exactly ___ pieces.","Sort the pentominoes by perimeter.","Sort the pentominoes by lines of symmetry.","Fill the frame using only ___-pieces.","Which pieces will fit in this frame? Which won't?","Find two pentominoes with the same perimeter.","Make a line plot of the 12 perimeters."],
- 3:["How do you know you've found all 12 pentominoes?","Why do all pentominoes have area 5 but different perimeters?","Fill the frame two different ways — how are the solutions different?","Which pentominoes can be doubled with 4 distinct pieces? Which can't — and why?","Convince a partner that your solution is correct.","What has to be true about a frame for these pieces to fill it?"],
- 4:["Design a frame that only these pieces can fill.","Build a piece 3× as large — what happens to its area and perimeter? Why?","Investigate how the number of pieces grows as shapes get bigger (n = 1, 2, 3, 4, 5 …).","Create your own pentomino puzzle for a partner and predict how they'll solve it.","Find every way to tile this frame — how do you know you have them all?","Compare two frames of equal area: which is harder to fill, and why?"],
+ 1:["What is the area of this shape?","What is the perimeter of this shape?","Which pentomino is this? Name it.","How many squares are in this frame?","Cover the shape — how many squares did you use?","How many squares does one pentomino cover?"],
+ 2:["Fill the frame with pentominoes.","How many pieces does it take to fill the frame?","Fill the frame using exactly ___ pieces.","Fill the frame using only ___-pieces.","Sort the pentominoes by perimeter.","Sort the pentominoes by lines of symmetry.","Which pieces will fit in this frame? Which won't?","Find two pentominoes with the same perimeter.","Make a line plot of the 12 perimeters."],
+ 3:["How do you know you've found all 12 pentominoes?","What do you notice about the perimeters of the pentominoes? Why?","Fill the frame two different ways — how are the solutions different?","Which pentominoes can be doubled with 4 distinct pieces? Which can't — and why?","Fill the frame, then convince a partner your solution is correct — or if you can't fill it, explain what makes it impossible.","What has to be true about a frame for these pieces to fill it? How do you know?"],
+ 4:["Design two or three frames these pieces can fill — and one they can't.","Make every side of this piece three times as long — what happens to its area and perimeter? Why?","Investigate how the number of pieces grows as shapes get bigger (n = 1, 2, 3, 4, 5 …).","Create your own pentomino puzzle for a partner and predict how they'll solve it.","Find as many ways to tile this frame as you can — what would you still have to check?","Build a second frame with the same area as this one, then compare: which is harder to fill, and why?"],
 };
 const DOKCOL={1:'#2e7d32',2:'#1565c0',3:'#e67e22',4:'#7e57c2'};
 const DOKNAME={1:'Recall & Reproduce',2:'Skills & Concepts',3:'Strategic Reasoning',4:'Extended Thinking'};
