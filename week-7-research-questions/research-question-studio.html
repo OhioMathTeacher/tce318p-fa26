@@ -234,7 +234,6 @@
     Profile. What you type is a description. Keep it de-identified: a pseudonym, never a real name.
   </div>
 
-  <div id="pdfWarn" class="pdfwarn" style="display:none;"></div>
 
   
   <div class="tabs" id="tabs">
@@ -388,13 +387,6 @@
   </section>
 
   
-  <script type="module">
-    try {
-      const pdfjsLib = await import('./pdf.min.js');
-      pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.js';
-      window.pdfjsLib = pdfjsLib;
-    } catch (e) { console.warn('PDF support unavailable (open via a served URL, not file://):', e); }
-  </script>
 
   
   <div class="nav">
@@ -655,23 +647,6 @@ function setSampleImage(id, dataURL) { original[id] = dataURL; applyBase(id, dat
 // Crop keeps the pristine original so Reset can restore the full page.
 function cropSampleTo(id, dataURL) { applyBase(id, dataURL); }
 function resetSample(id) { if (original[id]) applyBase(id, original[id]); }
-
-// Render every page of a PDF to a PNG data URL, fully in-browser (PDF never leaves).
-async function pdfToPages(f) {
-  const buf = await f.arrayBuffer();
-  const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
-  const out = [];
-  const n = Math.min(pdf.numPages, 30);    // safety cap
-  for (let i = 1; i <= n; i++) {
-    const page = await pdf.getPage(i);
-    const vp = page.getViewport({ scale: 2 });
-    const canvas = document.createElement("canvas");
-    canvas.width = vp.width; canvas.height = vp.height;
-    await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
-    out.push(canvas.toDataURL("image/png"));
-  }
-  return out;
-}
 
 // ---- redaction editor (Flameshot-style) ----
 function normalizeRect(a, b) {
@@ -1069,14 +1044,6 @@ function init() {
   $("next").onclick = () => showStep(step + 1);
   sync(); showStep(0);
 
-  // If the PDF reader didn't load (e.g. opened as a file on disk), say so plainly.
-  setTimeout(() => {
-    if (window.pdfjsLib) return;
-    const b = $("pdfWarn"); b.style.display = "";
-    b.textContent = location.protocol === "file:"
-      ? "PDF upload is off because you opened this from a file on your disk. Open it from its web address (http://…) to turn PDF on. Photos and screenshots work either way."
-      : "The PDF reader didn't load — reload the page to enable PDF upload. Photos and screenshots still work.";
-  }, 1200);
 }
 init();
 </script>
