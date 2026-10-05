@@ -49,6 +49,8 @@
   .what{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);
         font-weight:700;display:block;margin-bottom:4px}
 
+  /* enough slack that even the last box can rise to just under the sticky card */
+  #rows{padding-bottom:72vh}
   .body{padding:0 18px 18px 46px}
   .field{margin:0 0 14px}
   .lbl{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);
@@ -71,6 +73,7 @@
     body{background:#fff;padding:0;font-size:10.2pt;line-height:1.32}
     .wrap{max-width:none}
     .home,.ctl,.turn{display:none}
+    #rows{padding-bottom:0}
     h1{font-size:15pt} .sub{font-size:9pt} .lede{font-size:9.6pt;margin:6px 0 9px}
     .row{border:0;border-bottom:1px solid var(--line);border-radius:0;margin:0;
          break-inside:avoid;background:#fff!important}
@@ -215,29 +218,47 @@ mistake. It is where every one of these started.</p>
 <script>
 const rows = [...document.querySelectorAll(".row")];
 
+let quiet = false;   // true while a button is opening or closing all of them
+
+function park(row){
+  // closing the previous box moves everything, so let layout settle first
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const card = document.querySelector(".tests");
+    const gap = card.getBoundingClientRect().height + 18;
+    const y = row.getBoundingClientRect().top + window.scrollY - gap;
+    window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+  }));
+}
+
 rows.forEach(row => {
   const turned = row.querySelector(".turned");
   const btn = row.querySelector(".turn");
   btn.onclick = () => { turned.hidden = false; btn.hidden = true; };
+  row.addEventListener("toggle", () => { if (row.open && !quiet) park(row); });
 });
 
 function reset(){
+  quiet = true;
   rows.forEach(row => {
     row.open = false;
     row.setAttribute("name", "rq");
     row.querySelector(".turned").hidden = true;
     row.querySelector(".turn").hidden = false;
   });
+  quiet = false;
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function openAll(){
   // a shared name forbids two open at once, so drop it before opening them all
+  quiet = true;
   rows.forEach(row => {
     row.removeAttribute("name");
     row.open = true;
     row.querySelector(".turned").hidden = false;
     row.querySelector(".turn").hidden = true;
   });
+  quiet = false;
 }
 
 document.getElementById("all").onclick = openAll;
