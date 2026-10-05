@@ -1,66 +1,66 @@
 <!-- From noticing to a research question — TCE 318P, Week 7 teaching tool.
 
      PROVENANCE, for Todd only. Never disclosed on the page.
-       Row 1  initial constructed   |  revised = Lexi Mosher's real question
-       Row 2  initial constructed   |  revised = Camryn Stacy's real question
-       Row 3  initial = Sydnee Cromer's real question   |  revised constructed
-       Row 4  initial = Delaney Klapper's real question |  revised constructed
-       Row 5  both constructed (teachers-as-subject)
-       Row 6  both constructed (the word "correctly")
+       Box 1  first question constructed  |  turned = Lexi Mosher's real question
+       Box 2  first question constructed  |  turned = Camryn Stacy's real question
+       Box 3  first question = Sydnee Cromer's real question   |  turned constructed
+       Box 4  first question = Delaney Klapper's real question |  turned constructed
+       Box 5  both constructed (teachers-as-subject)
+       Box 6  both constructed (the word "correctly")
 
-     Real questions are drawn ONLY from students who did not receive a comment
-     on 2026-10-05, so nobody meets a sentence she was just given feedback
-     about. Because two rows put a real question on the right and two put one
-     on the left, no one can tell from position whether a sentence is hers.
-     Observations are paraphrased from those students' own 1c and 1d notes,
-     with pseudonyms stripped.
+     Real questions come ONLY from students who got no comment on 2026-10-05,
+     so nobody meets a sentence she was just given feedback about. Two boxes
+     carry a real question as the turned one and two as the first question, so
+     position tells nobody anything. Observations are paraphrased from those
+     students' own 1c and 1d notes, pseudonyms stripped.
 
-     This is a teaching tool, not a handout: it is driven on screen, columns reveal
-     one at a time, and the type is sized to be read from the back of a room.
-     Printing still works and shows all three columns. -->
+     One triad per box, driven on screen. The six noticings stay visible and
+     one box opens at a time, because a whole column of first questions at
+     once is six things to revise. Inside a box the turned question waits for
+     a second click. Printing opens everything. -->
 <title>From Noticing to a Research Question</title>
 <style>
-  :root{--red:#C41E3A;--ink:#1f2937;--dim:#4b5563;--line:#cfcac3;--bg:#faf9f7;--lift:#ffeeb0;}
+  :root{--red:#C41E3A;--ink:#1f2937;--dim:#4b5563;--line:#cfcac3;--bg:#faf9f7;--lift:#fff8e1;}
   *{box-sizing:border-box}
   body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);
-       color:var(--ink);line-height:1.45;margin:0;padding:24px 22px 52px;font-size:16px}
-  .wrap{max-width:1240px;margin:0 auto}
+       color:var(--ink);line-height:1.45;margin:0;padding:24px 22px 56px;font-size:16px}
+  .wrap{max-width:1000px;margin:0 auto}
   .home{display:inline-block;font-size:12px;color:var(--dim);text-decoration:none;margin-bottom:8px}
   .home:hover{color:#2563eb;text-decoration:underline}
   h1{font-size:26px;margin:0 0 3px}
   .sub{color:var(--dim);font-size:14px;margin:0 0 4px}
-  .lede{font-size:16px;margin:12px 0 16px;max-width:82ch;color:var(--ink)}
+  .lede{font-size:16px;margin:12px 0 18px;max-width:80ch}
 
-  .ctl{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:0 0 14px}
+  .ctl{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:0 0 16px}
   button.b{font:inherit;font-size:15px;cursor:pointer;border-radius:6px;padding:10px 18px;
            border:1.5px solid var(--line);background:#fff;color:var(--ink)}
-  button.b:hover{border-color:#9a948c}
-  button.b.primary{background:var(--red);border-color:var(--red);color:#fff;font-weight:600}
-  button.b:disabled{opacity:.42;cursor:default}
-  .stage{font-size:14px;color:var(--dim)}
+  button.b:hover{border-color:#9a948c;background:var(--lift)}
+  .hint{font-size:14px;color:var(--dim)}
 
-  table{width:100%;border-collapse:collapse;margin:0 0 16px}
-  th{text-align:left;font-size:13px;letter-spacing:.05em;text-transform:uppercase;
-     color:var(--dim);font-weight:700;border-bottom:2px solid var(--red);padding:0 10px 6px;
-     vertical-align:bottom}
-  th:first-child{padding-left:0} th:last-child{padding-right:0}
-  td{border-bottom:1px solid var(--line);padding:13px 12px;vertical-align:top;font-size:17px;
-     transition:background .12s}
-  td:first-child{padding-left:0} td:last-child{padding-right:0}
-  col.obs{width:30%} col.init{width:32%} col.rev{width:38%}
-  .rev{font-weight:600}
-  .fix{display:block;font-weight:400;font-size:14px;color:var(--dim);margin-top:6px}
+  .row{border:1.5px solid var(--line);border-left:5px solid var(--line);border-radius:6px;
+       background:#fff;margin:0 0 10px;transition:border-color .12s,background .12s}
+  .row:hover{border-color:#9a948c;background:var(--lift)}
+  .row[open]{border-left-color:var(--red);background:#fff}
+  .row>summary{cursor:pointer;list-style:none;display:flex;gap:12px;align-items:flex-start;
+               padding:15px 18px;font-size:18px}
+  .row>summary::-webkit-details-marker{display:none}
+  .row>summary::before{content:"\25B8";color:var(--dim);font-size:15px;line-height:1.5;flex:none}
+  .row[open]>summary::before{content:"\25BE";color:var(--red)}
+  .what{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);
+        font-weight:700;display:block;margin-bottom:4px}
 
-  /* reveal one column at a time; visibility keeps the layout from jumping */
-  table:not(.c2) tbody td:nth-child(2),
-  table:not(.c3) tbody td:nth-child(3){visibility:hidden}
-  table:not(.c2) th:nth-child(2),
-  table:not(.c3) th:nth-child(3){opacity:.4}
+  .body{padding:0 18px 18px 46px}
+  .field{margin:0 0 14px}
+  .lbl{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);
+       font-weight:700;margin-bottom:4px}
+  .init{font-size:19px;margin:0}
+  .rev{font-size:19px;font-weight:600;margin:0}
+  .fix{font-size:15px;color:var(--dim);margin:7px 0 0}
+  .turned{border-left:3px solid var(--red);padding-left:14px}
 
-  tbody tr:hover td{background:var(--lift)}
-
-  .tests{background:#fff;border:1px solid var(--line);border-left:4px solid var(--red);
-         border-radius:4px;padding:12px 15px}
+  .tests{background:#fff;border:1.5px solid var(--line);border-left:5px solid var(--red);
+         border-radius:6px;padding:14px 18px;margin:0 0 20px;
+         position:sticky;top:10px;z-index:5;box-shadow:0 2px 10px rgba(31,41,55,.07)}
   .tests h2{font-size:15px;margin:0 0 8px}
   .tests ol{margin:0;padding-left:22px;font-size:15px}
   .tests li{margin:3px 0}
@@ -68,16 +68,20 @@
 
   @media print{
     @page{size:letter portrait;margin:0.45in}
-    body{background:#fff;padding:0;font-size:10.2pt;line-height:1.3}
+    body{background:#fff;padding:0;font-size:10.2pt;line-height:1.32}
     .wrap{max-width:none}
-    .home,.ctl{display:none}
-    h1{font-size:15pt} .sub{font-size:9pt} .lede{font-size:9.6pt;margin:7px 0 10px}
-    td,th{padding:5px 8px} td{font-size:9.4pt} th{font-size:8pt;opacity:1!important}
-    .fix{font-size:8.4pt} .tests{padding:8px 11px} .tests ol{font-size:9pt}
+    .home,.ctl,.turn{display:none}
+    h1{font-size:15pt} .sub{font-size:9pt} .lede{font-size:9.6pt;margin:6px 0 9px}
+    .row{border:0;border-bottom:1px solid var(--line);border-radius:0;margin:0;
+         break-inside:avoid;background:#fff!important}
+    .row>summary{padding:7px 0 3px;font-size:10pt}
+    .row>summary::before{display:none}
+    .body{padding:0 0 8px 0}
+    .field{margin:0 0 5px} .turned{border-left:2px solid var(--red);padding-left:9px}
+    .init,.rev{font-size:9.6pt} .fix{font-size:8.4pt;margin-top:3px} .lbl{font-size:7.6pt}
+    .turned[hidden]{display:block!important}
+    .tests{padding:9px 12px;margin:0 0 10px;position:static;box-shadow:none} .tests ol{font-size:9pt}
     .tests .src{font-size:8.4pt}
-    table td{visibility:visible!important}
-    tbody tr:hover td{background:transparent}
-    tr{break-inside:avoid}
   }
 </style>
 
@@ -86,82 +90,12 @@
 <h1>From Noticing to a Research Question</h1>
 <p class="sub">TCE 318P &middot; Week 7 &middot; Act II</p>
 
-<p class="lede">A research question does not arrive finished. It starts as something you
-noticed in the room, becomes a first question, and then gets turned until a lesson you
-build could actually answer it. The middle column is not a mistake. It is where every one
-of these started.</p>
-
-<div class="ctl">
-  <button class="b primary" id="step">Show the first questions</button>
-  <button class="b" id="back">Back</button>
-  <button class="b" id="reset">Start over</button>
-  <span class="stage" id="stage"></span>
-</div>
-
-<table id="t">
-  <colgroup><col class="obs"><col class="init"><col class="rev"></colgroup>
-  <thead>
-    <tr><th>What you noticed</th><th>First question</th><th>Turned toward research</th></tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>One of them understood making ten and still wrote the wrong number down. Her
-          strategy was right and her answer was not.</td>
-      <td class="init">How can I help first graders get better at adding within 20?</td>
-      <td class="rev">How do first-grade students use the make-10 strategy and ten-frames
-          to solve addition problems within 20?
-          <span class="fix">Named the strategy, the tool and the range, so you know what
-          work would answer it.</span></td>
-    </tr>
-    <tr>
-      <td>Two of them broke a 6 by 4 array into two 3 by 4s. Another built it up out of
-          smaller pieces instead.</td>
-      <td class="init">Why are some students better at multiplication than others?</td>
-      <td class="rev">How do students with different approaches to multiplication use
-          composing and decomposing arrays to explain their mathematical thinking?
-          <span class="fix">Expects children to differ, and goes looking for the
-          difference rather than ranking them.</span></td>
-    </tr>
-    <tr>
-      <td>They all had the same problems and could pick their own strategy. One of them
-          miscounted nine groups of five.</td>
-      <td class="init">How do the students figure out the answer to the question 7 x 8?</td>
-      <td class="rev">How do students work out a product they do not already know?
-          <span class="fix">Widened from one fact to the thinking behind any of
-          them.</span></td>
-    </tr>
-    <tr>
-      <td>Under a three-minute timer, one of them started adding instead of
-          multiplying.</td>
-      <td class="init">How do students gain confidence when learning new skills, and keep
-          themselves pushing to go further?</td>
-      <td class="rev">When the timer is on, what do students do with a fact they have not
-          memorized?
-          <span class="fix">Asks one thing instead of two, and the mathematics is now in
-          the sentence.</span></td>
-    </tr>
-    <tr>
-      <td>They drifted when place value was on the board. They stayed with it when the
-          blocks were in their hands.</td>
-      <td class="init">What can teachers do to make place value feel less abstract for
-          first graders?</td>
-      <td class="rev">What do first graders do differently with place value when they have
-          blocks in their hands?
-          <span class="fix">The subject moved from the teacher to the children.</span></td>
-    </tr>
-    <tr>
-      <td>She plotted 3/4 past the 1 on the number line.</td>
-      <td class="init">What do students need to know about number lines in order to
-          correctly plot a fraction?</td>
-      <td class="rev">How do students decide where a fraction goes on a number line?
-          <span class="fix">One word out. &ldquo;Correctly&rdquo; was asking whether she
-          got it right.</span></td>
-    </tr>
-  </tbody>
-</table>
+<p class="lede">Six things people noticed in the field. Each one became a question, and then
+got turned until a lesson you could build would answer it. The first question is never the
+mistake. It is where every one of these started.</p>
 
 <div class="tests">
-  <h2>Five things to read your own question against</h2>
+  <h2>What the guidelines ask of a research question</h2>
   <ol>
     <li><strong>It asks one thing.</strong> Not two or three joined with &ldquo;and.&rdquo;</li>
     <li><strong>It is open.</strong> No single right answer, and not yes or no.</li>
@@ -171,38 +105,142 @@ of these started.</p>
   </ol>
   <p class="src">Four of these five come straight out of the Concept Profile guidelines:
     &ldquo;one specific, grade-appropriate mathematical concept&rdquo; and &ldquo;an open
-    question about how students understand this concept, not whether they got it right,
-    and not a diagnosis of a child.&rdquo; The fifth is the one the rest of Act II
-    depends on.</p>
+    question about how students understand this concept, not whether they got it right, and
+    not a diagnosis of a child.&rdquo; The fifth is the one the rest of Act II depends on, and it is in the Week 7 outline.</p>
 </div>
+
+<div class="ctl">
+  <button class="b" id="all">Open everything</button>
+  <button class="b" id="reset">Start over</button>
+  <span class="hint">Pick a noticing. One box opens at a time.</span>
+</div>
+
+<div id="rows">
+
+  <details class="row" name="rq">
+    <summary><span><span class="what">What she noticed</span>One of them understood making
+      ten and still wrote the wrong number down. Her strategy was right and her answer was
+      not.</span></summary>
+    <div class="body">
+      <div class="field"><div class="lbl">Her first question</div>
+        <p class="init">How can I help first graders get better at adding within 20?</p></div>
+      <div class="field turned" hidden><div class="lbl">Turned toward research</div>
+        <p class="rev">How do first-grade students use the make-10 strategy and ten-frames to
+          solve addition problems within 20?</p>
+        <p class="fix">Named the strategy, the tool and the range, so you know what work
+          would answer it.</p></div>
+      <button class="b turn">Turn it</button>
+    </div>
+  </details>
+
+  <details class="row" name="rq">
+    <summary><span><span class="what">What she noticed</span>Two of them broke a 6 by 4 array
+      into two 3 by 4s. Another built it up out of smaller pieces instead.</span></summary>
+    <div class="body">
+      <div class="field"><div class="lbl">Her first question</div>
+        <p class="init">Why are some students better at multiplication than others?</p></div>
+      <div class="field turned" hidden><div class="lbl">Turned toward research</div>
+        <p class="rev">How do students with different approaches to multiplication use
+          composing and decomposing arrays to explain their mathematical thinking?</p>
+        <p class="fix">Expects children to differ, and goes looking for the difference rather
+          than ranking them.</p></div>
+      <button class="b turn">Turn it</button>
+    </div>
+  </details>
+
+  <details class="row" name="rq">
+    <summary><span><span class="what">What she noticed</span>They all had the same problems
+      and could pick their own strategy. One of them miscounted nine groups of
+      five.</span></summary>
+    <div class="body">
+      <div class="field"><div class="lbl">Her first question</div>
+        <p class="init">How do the students figure out the answer to the question 7 x 8?</p></div>
+      <div class="field turned" hidden><div class="lbl">Turned toward research</div>
+        <p class="rev">How do students work out a product they do not already know?</p>
+        <p class="fix">Widened from one fact to the thinking behind any of them.</p></div>
+      <button class="b turn">Turn it</button>
+    </div>
+  </details>
+
+  <details class="row" name="rq">
+    <summary><span><span class="what">What she noticed</span>Under a three-minute timer, one
+      of them started adding instead of multiplying.</span></summary>
+    <div class="body">
+      <div class="field"><div class="lbl">Her first question</div>
+        <p class="init">How do students gain confidence when learning new skills, and keep
+          themselves pushing to go further?</p></div>
+      <div class="field turned" hidden><div class="lbl">Turned toward research</div>
+        <p class="rev">When the timer is on, what do students do with a fact they have not
+          memorized?</p>
+        <p class="fix">Asks one thing instead of two, and the mathematics is now in the
+          sentence.</p></div>
+      <button class="b turn">Turn it</button>
+    </div>
+  </details>
+
+  <details class="row" name="rq">
+    <summary><span><span class="what">What she noticed</span>They drifted when place value was
+      on the board. They stayed with it when the blocks were in their hands.</span></summary>
+    <div class="body">
+      <div class="field"><div class="lbl">Her first question</div>
+        <p class="init">What can teachers do to make place value feel less abstract for first
+          graders?</p></div>
+      <div class="field turned" hidden><div class="lbl">Turned toward research</div>
+        <p class="rev">What do first graders do differently with place value when they have
+          blocks in their hands?</p>
+        <p class="fix">The subject moved from the teacher to the children.</p></div>
+      <button class="b turn">Turn it</button>
+    </div>
+  </details>
+
+  <details class="row" name="rq">
+    <summary><span><span class="what">What she noticed</span>She plotted 3/4 past the 1 on the
+      number line.</span></summary>
+    <div class="body">
+      <div class="field"><div class="lbl">Her first question</div>
+        <p class="init">What do students need to know about number lines in order to correctly
+          plot a fraction?</p></div>
+      <div class="field turned" hidden><div class="lbl">Turned toward research</div>
+        <p class="rev">How do students decide where a fraction goes on a number line?</p>
+        <p class="fix">One word out. &ldquo;Correctly&rdquo; was asking whether she got it
+          right.</p></div>
+      <button class="b turn">Turn it</button>
+    </div>
+  </details>
+
+</div>
+
 </div>
 
 <script>
-const LABELS = [
-  ["Show the first questions", "Showing what they noticed."],
-  ["Show the revisions",       "Showing their first questions."],
-  ["All three showing",        "All three columns showing."],
-];
-let n = 0;
-const t = document.getElementById("t");
-function draw(){
-  t.classList.toggle("c2", n >= 1);
-  t.classList.toggle("c3", n >= 2);
-  const [label, stage] = LABELS[n];
-  const step = document.getElementById("step");
-  step.textContent = label;
-  step.disabled = n === 2;
-  document.getElementById("back").disabled = n === 0;
-  document.getElementById("reset").disabled = n === 0;
-  document.getElementById("stage").textContent = stage;
-}
-document.getElementById("step").onclick  = () => { if (n < 2) { n++; draw(); } };
-document.getElementById("back").onclick  = () => { if (n > 0) { n--; draw(); } };
-document.getElementById("reset").onclick = () => { n = 0; draw(); };
-document.addEventListener("keydown", e => {
-  if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); if (n < 2) { n++; draw(); } }
-  else if (e.key === "ArrowLeft") { if (n > 0) { n--; draw(); } }
+const rows = [...document.querySelectorAll(".row")];
+
+rows.forEach(row => {
+  const turned = row.querySelector(".turned");
+  const btn = row.querySelector(".turn");
+  btn.onclick = () => { turned.hidden = false; btn.hidden = true; };
 });
-window.addEventListener("beforeprint", () => { n = 2; draw(); });
-draw();
+
+function reset(){
+  rows.forEach(row => {
+    row.open = false;
+    row.setAttribute("name", "rq");
+    row.querySelector(".turned").hidden = true;
+    row.querySelector(".turn").hidden = false;
+  });
+}
+
+function openAll(){
+  // a shared name forbids two open at once, so drop it before opening them all
+  rows.forEach(row => {
+    row.removeAttribute("name");
+    row.open = true;
+    row.querySelector(".turned").hidden = false;
+    row.querySelector(".turn").hidden = true;
+  });
+}
+
+document.getElementById("all").onclick = openAll;
+document.getElementById("reset").onclick = reset;
+window.addEventListener("beforeprint", openAll);
 </script>
