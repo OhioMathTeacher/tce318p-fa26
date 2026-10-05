@@ -957,6 +957,57 @@ function statsTick(){
 // have failed.
 let unsavedCount=(()=>{ try{ return +localStorage.getItem(STORE+"-unsaved")||0; }catch(e){ return 0; } })();
 let storageFailed=false;
+// ---- Research Question Studio handoff ------------------------------------
+// Both apps are served from the same origin, so the Studio's saved work is
+// already readable here. Nothing is uploaded and nothing leaves the laptop:
+// this is the browser reading its own storage. If the student used a different
+// browser, or opened the Studio from a file on disk, there is simply nothing
+// to read and we say so rather than offering a button that cannot work.
+const STUDIO_STORE="tce318p-wk7-rqstudio";
+function studioWork(){
+  let raw=null; try{ raw=localStorage.getItem(STUDIO_STORE); }catch(e){ return null; }
+  if(!raw) return null;
+  let d=null; try{ d=JSON.parse(raw); }catch(e){ return null; }
+  if(!d||typeof d!=="object") return null;
+  const concept = d.focus==="__other__" ? String(d.focusOther||"").trim() : String(d.focus||"").trim();
+  const rows=(Array.isArray(d.samples)?d.samples:[])
+    .map(x=>({task:String((x&&x.task)||"").trim(), did:String((x&&x.did)||"").trim(), noticed:String((x&&x.noticed)||"").trim()}))
+    .filter(x=>x.task||x.did||x.noticed);
+  const grade=String(d.grade||"").trim();
+  if(!rows.length && !concept && !grade) return null;
+  return {grade:grade, concept:concept, rows:rows};
+}
+// The Studio keeps description and wondering apart on purpose. The Planner has
+// one column for both, so they travel together with the seam still visible.
+function studioReveals(x){
+  const bits=[];
+  if(x.did) bits.push(x.did);
+  if(x.noticed) bits.push("What I can't explain yet: "+x.noticed);
+  return bits.join("\n\n");
+}
+function importStudio(){
+  const w=studioWork();
+  if(!w){ toast("Nothing from the Research Question Studio in this browser."); return; }
+  const g=state.bg||(state.bg={});
+  if(!Array.isArray(g.samplesRows)) g.samplesRows=[["","","",""],["","","",""],["","","",""]];
+  const rows=g.samplesRows;
+  const over=[];
+  if(w.grade && (g.grade||"").trim() && g.grade!==w.grade) over.push("the grade");
+  if(w.concept && (g.concept||"").trim() && g.concept!==w.concept) over.push("the concept");
+  let n=0; w.rows.forEach(function(x,i){ const r=rows[i]; if(r && (String(r[1]||"").trim() || String(r[2]||"").trim())) n++; });
+  if(n) over.push(n===1?"1 work sample":n+" work samples");
+  if(over.length && !confirm("This replaces "+over.join(", ")+" with what is in your Research Question Studio.\n\nYour pseudonyms and any photos stay as they are.\n\nGo ahead?")) return;
+  if(w.grade) g.grade=w.grade;
+  if(w.concept) g.concept=w.concept;
+  w.rows.slice(0,5).forEach(function(x,i){
+    while(rows.length<=i) rows.push(["","","",""]);
+    rows[i][1]=x.task;                 // the task, the setting
+    rows[i][2]=studioReveals(x);       // what it reveals
+  });                                   // [0] pseudonym and [3] photo untouched
+  save(); renderBackground();
+  const c=Math.min(w.rows.length,5);
+  toast("Brought in "+c+" sample"+(c===1?"":"s")+" from the Studio. Add a pseudonym to each.");
+}
 function save(){
   try{ statsTick(); }catch(e){}
   unsavedCount++;
@@ -1130,7 +1181,7 @@ function renderBackground(){
       <div class="sec"><h3><span class="k">1c</span>The collected work${I("Three to five pieces of actual student work on this concept, across your focus students. For each: who, what the task was, and what the work reveals about how that student understands the concept — that last column is the whole point. Add a photo: crop it, black out the name, and it goes into your PDF as an appendix.")}</h3>
         <div class="rhead"><span>Student</span><span>What the work was</span><span>What it reveals</span><span>Photo / PDF</span></div>
         <div class="rows">${g.samplesRows.map((r,i)=>`<div class="rrow"><input type="text" placeholder="Pseudonym" data-wr="${i}:0" value="${esc(r[0])}"><textarea placeholder="The task, the setting" data-wr="${i}:1">${esc(r[1])}</textarea><textarea placeholder="What this shows about their understanding" data-wr="${i}:2">${esc(r[2])}</textarea><div class="ph">${r[3]?`<img src="${r[3]}" data-edit="${i}" title="Click to crop or black out"><button class="tbtn" data-clear="${i}">remove</button>`:`<button class="tbtn" data-photo="${i}" title="A photo, or a PDF scan — each page becomes a picture you can crop and black out">＋ photo / PDF</button>`}</div></div>`).join("")}</div>
-        <div style="margin-top:8px"><button class="tbtn" id="addSample" ${g.samplesRows.length>=5?"disabled":""}>＋ another sample</button></div></div>
+        <div style="margin-top:8px"><button class="tbtn" id="addSample" ${g.samplesRows.length>=5?"disabled":""}>＋ another sample</button>${studioWork()?` <button class="tbtn" id="fromStudio" title="Reads what you typed in the Research Question Studio on this laptop. Nothing is uploaded.">⇣ Bring in my Research Question Studio work</button>`:` <span class="hint">Nothing from the Research Question Studio in this browser yet — open it on this laptop first.</span>`}</div></div>
       <div class="sec"><h3><span class="k">1d</span>What shows up in the work${I("Now put the two together. Which of the misconceptions and challenges your sources describe appear in your collected work — and which don't? Name the student and the sample. Add anything your host teacher has noticed that the research didn't. A paragraph.")}</h3>
         <textarea data-bg="think" style="min-height:120px" placeholder="What, if any, of the cited misconceptions appear in the collected work? Which student, which sample? What did you see that the research didn't predict?">${esc(g.think||"")}</textarea></div>
     </div>`;
@@ -1172,6 +1223,7 @@ function renderBackground(){
   wrap.querySelectorAll("[data-edit]").forEach(im=>im.onclick=()=>openImgEd(+im.dataset.edit));
   wrap.querySelectorAll("[data-clear]").forEach(b=>b.onclick=()=>{ state.bg.samplesRows[+b.dataset.clear][3]=""; save(); renderBackground(); });
   const as=document.getElementById("addSample"); if(as) as.onclick=()=>{ if(state.bg.samplesRows.length<5){ state.bg.samplesRows.push(["","","",""]); save(); renderBackground(); } };
+  const fsb=document.getElementById("fromStudio"); if(fsb) fsb.onclick=importStudio;
   const ex=document.getElementById("exportProfile"); if(ex) ex.onclick=exportProfile;
   wireInfo();
 }
@@ -1853,7 +1905,15 @@ async function diagPrint(){
 function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 let toastT; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.style.opacity=1; clearTimeout(toastT); toastT=setTimeout(()=>t.style.opacity=0,2600); }
 function renderAll(){ renderTop(); renderPlan(); }
-load(); renderAll(); try{ updateNag(+localStorage.getItem(STORE+"-unsaved")||0); }catch(e){} try{ showPhase(localStorage.getItem(STORE+"-phase")||"background"); }catch(e){ showPhase("background"); }
+load(); renderAll();
+// Arriving from the Studio's hand-off button: pull the work across straight away,
+// through the same path (and the same overwrite question) as the button in 1c.
+try{ if(new URLSearchParams(location.search).get("from")==="studio"){
+  if(studioWork()){ importStudio(); }
+  else { toast("Nothing came across \u2014 open the Studio in this browser first."); }
+  history.replaceState(null,"",location.pathname);   // so a reload does not re-import
+} }catch(e){}
+try{ updateNag(+localStorage.getItem(STORE+"-unsaved")||0); }catch(e){} try{ showPhase(localStorage.getItem(STORE+"-phase")||"background"); }catch(e){ showPhase("background"); }
 </script>
 </body>
 </html>
