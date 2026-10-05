@@ -1,0 +1,208 @@
+<!-- From noticing to a research question — TCE 318P, Week 7 teaching tool.
+
+     PROVENANCE, for Todd only. Never disclosed on the page.
+       Row 1  initial constructed   |  revised = Lexi Mosher's real question
+       Row 2  initial constructed   |  revised = Camryn Stacy's real question
+       Row 3  initial = Sydnee Cromer's real question   |  revised constructed
+       Row 4  initial = Delaney Klapper's real question |  revised constructed
+       Row 5  both constructed (teachers-as-subject)
+       Row 6  both constructed (the word "correctly")
+
+     Real questions are drawn ONLY from students who did not receive a comment
+     on 2026-10-05, so nobody meets a sentence she was just given feedback
+     about. Because two rows put a real question on the right and two put one
+     on the left, no one can tell from position whether a sentence is hers.
+     Observations are paraphrased from those students' own 1c and 1d notes,
+     with pseudonyms stripped.
+
+     This is a teaching tool, not a handout: it is driven on screen, columns reveal
+     one at a time, and the type is sized to be read from the back of a room.
+     Printing still works and shows all three columns. -->
+<title>From Noticing to a Research Question</title>
+<style>
+  :root{--red:#C41E3A;--ink:#1f2937;--dim:#4b5563;--line:#cfcac3;--bg:#faf9f7;--lift:#ffeeb0;}
+  *{box-sizing:border-box}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);
+       color:var(--ink);line-height:1.45;margin:0;padding:24px 22px 52px;font-size:16px}
+  .wrap{max-width:1240px;margin:0 auto}
+  .home{display:inline-block;font-size:12px;color:var(--dim);text-decoration:none;margin-bottom:8px}
+  .home:hover{color:#2563eb;text-decoration:underline}
+  h1{font-size:26px;margin:0 0 3px}
+  .sub{color:var(--dim);font-size:14px;margin:0 0 4px}
+  .lede{font-size:16px;margin:12px 0 16px;max-width:82ch;color:var(--ink)}
+
+  .ctl{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:0 0 14px}
+  button.b{font:inherit;font-size:15px;cursor:pointer;border-radius:6px;padding:10px 18px;
+           border:1.5px solid var(--line);background:#fff;color:var(--ink)}
+  button.b:hover{border-color:#9a948c}
+  button.b.primary{background:var(--red);border-color:var(--red);color:#fff;font-weight:600}
+  button.b:disabled{opacity:.42;cursor:default}
+  .stage{font-size:14px;color:var(--dim)}
+
+  table{width:100%;border-collapse:collapse;margin:0 0 16px}
+  th{text-align:left;font-size:13px;letter-spacing:.05em;text-transform:uppercase;
+     color:var(--dim);font-weight:700;border-bottom:2px solid var(--red);padding:0 10px 6px;
+     vertical-align:bottom}
+  th:first-child{padding-left:0} th:last-child{padding-right:0}
+  td{border-bottom:1px solid var(--line);padding:13px 12px;vertical-align:top;font-size:17px;
+     transition:background .12s}
+  td:first-child{padding-left:0} td:last-child{padding-right:0}
+  col.obs{width:30%} col.init{width:32%} col.rev{width:38%}
+  .rev{font-weight:600}
+  .fix{display:block;font-weight:400;font-size:14px;color:var(--dim);margin-top:6px}
+
+  /* reveal one column at a time; visibility keeps the layout from jumping */
+  table:not(.c2) tbody td:nth-child(2),
+  table:not(.c3) tbody td:nth-child(3){visibility:hidden}
+  table:not(.c2) th:nth-child(2),
+  table:not(.c3) th:nth-child(3){opacity:.4}
+
+  tbody tr:hover td{background:var(--lift)}
+
+  .tests{background:#fff;border:1px solid var(--line);border-left:4px solid var(--red);
+         border-radius:4px;padding:12px 15px}
+  .tests h2{font-size:15px;margin:0 0 8px}
+  .tests ol{margin:0;padding-left:22px;font-size:15px}
+  .tests li{margin:3px 0}
+  .tests .src{font-size:13.5px;color:var(--dim);margin:10px 0 0}
+
+  @media print{
+    @page{size:letter portrait;margin:0.45in}
+    body{background:#fff;padding:0;font-size:10.2pt;line-height:1.3}
+    .wrap{max-width:none}
+    .home,.ctl{display:none}
+    h1{font-size:15pt} .sub{font-size:9pt} .lede{font-size:9.6pt;margin:7px 0 10px}
+    td,th{padding:5px 8px} td{font-size:9.4pt} th{font-size:8pt;opacity:1!important}
+    .fix{font-size:8.4pt} .tests{padding:8px 11px} .tests ol{font-size:9pt}
+    .tests .src{font-size:8.4pt}
+    table td{visibility:visible!important}
+    tbody tr:hover td{background:transparent}
+    tr{break-inside:avoid}
+  }
+</style>
+
+<div class="wrap">
+<a class="home" href="../index.html">&larr; Course home</a>
+<h1>From Noticing to a Research Question</h1>
+<p class="sub">TCE 318P &middot; Week 7 &middot; Act II</p>
+
+<p class="lede">A research question does not arrive finished. It starts as something you
+noticed in the room, becomes a first question, and then gets turned until a lesson you
+build could actually answer it. The middle column is not a mistake. It is where every one
+of these started.</p>
+
+<div class="ctl">
+  <button class="b primary" id="step">Show the first questions</button>
+  <button class="b" id="back">Back</button>
+  <button class="b" id="reset">Start over</button>
+  <span class="stage" id="stage"></span>
+</div>
+
+<table id="t">
+  <colgroup><col class="obs"><col class="init"><col class="rev"></colgroup>
+  <thead>
+    <tr><th>What you noticed</th><th>First question</th><th>Turned toward research</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>One of them understood making ten and still wrote the wrong number down. Her
+          strategy was right and her answer was not.</td>
+      <td class="init">How can I help first graders get better at adding within 20?</td>
+      <td class="rev">How do first-grade students use the make-10 strategy and ten-frames
+          to solve addition problems within 20?
+          <span class="fix">Named the strategy, the tool and the range, so you know what
+          work would answer it.</span></td>
+    </tr>
+    <tr>
+      <td>Two of them broke a 6 by 4 array into two 3 by 4s. Another built it up out of
+          smaller pieces instead.</td>
+      <td class="init">Why are some students better at multiplication than others?</td>
+      <td class="rev">How do students with different approaches to multiplication use
+          composing and decomposing arrays to explain their mathematical thinking?
+          <span class="fix">Expects children to differ, and goes looking for the
+          difference rather than ranking them.</span></td>
+    </tr>
+    <tr>
+      <td>They all had the same problems and could pick their own strategy. One of them
+          miscounted nine groups of five.</td>
+      <td class="init">How do the students figure out the answer to the question 7 x 8?</td>
+      <td class="rev">How do students work out a product they do not already know?
+          <span class="fix">Widened from one fact to the thinking behind any of
+          them.</span></td>
+    </tr>
+    <tr>
+      <td>Under a three-minute timer, one of them started adding instead of
+          multiplying.</td>
+      <td class="init">How do students gain confidence when learning new skills, and keep
+          themselves pushing to go further?</td>
+      <td class="rev">When the timer is on, what do students do with a fact they have not
+          memorized?
+          <span class="fix">Asks one thing instead of two, and the mathematics is now in
+          the sentence.</span></td>
+    </tr>
+    <tr>
+      <td>They drifted when place value was on the board. They stayed with it when the
+          blocks were in their hands.</td>
+      <td class="init">What can teachers do to make place value feel less abstract for
+          first graders?</td>
+      <td class="rev">What do first graders do differently with place value when they have
+          blocks in their hands?
+          <span class="fix">The subject moved from the teacher to the children.</span></td>
+    </tr>
+    <tr>
+      <td>She plotted 3/4 past the 1 on the number line.</td>
+      <td class="init">What do students need to know about number lines in order to
+          correctly plot a fraction?</td>
+      <td class="rev">How do students decide where a fraction goes on a number line?
+          <span class="fix">One word out. &ldquo;Correctly&rdquo; was asking whether she
+          got it right.</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="tests">
+  <h2>Five things to read your own question against</h2>
+  <ol>
+    <li><strong>It asks one thing.</strong> Not two or three joined with &ldquo;and.&rdquo;</li>
+    <li><strong>It is open.</strong> No single right answer, and not yes or no.</li>
+    <li><strong>It is about their reasoning</strong>, not about whether they got it right.</li>
+    <li><strong>It names the mathematics</strong>, and it is not a verdict on a child.</li>
+    <li><strong>A lesson you could build would answer it.</strong></li>
+  </ol>
+  <p class="src">Four of these five come straight out of the Concept Profile guidelines:
+    &ldquo;one specific, grade-appropriate mathematical concept&rdquo; and &ldquo;an open
+    question about how students understand this concept, not whether they got it right,
+    and not a diagnosis of a child.&rdquo; The fifth is the one the rest of Act II
+    depends on.</p>
+</div>
+</div>
+
+<script>
+const LABELS = [
+  ["Show the first questions", "Showing what they noticed."],
+  ["Show the revisions",       "Showing their first questions."],
+  ["All three showing",        "All three columns showing."],
+];
+let n = 0;
+const t = document.getElementById("t");
+function draw(){
+  t.classList.toggle("c2", n >= 1);
+  t.classList.toggle("c3", n >= 2);
+  const [label, stage] = LABELS[n];
+  const step = document.getElementById("step");
+  step.textContent = label;
+  step.disabled = n === 2;
+  document.getElementById("back").disabled = n === 0;
+  document.getElementById("reset").disabled = n === 0;
+  document.getElementById("stage").textContent = stage;
+}
+document.getElementById("step").onclick  = () => { if (n < 2) { n++; draw(); } };
+document.getElementById("back").onclick  = () => { if (n > 0) { n--; draw(); } };
+document.getElementById("reset").onclick = () => { n = 0; draw(); };
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); if (n < 2) { n++; draw(); } }
+  else if (e.key === "ArrowLeft") { if (n > 0) { n--; draw(); } }
+});
+window.addEventListener("beforeprint", () => { n = 2; draw(); });
+draw();
+</script>
