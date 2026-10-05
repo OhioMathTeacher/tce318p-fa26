@@ -26,10 +26,17 @@
   a{color:#2563eb}
 
   .headline{background:#fff;border:1.5px solid var(--line);border-left:5px solid var(--red);
-            border-radius:6px;padding:16px 18px;margin:0 0 22px}
-  .headline p{margin:0 0 8px}
+            border-radius:6px;padding:14px 18px;margin:0 0 10px}
+  .headline p{margin:0 0 9px}
   .headline p:last-child{margin:0}
-  .headline .q{font-size:18px;font-weight:600;margin-bottom:10px}
+  .headline>summary{cursor:pointer;list-style:none;display:flex;gap:11px;align-items:flex-start;
+                    font-size:18px;font-weight:600}
+  .headline>summary::-webkit-details-marker{display:none}
+  .headline>summary::before{content:"\25B8";color:var(--red);font-size:14px;line-height:1.5;
+                            flex:none;font-weight:400}
+  .headline[open]>summary::before{content:"\25BE"}
+  .headline[open]>summary{margin-bottom:11px}
+  .headline:hover{border-color:#9a948c}
 
   h2.grp{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);
          margin:26px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--line)}
@@ -64,10 +71,11 @@
 
 <p class="lede">You build a research question, design a lesson to investigate it, teach what your
 placement allows, and report what you found. Most worries about this project turn out to be about
-the placement rather than about the work, so start here.</p>
+the placement rather than about the work. Open the two boxes below before you read any
+further.</p>
 
-<div class="headline">
- <p class="q">What this project actually requires of you</p>
+<details class="headline">
+ <summary>What this project requires: two children, and not necessarily in a classroom</summary>
  <p>My obligation is to make sure you engage with young learners around the teaching and learning of
  PK&ndash;5 mathematics. That is the requirement, and everything further down this page is a detail
  of it. A math block in a math classroom is one way to meet it. It is not the only way.</p>
@@ -81,10 +89,10 @@ the placement rather than about the work, so start here.</p>
  session or several. At a minimum, teach one piece and collect one student's work. Your
  lesson-design grade does not depend on what the placement let you do &mdash; it was graded on the
  design.<cite>Teaching Your Lesson in the Field, &sect;3</cite></blockquote>
-</div>
+</details>
 
-<div class="headline" style="border-left-color:var(--dim)">
- <p class="q">Before you ask your host teacher for anything</p>
+<details class="headline" style="border-left-color:var(--dim)">
+ <summary>Before you ask your host teacher for anything: you never have to win an argument</summary>
  <p>You are a guest in somebody's classroom, and <strong>you never have to win an argument to
  finish this project</strong>. Nothing here entitles you to a minute of her instructional time. Ask
  for small things, take yes for an answer, and if an ask turns awkward, drop it and fall back to two
@@ -94,7 +102,7 @@ the placement rather than about the work, so start here.</p>
  there for a few weeks. Take the no at face value, thank her, and work around it.</p>
  <p>If a placement says no to everything, that is my problem to solve, not yours to argue.
  Tell me.</p>
-</div>
+</details>
 
 <h2 class="grp">When the placement looks like a problem</h2>
 
@@ -326,5 +334,19 @@ the placement rather than about the work, so start here.</p>
 Quoted passages come from the assignment handouts; where this page and a handout disagree, the
 handout wins. Bring anything this page does not answer to class.</p>
 </div>
+<script>
+  // Printed, a page of shut drawers is a page of headings. Open everything for
+  // the print, then put it back the way the reader left it.
+  const boxes = [...document.querySelectorAll("details")];
+  let before = null;
+  addEventListener("beforeprint", () => {
+    before = boxes.map(d => d.open);
+    boxes.forEach(d => d.open = true);
+  });
+  addEventListener("afterprint", () => {
+    if (before) boxes.forEach((d, i) => d.open = before[i]);
+    before = null;
+  });
+</script>
 </body>
 </html>
