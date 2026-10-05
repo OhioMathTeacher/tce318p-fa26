@@ -229,10 +229,9 @@
   </header>
 
   <div class="privacy">
-    <strong>Everything here stays on your computer.</strong> Nothing is uploaded to any server. Add a
-    photo of the child's work, <strong>cover the names right here</strong>, and the anonymized picture
-    is what you save for your documentation — the original never leaves your laptop. Keep everything
-    de-identified: a persona, never a real name.
+    <strong>Everything here stays on your computer.</strong> Nothing is uploaded to any server, and
+    you do not upload the children's work here at all — it is already attached to your Week 6 Concept
+    Profile. What you type is a description. Keep it de-identified: a pseudonym, never a real name.
   </div>
 
   <div id="pdfWarn" class="pdfwarn" style="display:none;"></div>
@@ -286,16 +285,20 @@
   <section class="panel" data-step="1">
     <div class="card">
       <h2>2 · Your QFocus — the work you collected</h2>
-      <p class="lead">Enter your Week 6 work samples <strong>one at a time</strong> — these are your
-        <strong>QFocus</strong>, the thing your questions come from. Describe each one de-identified:
-        the task, what the child did, and the strategy or error you noticed. Add a photo of the work
-        and <strong>cover any names</strong> right on it. Keep going until you've entered them all.</p>
+      <p class="lead">Your Week 6 samples are your <strong>QFocus</strong>, the thing your questions
+        come from. You already submitted the work itself with your Concept Profile, so you do not
+        upload anything here. Put the work in front of you and write down what you see, one sample at
+        a time, with pseudonyms only.</p>
       <div class="tip">
-        <strong>Choosing good samples.</strong> Aim for <strong>3–5 well-chosen samples</strong> — work
-        collected recently, and/or tied to the math your student will study in the field (Weeks 11–12).
-        Capture <strong>one work sample per image</strong>: a single page (like one worksheet),
-        photographed or scanned so it is large and clear. One clear page is easier to read than an
-        image that crowds several pages together.
+        <strong>Aim at the idea, not at the child.</strong> You may not have watched this work being
+        done — some of it your host teacher simply handed you, and that is fine. Describe what the
+        work shows, plainly enough that someone who was not there could picture it. Then say what it
+        makes you wonder about how students understand this idea.
+        <br><br>
+        <strong>Resist diagnosing.</strong> The moment you write "she doesn't understand place value"
+        you have answered the question instead of asking it, and there is nothing left to storm. Your
+        research question is about an idea and the students who are building it, never a verdict on
+        one child.
       </div>
       <div id="samples"></div>
       <p id="sampleHint"></p>
@@ -309,9 +312,21 @@
   
   <section class="panel" data-step="2">
     <div class="card">
-      <h2>3 · Brainstorm questions about your work samples</h2>
-      <p class="lead">Look closely at the work you collected and produce as many questions as you can.
-        <span style="color:var(--muted);font-size:13px;">(Flip back to <strong>Collected work</strong> anytime to see the images.)</span></p>
+      <h2>3 · Brainstorm questions about how students understand this idea</h2>
+      <p class="lead">Look closely at what you collected and produce as many questions as you can —
+        questions about <strong>how students understand this idea</strong>, not questions you would
+        ask a student.
+        <span style="color:var(--muted);font-size:13px;">(Your descriptions are below; keep the work itself in front of you.)</span></p>
+      <div class="tip">
+        <strong>Two kinds of question, and only one of them is yours.</strong><br>
+        <em>"Can you show me another way to order those numbers?"</em> is a question you would ask a
+        student. It is a good teaching move and it is not a research question.<br>
+        <em>"How do students decide which of two numbers is larger when one of them has more
+        digits?"</em> is a question about how students understand the idea. That is what you are
+        storming.<br>
+        <strong>A test that works:</strong> if one child could answer it in one sitting, it is the
+        first kind. Turn it around and ask it about students.
+      </div>
       <div id="qfocusRef"></div>
       <p class="lead" style="margin-top:2px;">Follow the four QFT rules:</p>
       <ol class="rules">
@@ -321,7 +336,7 @@
         <li>Turn any statement into a question.</li>
       </ol>
       <div class="q-add">
-        <input type="text" id="qInput" placeholder="Type a question and press Enter…">
+        <input type="text" id="qInput" placeholder="How do students… (type a question and press Enter)">
         <button class="mini" id="qAdd">Add</button>
       </div>
       <div id="questions"></div>
@@ -426,7 +441,7 @@ function load() {
   activeSample = state.samples.length - 1;
 }
 function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} }
-function sampleHasContent(s) { return !!(s.task.trim() || s.did.trim() || s.noticed.trim() || shots[s.id]); }
+function sampleHasContent(s) { return !!(s.task.trim() || s.did.trim() || s.noticed.trim()); }
 
 // ---- learner ----
 // Ohio's Learning Standards for Mathematics, cluster-level, grouped by domain.
@@ -620,42 +635,10 @@ function activeSampleCard(s, i) {
   }
   card.appendChild(head);
 
-  card.appendChild(fieldFor(i, "task", "Task the child was doing", 1, "e.g. Order the numbers 43, 152, 9 from least to greatest."));
-  card.appendChild(fieldFor(i, "did", "What the child did", 2, "e.g. Wrote 152, 43, 9 — treated more digits as smaller."));
-  card.appendChild(fieldFor(i, "noticed", "Strategy or error you noticed", 2, "e.g. Compared leading digits only; no place-value language."));
+  card.appendChild(fieldFor(i, "task", "What the task asked for", 1, "e.g. Order the numbers 43, 152, 9 from least to greatest."));
+  card.appendChild(fieldFor(i, "did", "What the work shows", 2, "What is on the page. If you were there, what you saw or heard as well. e.g. The list came back 152, 43, 9, written left to right with no crossing out."));
+  card.appendChild(fieldFor(i, "noticed", "What it makes you wonder about students' understanding of this idea", 2, "The part you cannot explain yet. e.g. The ordering is consistent, so something is being compared reliably — but what?"));
 
-  // work + redaction editor (local only)
-  const row = document.createElement("div"); row.className = "photo-row";
-  const look = document.createElement("label"); look.className = "look";
-  look.appendChild(document.createTextNode(shots[s.id] ? "📄 Replace work" : "📄 Add a photo, screenshot, or PDF"));
-  const file = document.createElement("input"); file.type = "file"; file.accept = "image/*,application/pdf"; look.appendChild(file);
-  const help = document.createElement("span"); help.className = "photo-help";
-  help.textContent = "Stays on this laptop. Each page of a PDF becomes its own sample.";
-  row.appendChild(look); row.appendChild(help); card.appendChild(row);
-
-  if (shots[s.id]) card.appendChild(buildEditor(s.id));
-
-  file.addEventListener("change", () => {
-    const f = file.files && file.files[0]; if (!f) return;
-    const isPdf = f.type === "application/pdf" || /\.pdf$/i.test(f.name);
-    if (isPdf) {
-      if (!window.pdfjsLib) { $("sampleHint").textContent = "PDF support didn't load — open the studio from its web address (not a file on disk), or add an image/screenshot instead."; return; }
-      $("sampleHint").textContent = "Rendering PDF pages…";
-      pdfToPages(f).then(pages => {
-        $("sampleHint").textContent = "";
-        if (!pages.length) return;
-        setSampleImage(s.id, pages[0]);                    // first page → this sample
-        for (let p = 1; p < pages.length; p++) {           // extra pages → new samples
-          const ns = blankSample(); state.samples.push(ns); setSampleImage(ns.id, pages[p]);
-        }
-        renderSamples(); sync();
-      }).catch(err => { $("sampleHint").textContent = "Could not read that PDF."; console.error(err); });
-    } else {
-      const reader = new FileReader();
-      reader.onload = e => setSampleImage(s.id, e.target.result);
-      reader.readAsDataURL(f);   // decoded in-browser; the original never leaves
-    }
-  });
   return card;
 }
 
@@ -844,7 +827,7 @@ function renderReference() {
   real.forEach((s, i) => {
     const c = document.createElement("div"); c.className = "ref-card";
     const h = document.createElement("h4"); h.textContent = "Sample " + (i + 1); c.appendChild(h);
-    [["Task", s.task], ["Did", s.did], ["Noticed", s.noticed]].forEach(([k, v]) => {
+    [["Task", s.task], ["Shows", s.did], ["Wondering", s.noticed]].forEach(([k, v]) => {
       if (!v.trim()) return;
       const p = document.createElement("p"); p.className = "rf";
       const b = document.createElement("b"); b.textContent = k + ": "; p.appendChild(b);
@@ -937,9 +920,9 @@ function buildSnapshot() {
   if (!real.length) L.push("  (no samples described yet)");
   real.forEach((s, i) => {
     L.push("  Sample " + (i + 1));
-    L.push("    Task the child was doing: " + (s.task.trim() || "—"));
-    L.push("    What the child did: " + (s.did.trim() || "—"));
-    L.push("    Strategy or error I noticed: " + (s.noticed.trim() || "—"));
+    L.push("    What the task asked for: " + (s.task.trim() || "—"));
+    L.push("    What the work shows: " + (s.did.trim() || "—"));
+    L.push("    What it makes me wonder about students' understanding: " + (s.noticed.trim() || "—"));
   });
   L.push("");
   L.push("MY QUESTION STORM (produced with the QFT — mine to sharpen, not yours to replace)");
@@ -976,25 +959,15 @@ function buildPrintDoc() {
   real.forEach((s, i) => {
     const box = el("div", "pd-sample");
     box.appendChild(el("p", "pd-fact", "Sample " + (i + 1)));
-    if (s.task.trim()) box.appendChild(el("p", "pd-fact", "Task: " + s.task.trim()));
-    if (s.did.trim()) box.appendChild(el("p", "pd-fact", "What the child did: " + s.did.trim()));
-    if (s.noticed.trim()) box.appendChild(el("p", "pd-fact", "Strategy or error I noticed: " + s.noticed.trim()));
+    if (s.task.trim()) box.appendChild(el("p", "pd-fact", "What the task asked for: " + s.task.trim()));
+    if (s.did.trim()) box.appendChild(el("p", "pd-fact", "What the work shows: " + s.did.trim()));
+    if (s.noticed.trim()) box.appendChild(el("p", "pd-fact", "What it makes me wonder about students' understanding: " + s.noticed.trim()));
     d.appendChild(box);
   });
 
   // Work images packed side-by-side (narrow ones pair up; wide ones take a row).
-  const withImg = real.map((s, i) => ({ s, i })).filter(o => images[o.s.id]);
-  if (withImg.length) {
-    d.appendChild(el("h3", null, "Work samples"));
-    const gal = el("div", "pd-gallery");
-    withImg.forEach(({ s, i }) => {
-      const fig = el("div", "pd-fig");
-      fig.appendChild(el("div", "cap", "Sample " + (i + 1)));
-      const im = document.createElement("img"); im.src = images[s.id]; fig.appendChild(im);
-      gal.appendChild(fig);
-    });
-    d.appendChild(gal);
-  }
+  if (real.length) d.appendChild(el("p", "pd-fact",
+    "The work itself is attached to my Week 6 Concept Profile submission."));
 
   d.appendChild(el("h3", null, "My question storm (QFT — mine to sharpen, not yours to replace)"));
   const qul = document.createElement("ul");
@@ -1006,7 +979,7 @@ function buildPrintDoc() {
   d.appendChild(el("p", "pd-fact", "Help me sharpen my own questions toward ONE that is researchable, feasible, and focused on how students learn this concept. Please do not write the question for me — press on mine."));
 }
 function producePDF() { buildPrintDoc(); window.print(); }
-function pageEstimate() { return 1 + state.samples.filter(s => images[s.id]).length; }
+function pageEstimate() { return 1; }   // no images travel with the handoff any more
 
 // ---- gate / preview / download ----
 function refreshGate() {
