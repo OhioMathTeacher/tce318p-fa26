@@ -15,6 +15,12 @@
  .block{padding:14px 16px;margin:14px 0;border-left:4px solid var(--red);border-radius:2px;}
  .b-set{background:#e8dcf0;} .b-share{background:#ffe8d6;} .b-work{background:#d6f0e8;} .b-early{background:#ffe8d6;}
  .block h2{font-size:15px;margin:0 0 8px;} .block .time{font-weight:400;color:#6b7280;}
+  .block>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:8px;}
+  .block>summary::-webkit-details-marker{display:none;}
+  .block>summary::before{content:"▸";font-size:12px;color:#6b7280;}
+  .block[open]>summary::before{content:"▾";}
+  .block>summary h2{margin:0;}
+  .block[open]>summary{margin-bottom:8px;}
  .purpose{font-style:italic;color:#374151;margin:8px 0 0;}
  .tag{background:#fff3a8;padding:1px 4px;border-radius:3px;font-weight:600;}
  ul{margin:6px 0;padding-left:20px;} li{margin:3px 0;}
@@ -43,15 +49,15 @@
  By <strong>Week 10</strong> you'll have the full plan. In the field, enact as much as your placement allows — one student or a whole class, one session or several; you need not teach every part. The goal: gain insight into student thinking, collect the work that shows it, and report on it in your <strong>Final Report</strong>.
 </div>
 
-<div class="block b-set">
- <h2>1 · A new half of the course starts here <span class="time">(~5 min)</span></h2>
+<details class="block b-set" name="wk7">
+ <summary><h2>1 · A new half of the course starts here <span class="time">(~5 min)</span></h2></summary>
  <ul>
   <li>For five weeks you practiced the moves — Learner, Listener, Poser, Lesson Planner, Assessor — on tasks we all shared. From here, you point those same moves at <strong>one mathematical concept</strong> — and the student work that reveals how it's understood.</li>
  </ul>
-</div>
+</details>
 
-<div class="block b-set">
- <h2>2 · PE #4 is back — difficulty is not depth <span class="time">(~5 min)</span></h2>
+<details class="block b-set" name="wk7">
+ <summary><h2>2 · PE #4 is back — difficulty is not depth <span class="time">(~5 min)</span></h2></summary>
  <ul>
   <li>One thing turned up in <strong>every</strong> reflection in the section, so it is worth five minutes out loud rather than twenty-eight comments. No points came off for it.</li>
   <li><strong>Difficulty</strong> is how hard a task feels to the learner. <strong>Depth</strong> is the kind of thinking it asks for. They move independently of each other.</li>
@@ -60,20 +66,20 @@
   <li>Asked which task landed at the level you aimed it at, nearly everyone answered <em>easier</em> or <em>harder</em>. Those are difficulty words. Next time, name the thinking.</li>
  </ul>
  <p class="purpose">Purpose: DOK is the spine of PE #3, #4 and #5. While depth and difficulty stay tangled, the levels are only labels.</p>
-</div>
+</details>
 
-<div class="block b-share">
- <h2>3 · Field debrief — what do you understand now that you didn't before? <span class="time">(~35 min)</span></h2>
+<details class="block b-share" name="wk7">
+ <summary><h2>3 · Field debrief — what do you understand now that you didn't before? <span class="time">(~35 min)</span></h2></summary>
  <ul>
   <li>With a partner, then as a class: what surprised you in your placement? What was different from what you expected a classroom to be?</li>
   <li>What did your host teacher point to — a topic that's coming, a group that's stuck, something they wish they had more time for?</li>
   <li>What did you see students do with the mathematics of your concept? Describe it without judging it yet.</li>
  </ul>
  <p class="purpose">Purpose: the debrief is where the field stops being a blur and becomes specific. A research question can only grow out of something specific you noticed.</p>
-</div>
+</details>
 
-<div class="block b-work">
- <h2>4 · Back to your concept <span class="time">(~20 min)</span></h2>
+<details class="block b-work" name="wk7">
+ <summary><h2>4 · Back to your concept <span class="time">(~20 min)</span></h2></summary>
  <ul>
   <li>Return to the concept you named in the field — <a href="../week-6-field-dip/week-6-concept-profile.docx">your Concept Profile</a> and the work you collected. Remind yourself of the mathematics you're setting out to understand and where it's headed.</li>
   <li>Look at the samples again, with fresh eyes. What do you notice now that you couldn't in the moment?</li>
@@ -81,10 +87,10 @@
   <li>If you couldn't settle on a concept in the field, or your placement changed, flag it now so we can sort it out before our next class.</li>
  </ul>
  <p class="purpose">Purpose: the concept was chosen in the field — today you reconnect with the collected work and start the raw questions we will sharpen next class.</p>
-</div>
+</details>
 
-<div class="block b-set">
- <h2>5 · Questions about our project <span class="time">(~15 min)</span></h2>
+<details class="block b-set" name="wk7">
+ <summary><h2>5 · Questions about our project <span class="time">(~15 min)</span></h2></summary>
  <ul>
   <li>Here is where the debrief is heading: the question you build becomes the spine of the whole back half of the course — the lesson you'll design over the next few weeks (see the arc above) exists to investigate it.</li>
   <li>So a good question is one that lesson could actually help you investigate. We open the <a href="week-7-research-question.docx">Research Question assignment</a> together and read how the pieces fit.</li>
@@ -92,7 +98,7 @@
  </ul>
  
  <p class="purpose">Purpose: knowing the question has to be answerable by one lesson's evidence keeps it grounded — investigable with what you'll actually build and teach.</p>
-</div>
+</details>
 
 <div class="wrap">
  <strong>Wrap-up &amp; looking ahead:</strong>
@@ -104,5 +110,10 @@
 
 <p class="canvas-note">Assignment links, the submission dropbox, and due dates are in <strong>Canvas</strong>, below the link to this outline. This page is the lesson outline only — no names, no grades.</p>
 </main>
+<script>
+  const blocks = [...document.querySelectorAll("details.block")];
+  addEventListener("beforeprint", () => blocks.forEach(d => { d.removeAttribute("name"); d.open = true; }));
+  addEventListener("afterprint",  () => blocks.forEach(d => d.setAttribute("name", "wk7")));
+</script>
 </body>
 </html>
