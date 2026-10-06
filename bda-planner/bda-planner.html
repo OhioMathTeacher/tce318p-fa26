@@ -1509,7 +1509,7 @@ function renderLog(tab,R){
     return `<div class="rout old"><div class="rh"><b>${READ_NAMES[e.mode]||e.mode}</b><span>· ${esc(when)}</span></div>${readBody(tab,{mode:e.mode,data:e.data,aside:e.aside},false)}</div>`;
   }).join("");
   return `<details class="earlier"><summary>Earlier reads on this part · ${log.length}</summary>
-    <div class="small" style="margin:4px 0 8px">Kept so you can write Document\u00a02 from what the planning partner actually said, rather than from memory.</div>
+    <div class="small" style="margin:4px 0 8px">Kept so you can write Document\u00a02 from what the genAI planning partner actually said, rather than from memory.</div>
     ${items}</details>`;
 }
 function readContent(tab){
