@@ -717,17 +717,23 @@ function renderSamples() {
   if (!state.samples.length) state.samples = [blankSample()];
   activeSample = Math.max(0, Math.min(activeSample, state.samples.length - 1));
 
-  const pager = document.createElement("div"); pager.className = "sample-pager";
-  const prev = document.createElement("button"); prev.className = "mini"; prev.textContent = "◀ Prev";
-  prev.disabled = activeSample === 0;
-  prev.onclick = () => { activeSample--; renderSamples(); };
-  const label = document.createElement("span"); label.className = "pager-label";
-  label.textContent = "Sample " + (activeSample + 1) + " of " + state.samples.length;
-  const next = document.createElement("button"); next.className = "mini"; next.textContent = "Next ▶";
-  next.disabled = activeSample === state.samples.length - 1;
-  next.onclick = () => { activeSample++; renderSamples(); };
-  pager.appendChild(prev); pager.appendChild(label); pager.appendChild(next);
-  wrap.appendChild(pager);
+  // Only when there is something to page between. With one sample both buttons were
+  // dead, and a disabled "Next \u25b6" sitting above the wizard's own "Next \u2192" read as the
+  // same control twice. The labels say "sample" for the same reason: the two rows move
+  // different things, one through the work, one to the next tab.
+  if (state.samples.length > 1) {
+    const pager = document.createElement("div"); pager.className = "sample-pager";
+    const prev = document.createElement("button"); prev.className = "mini"; prev.textContent = "\u25c0 Previous sample";
+    prev.disabled = activeSample === 0;
+    prev.onclick = () => { activeSample--; renderSamples(); };
+    const label = document.createElement("span"); label.className = "pager-label";
+    label.textContent = "Sample " + (activeSample + 1) + " of " + state.samples.length;
+    const next = document.createElement("button"); next.className = "mini"; next.textContent = "Next sample \u25b6";
+    next.disabled = activeSample === state.samples.length - 1;
+    next.onclick = () => { activeSample++; renderSamples(); };
+    pager.appendChild(prev); pager.appendChild(label); pager.appendChild(next);
+    wrap.appendChild(pager);
+  }
 
   wrap.appendChild(activeSampleCard(state.samples[activeSample], activeSample));
 }
