@@ -354,9 +354,7 @@
         <button class="mini" id="qAdd">Add</button>
       </div>
       <div id="questions"></div>
-      <p class="lead" style="margin:14px 0 0;">Then mark each one
-        <span class="tag-oc tag-o">O</span> open (invites more than a yes/no) or
-        <span class="tag-oc tag-c">C</span> closed — you'll notice which kind you tend to ask.</p>
+      <div id="qPhase" style="margin-top:14px;"></div>
     </div>
   </section>
 
@@ -432,7 +430,8 @@ let state = {
   adaptTypes: [], adaptation: "",
   seq: 0,
   samples: [],          // {id, task, did, noticed}
-  questions: []         // {text, oc}
+  questions: [],        // {text, oc}
+  qPhase: "storm"       // "storm" = produce them, "label" = only then judge them (QFT rule 2)
 };
 let activeSample = 0;   // which sample is open for editing (one at a time)
 let _taObserver = null;   // one ResizeObserver for the sample boxes; see autoSize
@@ -1003,24 +1002,62 @@ function renderQuestions() {
   const wrap = $("questions"); wrap.textContent = "";
   if (!state.questions.length) {
     const e = document.createElement("p"); e.className = "q-empty";
-    e.textContent = "No questions yet — add several before you stop to sort them.";
-    wrap.appendChild(e); return;
+    e.textContent = "No questions yet \u2014 ten at least, and do not stop to judge them on the way.";
+    wrap.appendChild(e); renderQPhase(); return;
   }
   state.questions.forEach((q, i) => {
     const item = document.createElement("div"); item.className = "q-item";
     const txt = document.createElement("div"); txt.className = "qtext"; txt.textContent = q.text; item.appendChild(txt);
-    const toggle = document.createElement("div"); toggle.className = "oc-toggle";
-    ["O", "C"].forEach(v => {
-      const b = document.createElement("button"); b.textContent = v;
-      if (q.oc === v) b.className = v === "O" ? "act-o" : "act-c";
-      b.onclick = () => { q.oc = (q.oc === v ? "" : v); renderQuestions(); sync(); };
-      toggle.appendChild(b);
-    });
-    item.appendChild(toggle);
+    // Rule 2: do not stop to discuss, judge, or answer. While they are storming there is
+    // nothing on the row to judge with -- the O/C pair only appears once they press Done.
+    if (state.qPhase === "label") {
+      const toggle = document.createElement("div"); toggle.className = "oc-toggle";
+      ["O", "C"].forEach(v => {
+        const b = document.createElement("button"); b.textContent = v;
+        if (q.oc === v) b.className = v === "O" ? "act-o" : "act-c";
+        b.onclick = () => { q.oc = (q.oc === v ? "" : v); renderQuestions(); renderQPhase(); sync(); };
+        toggle.appendChild(b);
+      });
+      item.appendChild(toggle);
+    }
     const del = document.createElement("button"); del.className = "x"; del.textContent = "×"; del.title = "Remove";
     del.onclick = () => { state.questions.splice(i, 1); renderQuestions(); sync(); };
     item.appendChild(del); wrap.appendChild(item);
   });
+  renderQPhase();
+}
+
+const Q_MIN = 10;
+
+// Below the list: while storming, a count and the Done button; afterwards, what the two
+// letters mean and how many are still unmarked.
+function renderQPhase() {
+  const bar = $("qPhase"); if (!bar) return;
+  bar.textContent = "";
+  const n = state.questions.length;
+
+  if (state.qPhase !== "label") {
+    const p1 = document.createElement("p"); p1.className = "lead"; p1.style.margin = "0 0 10px";
+    p1.textContent = n >= Q_MIN
+      ? n + " questions. Add more if they are still coming \u2014 or sort them now."
+      : n + " of " + Q_MIN + ". Keep going: the ones worth having usually arrive after the obvious ones.";
+    const b = document.createElement("button"); b.className = "next"; b.id = "qDone";
+    b.textContent = "\u2713 Done storming \u2014 now sort them \u2192";
+    b.disabled = n < Q_MIN;
+    b.title = n < Q_MIN ? "Ten questions first" : "";
+    b.onclick = () => { state.qPhase = "label"; renderQuestions(); sync(); };
+    bar.appendChild(p1); bar.appendChild(b);
+    return;
+  }
+
+  const left = state.questions.filter(q => !q.oc).length;
+  const p2 = document.createElement("p"); p2.className = "lead"; p2.style.margin = "0 0 8px";
+  p2.innerHTML = 'Now mark each one <span class="tag-oc tag-o">O</span> open (invites more than a yes/no) or ' +
+                 '<span class="tag-oc tag-c">C</span> closed \u2014 you\'ll notice which kind you tend to ask.';
+  bar.appendChild(p2);
+  const p3 = document.createElement("p"); p3.className = "lead"; p3.style.margin = "0";
+  p3.textContent = left ? left + " still unmarked." : "All " + n + " marked.";
+  bar.appendChild(p3);
 }
 function addQuestion() {
   const inp = $("qInput"); const v = inp.value.trim(); if (!v) return;
@@ -1175,7 +1212,7 @@ function refreshPreview() { const t = buildSnapshot(); $("previewA").textContent
 function stepDone(i) {
   if (i === 0) return !!(state.grade.trim() || focusText() || adaptList().length || state.adaptation.trim());
   if (i === 1) return state.samples.some(sampleHasContent);
-  if (i === 2) return state.questions.length > 0;
+  if (i === 2) return state.questions.length >= Q_MIN && state.qPhase === "label";
   if (i === 3) return $("confirm").checked;
   return false;
 }
