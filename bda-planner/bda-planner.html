@@ -391,6 +391,9 @@
   /* 2c holds a whole research question. As an <input> everything past the width was
      invisible -- the student could not read their own question back, which is the one
      thing this box exists for. It wraps and grows instead; see fitQ. */
+  .earlier{margin-top:8px;border:1px solid var(--line);border-radius:9px;padding:6px 10px;background:#fbfcfd}
+  .earlier>summary{cursor:pointer;font-size:13px;color:var(--muted)}
+  .earlier .rout.old{opacity:.86;margin:6px 0}
   .storm{margin-top:10px;border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:#fbfcfd}
   .storm>summary{cursor:pointer;font-size:13.5px}
   .qpick{display:flex;gap:9px;align-items:flex-start;padding:6px 4px;border-top:1px solid #eef1f5}
@@ -1478,16 +1481,36 @@ function renderPlan(){
   wirePlan(); wireInfo();
 }
 document.querySelectorAll("#views button").forEach(b=>b.onclick=()=>{ state.view=b.dataset.v; save(); renderPlan(); });
-function readsBar(tab){ const last=(state.reads&&state.reads[tab]&&state.reads[tab].last)||null; return `<div class="reads"><span>Second reads:</span><button class="ghost" data-read="ask" data-tab="${tab}" title="The genAI planning partner asks you two or three questions about what you wrote here.">Ask me</button><button class="ghost" data-read="options" data-tab="${tab}" title="Three directions you could take instead of, or alongside, your first attempt. Needs a first attempt.">Show me options</button><button class="ghost" data-read="check" data-tab="${tab}" title="Reads what you wrote against the rubric for this part.">Check this</button><span class="later">AI · optional · asks, never writes</span></div>${last?renderRead(tab,last):""}`; }
+function readsBar(tab){ const R=(state.reads&&state.reads[tab])||null; const last=(R&&R.last)||null; return `<div class="reads"><span>Second reads:</span><button class="ghost" data-read="ask" data-tab="${tab}" title="The genAI planning partner asks you two or three questions about what you wrote here.">Ask me</button><button class="ghost" data-read="options" data-tab="${tab}" title="Three directions you could take instead of, or alongside, your first attempt. Needs a first attempt.">Show me options</button><button class="ghost" data-read="check" data-tab="${tab}" title="Reads what you wrote against the rubric for this part.">Check this</button><span class="later">AI · optional · asks, never writes</span></div>${last?renderRead(tab,last):""}${renderLog(tab,R)}`; }
 const READ_NAMES={ask:"Ask me",options:"Show me options",check:"Check this"};
-function renderRead(tab,r){
+// Every read is kept in R.log, and until now only the newest was ever drawn: a second
+// read overwrote the first on screen and ✕ removed it, while Document 2 asks for "two or
+// three moments from your exchanges". The earlier ones are listed under the current one.
+// Drawn without the Set aside buttons -- those act on the current read, and two sets of
+// them bound to the same indexes would fight.
+function readBody(tab,r,live){
   const d=r.data||{}; let body="";
   if(r.mode==="ask") body=(d.questions||[]).map(q=>`<div class="ri"><div class="q">${esc(q.question)}</div><div class="w">${esc(q.why)}</div></div>`).join("");
   // "Try this" is only in reads produced after 2026-10-06; older saved ones have no
   // suggestion and simply do not show the line.
   else if(r.mode==="check") body=(d.reads||[]).map(x=>`<div class="ri"><span class="crit">${esc(x.criterion)}</span><div>${esc(x.read)}</div>${x.suggestion?`<div style="margin-top:4px"><span class="lbl">Try this</span> ${esc(x.suggestion)}</div>`:""}<div class="q" style="margin-top:3px">${esc(x.question)}</div></div>`).join("");
-  else if(r.mode==="options") body=(d.cards||[]).map((c,i)=>`<div class="ri opt ${r.aside&&r.aside[i]?"aside":""}"><div><div class="q">${esc(c.direction)}</div><div style="margin-top:3px"><span class="lbl">Would surface</span> ${esc(c.surfaces)}</div><div><span class="lbl">Might give away</span> ${esc(c.gives_away)}</div></div><div class="acts"><button class="tbtn" data-aside="${tab}:${i}">${r.aside&&r.aside[i]?"Bring back":"Set aside"}</button></div></div>`).join("");
-  return `<div class="rout"><div class="rh"><b>${READ_NAMES[r.mode]||r.mode}</b><span>· ${esc(r.when||"")}</span><button class="x" data-dismiss="${tab}" title="Dismiss">✕</button></div>${body||'<div class="ri small">Nothing came back.</div>'}</div>`;
+  else if(r.mode==="options") body=(d.cards||[]).map((c,i)=>`<div class="ri opt ${r.aside&&r.aside[i]?"aside":""}"><div><div class="q">${esc(c.direction)}</div><div style="margin-top:3px"><span class="lbl">Would surface</span> ${esc(c.surfaces)}</div><div><span class="lbl">Might give away</span> ${esc(c.gives_away)}</div></div>${live?`<div class="acts"><button class="tbtn" data-aside="${tab}:${i}">${r.aside&&r.aside[i]?"Bring back":"Set aside"}</button></div>`:""}</div>`).join("");
+  return body||'<div class="ri small">Nothing came back.</div>';
+}
+function renderRead(tab,r){
+  return `<div class="rout"><div class="rh"><b>${READ_NAMES[r.mode]||r.mode}</b><span>· ${esc(r.when||"")}</span><button class="x" data-dismiss="${tab}" title="Dismiss">✕</button></div>${readBody(tab,r,true)}</div>`;
+}
+function renderLog(tab,R){
+  let log=(R&&Array.isArray(R.log))?R.log.slice():[];
+  if(R&&R.last&&log.length) log=log.slice(0,-1);          // the newest is the card above
+  if(!log.length) return "";
+  const items=log.slice().reverse().map(e=>{
+    const when=e.ts?new Date(e.ts).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}):"";
+    return `<div class="rout old"><div class="rh"><b>${READ_NAMES[e.mode]||e.mode}</b><span>· ${esc(when)}</span></div>${readBody(tab,{mode:e.mode,data:e.data,aside:e.aside},false)}</div>`;
+  }).join("");
+  return `<details class="earlier"><summary>Earlier reads on this part · ${log.length}</summary>
+    <div class="small" style="margin:4px 0 8px">Kept so you can write Document\u00a02 from what the planning partner actually said, rather than from memory.</div>
+    ${items}</details>`;
 }
 function readContent(tab){
   const g=state.bg||{};
