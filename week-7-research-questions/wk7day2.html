@@ -24,6 +24,12 @@
  a{color:#2563eb;}
  .home{display:inline-block;margin:0 0 10px;font-size:12px;color:#6b7280;text-decoration:none;}
  .home:hover{color:#2563eb;text-decoration:underline;}
+  .block>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:8px;}
+  .block>summary::-webkit-details-marker{display:none;}
+  .block>summary::before{content:"\25B8";font-size:12px;color:#6b7280;}
+  .block[open]>summary::before{content:"\25BE";}
+  .block>summary h2{margin:0;}
+  .block[open]>summary{margin-bottom:8px;}
 </style>
 </head>
 <body>
@@ -34,16 +40,17 @@
 
 <div class="goals"><strong>Today's goals:</strong> Turn the pile of wonderings from last class into <strong>one research question</strong> about how students understand your concept — one your nested lesson could help you answer. You'll storm questions from the work you collected, sharpen them with a genAI planning partner, and land on one.</div>
 
-<div class="block b-set">
- <h2>1 · Your questions, and how the Studio works <span class="time">(~10 min)</span></h2>
+<details class="block b-set" name="wk7" open>
+ <summary><h2>1 · Your questions, and how the Studio works <span class="time">(~10 min)</span></h2></summary>
  <ul>
-  <li>First, whatever the <a href="../act-ii-questions.html"><strong>Act II questions page</strong></a> did not answer for you. Then a quick orientation to the <a href="research-question-studio.html"><strong>Research Question Studio</strong></a>. You set up <strong>Concept</strong> and <strong>Collected work</strong> before class, so we look at <strong>Brainstorm</strong>, <strong>Check names</strong> and <strong>Hand off</strong>.</li>
+  <li>Any questions about the <a href="../act-ii-questions.html"><strong>Q&amp;A</strong></a>? Additional questions it didn't address?</li>
+  <li>Quick intro: the <a href="research-question-studio.html"><strong>Research Question Studio</strong></a>.</li>
   <li>Everything stays in your browser, and you upload nothing. What you type is a description, so keep it de-identified: a pseudonym, never a real name.</li>
  </ul>
-</div>
+</details>
 
-<div class="block b-ask">
- <h2>2 · One QFT, together <span class="time">(~15 min)</span></h2>
+<details class="block b-ask" name="wk7">
+ <summary><h2>2 · One QFT, together <span class="time">(~15 min)</span></h2></summary>
  <ul>
   <li>Before you storm alone, we run the protocol once as a class on a <strong>shared QFocus</strong>: one piece of de-identified student work, up on the screen, that none of you collected.</li>
   <li>The four rules, enforced out loud:</li>
@@ -59,10 +66,10 @@
   <li>Watch what the rules do to you. Rule 2 is the hard one, and it is the one you cannot enforce on yourself alone at a laptop.</li>
  </ul>
  <p class="purpose">Purpose: you will run the QFT with children, and reading four rules is not the same as having been inside them. It is also the fastest way to hear the difference between a question you would <em>ask a student</em> and a question about <em>how students understand</em>.</p>
-</div>
+</details>
 
-<div class="block b-work">
- <h2>3 · Build your question in the Studio <span class="time">(~30 min)</span></h2>
+<details class="block b-work" name="wk7">
+ <summary><h2>3 · Build your question in the Studio <span class="time">(~30 min)</span></h2></summary>
  <ul>
   <li>Now run that same protocol on <em>your own</em> QFocus, at your own pace. Concept and Collected work should already be done; if not, finish them first.</li>
   <li><strong>Before you move on:</strong> on the Studio's <strong>Hand off</strong> tab, press <strong>Open the BDA&nbsp;Planner with this work</strong>. It opens the same Planner you used for your Concept Profile, with that work still in it. If it asks whether to replace your Concept Profile work, choose <strong>Cancel</strong>: your profile is already there.</li>
@@ -75,10 +82,10 @@
   <li><strong>Hand off</strong> — produce one PDF: your write-up, your reading of the work, and your question storm. That PDF is Document 1.</li>
  </ol>
  <p class="purpose">Purpose: looking hard at what students actually did is what produces real questions. The rules push you past your first two or three; open/closed makes you feel which questions open thinking up.</p>
-</div>
+</details>
 
-<div class="block b-share">
- <h2>4 · Revisit your question in 2c, and sharpen it <span class="time">(~15 min)</span></h2>
+<details class="block b-share" name="wk7">
+ <summary><h2>4 · Revisit your question in 2c, and sharpen it <span class="time">(~15 min)</span></h2></summary>
  <ul>
   <li><strong>Go back to the question you wrote for your Concept Profile.</strong> It is still in the <strong><a href="../bda-planner/bda-planner.html">BDA&nbsp;Planner</a></strong> at <strong>Concept Profile → Concept &amp; question → 2c</strong>. That was your first read, written before today. Revisit it now: revise it, or replace it, using your question storm and what we just worked out together about what makes a research question better.</li>
   <li>Then press <strong>Check this</strong>. It reads your question against your concept and the work you collected, and pressure-tests it: <em>is this investigable? is it about how students reason about the concept, or just whether they got it right?</em> <strong>Show me options</strong> widens it; <strong>Ask me</strong> follows up.</li>
@@ -86,20 +93,20 @@
   <li>As you weigh its suggestions, keep one test in front of you: could the <strong>nested lesson</strong> you build next actually help you answer this?</li>
  </ul>
  <p class="purpose">Purpose: the move you're learning is <em>AI widens, my criteria narrow</em>. The human noticing is the source of the question; the machine is a way to see more angles on it.</p>
-</div>
+</details>
 
-<div class="block b-work">
- <h2>5 · Land one question <span class="time">(~10 min)</span></h2>
+<details class="block b-work" name="wk7">
+ <summary><h2>5 · Land one question <span class="time">(~10 min)</span></h2></summary>
  <ul>
   <li>Prioritize down to the <strong>single research question</strong> you'll carry into the field, and write one or two sentences on why you chose it.</li>
   <li>Read it against the test: is it open, is it investigable, and could your nested lesson gather evidence on it? Adjust if not.</li>
  </ul>
-</div>
+</details>
 
-<div class="block b-early">
- <h2>If you finish early</h2>
+<details class="block b-early" name="wk7">
+ <summary><h2>If you finish early</h2></summary>
  <ul><li>Trade questions with a partner. Ask a question about <em>their</em> collected work that they're too close to see — then let them do the same for you. Both of you keep your own question.</li></ul>
-</div>
+</details>
 
 <div class="wrap">
  <strong>Wrap-up &amp; looking ahead:</strong>
@@ -111,5 +118,10 @@
 
 <p class="canvas-note">Assignment links, the submission dropbox, and due dates are in <strong>Canvas</strong>, below the link to this outline. This page is the lesson outline only — no names, no grades.</p>
 </main>
+<script>
+  const blocks = [...document.querySelectorAll("details.block")];
+  addEventListener("beforeprint", () => blocks.forEach(d => { d.removeAttribute("name"); d.open = true; }));
+  addEventListener("afterprint",  () => blocks.forEach(d => d.setAttribute("name", "wk7")));
+</script>
 </body>
 </html>
