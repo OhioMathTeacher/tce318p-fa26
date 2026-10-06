@@ -250,6 +250,10 @@
       <h2>1 · Your focus concept</h2>
       <p class="lead">Name the concept you are planning to explore. Your whole project answers a
         question about how students learn the concept.</p>
+      <p id="fromPlannerWrap" style="display:none; margin:0 0 16px;">
+        <button type="button" class="mini" id="fromPlanner">&#8678; Bring in my Concept Profile</button>
+        <span class="photo-help" id="fromPlannerNote" style="margin-left:8px;">Grade and concept only. Change either one afterwards &mdash; nothing here is locked.</span>
+      </p>
       <div class="row2">
         <div>
           <label class="fld" for="grade">Grade level</label>
@@ -530,6 +534,48 @@ function renderAdaptChips() {
     if (ADAPT_DESC[label]) { const d = document.createElement("div"); d.className = "desc"; d.textContent = ADAPT_DESC[label]; body.appendChild(d); }
     chip.appendChild(x); chip.appendChild(body); wrap.appendChild(chip);
   });
+}
+
+// The Concept Profile was written in the BDA Planner in Week 6, and the grade and
+// concept it holds are the same two facts this tab opens with. Same origin, so they
+// are readable here -- the Planner already reads this Studio's store the other way
+// (studioWork/importStudio). Only these two travel: the per-sample reading of the
+// work is what Week 7 grades, so it has to be typed here, today, looking at it again.
+const PLANNER_STORE = "bda-planner-proto-v10";
+
+function plannerProfile() {
+  let raw = null;
+  try { raw = localStorage.getItem(PLANNER_STORE); } catch (e) { return null; }   // private mode throws
+  if (!raw) return null;
+  let d = null; try { d = JSON.parse(raw); } catch (e) { return null; }
+  const bg = d && d.bg;
+  if (!bg) return null;
+  const grade = String(bg.grade || "").trim(), concept = String(bg.concept || "").trim();
+  return (grade || concept) ? { grade, concept } : null;
+}
+
+function importPlanner() {
+  const note = $("fromPlannerNote"), p = plannerProfile();
+  if (!p) { note.textContent = "Nothing to bring in \u2014 the Concept Profile is saved in the browser you wrote it in."; return; }
+  const over = [];
+  if (p.grade && state.grade && state.grade !== p.grade) over.push("the grade");
+  if (p.concept && focusText() && focusText() !== p.concept) over.push("the concept");
+  if (over.length && !confirm("This replaces " + over.join(" and ") + " with what is in your Concept Profile.\n\nGo ahead?")) return;
+  if (p.grade && STANDARDS[p.grade]) state.grade = p.grade;
+  if (p.concept) {
+    const listed = (STANDARDS[state.grade] || []).some(g => g[1].indexOf(p.concept) !== -1);
+    if (listed) { state.focus = p.concept; state.focusOther = ""; }
+    else { state.focus = "__other__"; state.focusOther = p.concept; }
+  }
+  fillLearner(); sync();
+  note.textContent = "Brought across from your Concept Profile. Change either one if it is not right.";
+}
+
+function bindPlannerPull() {
+  const btn = $("fromPlanner");
+  if (!btn || !plannerProfile()) return;       // no offer when there is nothing behind it
+  $("fromPlannerWrap").style.display = "";
+  btn.addEventListener("click", importPlanner);
 }
 
 function populateFocus(grade) {
@@ -1029,6 +1075,7 @@ function addAnotherSample() {
 
 function init() {
   load(); bindLearner(); fillLearner(); renderSamples(); renderQuestions();
+  bindPlannerPull();
   $("addSample").onclick = addAnotherSample;
   $("doneSamples").onclick = () => { $("sampleHint").textContent = ""; showStep(2); };
   $("qAdd").onclick = addQuestion;
