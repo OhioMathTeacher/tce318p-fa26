@@ -387,6 +387,9 @@
   .exitrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
   .exitrow textarea{min-height:56px}
   .sec{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+  /* arriving from the Studio: say where you have landed without a dialog */
+  .sec.jump{animation:secjump 3s ease-out}
+  @keyframes secjump{0%{background:#fff3cd}60%{background:#fff3cd}100%{background:transparent}}
   .sec.tabbed{margin-top:4px;padding-top:6px;border-top:0}
   .sec:first-of-type{border-top:0;padding-top:0;margin-top:6px}
   .sec h3{margin:0 0 2px;font-size:15.5px;color:var(--ink);display:flex;align-items:center}
@@ -1198,7 +1201,7 @@ function renderBackground(){
         <div class="why">At least one JSTOR source — the permanent link (jstor.org/stable/…) or a DOI (doi.org/…). <a href="https://www.jstor.org/" target="_blank" rel="noopener">Open JSTOR</a>. Your host teacher counts as one source.</div>
         <div class="rows">${g.sources.map((r,i)=>{ const host=r[2]==="host"; const ok=/^(https?:\/\/)?(www\.)?(jstor\.org\/stable\/|doi\.org\/10\.)\S+$/i.test((r[0]||"").trim()); return `<div class="rrow" style="grid-template-columns:1fr 1.6fr"><div><div class="yn" style="margin:0 0 6px;flex-direction:row"><button type="button" data-stype="${i}:jstor" class="${host?"":"on"}" style="padding:6px 10px;font-size:13px">JSTOR</button><button type="button" data-stype="${i}:host" class="${host?"on":""}" style="padding:6px 10px;font-size:13px">Host teacher</button></div>${host?`<div class="small">What your host teacher has seen students do with this concept — in your words. No name needed.</div>`:`<input type="text" placeholder="https://www.jstor.org/stable/… or https://doi.org/10.…" data-src="${i}:0" value="${esc(r[0])}"><div class="small" style="margin-top:3px">${r[0]?(ok?"✓ JSTOR link or DOI":"✗ not a JSTOR permanent link or DOI"):""}</div>`}</div><textarea placeholder="${host?"Three or four sentences: what does your host teacher say students commonly do, believe, or struggle with here?":"Three or four sentences: what misconceptions and challenges does this source describe for this concept?"}" data-src="${i}:1" style="min-height:96px">${esc(r[1])}</textarea></div>`; }).join("")}</div>
         <div style="margin-top:8px"><button class="tbtn" id="addSource" ${g.sources.length>=3?"disabled":""}>＋ another source</button></div></div>
-      <div class="sec"><h3><span class="k">2c</span>The question I'm asking${I("A first read, one sentence: an open question about how students understand this concept — not whether they got it right, not a diagnosis of a child. It should grow out of everything above. In Week 7 you come back here after the question storm and our discussion, and revise this first read into your research question.")}</h3>
+      <div class="sec" id="sec2c"><h3><span class="k">2c</span>The question I'm asking${I("A first read, one sentence: an open question about how students understand this concept — not whether they got it right, not a diagnosis of a child. It should grow out of everything above. In Week 7 you come back here after the question storm and our discussion, and revise this first read into your research question.")}</h3>
         <input type="text" data-bg="question" placeholder="How do students … ?" value="${esc(g.question||"")}">
         <div class="small" id="qMark" style="margin-top:3px">${qMarkHint(g.question)}</div>
         <label>Why this question</label><textarea data-bg="why" style="min-height:60px">${esc(g.why||"")}</textarea>
@@ -1916,7 +1919,20 @@ load(); renderAll();
 // Arriving from the Studio's hand-off button: pull the work across straight away,
 // through the same path (and the same overwrite question) as the button in 1c.
 try{ if(new URLSearchParams(location.search).get("from")==="studio"){
-  if(studioWork()){ importStudio(); }
+  if(studioWork()){
+    importStudio();
+    // importStudio leaves them wherever they last were, which after a hand-off is a
+    // page they did not ask for. The next move is 2c -- revise the Week 6 question
+    // against the storm they just finished -- so go there and say so.
+    showPhase("background");
+    setTimeout(function(){
+      var sec=document.getElementById("sec2c");
+      if(!sec) return;
+      sec.scrollIntoView({behavior:"smooth",block:"center"});
+      sec.classList.remove("jump"); void sec.offsetWidth; sec.classList.add("jump");
+      toast("Your work is in. This is 2c \u2014 revise the question you wrote in Week 6, then press Check this.");
+    },80);
+  }
   else { toast("Nothing came across \u2014 open the Studio in this browser first."); }
   history.replaceState(null,"",location.pathname);   // so a reload does not re-import
 } }catch(e){}
