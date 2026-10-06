@@ -156,6 +156,17 @@
   /* question storm */
   .q-add { display: flex; gap: 8px; margin-bottom: 12px; }
   .q-add input { flex: 1; }
+  /* the collected work, shown beside the writing about it (tab 2) */
+  .sample-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+  @media (max-width: 820px) { .sample-split { grid-template-columns: 1fr; } }
+  .work-pane { border: 1px solid var(--line); border-radius: 10px; background: #fbfbfc; padding: 10px; position: sticky; top: 12px; }
+  .work-pane img { width: 100%; height: auto; display: block; border-radius: 6px; cursor: zoom-in; }
+  .work-cap { font-size: 13px; color: var(--muted); margin: 9px 2px 0; line-height: 1.4; }
+  .work-zoom { font-size: 12px; color: var(--muted); margin: 4px 2px 0; }
+  .lightbox { position: fixed; inset: 0; background: rgba(15, 17, 20, .88); z-index: 120; display: none; align-items: center; justify-content: center; padding: 24px; }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 100%; max-height: 100%; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+  .lightbox .lb-close { position: absolute; top: 16px; right: 20px; background: #fff; border: none; border-radius: 20px; padding: 9px 18px; font-size: 15px; font-weight: 600; cursor: pointer; }
   .q-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; background: var(--panel); }
   .q-item .qtext { flex: 1; font-size: 14px; padding-top: 4px; }
   .oc-toggle { display: flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; flex-shrink: 0; }
@@ -406,6 +417,7 @@
     <button class="mini" id="clearAll" style="margin-left:6px;">Clear everything</button></p>
 </div>
 
+<div class="lightbox" id="lightbox"><button class="lb-close" id="lbClose">Close \u2715</button><img id="lbImg" alt="The work you collected, larger"></div>
 <div id="printDoc"></div>
 
 <script>
@@ -543,6 +555,46 @@ function renderAdaptChips() {
 // work is what Week 7 grades, so it has to be typed here, today, looking at it again.
 const PLANNER_STORE = "bda-planner-proto-v10";
 
+// ---- the collected work, read live from the Concept Profile -----------------
+// The photos live in the Planner (samplesRows[i][3]: a cropped, name-blacked JPEG
+// dataURL). They are read for display and never copied into this Studio's own store:
+// two copies of three photos would be several MB in one origin's localStorage, which
+// is the quota, and the Planner's copy is the one the student already redacted.
+// Parsed once and cached -- the saved Planner can be a couple of MB, too big to
+// re-parse on every keystroke-driven render.
+let _plannerCache = null;
+function plannerRows(force) {
+  if (_plannerCache && !force) return _plannerCache;
+  let raw = null;
+  try { raw = localStorage.getItem(PLANNER_STORE); } catch (e) { return (_plannerCache = []); }
+  let d = null; try { d = JSON.parse(raw || "null"); } catch (e) { return (_plannerCache = []); }
+  const rows = (d && d.bg && Array.isArray(d.bg.samplesRows)) ? d.bg.samplesRows : [];
+  return (_plannerCache = rows.map((r, idx) => ({
+    idx, who: String(r[0] || "").trim(), task: String(r[1] || "").trim(),
+    reveals: String(r[2] || "").trim(), photo: String(r[3] || "")
+  })));
+}
+// What to show beside this sample, if anything. A sample typed by hand has no link
+// and keeps the old single-column card.
+function plannerPhoto(s) {
+  if (s.fromPlanner === undefined || s.fromPlanner === null) return null;
+  const r = plannerRows()[s.fromPlanner];
+  if (!r || !r.photo) return null;
+  return { src: r.photo, cap: [r.who, r.task].filter(Boolean).join(" \u00b7 ") };
+}
+function openLightbox(src) {
+  const lb = $("lightbox"); $("lbImg").src = src; lb.classList.add("open");
+}
+function closeLightbox() { const lb = $("lightbox"); lb.classList.remove("open"); $("lbImg").removeAttribute("src"); }
+function bindLightbox() {
+  const lb = $("lightbox"); if (!lb) return;
+  $("lbClose").addEventListener("click", closeLightbox);
+  lb.addEventListener("click", e => { if (e.target === lb) closeLightbox(); });   // click the backdrop
+  addEventListener("keydown", e => { if (e.key === "Escape") closeLightbox(); });
+}
+
+
+
 function plannerProfile() {
   let raw = null;
   try { raw = localStorage.getItem(PLANNER_STORE); } catch (e) { return null; }   // private mode throws
@@ -567,8 +619,28 @@ function importPlanner() {
     if (listed) { state.focus = p.concept; state.focusOther = ""; }
     else { state.focus = "__other__"; state.focusOther = p.concept; }
   }
-  fillLearner(); sync();
-  note.textContent = "Brought across from your Concept Profile. Change either one if it is not right.";
+  // One slot per piece of work that has a photo, so the picture and the writing about
+  // it sit side by side. The fields stay EMPTY on purpose: how closely they read the
+  // work is what this week grades, so it has to be typed here, today, looking at it.
+  // Every row that has anything in it, not only the ones with a photo: a student who
+  // never added a picture still gets the pseudonym and task as a heading, and the card
+  // simply stays one column. The photo appears beside the writing wherever there is one.
+  const collected = plannerRows(true).filter(r => r.who || r.task || r.reveals || r.photo);
+  let opened = 0;
+  if (collected.length) {
+    const typed = state.samples.filter(sampleHasContent).length;
+    const go = !typed || confirm("Your Concept Profile has " + collected.length + " piece" + (collected.length === 1 ? "" : "s") +
+      " of collected work.\n\nOpen one sample for each, with its photo beside it where you added one?\n\nThis replaces the " +
+      typed + " sample" + (typed === 1 ? "" : "s") + " you have already started writing.");
+    if (go) {
+      state.samples = collected.map(r => Object.assign(blankSample(), { fromPlanner: r.idx }));
+      activeSample = 0; opened = collected.length;
+    }
+  }
+  fillLearner(); renderSamples(); sync();
+  note.textContent = opened
+    ? "Grade and concept brought across, and " + opened + " piece" + (opened === 1 ? "" : "s") + " of work opened on the Collected work tab."
+    : "Brought across from your Concept Profile. Change either one if it is not right.";
 }
 
 function bindPlannerPull() {
@@ -677,9 +749,30 @@ function activeSampleCard(s, i) {
   }
   card.appendChild(head);
 
-  card.appendChild(fieldFor(i, "task", "What the task asked for", 1, "e.g. Order the numbers 43, 152, 9 from least to greatest."));
-  card.appendChild(fieldFor(i, "did", "What the work shows", 2, "What is on the page. If you were there, what you saw or heard as well. e.g. The list came back 152, 43, 9, written left to right with no crossing out."));
-  card.appendChild(fieldFor(i, "noticed", "What it makes you wonder about students' understanding of this idea", 2, "The part you cannot explain yet. e.g. The ordering is consistent, so something is being compared reliably — but what?"));
+  // The work on the left, the writing about it on the right. Without a linked photo
+  // the row keeps one column and the card looks exactly as it did before.
+  const row = document.createElement("div");
+  const work = plannerPhoto(s);
+  if (work) {
+    row.className = "sample-split";
+    const pane = document.createElement("div"); pane.className = "work-pane";
+    const img = document.createElement("img");
+    img.src = work.src;
+    img.alt = "The work you collected" + (work.cap ? " \u2014 " + work.cap : "");
+    img.title = "Click to see it bigger";
+    img.addEventListener("click", () => openLightbox(work.src));
+    pane.appendChild(img);
+    if (work.cap) { const c = document.createElement("p"); c.className = "work-cap"; c.textContent = work.cap; pane.appendChild(c); }
+    const z = document.createElement("p"); z.className = "work-zoom"; z.textContent = "From your Concept Profile. Click it to see it bigger.";
+    pane.appendChild(z);
+    row.appendChild(pane);
+  }
+  const writing = document.createElement("div");
+  writing.appendChild(fieldFor(i, "task", "What the task asked for", 1, "e.g. Order the numbers 43, 152, 9 from least to greatest."));
+  writing.appendChild(fieldFor(i, "did", "What the work shows", 2, "What is on the page. If you were there, what you saw or heard as well. e.g. The list came back 152, 43, 9, written left to right with no crossing out."));
+  writing.appendChild(fieldFor(i, "noticed", "What it makes you wonder about students' understanding of this idea", 2, "The part you cannot explain yet. e.g. The ordering is consistent, so something is being compared reliably \u2014 but what?"));
+  row.appendChild(writing);
+  card.appendChild(row);
 
   return card;
 }
@@ -1076,6 +1169,7 @@ function addAnotherSample() {
 function init() {
   load(); bindLearner(); fillLearner(); renderSamples(); renderQuestions();
   bindPlannerPull();
+  bindLightbox();
   $("addSample").onclick = addAnotherSample;
   $("doneSamples").onclick = () => { $("sampleHint").textContent = ""; showStep(2); };
   $("qAdd").onclick = addQuestion;
