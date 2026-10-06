@@ -1963,6 +1963,20 @@ function fitQ(el){
 function goTo2c(){
   var sec=document.getElementById("sec2c");
   if(!sec) return;
+  // 2a, 2b and 2c are TABS inside the tile, not three things stacked on the page --
+  // tabifyTiles shows one and sets display:none on the rest. Scrolling to a hidden
+  // element does nothing at all, so the button landed on whichever tab was already
+  // open, which is 2a. Press its tab first, then scroll.
+  var cols=sec.parentElement;
+  if(cols){
+    var secs=[].filter.call(cols.children, function(x){ return x.classList && x.classList.contains("sec"); });
+    var idx=secs.indexOf(sec);
+    var strip=cols.previousElementSibling;
+    if(idx>=0 && strip && strip.classList.contains("ptabs")){
+      var btn=strip.querySelectorAll("button")[idx];
+      if(btn) btn.click();
+    }
+  }
   sec.scrollIntoView({behavior:"smooth",block:"center"});
   sec.classList.remove("jump"); void sec.offsetWidth; sec.classList.add("jump");
 }
