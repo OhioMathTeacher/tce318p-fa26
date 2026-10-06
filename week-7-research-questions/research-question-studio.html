@@ -435,6 +435,7 @@ let state = {
   questions: []         // {text, oc}
 };
 let activeSample = 0;   // which sample is open for editing (one at a time)
+let _taObserver = null;   // one ResizeObserver for the sample boxes; see autoSize
 const images = {};      // id -> FLATTENED redacted dataURL (for thumbnail/reference). In memory only.
 const shots = {};       // id -> { ops: [redaction rects] }. In memory only.
 const imgCache = {};    // id -> decoded working <img> (may be a crop). In memory only.
@@ -714,6 +715,7 @@ function bindLearner() {
 // ---- samples: one per screen, flip with Prev/Next (the rolodex) ----
 function renderSamples() {
   const wrap = $("samples"); wrap.textContent = "";
+  if (_taObserver) _taObserver.disconnect();   // the boxes about to be thrown away are still observed
   if (!state.samples.length) state.samples = [blankSample()];
   activeSample = Math.max(0, Math.min(activeSample, state.samples.length - 1));
 
@@ -930,12 +932,47 @@ function attachDrawing(canvas, id) {
   canvas.addEventListener("mouseleave", finish);
 }
 
+// Grow a box to the text inside it, and keep the handle working.
+//
+// An empty box is measured against its PLACEHOLDER, which is why these opened clipped:
+// the placeholder is the longest thing most of them ever hold, and beside a photo the
+// column is half as wide, so it wraps to twice the lines. The value is swapped in only
+// while it is empty -- there is no cursor in it to disturb, and setting .value in script
+// fires no input event.
+//
+// _manualH remembers a size the student dragged to, so growing never undoes their drag;
+// the ResizeObserver tells their drag from our own write by comparing against the height
+// we last set.
+function autoSize(ta) {
+  const empty = !ta.value;
+  if (empty) ta.value = ta.placeholder || "";
+  ta.style.height = "auto";
+  const fit = ta.scrollHeight;
+  if (empty) ta.value = "";
+  ta.style.height = Math.max(fit, ta._manualH || 0) + "px";
+  ta._autoH = ta.offsetHeight;
+}
+
+function watchResize(ta) {
+  if (typeof ResizeObserver === "undefined") return;                 // then it simply never shrinks back
+  if (!_taObserver) _taObserver = new ResizeObserver(entries => {
+    entries.forEach(e => {
+      const el = e.target;
+      if (el._autoH && Math.abs(el.offsetHeight - el._autoH) > 2) el._manualH = el.offsetHeight;
+    });
+  });
+  _taObserver.observe(ta);
+}
+
 function fieldFor(i, key, labelText, rows, ph) {
   const frag = document.createDocumentFragment();
   const lab = document.createElement("label"); lab.className = "fld"; lab.textContent = labelText;
   const ta = document.createElement("textarea"); ta.rows = rows; ta.value = state.samples[i][key] || ""; ta.placeholder = ph;
-  ta.addEventListener("input", () => { state.samples[i][key] = ta.value; sync(); });
-  frag.appendChild(lab); frag.appendChild(ta); return frag;
+  ta.addEventListener("input", () => { state.samples[i][key] = ta.value; autoSize(ta); sync(); });
+  frag.appendChild(lab); frag.appendChild(ta);
+  // After it is in the document -- scrollHeight is 0 on a node that is not laid out yet.
+  requestAnimationFrame(() => { autoSize(ta); watchResize(ta); });
+  return frag;
 }
 
 // ---- step-3 reference: your collected work ----
@@ -1176,6 +1213,11 @@ function init() {
   load(); bindLearner(); fillLearner(); renderSamples(); renderQuestions();
   bindPlannerPull();
   bindLightbox();
+  // A narrower window rewraps every placeholder; remeasure rather than clip.
+  let _rz; addEventListener("resize", () => {
+    clearTimeout(_rz);
+    _rz = setTimeout(() => document.querySelectorAll("#samples textarea").forEach(autoSize), 120);
+  });
   $("addSample").onclick = addAnotherSample;
   $("doneSamples").onclick = () => { $("sampleHint").textContent = ""; showStep(2); };
   $("qAdd").onclick = addQuestion;
