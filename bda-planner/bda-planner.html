@@ -387,7 +387,16 @@
   .exitrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
   .exitrow textarea{min-height:56px}
   .sec{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
-  /* arriving from the Studio: say where you have landed without a dialog */
+  /* arriving from the Studio */
+  #arrive{position:fixed;inset:0;background:#0007;z-index:80;display:none;align-items:center;justify-content:center;padding:20px}
+  #arrive.open{display:flex}
+  #arrive .box{background:#fff;border-radius:14px;max-width:560px;width:100%;max-height:90vh;overflow:auto;padding:22px 24px;box-shadow:0 18px 60px #0005}
+  #arrive h2{margin:0 0 4px;font-size:19px}
+  #arrive .sub{color:var(--muted);font-size:14px;margin:0 0 14px}
+  #arrive ol{margin:0 0 18px;padding-left:22px}
+  #arrive ol li{margin:9px 0;line-height:1.45}
+  #arrive .acts{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+
   .sec.jump{animation:secjump 3s ease-out}
   @keyframes secjump{0%{background:#fff3cd}60%{background:#fff3cd}100%{background:transparent}}
   .sec.tabbed{margin-top:4px;padding-top:6px;border-top:0}
@@ -614,6 +623,21 @@
 <div id="pickModal" onclick="if(event.target===this)closePick(true)"><div class="box"><div class="bh"><h2 id="pickTitle"></h2><span class="small" id="pickSub"></span><span style="flex:1"></span><button class="tbtn" onclick="closePick(true)">✕</button></div><div class="bb" id="pickBody"></div></div></div>
 <div id="stdModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><h2>Ohio's standards</h2><span class="small" id="stdModalSub"></span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pdfModal').classList.add('open')">The PDF</button><button class="tbtn" onclick="document.getElementById('stdModal').classList.remove('open')">✕</button></div><div class="bb" id="stdModalBody"></div><div class="bf"><span class="small" id="stdModalCount"></span><span style="flex:1"></span><button class="primary" onclick="document.getElementById('stdModal').classList.remove('open')">Done</button></div></div></div>
 <div id="pdfModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box"><div class="bh"><b>Ohio's Learning Standards | Mathematics (2017)</b><span class="small">Ohio Department of Education</span><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('pdfModal').classList.remove('open')">✕</button></div><iframe src="standards/Ohio-Learning-Standards-Mathematics-2017.pdf" title="Ohio standards"></iframe></div></div>
+<div id="arrive"><div class="box">
+  <h2>Your work is in the Planner</h2>
+  <p class="sub" id="arriveWhat">Brought across from the Research Question Studio.</p>
+  <p style="margin:0 0 8px"><b>What happens next, here:</b></p>
+  <ol>
+    <li><b>2c &mdash; The question I'm asking.</b> You wrote a first read of this in Week&nbsp;6, before the storm. Revise it now, or replace it, using the questions you just produced.</li>
+    <li><b>Press Check this.</b> It reads your question against your concept and the work you collected, and pushes on it: is it open, is it investigable, is it about how students reason rather than whether they were right?</li>
+    <li><b>Show me options</b> widens it; <b>Ask me</b> follows up. Neither one writes your question &mdash; if it tries, push back.</li>
+    <li><b>Land one question</b> and say why you chose it. That is the one you carry into the field.</li>
+  </ol>
+  <div class="acts">
+    <button class="ghost" id="arriveStay">I'll look around first</button>
+    <button class="primary" id="arriveGo">Take me to 2c &rarr;</button>
+  </div>
+</div></div>
 <div id="imgEd"><div class="box"><div class="bh"><b>Your photo</b><button class="tbtn tool on" id="edBlack">⬛ Black out a name</button><button class="tbtn tool" id="edCrop">✂ Crop</button><button class="tbtn" id="edRotate">↻ Rotate</button><span class="hint">Drag a rectangle. Names must be gone before this leaves your computer.</span><button class="primary" id="edDone" style="margin-left:8px">Done</button></div><div class="stage"><canvas id="edCanvas"></canvas></div></div></div>
 <div id="progModal" onclick="if(event.target===this)this.classList.remove('open')"><div class="box">
   <div class="bh"><h2>My Progress</h2><span style="flex:1"></span><button class="tbtn" onclick="document.getElementById('progModal').classList.remove('open')">✕</button></div>
@@ -1913,6 +1937,33 @@ async function diagPrint(){
 
 /* ---------- misc ---------- */
 function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+// The hand-off used to end in a toast, which is gone in under three seconds and cannot
+// hold four steps. This says what came across and what to do with it, and the button
+// does the navigating -- landing on 2c is the thing they would otherwise have to find.
+function goTo2c(){
+  var sec=document.getElementById("sec2c");
+  if(!sec) return;
+  sec.scrollIntoView({behavior:"smooth",block:"center"});
+  sec.classList.remove("jump"); void sec.offsetWidth; sec.classList.add("jump");
+}
+function closeArrival(go){
+  var d=document.getElementById("arrive"); if(d) d.classList.remove("open");
+  // after the panel is painted, and after the saved phase is reapplied on the last line
+  if(go) setTimeout(goTo2c,60);
+}
+function showArrival(w){
+  var d=document.getElementById("arrive"); if(!d){ setTimeout(goTo2c,80); return; }
+  var what=document.getElementById("arriveWhat");
+  if(what&&w&&w.rows){
+    var n=Math.min(w.rows.length,5);
+    what.textContent="Your concept and "+n+" piece"+(n===1?"":"s")+" of collected work came across from the Research Question Studio. Your pseudonyms and photos were left as they were.";
+  }
+  d.classList.add("open");
+  var go=document.getElementById("arriveGo"), stay=document.getElementById("arriveStay");
+  if(go) go.onclick=function(){ closeArrival(true); };
+  if(stay) stay.onclick=function(){ closeArrival(false); };
+  d.onclick=function(e){ if(e.target===d) closeArrival(false); };   // click the backdrop
+}
 let toastT; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.style.opacity=1; clearTimeout(toastT); toastT=setTimeout(()=>t.style.opacity=0,2600); }
 function renderAll(){ renderTop(); renderPlan(); }
 load(); renderAll();
@@ -1920,18 +1971,13 @@ load(); renderAll();
 // through the same path (and the same overwrite question) as the button in 1c.
 try{ if(new URLSearchParams(location.search).get("from")==="studio"){
   if(studioWork()){
+    var arrived=studioWork();
     importStudio();
     // importStudio leaves them wherever they last were, which after a hand-off is a
     // page they did not ask for. The next move is 2c -- revise the Week 6 question
     // against the storm they just finished -- so go there and say so.
     showPhase("background");
-    setTimeout(function(){
-      var sec=document.getElementById("sec2c");
-      if(!sec) return;
-      sec.scrollIntoView({behavior:"smooth",block:"center"});
-      sec.classList.remove("jump"); void sec.offsetWidth; sec.classList.add("jump");
-      toast("Your work is in. This is 2c \u2014 revise the question you wrote in Week 6, then press Check this.");
-    },80);
+    showArrival(arrived);
   }
   else { toast("Nothing came across \u2014 open the Studio in this browser first."); }
   history.replaceState(null,"",location.pathname);   // so a reload does not re-import
