@@ -1212,7 +1212,14 @@ function stormList(g){
 }
 function stormPanel(g){
   const list=stormList(g);
-  if(!list.length) return "";
+  // Nothing to choose from. If the Studio has work saved in this browser, they got to 2c
+  // without the hand-off, so the storm never crossed -- and an empty 2c looks exactly like
+  // a normal one, so nothing else on this screen would ever tell them. Say so here, where
+  // they are looking, and offer the same import the 1c button runs.
+  if(!list.length) return studioWork() ? `<div class="storm">
+    <b>Your question storm is not here yet.</b>
+    <div class="small" style="margin:2px 0 8px">There is Research Question Studio work saved in this browser that has not been brought across. Bring it in and every question you stormed is listed here to choose from.</div>
+    <button class="tbtn" type="button" id="getStorm">\u21e3 Bring in my question storm</button></div>` : "";
   const cur=String(g.question||"").trim();
   return `<details class="storm" open><summary><b>Choose the question you are carrying</b> \u00b7 ${list.length}</summary>
     <div class="small" style="margin:2px 0 8px">Click one to put it in the box above. Nothing is lost \u2014 everything stays on this list, including the question you started with, so you can put it back.</div>
@@ -1303,6 +1310,7 @@ function renderBackground(){
   wrap.querySelectorAll("[data-clear]").forEach(b=>b.onclick=()=>{ state.bg.samplesRows[+b.dataset.clear][3]=""; save(); renderBackground(); });
   const as=document.getElementById("addSample"); if(as) as.onclick=()=>{ if(state.bg.samplesRows.length<5){ state.bg.samplesRows.push(["","","",""]); save(); renderBackground(); } };
   const fsb=document.getElementById("fromStudio"); if(fsb) fsb.onclick=importStudio;
+  const gsb=document.getElementById("getStorm"); if(gsb) gsb.onclick=importStudio;
   const ex=document.getElementById("exportProfile"); if(ex) ex.onclick=exportProfile;
   wireReads(wrap);
   wireInfo();
