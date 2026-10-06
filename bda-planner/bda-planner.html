@@ -1028,7 +1028,7 @@ function studioReveals(x){
 }
 function importStudio(){
   const w=studioWork();
-  if(!w){ toast("Nothing from the Research Question Studio in this browser."); return; }
+  if(!w){ toast("Nothing from the Research Question Studio in this browser."); return false; }
   const g=state.bg||(state.bg={});
   if(!Array.isArray(g.samplesRows)) g.samplesRows=[["","","",""],["","","",""],["","","",""]];
   const rows=g.samplesRows;
@@ -1037,14 +1037,15 @@ function importStudio(){
   if(w.concept && (g.concept||"").trim() && g.concept!==w.concept) over.push("the concept");
   let n=0; w.rows.forEach(function(x,i){ const r=rows[i]; if(r && (String(r[1]||"").trim() || String(r[2]||"").trim())) n++; });
   if(n) over.push(n===1?"1 work sample":n+" work samples");
-  if(over.length && !confirm("This replaces "+over.join(", ")+" with what is in your Research Question Studio.\n\nYour pseudonyms and any photos stay as they are.\n\nGo ahead?")) return;
-  if(w.grade) g.grade=w.grade;
-  if(w.concept) g.concept=w.concept;
-  // The first read, written in Week 6 before the storm, is the thing they are deciding
-  // whether to keep. Saved once, the first time a hand-off arrives, so it can always be
-  // offered back -- replacing the question must never be the end of the old one.
+  // The storm replaces nothing, so it is not part of the question being asked below: a
+  // student who says no to overwriting their Concept Profile still wants the questions
+  // they just spent a class producing. Same for the Week 6 first read, saved once so that
+  // choosing a new question is never the end of the old one.
   if(!(g.question0||"").trim() && (g.question||"").trim()) g.question0=g.question.trim();
   if(w.questions && w.questions.length) g.storm=w.questions;
+  if(over.length && !confirm("This replaces "+over.join(", ")+" with what is in your Research Question Studio.\n\nYour pseudonyms and any photos stay as they are.\n\nGo ahead?")){ save(); renderBackground(); return false; }
+  if(w.grade) g.grade=w.grade;
+  if(w.concept) g.concept=w.concept;
   w.rows.slice(0,5).forEach(function(x,i){
     while(rows.length<=i) rows.push(["","","",""]);
     rows[i][1]=x.task;                 // the task, the setting
@@ -1053,6 +1054,7 @@ function importStudio(){
   save(); renderBackground();
   const c=Math.min(w.rows.length,5);
   toast("Brought in "+c+" sample"+(c===1?"":"s")+" from the Studio. Add a pseudonym to each.");
+  return true;
 }
 function save(){
   try{ statsTick(); }catch(e){}
@@ -2029,9 +2031,15 @@ function closeArrival(go){
 function showArrival(w){
   var d=document.getElementById("arrive"); if(!d){ setTimeout(goTo2c,80); return; }
   var what=document.getElementById("arriveWhat");
-  if(what&&w&&w.rows){
-    var n=Math.min(w.rows.length,5);
-    what.textContent="Your concept and "+n+" piece"+(n===1?"":"s")+" of collected work came across from the Research Question Studio. Your pseudonyms and photos were left as they were.";
+  if(what){
+    if(w&&w.rows){
+      var n=Math.min(w.rows.length,5);
+      what.textContent="Your concept and "+n+" piece"+(n===1?"":"s")+" of collected work came across from the Research Question Studio. Your pseudonyms and photos were left as they were.";
+    } else {
+      // They said no to the replace, so nothing was brought over. Say that, rather than
+      // announcing an import that did not happen -- the questions below still crossed.
+      what.textContent="Nothing was replaced \u2014 your Concept Profile is exactly as you left it. Your question storm is still listed under 2c.";
+    }
   }
   d.classList.add("open");
   var go=document.getElementById("arriveGo"), stay=document.getElementById("arriveStay");
@@ -2047,12 +2055,12 @@ load(); renderAll();
 try{ if(new URLSearchParams(location.search).get("from")==="studio"){
   if(studioWork()){
     var arrived=studioWork();
-    importStudio();
+    var took=importStudio();
     // importStudio leaves them wherever they last were, which after a hand-off is a
     // page they did not ask for. The next move is 2c -- revise the Week 6 question
     // against the storm they just finished -- so go there and say so.
     showPhase("background");
-    showArrival(arrived);
+    showArrival(took ? arrived : null);
   }
   else { toast("Nothing came across \u2014 open the Studio in this browser first."); }
   history.replaceState(null,"",location.pathname);   // so a reload does not re-import
