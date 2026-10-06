@@ -388,6 +388,11 @@
   .exitrow textarea{min-height:56px}
   .sec{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
   /* arriving from the Studio */
+  /* 2c holds a whole research question. As an <input> everything past the width was
+     invisible -- the student could not read their own question back, which is the one
+     thing this box exists for. It wraps and grows instead; see fitQ. */
+  .q2c{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:9px;font:inherit;
+       font-size:14.5px;background:#fff;color:var(--ink);resize:vertical;min-height:52px;line-height:1.45;overflow:auto}
   #arrive{position:fixed;inset:0;background:#0007;z-index:80;display:none;align-items:center;justify-content:center;padding:20px}
   #arrive.open{display:flex}
   #arrive .box{background:#fff;border-radius:14px;max-width:560px;width:100%;max-height:90vh;overflow:auto;padding:22px 24px;box-shadow:0 18px 60px #0005}
@@ -1226,7 +1231,7 @@ function renderBackground(){
         <div class="rows">${g.sources.map((r,i)=>{ const host=r[2]==="host"; const ok=/^(https?:\/\/)?(www\.)?(jstor\.org\/stable\/|doi\.org\/10\.)\S+$/i.test((r[0]||"").trim()); return `<div class="rrow" style="grid-template-columns:1fr 1.6fr"><div><div class="yn" style="margin:0 0 6px;flex-direction:row"><button type="button" data-stype="${i}:jstor" class="${host?"":"on"}" style="padding:6px 10px;font-size:13px">JSTOR</button><button type="button" data-stype="${i}:host" class="${host?"on":""}" style="padding:6px 10px;font-size:13px">Host teacher</button></div>${host?`<div class="small">What your host teacher has seen students do with this concept — in your words. No name needed.</div>`:`<input type="text" placeholder="https://www.jstor.org/stable/… or https://doi.org/10.…" data-src="${i}:0" value="${esc(r[0])}"><div class="small" style="margin-top:3px">${r[0]?(ok?"✓ JSTOR link or DOI":"✗ not a JSTOR permanent link or DOI"):""}</div>`}</div><textarea placeholder="${host?"Three or four sentences: what does your host teacher say students commonly do, believe, or struggle with here?":"Three or four sentences: what misconceptions and challenges does this source describe for this concept?"}" data-src="${i}:1" style="min-height:96px">${esc(r[1])}</textarea></div>`; }).join("")}</div>
         <div style="margin-top:8px"><button class="tbtn" id="addSource" ${g.sources.length>=3?"disabled":""}>＋ another source</button></div></div>
       <div class="sec" id="sec2c"><h3><span class="k">2c</span>The question I'm asking${I("A first read, one sentence: an open question about how students understand this concept — not whether they got it right, not a diagnosis of a child. It should grow out of everything above. In Week 7 you come back here after the question storm and our discussion, and revise this first read into your research question.")}</h3>
-        <input type="text" data-bg="question" placeholder="How do students … ?" value="${esc(g.question||"")}">
+        <textarea class="q2c" data-bg="question" rows="2" placeholder="How do students … ?">${esc(g.question||"")}</textarea>
         <div class="small" id="qMark" style="margin-top:3px">${qMarkHint(g.question)}</div>
         <label>Why this question</label><textarea data-bg="why" style="min-height:60px">${esc(g.why||"")}</textarea>
         ${readsBar("question")}</div>
@@ -1234,7 +1239,8 @@ function renderBackground(){
   const wrap=document.getElementById("tiles"); wrap.innerHTML=`<div class="tile ${done[0]?"done":""}">${left}</div><div class="tile ${done[0]?"done":""}">${right}</div>`;
   tabifyTiles(wrap);
   const refresh=()=>{ const d=bgDone(); wrap.querySelectorAll(".tile").forEach((t,i)=>{ t.classList.toggle("done",d[i]); t.querySelector(".n").textContent=d[i]?"✓":i+1; }); const go=wrap.querySelector("[data-goto]"); if(go) go.disabled=!d.every(Boolean); const pp=profileParts(); wrap.querySelectorAll("[data-ptk]").forEach(t=>{ const [a,b]=t.dataset.ptk.split(":").map(Number); t.classList.toggle("no",!pp[a][b]); }); };
-  wrap.querySelectorAll("[data-bg]").forEach(inp=>{ inp.oninput=e=>{ const k=inp.dataset.bg; if(k==="block"){ state.block=Math.max(20,Math.min(120,+e.target.value||45)); } else state.bg[k]=e.target.value; save(); refresh(); if(k==="question"){ const qm=document.getElementById("qMark"); if(qm) qm.textContent=qMarkHint(e.target.value); } const gg=wrap.querySelector(".gauge"); if(gg){ const w=profileWords(); gg.className="gauge "+(w<430?"short":""); gg.innerHTML=`about <b>${(w/430).toFixed(1)} pages</b> · the assignment asks for 1–2`; } }; if(inp.dataset.bg==="grade") inp.onchange=()=>{ state.bg.standards=[]; save(); renderBackground(); }; });
+  wrap.querySelectorAll("[data-bg]").forEach(inp=>{ inp.oninput=e=>{ const k=inp.dataset.bg; if(k==="block"){ state.block=Math.max(20,Math.min(120,+e.target.value||45)); } else state.bg[k]=e.target.value; save(); refresh(); if(k==="question"){ const qm=document.getElementById("qMark"); if(qm) qm.textContent=qMarkHint(e.target.value); fitQ(e.target); } const gg=wrap.querySelector(".gauge"); if(gg){ const w=profileWords(); gg.className="gauge "+(w<430?"short":""); gg.innerHTML=`about <b>${(w/430).toFixed(1)} pages</b> · the assignment asks for 1–2`; } }; if(inp.dataset.bg==="grade") inp.onchange=()=>{ state.bg.standards=[]; save(); renderBackground(); }; });
+  { const q2=wrap.querySelector(".q2c"); if(q2) requestAnimationFrame(()=>fitQ(q2)); }
   wrap.querySelectorAll("[data-unstd]").forEach(b=>b.onclick=()=>{ state.bg.standards=state.bg.standards.filter(x=>x!==b.dataset.unstd); save(); renderBackground(); });
   const cs=document.getElementById("chooseStd"); if(cs) cs.onclick=openStdModal;
   wrap.querySelectorAll(".stds label span").forEach(sp=>sp.onclick=e=>{ e.preventDefault(); sp.parentElement.classList.toggle("open"); });
@@ -1940,6 +1946,18 @@ function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,
 // The hand-off used to end in a toast, which is gone in under three seconds and cannot
 // hold four steps. This says what came across and what to do with it, and the button
 // does the navigating -- landing on 2c is the thing they would otherwise have to find.
+// Grow 2c to its sentence. _manualH keeps a height the student dragged to, so growing
+// never shrinks their drag back.
+function fitQ(el){
+  if(!el) return;
+  el.style.height="auto";
+  el.style.height=Math.max(el.scrollHeight, el._manualH||0)+"px";
+  el._autoH=el.offsetHeight;
+  if(typeof ResizeObserver!=="undefined" && !el._ro){
+    el._ro=new ResizeObserver(function(){ if(el._autoH && Math.abs(el.offsetHeight-el._autoH)>2) el._manualH=el.offsetHeight; });
+    el._ro.observe(el);
+  }
+}
 function goTo2c(){
   var sec=document.getElementById("sec2c");
   if(!sec) return;
