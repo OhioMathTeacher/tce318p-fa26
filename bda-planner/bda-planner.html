@@ -1440,7 +1440,9 @@ const READ_NAMES={ask:"Ask me",options:"Show me options",check:"Check this"};
 function renderRead(tab,r){
   const d=r.data||{}; let body="";
   if(r.mode==="ask") body=(d.questions||[]).map(q=>`<div class="ri"><div class="q">${esc(q.question)}</div><div class="w">${esc(q.why)}</div></div>`).join("");
-  else if(r.mode==="check") body=(d.reads||[]).map(x=>`<div class="ri"><span class="crit">${esc(x.criterion)}</span><div>${esc(x.read)}</div><div class="q" style="margin-top:3px">${esc(x.question)}</div></div>`).join("");
+  // "Try this" is only in reads produced after 2026-10-06; older saved ones have no
+  // suggestion and simply do not show the line.
+  else if(r.mode==="check") body=(d.reads||[]).map(x=>`<div class="ri"><span class="crit">${esc(x.criterion)}</span><div>${esc(x.read)}</div>${x.suggestion?`<div style="margin-top:4px"><span class="lbl">Try this</span> ${esc(x.suggestion)}</div>`:""}<div class="q" style="margin-top:3px">${esc(x.question)}</div></div>`).join("");
   else if(r.mode==="options") body=(d.cards||[]).map((c,i)=>`<div class="ri opt ${r.aside&&r.aside[i]?"aside":""}"><div><div class="q">${esc(c.direction)}</div><div style="margin-top:3px"><span class="lbl">Would surface</span> ${esc(c.surfaces)}</div><div><span class="lbl">Might give away</span> ${esc(c.gives_away)}</div></div><div class="acts"><button class="tbtn" data-aside="${tab}:${i}">${r.aside&&r.aside[i]?"Bring back":"Set aside"}</button></div></div>`).join("");
   return `<div class="rout"><div class="rh"><b>${READ_NAMES[r.mode]||r.mode}</b><span>· ${esc(r.when||"")}</span><button class="x" data-dismiss="${tab}" title="Dismiss">✕</button></div>${body||'<div class="ri small">Nothing came back.</div>'}</div>`;
 }
