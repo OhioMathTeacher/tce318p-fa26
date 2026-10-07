@@ -82,10 +82,25 @@
   }
   input:focus, textarea:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
   /* The three boxes on step 2 are where the reading of the work gets written, and the
-     rubric scores how closely it reads. Fitting the placeholder exactly left a one- or
-     two-line slot that invites one line back. Floor them at roughly four lines; autoSize
-     still grows them past this, and min-height beats the inline height it sets. */
-  #samples textarea { min-height: 5.6em; }
+     rubric scores how closely it reads. Two things kept them small: they were measured
+     inside a hidden panel (see autoSize), and even measured correctly, "fits the
+     placeholder" is a one- or two-line slot that invites one line back.
+     So the floor is set here, in em, rather than left to a measurement -- the student
+     must be able to read the whole prompt and have room to write without dragging
+     anything. autoSize still grows them past this; min-height beats the inline height
+     it sets, so a bad measurement can no longer collapse a box.
+     The split layout gives the writing half the width, so every prompt wraps to approximately
+     twice the lines and the floor has to be taller there. */
+  #samples textarea { min-height: 7em; }
+  /* Same corner stamp the Planner carries, for the same reason: Pages serves a stale
+     copy for a minute after a push and a plain reload can keep serving it, so there has
+     to be a way to tell a cached page from a real bug. Bump it with every change. */
+  #build { position: fixed; right: 10px; bottom: 8px; font-size: 11.5px; color: var(--muted);
+    opacity: .55; z-index: 30; pointer-events: none; font-weight: 600; }
+  @media print { #build { display: none !important; } }
+  /* #samples wins on specificity, so the split rule has to carry the id too. */
+  #samples .sample-split textarea { min-height: 9.5em; }
+  @media (max-width: 820px) { #samples .sample-split textarea { min-height: 7em; } }
   .row2 { display: flex; gap: 14px; }
   .row2 > div { flex: 1; }
   .adapt-chips { margin: 10px 0 2px; }
@@ -771,6 +786,11 @@ function activeSampleCard(s, i) {
     const pane = document.createElement("div"); pane.className = "work-pane";
     const img = document.createElement("img");
     img.src = work.src;
+    // The pane is sticky and the grid is 1fr 1fr, but a late-decoding image still
+    // settles the row's height after the boxes were sized. Remeasure then.
+    img.addEventListener("load", () => {
+      card.querySelectorAll("textarea").forEach(autoSize);
+    });
     img.alt = "The work you collected" + (work.cap ? " \u2014 " + work.cap : "");
     img.title = "Click to see it bigger";
     img.addEventListener("click", () => openLightbox(work.src));
@@ -1291,5 +1311,6 @@ function init() {
 }
 init();
 </script>
+<div id="build">Studio Build 3</div>
 </body>
 </html>
