@@ -40,13 +40,18 @@
  /* The four rules ride in the bottom-right of the scan, which is the one large area of
     the page with nothing written in it -- the child's work runs down the left and stops
     above this corner. Percentages, so the card tracks the image at any projector size. */
- .lb .rules{position:absolute;right:2%;bottom:2.5%;width:59%;box-sizing:border-box;
-   background:rgba(255,255,255,.93);border:2px solid #C41E3A;border-radius:7px;
-   padding:.7em .9em .75em;line-height:1.25;text-align:left;}
- .lb .rules b{display:block;font-size:clamp(11px,1.35vw,17px);color:#C41E3A;margin:0 0 .25em;
+ /* The child's work stops at 82% of the scan's height in this x-band; below that it is
+    clear. Measured, not guessed -- so the card sits in the bottom 16% and must not grow
+    past it. Sized in cqh/cqw against the image itself, because a vw-based size keeps
+    growing on a wide projector and would climb back over the work. */
+ .lb .rules{position:absolute;right:2%;bottom:1.5%;width:58%;box-sizing:border-box;
+   max-height:15.5%;overflow:hidden;
+   background:rgba(255,255,255,.94);border:2px solid #C41E3A;border-radius:7px;
+   padding:.45em .8em .5em;line-height:1.18;text-align:left;}
+ .lb .rules b{display:block;font-size:clamp(9px,1.08vw,14px);color:#C41E3A;margin:0 0 .12em;
    letter-spacing:.02em;text-transform:uppercase;}
- .lb .rules ol{margin:0;padding-left:1.35em;}
- .lb .rules li{font-size:clamp(10px,1.3vw,16px);color:#1f2937;margin:.12em 0;}
+ .lb .rules ol{margin:0;padding-left:1.3em;}
+ .lb .rules li{font-size:clamp(9px,1.02vw,13.5px);color:#1f2937;margin:.04em 0;}
  @media (max-width:700px){ .lb .rules{position:static;width:100%;margin-top:8px;} }
  .lb button{position:absolute;top:14px;right:18px;background:#fff;border:none;border-radius:20px;padding:9px 18px;font:inherit;font-size:15px;font-weight:600;cursor:pointer;}
 </style>
