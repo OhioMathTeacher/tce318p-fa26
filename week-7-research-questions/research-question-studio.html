@@ -92,8 +92,13 @@
      The split layout gives the writing half the width, so every prompt wraps to approximately
      twice the lines and the floor has to be taller there. */
   #samples textarea { min-height: 7em; }
-  #wvBar { background:#fff4e5; border-bottom:2px solid #c2410c; color:#7c2d12;
+  #wvBar, .topbar { background:#fff4e5; border-bottom:2px solid #c2410c; color:#7c2d12;
     padding:10px 14px; font-size:14px; line-height:1.45; }
+  .topbar.bad { background:#fee2e2; border-bottom-color:#b91c1c; color:#7f1d1d; }
+  #nagBar { position:sticky; top:0; z-index:40; }
+  .bk { font-size:12px; margin-left:10px; }
+  .bk.ok   { color:#2e7d32; }
+  .bk.warn { color:#b45309; font-weight:600; }
   /* Same corner stamp the Planner carries, for the same reason: Pages serves a stale
      copy for a minute after a push and a plain reload can keep serving it, so there has
      to be a way to tell a cached page from a real bug. Bump it with every change. */
@@ -439,7 +444,8 @@
     <button class="mini" id="saveFile" style="margin-left:6px;">↓ Save a backup file</button>
     <button class="mini" id="restoreFile">Restore from a file</button>
     <input type="file" id="restoreInput" accept=".json,application/json" style="display:none">
-    <button class="mini" id="clearAll" style="margin-left:6px;">Clear everything</button></p>
+    <button class="mini" id="clearAll" style="margin-left:6px;">Clear everything</button>
+    <span id="backupState" class="bk"></span></p>
 </div>
 
 <div class="lightbox" id="lightbox"><button class="lb-close" id="lbClose">Close</button><img id="lbImg" alt="The work you collected, larger"></div>
@@ -479,7 +485,24 @@ function load() {
   if (!Array.isArray(state.adaptTypes)) state.adaptTypes = [];
   activeSample = state.samples.length - 1;
 }
-function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} }
+// \u26a0 This used to swallow its error. A full or blocked store meant the work was not
+// being kept and nothing on screen said so -- the worst possible failure for an app
+// whose only copy is here. Now a failure raises the banner, once.
+let _storageDead = false;
+function save() {
+  try {
+    localStorage.setItem(STORE, JSON.stringify(state));
+    return true;
+  } catch (e) {
+    if (!_storageDead) {
+      _storageDead = true;
+      storageWarn("This browser is not saving your work.",
+        "You may be in a private window, or storage may be full. Nothing here will survive "
+      + "closing the tab. Use \u201cSave a backup file\u201d now, and switch to a normal window.");
+    }
+    return false;
+  }
+}
 function sampleHasContent(s) { return !!(s.task.trim() || s.did.trim() || s.noticed.trim()); }
 
 // ---- backup file: the only way work crosses machines -----------------------
@@ -496,6 +519,109 @@ function sampleHasContent(s) { return !!(s.task.trim() || s.did.trim() || s.noti
 // writing back without the images, and the sample cards fall back to one column.
 // Say so rather than let someone think the photos were lost.
 const BACKUP_KIND = "tce318p-rqstudio-backup";
+const BACKUP_LEDGER = "tce318p-rqstudio-lastbackup";
+const NAG_SNOOZE = "tce318p-rqstudio-nag-snoozed";   // this tab only
+
+// ── Why all of this exists ────────────────────────────────────────────────────
+// A 318P student lost every margin note and journal entry in Journaler in September.
+// Nothing was broken: Edge was set to clear cookies and site data on close, and it
+// erased the lot overnight, on one machine, without her switching anything. Edge,
+// Firefox and Chrome all ship that setting, and Safari sweeps a site's storage after
+// seven days without a visit. "Use the same computer" is no protection at all.
+//
+// The backup file is the only real one, so everything below exists to get a student to
+// press it: a visible record of how stale their last backup is, a bar when there is
+// work the file does not have, and a last word from the browser on the way out.
+// Journaler's rule governs the bar -- nag on WORK MADE SINCE the last backup, never on
+// launch. A reminder that fires every time is wallpaper within a week, and is then
+// dismissed reflexively on the day it mattered.
+
+function stateSig() {                       // cheap 32-bit hash; equality is all we need
+  const t = JSON.stringify(state);
+  let h = 5381;
+  for (let i = 0; i < t.length; i++) h = ((h * 33) ^ t.charCodeAt(i)) >>> 0;
+  return t.length + ":" + h;
+}
+function readLedger() {
+  try { return JSON.parse(localStorage.getItem(BACKUP_LEDGER) || "null"); } catch (e) { return null; }
+}
+function markBackedUp(sig) {
+  try { localStorage.setItem(BACKUP_LEDGER, JSON.stringify({ at: Date.now(), sig: sig })); } catch (e) {}
+  try { sessionStorage.removeItem(NAG_SNOOZE); } catch (e) {}
+  refreshBackupState();
+}
+function hasRealWork() {
+  return state.samples.some(sampleHasContent) || state.questions.length > 0;
+}
+function unsavedSinceBackup() {
+  if (!hasRealWork()) return false;
+  const l = readLedger();
+  return !l || l.sig !== stateSig();
+}
+function agoText(ms) {
+  const m = Math.round((Date.now() - ms) / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return m + (m === 1 ? " minute ago" : " minutes ago");
+  const h = Math.round(m / 60);
+  if (h < 24) return h + (h === 1 ? " hour ago" : " hours ago");
+  const d = Math.round(h / 24);
+  return d + (d === 1 ? " day ago" : " days ago");
+}
+
+// The always-on line: how stale is the file?
+function refreshBackupState() {
+  const el = $("backupState"); if (!el) return;
+  const l = readLedger();
+  if (!hasRealWork())      { el.textContent = ""; el.className = "bk"; }
+  else if (!l)             { el.textContent = "No backup file yet."; el.className = "bk warn"; }
+  else if (l.sig !== stateSig()) { el.textContent = "Changed since your backup (" + agoText(l.at) + ")."; el.className = "bk warn"; }
+  else                     { el.textContent = "Backed up " + agoText(l.at) + "."; el.className = "bk ok"; }
+  maybeNag();
+}
+
+// The bar: only for work the file does not have, and never on the way in.
+let _nagArmed = false;                       // set once the student changes something
+let _booting  = true;                        // init() calls sync(); that is not a change
+function armNag() { if (!_booting) _nagArmed = true; }
+// Built here rather than in markup: this script runs while the page is still parsing,
+// so anything declared further down does not exist yet. init() reached for the buttons,
+// got null, threw, and left the tabs and Back/Next unwired -- the app looked dead.
+function nagBarEl() {
+  let bar = document.getElementById("nagBar");
+  if (bar) return bar;
+  bar = document.createElement("div");
+  bar.id = "nagBar"; bar.className = "topbar"; bar.style.display = "none";
+  bar.innerHTML = "<strong>Your backup file is out of date.</strong> Some browsers erase a "
+    + "site\u2019s saved work when you close them, and this Studio is the only place your "
+    + "writing lives. ";
+  const sv = document.createElement("button");
+  sv.type = "button"; sv.className = "mini"; sv.textContent = "\u2193 Save a backup file now";
+  sv.onclick = saveToFile;
+  const no = document.createElement("button");
+  no.type = "button"; no.className = "mini"; no.textContent = "Not now";
+  no.onclick = function () {
+    try { sessionStorage.setItem(NAG_SNOOZE, "1"); } catch (e) {}
+    maybeNag();
+  };
+  bar.appendChild(sv); bar.appendChild(document.createTextNode(" ")); bar.appendChild(no);
+  document.body.insertBefore(bar, document.body.firstChild);
+  return bar;
+}
+function maybeNag() {
+  const want = _nagArmed && unsavedSinceBackup() && !snoozed();
+  if (!want) { const b = document.getElementById("nagBar"); if (b) b.style.display = "none"; return; }
+  nagBarEl().style.display = "";
+}
+function snoozed() { try { return !!sessionStorage.getItem(NAG_SNOOZE); } catch (e) { return false; } }
+
+function storageWarn(lead, rest) {
+  if (document.getElementById("storBar")) return;
+  const bar = document.createElement("div");
+  bar.id = "storBar"; bar.className = "topbar bad";
+  bar.innerHTML = "<strong>" + lead + "</strong> " + rest;
+  document.body.insertBefore(bar, document.body.firstChild);
+}
+
 
 function backupName() {
   const d = new Date(), p = n => String(n).padStart(2, "0");
@@ -612,7 +738,8 @@ function saveToFile() {
     alert("The backup could not be made in this browser. If you are in private browsing, try a normal window.");
     return;
   }
-  saveBlob(blob, backupName());   // synchronous up to here: nothing awaited inside the tap
+  const sig = stateSig();         // what this file actually contains
+  saveBlob(blob, backupName()).then(function (ok) { if (ok) markBackedUp(sig); });
 }
 
 // What a restored file is allowed to contain. Anything else is not one of ours.
@@ -1451,7 +1578,8 @@ function showStep(i) {
 }
 
 function sync() {
-  save(); renderReference(); refreshPreview(); refreshGate(); refreshProduce();
+  save(); armNag(); refreshBackupState();
+  renderReference(); refreshPreview(); refreshGate(); refreshProduce();
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("done", stepDone(+t.dataset.step)));
 }
 
@@ -1483,6 +1611,18 @@ function init() {
   $("confirm").addEventListener("change", () => { refreshProduce(); showStep(step); });
   $("produce").onclick = producePDF;
   if (IS_WEBVIEW) webviewWarn("");      // say it on the way in, not after work is lost
+
+  // Belt: ask the browser not to evict this origin. Chrome grants it on engagement,
+  // Firefox asks. It does nothing against a student who sets "clear on close" by hand,
+  // which is why it is only the belt.
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+
+  // Braces: the browser's own last word, but only when the file is genuinely behind.
+  addEventListener("beforeunload", function (e) {
+    if (!unsavedSinceBackup()) return;
+    e.preventDefault(); e.returnValue = "";       // wording is the browser's, not ours
+  });
+
   $("saveFile").onclick = saveToFile;
   $("restoreFile").onclick = () => $("restoreInput").click();
   $("restoreInput").addEventListener("change", e => {
@@ -1502,10 +1642,12 @@ function init() {
   $("back").onclick = () => showStep(step - 1);
   $("next").onclick = () => showStep(step + 1);
   sync(); showStep(0);
+  _booting = false;              // from here on, a sync() is the student's own doing
+  refreshBackupState();
 
 }
 init();
 </script>
-<div id="build">Studio Build 10</div>
+<div id="build">Studio Build 13</div>
 </body>
 </html>
