@@ -501,19 +501,63 @@ function backupName() {
        + "-" + p(d.getHours()) + p(d.getMinutes()) + ".json";
 }
 
+// Journaler's save path, ported rather than rewritten. The reason is in its own
+// comment and it is not obvious: iOS Safari IGNORES a.download for a blob: URL, so an
+// anchor save on an iPad writes the file under the blob's UUID. journaler-284 had one
+// reach a thumb drive as 39214aba-57f2-443f-a79e-9915651ba5b4.zip. Here that would be
+// the single file a student restores from on another machine, with nothing in the name
+// to say which it is. The share sheet is the only iOS path that keeps a filename; the
+// desktop keeps the anchor, because a share sheet on a laptop is worse than a download.
+//
+// ⚠ navigator.share and canShare are SECURE-CONTEXT ONLY. Over plain http:// this
+// silently takes the desktop branch, so testing the iOS path needs https or a device.
+const IS_IOS = (function () {
+  try {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent)
+        || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  } catch (e) { return false; }
+})();
+
+function anchorSave(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = name; a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+  return true;
+}
+
+function saveBlob(blob, name) {
+  try {
+    if (IS_IOS && navigator.canShare && navigator.share) {
+      const file = new File([blob], name, { type: blob.type || "application/octet-stream" });
+      if (navigator.canShare({ files: [file] })) {
+        // No await before this call: Safari only trusts share() inside the gesture
+        // that started it, and an await in front is an await between tap and handler.
+        return navigator.share({ files: [file] })
+          .then(function () { return true; })
+          .catch(function (err) {
+            if (err && err.name === "AbortError") return false;   // reader cancelled
+            return anchorSave(blob, name);
+          });
+      }
+    }
+  } catch (e) { /* fall through to the anchor */ }
+  return Promise.resolve(anchorSave(blob, name));
+}
+
 function saveToFile() {
-  let url = null;
+  let blob;
   try {
     const payload = JSON.stringify({ kind: BACKUP_KIND, v: 1, saved: new Date().toISOString(), state: state }, null, 2);
-    const blob = new Blob([payload], { type: "application/json" });
-    url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = backupName();
-    document.body.appendChild(a); a.click(); a.remove();
+    blob = new Blob([payload], { type: "application/json" });
   } catch (e) {
     alert("The backup could not be made in this browser. If you are in private browsing, try a normal window.");
+    return;
   }
-  if (url) setTimeout(() => URL.revokeObjectURL(url), 30000);   // after the download has started
+  saveBlob(blob, backupName());   // synchronous up to here: nothing awaited inside the tap
 }
 
 // What a restored file is allowed to contain. Anything else is not one of ours.
@@ -526,6 +570,13 @@ function validBackup(o) {
 }
 
 function restoreFromFile(file) {
+  // Journaler checks this inside the reader's onload; the name alone decides it, so
+  // check before reading and reject a 40 MB PDF without pulling it into memory.
+  if (/\.(pdf|docx?|txt|png|jpe?g|zip)$/i.test(file.name)) {
+    alert("\u201c" + file.name + "\u201d looks like a document, not a studio backup.\n\n"
+        + "This button restores the .json file you saved earlier with \u201cSave a backup file\u201d.");
+    return;
+  }
   const rd = new FileReader();
   rd.onerror = () => alert("That file could not be read.");
   rd.onload = () => {
@@ -1399,6 +1450,6 @@ function init() {
 }
 init();
 </script>
-<div id="build">Studio Build 5</div>
+<div id="build">Studio Build 7</div>
 </body>
 </html>
