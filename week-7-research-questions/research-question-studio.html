@@ -92,6 +92,8 @@
      The split layout gives the writing half the width, so every prompt wraps to approximately
      twice the lines and the floor has to be taller there. */
   #samples textarea { min-height: 7em; }
+  #wvBar { background:#fff4e5; border-bottom:2px solid #c2410c; color:#7c2d12;
+    padding:10px 14px; font-size:14px; line-height:1.45; }
   /* Same corner stamp the Planner carries, for the same reason: Pages serves a stale
      copy for a minute after a push and a plain reload can keep serving it, so there has
      to be a way to tell a cached page from a real bug. Bump it with every change. */
@@ -501,37 +503,60 @@ function backupName() {
        + "-" + p(d.getHours()) + p(d.getMinutes()) + ".json";
 }
 
-// Journaler's save path, ported rather than rewritten. The reason is in its own
-// comment and it is not obvious: iOS Safari IGNORES a.download for a blob: URL, so an
-// anchor save on an iPad writes the file under the blob's UUID. journaler-284 had one
-// reach a thumb drive as 39214aba-57f2-443f-a79e-9915651ba5b4.zip. Here that would be
-// the single file a student restores from on another machine, with nothing in the name
-// to say which it is. The share sheet is the only iOS path that keeps a filename; the
-// desktop keeps the anchor, because a share sheet on a laptop is worse than a download.
+// ── Handing a file to the reader ───────────────────────────────────────────────
+// Ported from journaler-284, where all of this was paid for on real devices. Three
+// things, and the backup must not be the file that discovers them:
+//
+// 1. REVOKING TOO SOON. a.click() STARTS a download and returns; the browser reads the
+//    blob afterwards. Revoking on the next statement is a race iOS Safari loses, and
+//    the file arrives empty. 60s, not 0.
+//
+// 2. THROWING THE NAME AWAY. iOS Safari ignores a.download for blob: URLs and saves
+//    under the blob's UUID -- Todd's own iPad backup reached a thumb drive as
+//    "39214aba-57f2-443f-a79e-9915651ba5b4.zip". navigator.share hands iOS a real File
+//    with a real name and offers Save to Files, which is the only way to keep it.
+//    Share is used ONLY where the anchor loses the name; on a desktop the anchor is
+//    the right answer and a share sheet would be a worse one.
+//
+// 3. AN IN-APP BROWSER IS NOT A BROWSER, and this is the one that will bite here:
+//    students open this page from a link in Canvas. The Canvas app renders it in an
+//    embedded WebView that cannot download a blob:, cannot print, and keeps storage of
+//    its own. In this Studio that means no backup file, no Document 1 (it is made with
+//    window.print()), and "Bring in my Concept Profile" finding nothing, because the
+//    Planner work lives in Safari's storage and not in the WebView's. All three fail
+//    silently, which reads to a student as "nothing works".
 //
 // ⚠ navigator.share and canShare are SECURE-CONTEXT ONLY. Over plain http:// this
-// silently takes the desktop branch, so testing the iOS path needs https or a device.
-const IS_IOS = (function () {
-  try {
-    return /iPad|iPhone|iPod/.test(navigator.userAgent)
-        || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  } catch (e) { return false; }
-})();
+// quietly takes the desktop branch, so the iOS path cannot be tested on a local server.
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+            || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const IS_ANDROID = /Android/i.test(navigator.userAgent);
+// Android's WebView carries "; wv)" and a "Version/x.y" token Chrome never has; the
+// Canvas app also signs itself "candroid". On iOS an embedded page has no "Safari/"
+// token, while Chrome and Firefox there still carry it, being Safari underneath.
+const IS_WEBVIEW = IS_ANDROID
+  ? /; ?wv\)|Version\/\d+\.\d+ .*Chrome\/|candroid/i.test(navigator.userAgent)
+  : (IS_IOS && !/Safari\//.test(navigator.userAgent));
 
 function anchorSave(blob, name) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url; a.download = name; a.rel = "noopener";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function () { URL.revokeObjectURL(url); }, 60000);   // ⚠ not 0. See (1).
   return true;
 }
 
 function saveBlob(blob, name) {
-  try {
-    if (IS_IOS && navigator.canShare && navigator.share) {
+  // Fire the anchor anyway -- a host that does handle downloads gets its chance --
+  // but report failure, so nothing upstream claims a backup that never landed.
+  if (IS_WEBVIEW) {
+    webviewWarn("This built-in browser cannot save files.");
+    try { anchorSave(blob, name); } catch (e) {}
+    return Promise.resolve(false);
+  }
+  if (IS_IOS && navigator.canShare) {
+    try {
       const file = new File([blob], name, { type: blob.type || "application/octet-stream" });
       if (navigator.canShare({ files: [file] })) {
         // No await before this call: Safari only trusts share() inside the gesture
@@ -539,13 +564,39 @@ function saveBlob(blob, name) {
         return navigator.share({ files: [file] })
           .then(function () { return true; })
           .catch(function (err) {
-            if (err && err.name === "AbortError") return false;   // reader cancelled
+            // AbortError is the reader tapping Cancel. That is a decision, not a
+            // failure, and it must NOT fall through to a second download nobody asked for.
+            if (err && err.name === "AbortError") return false;
             return anchorSave(blob, name);
           });
       }
-    }
-  } catch (e) { /* fall through to the anchor */ }
+    } catch (e) { /* fall through to the anchor */ }
+  }
   return Promise.resolve(anchorSave(blob, name));
+}
+
+// One banner, reused on boot and on a failed save.
+function webviewWarn(lead) {
+  if (document.getElementById("wvBar")) return;
+  const how = IS_ANDROID
+    ? "Tap \u22ee and choose Open in browser, or type this address into Chrome."
+    : "Tap the \u22ef or compass icon and choose Open in Safari.";
+  const bar = document.createElement("div");
+  bar.id = "wvBar";
+  bar.innerHTML = "<strong>" + (lead ? lead + " " : "")
+    + "This page is open inside another app.</strong> It cannot save files, cannot make "
+    + "your PDF, and keeps a separate copy of your work \u2014 your Concept Profile will "
+    + "not be found here. " + how;
+  const btn = document.createElement("button");
+  btn.type = "button"; btn.className = "mini"; btn.textContent = "Copy the address";
+  btn.onclick = function () {
+    const u = location.href.split("#")[0];
+    try { navigator.clipboard.writeText(u); btn.textContent = "Copied \u2014 paste it into your browser"; }
+    catch (e) { prompt("Copy this address:", u); }
+  };
+  bar.appendChild(document.createTextNode(" "));
+  bar.appendChild(btn);
+  document.body.insertBefore(bar, document.body.firstChild);
 }
 
 function saveToFile() {
@@ -1427,6 +1478,7 @@ function init() {
   $("qInput").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); addQuestion(); } });
   $("confirm").addEventListener("change", () => { refreshProduce(); showStep(step); });
   $("produce").onclick = producePDF;
+  if (IS_WEBVIEW) webviewWarn("");      // say it on the way in, not after work is lost
   $("saveFile").onclick = saveToFile;
   $("restoreFile").onclick = () => $("restoreInput").click();
   $("restoreInput").addEventListener("change", e => {
@@ -1450,6 +1502,6 @@ function init() {
 }
 init();
 </script>
-<div id="build">Studio Build 7</div>
+<div id="build">Studio Build 9</div>
 </body>
 </html>
