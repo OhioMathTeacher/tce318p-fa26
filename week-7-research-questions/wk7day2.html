@@ -37,7 +37,19 @@
  .ai{background:#ffe8d6;border-radius:6px;padding:8px 14px 10px;margin:4px 0 2px;}
  .lb{position:fixed;inset:0;background:rgba(15,17,20,.9);z-index:60;display:none;align-items:center;justify-content:center;padding:22px;}
  .lb.open{display:flex;}
- .lb img{max-width:100%;max-height:100%;border-radius:8px;background:#fff;}
+ .lb figure{position:relative;display:inline-block;margin:0;max-width:100%;max-height:100%;line-height:0;}
+ .lb img{display:block;max-width:100%;max-height:88vh;width:auto;height:auto;border-radius:8px;background:#fff;}
+ /* The four rules ride in the bottom-right of the scan, which is the one large area of
+    the page with nothing written in it -- the child's work runs down the left and stops
+    above this corner. Percentages, so the card tracks the image at any projector size. */
+ .lb .rules{position:absolute;right:2%;bottom:2.5%;width:59%;box-sizing:border-box;
+   background:rgba(255,255,255,.93);border:2px solid #C41E3A;border-radius:7px;
+   padding:.7em .9em .75em;line-height:1.25;text-align:left;}
+ .lb .rules b{display:block;font-size:clamp(11px,1.35vw,17px);color:#C41E3A;margin:0 0 .25em;
+   letter-spacing:.02em;text-transform:uppercase;}
+ .lb .rules ol{margin:0;padding-left:1.35em;}
+ .lb .rules li{font-size:clamp(10px,1.3vw,16px);color:#1f2937;margin:.12em 0;}
+ @media (max-width:700px){ .lb .rules{position:static;width:100%;margin-top:8px;} }
  .lb button{position:absolute;top:14px;right:18px;background:#fff;border:none;border-radius:20px;padding:9px 18px;font:inherit;font-size:15px;font-weight:600;cursor:pointer;}
 </style>
 </head>
@@ -50,9 +62,8 @@
 <div class="goals"><strong>Today's goals:</strong> Turn the pile of wonderings from last class into <strong>one research question</strong> about how students understand your concept — one your nested lesson could help you answer. You'll storm questions from the work you collected, sharpen them with a genAI planning partner, and land on one.</div>
 
 <details class="block b-set" name="wk7" open>
- <summary><h2>1 · Questions, then a walk through the Studio <span class="time">(~20 min)</span></h2></summary>
+ <summary><h2>1 &middot; A walk through the Studio <span class="time">(~15 min)</span></h2></summary>
  <ul>
-  <li>Any questions about the <a href="../act-ii-questions.html"><strong>Q&amp;A</strong></a>? Additional questions it didn't address?</li>
   <li><strong>A walk through the <a href="research-question-studio.html">Research Question Studio</a>, tab by tab</strong> &mdash; on the screen, with everyone following along on their own machine. Ask as we go; this is the twenty minutes for it.
    <ul>
     <li><strong>1 &middot; The Concept.</strong> Your Week&nbsp;6 concept, brought across from the Planner. Check it still says what you mean.</li>
@@ -66,7 +77,7 @@
 </details>
 
 <details class="block b-ask" name="wk7">
- <summary><h2>2 · One QFT, together <span class="time">(~15 min)</span></h2></summary>
+ <summary><h2>2 · One QFT, together <span class="time">(~25 min)</span></h2></summary>
  <ul>
   <li>We run the protocol once together, on <strong>one shared QFocus</strong> &mdash; work none of you collected, so nobody is defending their own placement. One third grader, one question: <a href="qfocus-cookie-dough.png" id="qfocusLink"><strong>show the work</strong></a>. <span class="src">From <a href="https://www.achieve.org/files/sites/default/files/NYCDOEG3MathCookieDough_Student%20Work.pdf"><em>Cookie Dough</em>, NYC DOE Grade 3</a> (Achieve/EQuIP); identification and grades redacted by the publisher.</span></li>
   <li>The four rules, enforced out loud:
@@ -79,18 +90,24 @@
   <li>Someone scribes verbatim. Then we mark each one <strong>open</strong> or <strong>closed</strong> and prioritize three.</li>
   <li>Watch what the rules do to you. Rule 2 is the hard one &mdash; and the one you cannot enforce on yourself at a laptop.</li>
  </ul>
+ <h3 class="part">Then: from a noticing to a research question</h3>
+ <ul>
+  <li>A storm gives you questions. This is the move that turns one of them into a question you could investigate: <a href="from-noticing-to-question.html"><strong>From Noticing to a Research Question</strong></a>.</li>
+  <li>Six noticings from the field, each with the first question it produced and the question it became. We will open two or three together. The first question is never the mistake &mdash; it is where every one of these started.</li>
+  <li>The five things the guidelines ask of a research question are on that page. Keep them beside you for the next part.</li>
+ </ul>
 </details>
 
 <details class="block b-work" name="wk7">
- <summary><h2>3 · Finalizing a guiding research question for Weeks 11 &amp; 12 <span class="time">(~45 min)</span></h2></summary>
+ <summary><h2>3 &middot; Get started on your own question <span class="time">(~35 min)</span></h2></summary>
 
- <h3 class="part">Part 1 · Build your question in the Studio <span class="time">(~25 min)</span> <span class="tag">Document 1, to submit this week</span></h3>
+ <h3 class="part">In class: build it in the Studio <span class="time">(~35 min)</span> <span class="tag">the start of Document 1</span></h3>
  <ul>
   <li>Same protocol, your own QFocus, your own pace, in the <a href="research-question-studio.html">Research Question Studio</a>. Concept and Collected work should already be done &mdash; if not, finish them first.</li>
   <li><strong>When the storm is done</strong>, hand off. The Studio makes Document&nbsp;1 and carries your work into the Planner; it tells you what to press.</li>
  </ul>
 
- <h3 class="part">Part 2 · Sharpen your research question <span class="time">(~15 min)</span></h3>
+ <h3 class="part">At home: sharpen your research question <span class="time">(homework)</span></h3>
  <div class="ai">
   <ul>
    <li><strong>This is the button that brought you here</strong>, at the end of the Studio's Hand off tab &mdash; it opens the Planner at <strong>2c</strong> with your storm already across.<br>
@@ -101,7 +118,7 @@
   <p class="purpose">Purpose: the move you're learning is <em>AI widens, my criteria narrow</em>. The human noticing is the source of the question; the machine is a way to see more angles on it.</p>
  </div>
 
- <h3 class="part">Part 3 · Land one research question <span class="time">(~5 min)</span> <span class="tag">Document 2, to submit this week</span></h3>
+ <h3 class="part">At home: land one research question <span class="time">(homework)</span> <span class="tag">Document 2, to submit this week</span></h3>
  <ul>
   <li>Down to the <strong>one question</strong> you carry into the field, plus a sentence or two on why.</li>
   <li>Test it: open, investigable, and could your nested lesson gather evidence on it?</li>
@@ -117,7 +134,7 @@
 </details>
 
 <div class="wrap">
- <strong>Wrap-up &amp; looking ahead:</strong>
+ <strong>Wrap-up &amp; looking ahead <span class="time">(~5 min)</span>:</strong>
  <ul>
   <li>This week's deliverable is the <a href="week-7-research-question.docx"><strong>Research Question</strong></a> — the question you land today, plus the record of how you sharpened it (the assignment has the details).</li>
   <li>Next week you design the first piece of that lesson — a <strong>rich task</strong> aimed squarely at the question you just wrote.</li>
@@ -126,7 +143,7 @@
 
 <p class="canvas-note">Assignment links, the submission dropbox, and due dates are in <strong>Canvas</strong>, below the link to this outline. This page is the lesson outline only — no names, no grades.</p>
 </main>
-<div class="lb" id="lb"><button type="button" id="lbX">Close</button><img id="lbImg" alt="A third grader's work on question 4 of the Cookie Dough task: asked for the greatest number of $3 tubs that $20 buys, the child answers 18 tubs and writes that 3x6=18 and 3x7=21 so it passed over."></div>
+<div class="lb" id="lb"><button type="button" id="lbX">Close</button><figure><img id="lbImg" alt="A third grader's work on question 4 of the Cookie Dough task: asked for the greatest number of $3 tubs that $20 buys, the child answers 18 tubs and writes that 3x6=18 and 3x7=21 so it passed over."><div class="rules"><b>The four rules</b><ol><li>Ask as many questions as you can.</li><li>Do not stop to discuss, judge, or answer any question.</li><li>Write every question down exactly as it is thought.</li><li>Turn any statement into a question.</li></ol></div></figure></div>
 <script>
   const blocks = [...document.querySelectorAll("details.block")];
   addEventListener("beforeprint", () => blocks.forEach(d => { d.removeAttribute("name"); d.open = true; }));
