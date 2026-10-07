@@ -1489,7 +1489,13 @@ function renderPlan(){
   wirePlan(); wireInfo();
 }
 document.querySelectorAll("#views button").forEach(b=>b.onclick=()=>{ state.view=b.dataset.v; save(); renderPlan(); });
-function readsBar(tab){ const R=(state.reads&&state.reads[tab])||null; const last=(R&&R.last)||null; return `<div class="reads"><span>Second reads:</span><button class="ghost" data-read="ask" data-tab="${tab}" title="The genAI planning partner asks you two or three questions about what you wrote here.">Ask me</button><button class="ghost" data-read="options" data-tab="${tab}" title="Three directions you could take instead of, or alongside, your first attempt. Needs a first attempt.">Show me options</button><button class="ghost" data-read="check" data-tab="${tab}" title="Reads what you wrote against the rubric for this part.">Check this</button><span class="later">AI · optional · asks, never writes</span></div>${last?renderRead(tab,last):""}${renderLog(tab,R)}`; }
+function readsBar(tab){ const R=(state.reads&&state.reads[tab])||null; const last=(R&&R.last)||null;
+  // Week 7 (2c) shows ONE button. Three choices in front of someone meeting the QFT for
+  // the first time is a decision they should not have to make, and Check this is the one
+  // that reads their question against the five criteria they were handed in class. The
+  // other two stay on Before/During/After, where Week 10's Document 2 names all three.
+  if(tab==="question") return `<div class="reads"><span>Second read:</span><button class="ghost" data-read="check" data-tab="${tab}" title="Checks your question against the five things a research question has to do.">Check this</button><span class="later">AI &middot; optional &middot; asks, never writes</span></div>${last?renderRead(tab,last):""}${renderLog(tab,R)}`;
+  return `<div class="reads"><span>Second reads:</span><button class="ghost" data-read="ask" data-tab="${tab}" title="The genAI planning partner asks you two or three questions about what you wrote here.">Ask me</button><button class="ghost" data-read="options" data-tab="${tab}" title="Three directions you could take instead of, or alongside, your first attempt. Needs a first attempt.">Show me options</button><button class="ghost" data-read="check" data-tab="${tab}" title="Reads what you wrote against the rubric for this part.">Check this</button><span class="later">AI · optional · asks, never writes</span></div>${last?renderRead(tab,last):""}${renderLog(tab,R)}`; }
 const READ_NAMES={ask:"Ask me",options:"Show me options",check:"Check this"};
 // Every read is kept in R.log, and until now only the newest was ever drawn: a second
 // read overwrote the first on screen and ✕ removed it, while Document 2 asks for "two or
@@ -1501,7 +1507,7 @@ function readBody(tab,r,live){
   if(r.mode==="ask") body=(d.questions||[]).map(q=>`<div class="ri"><div class="q">${esc(q.question)}</div><div class="w">${esc(q.why)}</div></div>`).join("");
   // "Try this" is only in reads produced after 2026-10-06; older saved ones have no
   // suggestion and simply do not show the line.
-  else if(r.mode==="check") body=(d.reads||[]).map(x=>`<div class="ri"><span class="crit">${esc(x.criterion)}</span><div>${esc(x.read)}</div>${x.suggestion?`<div style="margin-top:4px"><span class="lbl">Try this</span> ${esc(x.suggestion)}</div>`:""}<div class="q" style="margin-top:3px">${esc(x.question)}</div></div>`).join("");
+  else if(r.mode==="check") body=(d.reads||[]).map(x=>`<div class="ri"><span class="crit">${esc(x.criterion)}</span><div>${esc(x.read)}</div>${x.suggestion?`<div style="margin-top:4px"><span class="lbl">Try this:</span> ${esc(x.suggestion)}</div>`:""}<div class="q" style="margin-top:3px">${esc(x.question)}</div></div>`).join("");
   else if(r.mode==="options") body=(d.cards||[]).map((c,i)=>`<div class="ri opt ${r.aside&&r.aside[i]?"aside":""}"><div><div class="q">${esc(c.direction)}</div><div style="margin-top:3px"><span class="lbl">Would surface</span> ${esc(c.surfaces)}</div><div><span class="lbl">Might give away</span> ${esc(c.gives_away)}</div></div>${live?`<div class="acts"><button class="tbtn" data-aside="${tab}:${i}">${r.aside&&r.aside[i]?"Bring back":"Set aside"}</button></div>`:""}</div>`).join("");
   return body||'<div class="ri small">Nothing came back.</div>';
 }
@@ -1525,7 +1531,7 @@ function readContent(tab){
   // Week 7. The question is read against the concept and the work that prompted it —
   // without those, "is this open?" is unanswerable.
   if(tab==="question") return {
-    question:g.question||"", why_im_asking:g.why||"", concept:g.concept||"",
+    question:g.question||"", "why I am asking":g.why||"", concept:g.concept||"",
     what_the_work_shows:g.think||"",
     collected_work:(g.samplesRows||[]).filter(r=>(r[0]||"").trim()).map(r=>`${r[0]}: ${r[1]} — ${r[2]}`).join("\n")
   };
