@@ -1058,7 +1058,7 @@ function renderQuestions() {
   renderQPhase();
 }
 
-const Q_MIN = 10;
+const Q_MIN = 5;
 
 // Below the list: while storming, a count and the Done button; afterwards, what the two
 // letters mean and how many are still unmarked.
@@ -1075,7 +1075,7 @@ function renderQPhase() {
     const b = document.createElement("button"); b.className = "next"; b.id = "qDone";
     b.textContent = "\u2713 Done storming \u2014 now sort them \u2192";
     b.disabled = n < Q_MIN;
-    b.title = n < Q_MIN ? "Ten questions first" : "";
+    b.title = n < Q_MIN ? "Five questions first" : "";
     b.onclick = () => { state.qPhase = "label"; renderQuestions(); sync(); };
     bar.appendChild(p1); bar.appendChild(b);
     return;
@@ -1311,6 +1311,6 @@ function init() {
 }
 init();
 </script>
-<div id="build">Studio Build 3</div>
+<div id="build">Studio Build 4</div>
 </body>
 </html>
