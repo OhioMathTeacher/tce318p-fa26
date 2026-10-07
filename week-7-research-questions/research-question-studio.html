@@ -432,7 +432,11 @@
     <button class="next" id="next">Next →</button>
   </div>
 
-  <p class="foot">Your work autosaves in this browser only.
+  <p class="foot">Your work autosaves <strong>in this browser, on this machine</strong> &mdash; it does not sync.
+    Switching computers? Save a backup file here and restore it on the other one.
+    <button class="mini" id="saveFile" style="margin-left:6px;">↓ Save a backup file</button>
+    <button class="mini" id="restoreFile">Restore from a file</button>
+    <input type="file" id="restoreInput" accept=".json,application/json" style="display:none">
     <button class="mini" id="clearAll" style="margin-left:6px;">Clear everything</button></p>
 </div>
 
@@ -475,6 +479,83 @@ function load() {
 }
 function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} }
 function sampleHasContent(s) { return !!(s.task.trim() || s.did.trim() || s.noticed.trim()); }
+
+// ---- backup file: the only way work crosses machines -----------------------
+// localStorage is per-browser per-machine and there is no account behind this, so a
+// student who starts in a lab and finishes on a laptop would otherwise lose everything.
+//
+// The blob is built synchronously inside the click, and handed to a download anchor
+// rather than navigator.share. Journaler's lesson applies to the share sheet, not to
+// this: Safari only trusts share() inside the gesture that opened it, and an anchor
+// download has no such rule. iOS Safari puts the file in Files.
+//
+// Photos are NOT in here. They are read live from the Planner and never copied into
+// this Studio's store (quota), so a backup restored on another machine brings the
+// writing back without the images, and the sample cards fall back to one column.
+// Say so rather than let someone think the photos were lost.
+const BACKUP_KIND = "tce318p-rqstudio-backup";
+
+function backupName() {
+  const d = new Date(), p = n => String(n).padStart(2, "0");
+  return "research-question-studio-" + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate())
+       + "-" + p(d.getHours()) + p(d.getMinutes()) + ".json";
+}
+
+function saveToFile() {
+  let url = null;
+  try {
+    const payload = JSON.stringify({ kind: BACKUP_KIND, v: 1, saved: new Date().toISOString(), state: state }, null, 2);
+    const blob = new Blob([payload], { type: "application/json" });
+    url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = backupName();
+    document.body.appendChild(a); a.click(); a.remove();
+  } catch (e) {
+    alert("The backup could not be made in this browser. If you are in private browsing, try a normal window.");
+  }
+  if (url) setTimeout(() => URL.revokeObjectURL(url), 30000);   // after the download has started
+}
+
+// What a restored file is allowed to contain. Anything else is not one of ours.
+function validBackup(o) {
+  if (!o || typeof o !== "object") return null;
+  const st = (o.kind === BACKUP_KIND && o.state) ? o.state : o;     // tolerate a bare state
+  if (!st || typeof st !== "object") return null;
+  if (!Array.isArray(st.samples) || !Array.isArray(st.questions)) return null;
+  return st;
+}
+
+function restoreFromFile(file) {
+  const rd = new FileReader();
+  rd.onerror = () => alert("That file could not be read.");
+  rd.onload = () => {
+    let incoming = null;
+    try { incoming = validBackup(JSON.parse(rd.result)); } catch (e) { incoming = null; }
+    if (!incoming) {
+      alert("That does not look like a Research Question Studio backup. Choose the .json file this studio saved.");
+      return;
+    }
+    const occupied = state.samples.some(sampleHasContent) || state.questions.length;
+    if (occupied && !confirm("Restoring replaces everything in this studio with the file's contents. Continue?")) return;
+
+    // rebuild from a clean base so a short file cannot leave stale fields behind
+    state = Object.assign({ grade: "", focus: "", focusOther: "", adaptTypes: [], adaptation: "",
+                            seq: 0, samples: [], questions: [], qPhase: "storm" }, incoming);
+    if (!Array.isArray(state.adaptTypes)) state.adaptTypes = [];
+    if (!state.samples.length) state.samples = [blankSample()];
+    state.samples.forEach(s => { if (!s.id) s.id = uid(); });
+    state.seq = Math.max(state.seq || 0, state.samples.length);
+    activeSample = 0;
+    _plannerCache = null;                    // this machine's Planner, not the old one's
+    fillLearner(); renderSamples(); renderQuestions(); sync(); showStep(0);
+
+    const lost = state.samples.filter(s => s.fromPlanner !== undefined && s.fromPlanner !== null).length;
+    alert("Restored." + (lost ? " The photos of the work are not in a backup file \u2014 they stay with the Concept"
+        + " Profile in the BDA Planner. Your writing is all here. On this machine the samples will show"
+        + " without pictures unless your Concept Profile is in this browser too." : ""));
+  };
+  rd.readAsText(file);
+}
 
 // ---- learner ----
 // Ohio's Learning Standards for Mathematics, cluster-level, grouped by domain.
@@ -1295,6 +1376,13 @@ function init() {
   $("qInput").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); addQuestion(); } });
   $("confirm").addEventListener("change", () => { refreshProduce(); showStep(step); });
   $("produce").onclick = producePDF;
+  $("saveFile").onclick = saveToFile;
+  $("restoreFile").onclick = () => $("restoreInput").click();
+  $("restoreInput").addEventListener("change", e => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = "";                      // so the same file can be chosen twice
+    if (f) restoreFromFile(f);
+  });
   $("clearAll").onclick = () => {
     if (!confirm("Clear everything in this studio? This can't be undone.")) return;
     localStorage.removeItem(STORE);
@@ -1311,6 +1399,6 @@ function init() {
 }
 init();
 </script>
-<div id="build">Studio Build 4</div>
+<div id="build">Studio Build 5</div>
 </body>
 </html>
