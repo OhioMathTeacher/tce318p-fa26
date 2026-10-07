@@ -520,11 +520,13 @@ function backupName() {
 //
 // 3. AN IN-APP BROWSER IS NOT A BROWSER, and this is the one that will bite here:
 //    students open this page from a link in Canvas. The Canvas app renders it in an
-//    embedded WebView that cannot download a blob:, cannot print, and keeps storage of
-//    its own. In this Studio that means no backup file, no Document 1 (it is made with
-//    window.print()), and "Bring in my Concept Profile" finding nothing, because the
-//    Planner work lives in Safari's storage and not in the WebView's. All three fail
-//    silently, which reads to a student as "nothing works".
+//    embedded WebView that cannot download a blob:, has no print support, and keeps
+//    storage of its own. Nothing is wrong with the app: producePDF is buildPrintDoc()
+//    plus window.print(), which is a real PDF everywhere a print dialog exists. It is
+//    this container that has none. So in a WebView the backup does not save, Produce
+//    PDF does nothing, and "Bring in my Concept Profile" finds nothing because the
+//    Planner's work is in the browser's storage, not the WebView's -- three silent
+//    failures that read to a student as "nothing works".
 //
 // ⚠ navigator.share and canShare are SECURE-CONTEXT ONLY. Over plain http:// this
 // quietly takes the desktop branch, so the iOS path cannot be tested on a local server.
@@ -551,7 +553,7 @@ function saveBlob(blob, name) {
   // Fire the anchor anyway -- a host that does handle downloads gets its chance --
   // but report failure, so nothing upstream claims a backup that never landed.
   if (IS_WEBVIEW) {
-    webviewWarn("This built-in browser cannot save files.");
+    webviewWarn("That did not save.");
     try { anchorSave(blob, name); } catch (e) {}
     return Promise.resolve(false);
   }
@@ -584,9 +586,11 @@ function webviewWarn(lead) {
   const bar = document.createElement("div");
   bar.id = "wvBar";
   bar.innerHTML = "<strong>" + (lead ? lead + " " : "")
-    + "This page is open inside another app.</strong> It cannot save files, cannot make "
-    + "your PDF, and keeps a separate copy of your work \u2014 your Concept Profile will "
-    + "not be found here. " + how;
+    + "You are viewing this page inside another app, probably by tapping the link in "
+    + "Canvas.</strong> Everything here works in a real browser, but not in this one: "
+    + "<em>Produce PDF</em> and <em>Save a backup file</em> may do nothing when you press "
+    + "them, and <em>Bring in my Concept Profile</em> will not find your Week\u00a06 work, "
+    + "because this app keeps storage separate from your browser's. " + how;
   const btn = document.createElement("button");
   btn.type = "button"; btn.className = "mini"; btn.textContent = "Copy the address";
   btn.onclick = function () {
@@ -1502,6 +1506,6 @@ function init() {
 }
 init();
 </script>
-<div id="build">Studio Build 9</div>
+<div id="build">Studio Build 10</div>
 </body>
 </html>
