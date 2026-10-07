@@ -81,6 +81,11 @@
     background: var(--panel); resize: vertical;
   }
   input:focus, textarea:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+  /* The three boxes on step 2 are where the reading of the work gets written, and the
+     rubric scores how closely it reads. Fitting the placeholder exactly left a one- or
+     two-line slot that invites one line back. Floor them at roughly four lines; autoSize
+     still grows them past this, and min-height beats the inline height it sets. */
+  #samples textarea { min-height: 5.6em; }
   .row2 { display: flex; gap: 14px; }
   .row2 > div { flex: 1; }
   .adapt-chips { margin: 10px 0 2px; }
@@ -944,6 +949,11 @@ function attachDrawing(canvas, id) {
 // the ResizeObserver tells their drag from our own write by comparing against the height
 // we last set.
 function autoSize(ta) {
+  // A textarea inside a .panel that is not .active is display:none, and scrollHeight is 0
+  // on a box with no layout. Measuring one there wrote height:0px and left a clipped
+  // sliver that never recovered, because nothing remeasured when the step was revealed.
+  // Skip it here and let showStep() measure it once it is actually on screen.
+  if (ta.offsetParent === null && ta.style.position !== "fixed") return;
   const empty = !ta.value;
   if (empty) ta.value = ta.placeholder || "";
   ta.style.height = "auto";
@@ -1225,6 +1235,9 @@ function showStep(i) {
     t.classList.toggle("active", s === step);
     t.classList.toggle("done", stepDone(s));
   });
+  // Now that the panel is laid out, size the boxes that could not be measured while it
+  // was hidden (init() renders every step while step 0 is the active one).
+  document.querySelectorAll(".panel.active textarea").forEach(autoSize);
   $("back").disabled = step === 0;
   $("next").style.visibility = step === STEPS - 1 ? "hidden" : "visible";
   window.scrollTo({ top: 0, behavior: "smooth" });
