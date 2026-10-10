@@ -595,6 +595,19 @@
   };
   const popIt=()=>{ if(!S.started){ start(); roll(); } else if(!$("roll").disabled) roll(); };
   $("popper").addEventListener("click", popIt);
+  // ENTER presses whichever big button is showing: PASS, NEW GAME, or POP! (which also starts the game).
+  // Not while typing in a box or with the high scores open, and buttons keep their own Enter.
+  document.addEventListener("keydown", e=>{
+    if(e.key!=="Enter"||e.repeat||e.altKey||e.ctrlKey||e.metaKey) return;
+    const t=e.target, tag=(t&&t.tagName)||"";
+    if(tag==="INPUT"||tag==="TEXTAREA"||tag==="BUTTON"||tag==="SELECT"||(t&&t.isContentEditable)) return;
+    if(t&&t.id==="popper") return;   // the dome has its own Enter
+    if($("hsDlg").open) return;
+    e.preventDefault();
+    if(!$("pass").hidden) $("pass").click();
+    else if(!$("again").hidden) $("again").click();
+    else if(!S.started||!$("roll").disabled) $("roll").click();
+  });
   $("popper").addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); popIt(); } });
   $("again").onclick=()=>{ $("again").hidden=true; S=fresh(vsMode); say(""); drawBoard(); renderSide(); renderLedger(); };
   S=fresh("human"); renderSide(); renderBest();
