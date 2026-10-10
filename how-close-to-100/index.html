@@ -32,7 +32,8 @@
  .filledRow{margin-top:auto;padding-top:10px;border-top:1px solid #2a3170;}
  .filledRow h2{margin:4px 0 4px;}
  .lives{margin-top:8px;font-size:22px;letter-spacing:4px;line-height:1;}
- .lives .gone{color:#3a4170;} .lives .live{color:var(--red);text-shadow:2px 2px 0 #000;}
+ .lives .gone{color:#3a4170;}
+ .lives{display:flex;align-items:center;} .lives .rolls{margin-left:auto;font-family:var(--pixel);font-size:9px;letter-spacing:0;color:var(--muted);} .lives .rolls b{color:#fff;font-size:12px;} .lives .live{color:var(--red);text-shadow:2px 2px 0 #000;}
  .lives.lost{animation:shake .5s;}
  .best{margin-top:8px;font-family:var(--pixel);font-size:9px;color:var(--muted);line-height:1.6;}
  .best b{color:var(--yellow);font-size:12px;}
@@ -194,7 +195,7 @@
 
   function fresh(mode){
     return { mode, started:false, grid: Array.from({length:N},()=>Array(N).fill(null)), placed:[], turn:"A",
-             dice:null, rolling:false, lives:3, over:false, kidsMath:true, total:0, entries:[], pending:null, names:{A:"",B:""} };
+             dice:null, rolling:false, lives:3, rolls:0, over:false, kidsMath:true, total:0, entries:[], pending:null, names:{A:"",B:""} };
   }
   const nm = id => (document.getElementById(id).value||"").trim().slice(0,16);
   const nameOf = p => p==="A" ? (nm("inA")||"Player 1") : (S.mode==="computer" ? "Computer" : (nm("inB")||"Player 2"));
@@ -388,24 +389,35 @@
   const ini = s => (s||"").replace(/[^A-Za-z0-9]/g,"").slice(0,3).toUpperCase();
   function team(){ const a=ini(nm("inA"))||"P1", b=S.mode==="computer"?"CPU":(ini(nm("inB"))||"P2"); return a+" & "+b; }
   function scores(){ try{ const v=JSON.parse(localStorage.getItem(HS)||"[]"); return Array.isArray(v)?v:[]; }catch(e){ return []; } }
+  const perRoll = x => (x&&x.r ? (x.s/x.r).toFixed(1) : null);
   function renderBest(){
-    const top=scores()[0], el=$("best"); el.textContent="";
+    const list=scores(), top=list[0], el=$("best"); el.textContent="";
     if(!top){ el.textContent="BEST: none yet"; return; }
-    el.append("BEST "); const b=document.createElement("b"); b.textContent=top.s; el.append(b, " · "+top.t);
+    el.append("BEST "); const b=document.createElement("b"); b.textContent=top.s; el.append(b, (top.r!=null?" in "+top.r+" rolls":"")+" · "+top.t);
+    const br=list.filter(x=>x.r).reduce((m,x)=>!m||x.s/x.r>m.s/m.r?x:m, null);
+    if(br){ el.append(document.createElement("br"), "MOST PER ROLL "); const c=document.createElement("b"); c.textContent=perRoll(br); el.append(c, " · "+br.t); }
   }
   function record(score){
-    const list=scores(), wasBest=list.length?list[0].s:-1, me={s:score,t:team(),d:Date.now()};
-    list.push(me); list.sort((x,y)=>y.s-x.s||x.d-y.d); const top=list.slice(0,5);
-    try{ localStorage.setItem(HS,JSON.stringify(top)); }catch(e){}
-    return {top, me, isNew: score>wasBest};
+    const rk=x=>(x.r==null?999:x.r);   // older scores saved before rolls were counted sort last on a tie
+    const better=(x,y)=>y.s-x.s||rk(x)-rk(y)||x.d-y.d;
+    const list=scores(), prev=list.length?list.slice().sort(better)[0]:null, me={s:score,r:S.rolls,t:team(),d:Date.now()};
+    const rate=x=>(x.r? x.s/x.r : 0);
+    const prevRate=list.reduce((m,x)=>Math.max(m,rate(x)),0);
+    list.push(me); list.sort(better); const keep=list.slice(0,40); const top=keep.slice(0,5);
+    try{ localStorage.setItem(HS,JSON.stringify(keep)); }catch(e){}
+    const bestRate=keep.reduce((m,x)=>rate(x)>rate(m)?x:m, keep[0]);
+    return {top, me, isNew: !prev || better(me,prev)<0, bestRate, newRate: rate(me)>prevRate && me.r>0};
   }
   function showScores(res){
     const box=document.createElement("div"); box.className="hiscore";
     if(res.isNew){ const n=document.createElement("span"); n.className="new"; n.textContent="NEW HIGH SCORE!"; box.appendChild(n); }
     const h=document.createElement("div"); h.textContent="TOP 5"; box.appendChild(h);
     const ol=document.createElement("ol");
-    res.top.forEach(x=>{ const li=document.createElement("li"); li.textContent=x.s+"  "+x.t; if(x===res.me||(x.d===res.me.d&&x.s===res.me.s)) li.className="me"; ol.appendChild(li); });
+    res.top.forEach(x=>{ const li=document.createElement("li"); li.textContent=x.s+(x.r!=null?" · "+x.r+" rolls":"")+"  "+x.t; if(x===res.me||(x.d===res.me.d&&x.s===res.me.s)) li.className="me"; ol.appendChild(li); });
     box.appendChild(ol);
+    if(res.bestRate&&res.bestRate.r){ const pr=document.createElement("div"); pr.style.marginTop="6px";
+      pr.textContent=(res.newRate?"NEW RECORD! ":"")+"Most per roll: "+perRoll(res.bestRate)+" · "+res.bestRate.t+"  (this game: "+(perRoll(res.me)||"–")+")";
+      if(res.newRate) pr.style.color="var(--green)"; box.appendChild(pr); }
     const clr=document.createElement("button"); clr.className="ghost"; clr.textContent="CLEAR SCORES";
     clr.onclick=()=>{ if(confirm("Clear the high scores on this device?")){ try{ localStorage.removeItem(HS); }catch(e){} renderBest(); box.remove(); } };
     box.appendChild(clr);
@@ -423,7 +435,7 @@
     $("roll").hidden = S.over || !!S.noRoom;
     $("pass").hidden = !S.noRoom;
     const n=S.total;
-    $("lives").innerHTML=[0,1,2].map(i=>`<span class="${i<S.lives?"live":"gone"}">♥</span>`).join("");
+    $("lives").innerHTML=[0,1,2].map(i=>`<span class="${i<S.lives?"live":"gone"}">♥</span>`).join("")+`<span class="rolls">ROLLS <b>${S.rolls}</b></span>`;
     $("filled").innerHTML = n+" <small>of 100</small>";
     $("meter").innerHTML = Array.from({length:10},(_,i)=>`<i class="${n>=(i+1)*10?"on":""}"></i>`).join("");
     board.classList.toggle("waiting", !!S.dice && !isComputer(S.turn) && !S.over);
@@ -440,12 +452,13 @@
     SND.over();
     const res=record(S.total); renderBest(); showScores(res);
     if(res.isNew) setTimeout(()=>SND.speak("New high score!"), 700);
+    else if(res.newRate) setTimeout(()=>SND.speak("New record: most per roll!"), 700);
     $("again").hidden=false;
   }
   function roll(){
     if(S.over||S.dice||S.rolling) return;
     const a=1+Math.floor(Math.random()*6), b=1+Math.floor(Math.random()*6);
-    S.rolling=true; renderSide(); SND.roll(); SND.speak("Pop!");
+    S.rolling=true; S.rolls++; renderSide(); SND.roll(); SND.speak("Pop!");
     const pop=$("popper"); pop.classList.remove("pop","spin"); void pop.offsetWidth; pop.classList.add("pop","spin","busy");
     const spin=setInterval(()=>showDice([1+Math.floor(Math.random()*6),1+Math.floor(Math.random()*6)], true), 90);
     setTimeout(()=>{ clearInterval(spin); pop.classList.remove("spin","pop","busy"); landed(a,b); }, 2000);
