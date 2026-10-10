@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How Close to 100?</title>
+<style>
+ :root{
+  --ink:#1f2937; --muted:#6b7280; --line:#cbd5e1; --bg:#ffffff;
+  --a-fill:#bfe0ff; --a-line:#1f5fa8; --b-fill:#ffcdc9; --b-line:#b3261e;
+ }
+ *{box-sizing:border-box;}
+ body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);margin:0;}
+ main{max-width:980px;margin:0 auto;padding:18px 16px 40px;}
+ h1{font-size:24px;margin:0;}
+ .sub{color:var(--muted);font-size:13px;margin:2px 0 14px;}
+ .sub a{color:inherit;}
+ .layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:22px;align-items:start;}
+ @media (max-width:760px){ .layout{grid-template-columns:1fr;} }
+
+ /* the board */
+ .board{position:relative;width:100%;max-width:560px;aspect-ratio:1;border:2px solid var(--ink);touch-action:none;user-select:none;-webkit-user-select:none;background:#fff;
+   background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:10% 10%;}
+ .board.waiting{cursor:crosshair;}
+ .rect{position:absolute;border:3px solid;border-radius:3px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:clamp(11px,2.2vw,15px);}
+ .rect.A{background:var(--a-fill);border-color:var(--a-line);color:var(--a-line);}
+ .rect.B{background:var(--b-fill);border-color:var(--b-line);color:var(--b-line);}
+ .rect.preview{opacity:.75;border-style:dashed;}
+ .rect.bad{background:#fff3c4;border-color:#a16207;color:#a16207;}
+
+ /* side panel */
+ .panel{display:flex;flex-direction:column;gap:14px;}
+ .card{border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;}
+ .card h2{font-size:14px;margin:0 0 8px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);}
+ .turn{font-size:18px;font-weight:700;}
+ .turn .A{color:var(--a-line);} .turn .B{color:var(--b-line);}
+ .dice{display:flex;gap:10px;margin:10px 0;min-height:58px;align-items:center;}
+ .dice svg{width:56px;height:56px;}
+ button{font:inherit;font-weight:700;border-radius:8px;border:1px solid var(--ink);background:var(--ink);color:#fff;padding:9px 16px;cursor:pointer;}
+ button:disabled{opacity:.35;cursor:default;}
+ button.ghost{background:#fff;color:var(--ink);}
+ .msg{min-height:1.4em;font-size:14px;margin-top:6px;}
+ .msg.warn{color:#a16207;}
+ .filled{font-size:28px;font-weight:800;}
+ .filled small{font-size:14px;font-weight:600;color:var(--muted);}
+ .logs{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:14px;}
+ .logs h3{font-size:13px;margin:0 0 4px;}
+ .logs .A h3{color:var(--a-line);} .logs .B h3{color:var(--b-line);}
+ .logs ol{margin:0;padding-left:20px;} .logs li{margin:1px 0;}
+ .setup label{display:block;margin:4px 0;font-size:14px;}
+ .over{font-size:16px;font-weight:700;}
+</style>
+</head>
+<body>
+<main>
+ <h1>How Close to 100?</h1>
+ <div class="sub">The game from <a href="https://www.youcubed.org/tasks/how-close-to-100/">YouCubed</a> (Stanford). Roll two dice, draw an array that size, and fill the grid together.</div>
+
+ <div class="layout">
+  <div>
+   <div class="board" id="board" aria-label="A 10 by 10 grid"></div>
+  </div>
+
+  <div class="panel">
+   <div class="card setup" id="setup">
+    <h2>Play with</h2>
+    <label><input type="radio" name="mode" value="human" checked> a partner, on this screen</label>
+    <label><input type="radio" name="mode" value="computer"> the computer</label>
+    <div style="margin-top:10px"><button id="start">Start</button></div>
+   </div>
+
+   <div class="card" id="play" hidden>
+    <div class="turn" id="turn"></div>
+    <div class="dice" id="dice"></div>
+    <button id="roll">Roll the dice</button>
+    <div class="msg" id="msg"></div>
+   </div>
+
+   <div class="card">
+    <h2>Filled</h2>
+    <div class="filled" id="filled">0 <small>of 100</small></div>
+   </div>
+
+   <div class="card">
+    <h2>Number sentences</h2>
+    <div class="logs">
+     <div class="A"><h3 id="nameA">Player A</h3><ol id="logA"></ol></div>
+     <div class="B"><h3 id="nameB">Player B</h3><ol id="logB"></ol></div>
+    </div>
+   </div>
+
+   <div><button class="ghost" id="again" hidden>New game</button></div>
+  </div>
+ </div>
+</main>
+
+<script>
+(function(){
+  const N = 10;
+  const board = document.getElementById("board");
+  const $ = id => document.getElementById(id);
+  let S;
+
+  function fresh(mode){
+    return { mode, grid: Array.from({length:N},()=>Array(N).fill(null)), turn:"A",
+             dice:null, passes:0, over:false, logs:{A:[],B:[]} };
+  }
+  const nameOf = p => p==="A" ? "Player A" : (S.mode==="computer" ? "Computer" : "Player B");
+  const isComputer = p => S.mode==="computer" && p==="B";
+
+  // ---------- dice ----------
+  const PIPS = {1:[[2,2]],2:[[1,1],[3,3]],3:[[1,1],[2,2],[3,3]],4:[[1,1],[1,3],[3,1],[3,3]],
+                5:[[1,1],[1,3],[2,2],[3,1],[3,3]],6:[[1,1],[1,3],[2,1],[2,3],[3,1],[3,3]]};
+  function dieSVG(n){
+    const dots = PIPS[n].map(([r,c])=>`<circle cx="${c*14+2}" cy="${r*14+2}" r="4.2" fill="#1f2937"/>`).join("");
+    return `<svg viewBox="0 0 60 60" role="img" aria-label="${n}"><rect x="2" y="2" width="56" height="56" rx="10" fill="#fff" stroke="#1f2937" stroke-width="3"/>${dots}</svg>`;
+  }
+
+  // ---------- board ----------
+  function free(r,c,h,w){
+    if(r<0||c<0||r+h>N||c+w>N) return false;
+    for(let i=r;i<r+h;i++) for(let j=c;j<c+w;j++) if(S.grid[i][j]) return false;
+    return true;
+  }
+  function firstFit(h,w){
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(free(r,c,h,w)) return {r,c,h,w};
+    return null;
+  }
+  const anyFit = (a,b) => firstFit(a,b) || firstFit(b,a);
+  const filled = () => S.grid.flat().filter(Boolean).length;
+
+  function rectEl(cls,r,c,h,w,label){
+    const d=document.createElement("div");
+    d.className="rect "+cls;
+    d.style.left=(c*10)+"%"; d.style.top=(r*10)+"%"; d.style.width=(w*10)+"%"; d.style.height=(h*10)+"%";
+    d.textContent=label||"";
+    return d;
+  }
+  function drawBoard(){
+    board.querySelectorAll(".rect").forEach(e=>e.remove());
+    (S.placed||[]).forEach(p=>board.appendChild(rectEl(p.who,p.r,p.c,p.h,p.w,p.h+" × "+p.w)));
+  }
+  function place(who,r,c,h,w){
+    for(let i=r;i<r+h;i++) for(let j=c;j<c+w;j++) S.grid[i][j]=who;
+    (S.placed=S.placed||[]).push({who,r,c,h,w});
+    S.logs[who].push(h+" × "+w+" = "+(h*w));
+    S.passes=0; S.dice=null;
+    drawBoard(); renderSide();
+    nextTurn();
+  }
+
+  // ---------- turns ----------
+  function say(t,warn){ const m=$("msg"); m.textContent=t||""; m.className="msg"+(warn?" warn":""); }
+  function renderSide(){
+    $("turn").innerHTML = S.over ? "" : `<span class="${S.turn}">${nameOf(S.turn)}</span>'s turn`;
+    $("dice").innerHTML = S.dice ? dieSVG(S.dice[0])+dieSVG(S.dice[1]) : "";
+    $("roll").disabled = S.over || !!S.dice || isComputer(S.turn);
+    $("roll").hidden = S.over;
+    $("filled").innerHTML = filled()+" <small>of 100</small>";
+    $("nameA").textContent=nameOf("A"); $("nameB").textContent=nameOf("B");
+    $("logA").innerHTML=S.logs.A.map(x=>"<li>"+x+"</li>").join("");
+    $("logB").innerHTML=S.logs.B.map(x=>"<li>"+x+"</li>").join("");
+    board.classList.toggle("waiting", !!S.dice && !isComputer(S.turn) && !S.over);
+  }
+  function nextTurn(){
+    S.turn = S.turn==="A" ? "B" : "A";
+    renderSide();
+    if(isComputer(S.turn)) setTimeout(roll, 700);
+  }
+  function endGame(){
+    S.over=true; S.dice=null; renderSide();
+    say(""); $("turn").innerHTML=`<div class="over">Game over. The board is ${filled()} of 100 full.</div>`;
+    $("again").hidden=false;
+  }
+  function roll(){
+    if(S.over||S.dice) return;
+    const a=1+Math.floor(Math.random()*6), b=1+Math.floor(Math.random()*6);
+    S.dice=[a,b]; renderSide();
+    if(!anyFit(a,b)){
+      S.passes++;
+      say(`No room for ${a} × ${b}. ${nameOf(S.turn)} passes.`, true);
+      if(S.passes>=2){ setTimeout(endGame, 1200); return; }
+      setTimeout(()=>{ S.dice=null; say(""); nextTurn(); }, 1600);
+      return;
+    }
+    if(isComputer(S.turn)){
+      say("");
+      setTimeout(()=>{ const f=firstFit(a,b)||firstFit(b,a); place("B",f.r,f.c,f.h,f.w); }, 900);
+    } else {
+      say("Drag on the grid to draw your array.");
+    }
+  }
+
+  // ---------- drawing ----------
+  let drag=null, preview=null;
+  function cellAt(e){
+    const b=board.getBoundingClientRect();
+    const c=Math.min(N-1,Math.max(0,Math.floor((e.clientX-b.left)/b.width*N)));
+    const r=Math.min(N-1,Math.max(0,Math.floor((e.clientY-b.top)/b.height*N)));
+    return {r,c};
+  }
+  function span(a,z){ return {r:Math.min(a.r,z.r), c:Math.min(a.c,z.c), h:Math.abs(a.r-z.r)+1, w:Math.abs(a.c-z.c)+1}; }
+  board.addEventListener("pointerdown", e=>{
+    if(!S||S.over||!S.dice||isComputer(S.turn)) return;
+    try{ board.setPointerCapture(e.pointerId); }catch(err){}
+    drag={start:cellAt(e)}; move(e);
+  });
+  function move(e){
+    if(!drag) return;
+    const s=span(drag.start,cellAt(e));
+    if(preview) preview.remove();
+    preview=rectEl(S.turn+" preview",s.r,s.c,s.h,s.w,s.h+" × "+s.w);
+    board.appendChild(preview);
+    drag.s=s;
+  }
+  board.addEventListener("pointermove", move);
+  board.addEventListener("pointerup", ()=>{
+    if(!drag) return;
+    const s=drag.s; drag=null;
+    if(preview){ preview.remove(); preview=null; }
+    const [a,b]=S.dice;
+    const right=(s.h===a&&s.w===b)||(s.h===b&&s.w===a);
+    if(!right){ say(`You drew ${s.h} × ${s.w}. The dice say ${a} and ${b}.`, true); return; }
+    if(!free(s.r,s.c,s.h,s.w)){ say("That overlaps an array that's already there.", true); return; }
+    say(""); place(S.turn,s.r,s.c,s.h,s.w);
+  });
+  board.addEventListener("pointercancel", ()=>{ drag=null; if(preview){preview.remove();preview=null;} });
+
+  // ---------- start ----------
+  function start(){
+    const mode=document.querySelector('input[name="mode"]:checked').value;
+    S=fresh(mode); S.placed=[];
+    $("setup").hidden=true; $("play").hidden=false; $("again").hidden=true;
+    say(""); drawBoard(); renderSide();
+  }
+  $("start").onclick=start;
+  $("roll").onclick=roll;
+  $("again").onclick=()=>{ $("setup").hidden=false; $("play").hidden=true; $("again").hidden=true;
+    S=fresh("human"); S.placed=[]; drawBoard(); renderSide(); $("turn").innerHTML=""; };
+  S=fresh("human"); S.placed=[]; renderSide(); $("turn").innerHTML="";
+})();
+</script>
+</body>
+</html>
