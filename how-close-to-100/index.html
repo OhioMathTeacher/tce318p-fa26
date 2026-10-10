@@ -39,6 +39,14 @@
  .rect.pop{animation:pop .25s ease-out;}
  @keyframes pop{0%{transform:scale(.85);}70%{transform:scale(1.04);}100%{transform:scale(1);}}
 
+ .board.shake{animation:shake .5s;}
+ @keyframes shake{0%,100%{transform:translateX(0);}15%{transform:translateX(-10px);}30%{transform:translateX(9px);}45%{transform:translateX(-7px);}60%{transform:translateX(5px);}75%{transform:translateX(-3px);}}
+ .noroom{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(226,72,61,.28);pointer-events:none;z-index:5;
+   font-family:var(--pixel);font-size:clamp(22px,5vw,40px);color:#fff;text-shadow:3px 3px 0 var(--red),6px 6px 0 #000;animation:flash 1.4s ease-out forwards;}
+ @keyframes flash{0%{opacity:0;transform:scale(.6);}15%{opacity:1;transform:scale(1.15);}30%{transform:scale(1);}80%{opacity:1;}100%{opacity:0;}}
+ .pass{background:var(--orange);color:#111;box-shadow:0 5px 0 #a8641b,0 5px 0 3px #000;width:100%;margin-top:10px;}
+ .pass:active{transform:translateY(4px);box-shadow:0 1px 0 #a8641b,0 1px 0 3px #000;}
+ .msg.stop{font-size:15px;font-weight:700;color:#fff;background:#3a1220;border:2px solid var(--red);border-radius:6px;padding:8px 10px;}
  /* side panel */
  .panel{display:flex;flex-direction:column;gap:14px;}
  .card{background:var(--panel);border:3px solid #000;border-radius:6px;padding:12px 14px;position:relative;box-shadow:4px 4px 0 #000;}
@@ -117,6 +125,7 @@
      <div class="base"></div>
     </div>
     <button class="go" id="roll">POP!</button>
+    <button class="pass" id="pass" hidden>PASS</button>
     <div class="msg" id="msg"></div>
    </div>
 
@@ -204,6 +213,10 @@
         for(let k=0;k<14;k++) noise(t+0.12+k*0.135+Math.random()*0.04,0.045,0.12); } },
       place(){ if(on&&ctx){ const t=ctx.currentTime; tone(f(72),t,0.07,"square",0.1); tone(f(79),t+0.07,0.1,"square",0.1); } },
       wrong(){ if(on&&ctx){ tone(f(43),ctx.currentTime,0.22,"square",0.1); } },
+      noRoom(){ if(on&&ctx){ const t=ctx.currentTime;   // a game-show "over the limit" buzzer: two low, detuned sawtooth tones
+        [[98,0.2],[104,0.2],[49,0.14]].forEach(([hz,v])=>{ const o=ctx.createOscillator(), g=ctx.createGain(); o.type="sawtooth"; o.frequency.value=hz;
+          g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+0.02); g.gain.setValueAtTime(v,t+0.85); g.gain.linearRampToValueAtTime(0,t+0.95);
+          o.connect(g); g.connect(master); o.start(t); o.stop(t+1); }); } },
       over(){ if(on&&ctx){ const t=ctx.currentTime; [72,76,79,84].forEach((m,i)=>tone(f(m),t+i*0.12,0.14,"square",0.1)); } }
     };
   })();
@@ -260,14 +273,15 @@
   }
 
   // ---------- turns ----------
-  function say(t,warn){ const m=$("msg"); m.textContent=t||""; m.className="msg"+(warn?" warn":""); }
+  function say(t,warn){ const m=$("msg"); m.textContent=t||""; m.className="msg"+(warn===2?" stop":warn?" warn":""); }
   function renderSide(){
     const t=$("turn");
     if(!S.started){ t.className="turn"; t.textContent="Press START"; }
     else if(!S.over){ t.className="turn "+S.turn; t.textContent=nameOf(S.turn)+"'s turn"; }
     if(!S.rolling) showDice(S.dice||idleFaces, !!S.dice);
-    $("roll").disabled = !S.started || S.over || !!S.dice || S.rolling || isComputer(S.turn);
-    $("roll").hidden = S.over;
+    $("roll").disabled = !S.started || S.over || !!S.dice || S.rolling || !!S.noRoom || isComputer(S.turn);
+    $("roll").hidden = S.over || !!S.noRoom;
+    $("pass").hidden = !S.noRoom;
     const n=filled();
     $("filled").innerHTML = n+" <small>of 100</small>";
     $("meter").innerHTML = Array.from({length:10},(_,i)=>`<i class="${n>=(i+1)*10?"on":""}"></i>`).join("");
@@ -298,11 +312,13 @@
   function landed(a,b){
     S.rolling=false; S.dice=[a,b]; renderSide();
     if(!anyFit(a,b)){
-      S.passes++;
-      SND.wrong();
-      say(`No room for ${a} × ${b}. ${nameOf(S.turn)} passes.`, true);
-      if(S.passes>=2){ setTimeout(endGame, 1200); return; }
-      setTimeout(()=>{ idleFaces=S.dice; S.dice=null; say(""); nextTurn(); }, 1600);
+      // Stop here on purpose: why a roll has no room is worth talking about, so the game waits for PASS.
+      S.noRoom=true; SND.noRoom();
+      board.classList.remove("shake"); void board.offsetWidth; board.classList.add("shake");
+      const flash=document.createElement("div"); flash.className="noroom"; flash.textContent="NO ROOM!"; board.appendChild(flash);
+      setTimeout(()=>flash.remove(), 1500);
+      say(`No room for a ${a} × ${b}. Why not? Talk it over, then press PASS.`, 2);
+      renderSide();
       return;
     }
     if(isComputer(S.turn)){
@@ -357,6 +373,12 @@
   }
   $("start").onclick=start;
   $("roll").onclick=roll;
+  $("pass").onclick=()=>{
+    if(!S.noRoom) return;
+    S.noRoom=false; S.passes++; idleFaces=S.dice; S.dice=null; say("");
+    if(S.passes>=2){ endGame(); return; }
+    nextTurn();
+  };
   const popIt=()=>{ if(!$("roll").disabled) roll(); };
   $("popper").addEventListener("click", popIt);
   $("popper").addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); popIt(); } });
