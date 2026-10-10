@@ -4,56 +4,96 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How Close to 100?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
  :root{
-  --ink:#1f2937; --muted:#6b7280; --line:#cbd5e1; --bg:#ffffff;
+  --ink:#f3f4f6; --muted:#a5b0d0; --screen:#0b1030; --panel:#151b45; --line:#9aa3b5;
   --a-fill:#bfe0ff; --a-line:#1f5fa8; --b-fill:#ffcdc9; --b-line:#b3261e;
+  --yellow:#f7e64c; --orange:#f59e2b; --red:#e2483d; --green:#3fbf5f; --blue:#3b82f6; --tan:#d9b77a;
+  --pixel:"Press Start 2P",ui-monospace,monospace;
  }
  *{box-sizing:border-box;}
- body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);margin:0;}
- main{max-width:980px;margin:0 auto;padding:18px 16px 40px;}
- h1{font-size:24px;margin:0;}
- .sub{color:var(--muted);font-size:13px;margin:2px 0 14px;}
+ body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);margin:0;min-height:100vh;
+   background:radial-gradient(ellipse at top,#1b2466 0%,var(--screen) 60%);}
+ body::after{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0 1px,transparent 1px 3px);}
+ main{max-width:1000px;margin:0 auto;padding:18px 16px 40px;}
+ .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+ h1{font-family:var(--pixel);font-size:clamp(16px,3.2vw,26px);line-height:1.3;margin:0;color:var(--yellow);text-shadow:3px 3px 0 var(--red),6px 6px 0 #000;}
+ .stripes{display:flex;height:6px;margin:10px 0 6px;max-width:420px;}
+ .stripes i{flex:1;} .stripes i:nth-child(1){background:var(--red);} .stripes i:nth-child(2){background:var(--orange);} .stripes i:nth-child(3){background:var(--yellow);} .stripes i:nth-child(4){background:var(--green);} .stripes i:nth-child(5){background:var(--blue);}
+ .sub{color:var(--muted);font-size:13px;margin:0 0 16px;}
  .sub a{color:inherit;}
- .layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:22px;align-items:start;}
- @media (max-width:760px){ .layout{grid-template-columns:1fr;} }
+ .layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:22px;align-items:start;}
+ @media (max-width:780px){ .layout{grid-template-columns:1fr;} }
 
  /* the board */
- .board{position:relative;width:100%;max-width:560px;aspect-ratio:1;border:2px solid var(--ink);touch-action:none;user-select:none;-webkit-user-select:none;background:#fff;
-   background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:10% 10%;}
+ .board{position:relative;width:100%;max-width:560px;aspect-ratio:1;border:8px solid var(--tan);outline:3px solid #000;border-radius:4px;touch-action:none;user-select:none;-webkit-user-select:none;background:#fbf8ec;
+   background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:10% 10%;box-shadow:0 0 0 6px #000,0 12px 30px rgba(0,0,0,.5);}
  .board.waiting{cursor:crosshair;}
- .rect{position:absolute;border:3px solid;border-radius:3px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:clamp(11px,2.2vw,15px);}
+ .rect{position:absolute;border:3px solid;border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:var(--pixel);font-size:clamp(8px,1.6vw,12px);}
  .rect.A{background:var(--a-fill);border-color:var(--a-line);color:var(--a-line);}
  .rect.B{background:var(--b-fill);border-color:var(--b-line);color:var(--b-line);}
- .rect.preview{opacity:.75;border-style:dashed;}
- .rect.bad{background:#fff3c4;border-color:#a16207;color:#a16207;}
+ .rect.preview{opacity:.8;border-style:dashed;}
+ .rect.pop{animation:pop .25s ease-out;}
+ @keyframes pop{0%{transform:scale(.85);}70%{transform:scale(1.04);}100%{transform:scale(1);}}
 
  /* side panel */
  .panel{display:flex;flex-direction:column;gap:14px;}
- .card{border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;}
- .card h2{font-size:14px;margin:0 0 8px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);}
- .turn{font-size:18px;font-weight:700;}
- .turn .A{color:var(--a-line);} .turn .B{color:var(--b-line);}
- .dice{display:flex;gap:10px;margin:10px 0;min-height:58px;align-items:center;}
- .dice svg{width:56px;height:56px;}
- button{font:inherit;font-weight:700;border-radius:8px;border:1px solid var(--ink);background:var(--ink);color:#fff;padding:9px 16px;cursor:pointer;}
+ .card{background:var(--panel);border:3px solid #000;border-radius:6px;padding:12px 14px;position:relative;box-shadow:4px 4px 0 #000;}
+ .card::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:linear-gradient(90deg,var(--red) 0 20%,var(--orange) 20% 40%,var(--yellow) 40% 60%,var(--green) 60% 80%,var(--blue) 80%);}
+ .card h2{font-family:var(--pixel);font-size:10px;margin:6px 0 10px;color:var(--yellow);letter-spacing:.05em;}
+ .turn{font-family:var(--pixel);font-size:13px;line-height:1.5;margin-top:4px;padding:8px 10px;border-radius:4px;background:#0b1030;}
+ .turn.A{background:var(--a-line);} .turn.B{background:var(--b-line);}
+ /* the Pop-O-Matic: two dice under a clear dome */
+ .popper{position:relative;width:220px;margin:16px auto 10px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+ .popper.busy{cursor:default;}
+ .dome{position:relative;height:132px;border-radius:50% 50% 8px 8px / 80% 80% 8px 8px;border:3px solid rgba(255,255,255,.75);
+   background:radial-gradient(ellipse at 30% 22%,rgba(255,255,255,.55) 0 12%,rgba(255,255,255,.08) 30%,rgba(160,200,255,.12) 70%);
+   box-shadow:inset 0 -10px 18px rgba(255,255,255,.12),0 0 0 3px #000;transform-origin:50% 100%;}
+ .dome .dice{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:center;gap:18px;}
+ .dice svg{width:62px;height:62px;filter:drop-shadow(3px 3px 0 #000);}
+ .base{height:30px;margin:0 -10px;border-radius:6px 6px 14px 14px;border:3px solid #000;background:linear-gradient(#f7e64c,#d4be1e);box-shadow:0 6px 0 #000;}
+ .burst{position:absolute;left:50%;top:-18px;transform:translate(-50%,0) scale(0);font-family:var(--pixel);font-size:22px;color:var(--yellow);text-shadow:3px 3px 0 var(--red),5px 5px 0 #000;pointer-events:none;opacity:0;}
+ .popper.pop .dome{animation:squash .35s ease-out;}
+ .popper.pop .burst{animation:burst .7s ease-out;}
+ .popper.spin .dice svg:nth-child(1){animation:hop1 .5s ease-in-out infinite;}
+ .popper.spin .dice svg:nth-child(2){animation:hop2 .44s ease-in-out infinite;}
+ @keyframes squash{0%{transform:scaleY(1);}30%{transform:scaleY(.8) scaleX(1.05);}65%{transform:scaleY(1.08);}100%{transform:scaleY(1);}}
+ @keyframes burst{0%{opacity:0;transform:translate(-50%,10px) scale(.3);}25%{opacity:1;transform:translate(-50%,-14px) scale(1.25);}100%{opacity:0;transform:translate(-50%,-40px) scale(1);}}
+ @keyframes hop1{0%{transform:translate(0,0) rotate(0);}50%{transform:translate(-12px,-58px) rotate(200deg);}100%{transform:translate(0,0) rotate(360deg);}}
+ @keyframes hop2{0%{transform:translate(0,0) rotate(0);}50%{transform:translate(14px,-46px) rotate(-220deg);}100%{transform:translate(0,0) rotate(-360deg);}}
+ @media (prefers-reduced-motion:reduce){ .popper.pop .dome,.popper.spin .dice svg{animation:none;} }
+ button{font-family:var(--pixel);font-size:12px;border-radius:6px;border:3px solid #000;cursor:pointer;padding:12px 16px;}
+ .go{background:var(--yellow);color:#111;box-shadow:0 5px 0 #a8911b,0 5px 0 3px #000;width:100%;}
+ .go:active:not(:disabled){transform:translateY(4px);box-shadow:0 1px 0 #a8911b,0 1px 0 3px #000;}
  button:disabled{opacity:.35;cursor:default;}
- button.ghost{background:#fff;color:var(--ink);}
- .msg{min-height:1.4em;font-size:14px;margin-top:6px;}
- .msg.warn{color:#a16207;}
- .filled{font-size:28px;font-weight:800;}
- .filled small{font-size:14px;font-weight:600;color:var(--muted);}
+ .ghost{background:var(--panel);color:var(--ink);box-shadow:3px 3px 0 #000;}
+ .sound{font-size:10px;padding:9px 12px;}
+ .sound.on{background:var(--green);color:#06260f;}
+ .msg{min-height:2.6em;font-size:14px;margin-top:12px;color:var(--ink);}
+ .msg.warn{color:var(--yellow);}
+ .filled{font-family:var(--pixel);font-size:26px;color:#fff;}
+ .filled small{font-size:10px;color:var(--muted);}
+ .meter{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin-top:10px;}
+ .meter i{height:10px;background:#0b1030;border:1px solid #000;}
+ .meter i.on{background:var(--green);}
  .logs{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:14px;}
- .logs h3{font-size:13px;margin:0 0 4px;}
- .logs .A h3{color:var(--a-line);} .logs .B h3{color:var(--b-line);}
+ .logs h3{font-family:var(--pixel);font-size:9px;margin:0 0 6px;}
+ .logs .A h3{color:#8fc3ff;} .logs .B h3{color:#ff9b93;}
  .logs ol{margin:0;padding-left:20px;} .logs li{margin:1px 0;}
- .setup label{display:block;margin:4px 0;font-size:14px;}
- .over{font-size:16px;font-weight:700;}
+ .setup label{display:block;margin:6px 0;font-size:15px;}
+ .over{font-family:var(--pixel);font-size:12px;line-height:1.6;color:var(--yellow);}
 </style>
 </head>
 <body>
 <main>
- <h1>How Close to 100?</h1>
+ <div class="top">
+  <h1>How Close<br>to 100?</h1>
+  <button class="ghost sound" id="sound" aria-pressed="false">♪ SOUND: OFF</button>
+ </div>
+ <div class="stripes"><i></i><i></i><i></i><i></i><i></i></div>
  <div class="sub">The game from <a href="https://www.youcubed.org/tasks/how-close-to-100/">YouCubed</a> (Stanford). Roll two dice, draw an array that size, and fill the grid together.</div>
 
  <div class="layout">
@@ -66,19 +106,24 @@
     <h2>Play with</h2>
     <label><input type="radio" name="mode" value="human" checked> a partner, on this screen</label>
     <label><input type="radio" name="mode" value="computer"> the computer</label>
-    <div style="margin-top:10px"><button id="start">Start</button></div>
+    <div style="margin-top:12px"><button class="go" id="start">START</button></div>
    </div>
 
-   <div class="card" id="play" hidden>
+   <div class="card" id="play">
     <div class="turn" id="turn"></div>
-    <div class="dice" id="dice"></div>
-    <button id="roll">Roll the dice</button>
+    <div class="popper" id="popper" role="button" tabindex="0" aria-label="Pop the dice">
+     <div class="burst">POP!</div>
+     <div class="dome"><div class="dice" id="dice"></div></div>
+     <div class="base"></div>
+    </div>
+    <button class="go" id="roll">POP!</button>
     <div class="msg" id="msg"></div>
    </div>
 
    <div class="card">
     <h2>Filled</h2>
     <div class="filled" id="filled">0 <small>of 100</small></div>
+    <div class="meter" id="meter"></div>
    </div>
 
    <div class="card">
@@ -89,7 +134,7 @@
     </div>
    </div>
 
-   <div><button class="ghost" id="again" hidden>New game</button></div>
+   <div><button class="ghost" id="again" hidden>NEW GAME</button></div>
   </div>
  </div>
 </main>
@@ -99,21 +144,85 @@
   const N = 10;
   const board = document.getElementById("board");
   const $ = id => document.getElementById(id);
-  let S;
+  let S, idleFaces=[5,2];
 
   function fresh(mode){
-    return { mode, grid: Array.from({length:N},()=>Array(N).fill(null)), turn:"A",
-             dice:null, passes:0, over:false, logs:{A:[],B:[]} };
+    return { mode, started:false, grid: Array.from({length:N},()=>Array(N).fill(null)), placed:[], turn:"A",
+             dice:null, rolling:false, passes:0, over:false, logs:{A:[],B:[]} };
   }
   const nameOf = p => p==="A" ? "Player A" : (S.mode==="computer" ? "Computer" : "Player B");
   const isComputer = p => S.mode==="computer" && p==="B";
 
+  // ---------- 8-bit sound: square-wave melody, triangle bass, noise for the dice ----------
+  // "Ode to Joy" (Beethoven, 1824) -- the melody is in the public domain; this arrangement is made here, in code.
+  const SND = (function(){
+    let ctx=null, master=null, on=false, timer=null, next=0, step=0;
+    const f = m => 440*Math.pow(2,(m-69)/12);
+    const A=[[76,1],[76,1],[77,1],[79,1],[79,1],[77,1],[76,1],[74,1],[72,1],[72,1],[74,1],[76,1]];
+    const MEL=[].concat(A,[[76,1.5],[74,.5],[74,2]], A,[[74,1.5],[72,.5],[72,2]],
+      [[74,1],[74,1],[76,1],[72,1],[74,1],[76,.5],[77,.5],[76,1],[72,1],[74,1],[76,.5],[77,.5],[76,1],[74,1],[72,1],[74,1],[67,2]],
+      A,[[74,1.5],[72,.5],[72,2]]);
+    const BASS=[48,43,48,43, 48,43,48,48, 43,48,43,48, 48,43,48,48];   // one root per bar, 16 bars
+    const BEAT=60/138;
+    const seq=[]; let t=0; MEL.forEach(([m,d])=>{ seq.push({t,m,d,v:"mel"}); t+=d; });
+    BASS.forEach((m,i)=>{ seq.push({t:i*4,m,d:2,v:"bass"}); seq.push({t:i*4+2,m:m+7,d:2,v:"bass"}); });
+    seq.sort((x,y)=>x.t-y.t);
+    const LOOP=t;
+    function ensure(){ if(ctx) return true; try{ ctx=new (window.AudioContext||window.webkitAudioContext)(); master=ctx.createGain(); master.gain.value=0.5; master.connect(ctx.destination); return true; }catch(e){ return false; } }
+    function tone(freq,start,dur,type,vol){
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.type=type; o.frequency.value=freq;
+      g.gain.setValueAtTime(0,start); g.gain.linearRampToValueAtTime(vol,start+0.01);
+      g.gain.setValueAtTime(vol,start+Math.max(0.02,dur-0.04)); g.gain.linearRampToValueAtTime(0,start+dur);
+      o.connect(g); g.connect(master); o.start(start); o.stop(start+dur+0.02);
+    }
+    function noise(start,dur,vol){
+      const len=Math.floor(ctx.sampleRate*dur), buf=ctx.createBuffer(1,len,ctx.sampleRate), d=buf.getChannelData(0);
+      for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*(1-i/len);
+      const src=ctx.createBufferSource(), g=ctx.createGain(); src.buffer=buf; g.gain.value=vol;
+      src.connect(g); g.connect(master); src.start(start);
+    }
+    function tick(){
+      const ahead=ctx.currentTime+0.2;
+      while(next<ahead){
+        const loopStart=next - (seq[step].t*BEAT);
+        const e=seq[step];
+        tone(f(e.m), next, e.d*BEAT*0.92, e.v==="mel"?"square":"triangle", e.v==="mel"?0.07:0.12);
+        step++;
+        if(step>=seq.length){ step=0; next=loopStart+LOOP*BEAT+seq[0].t*BEAT; }
+        else next=loopStart+seq[step].t*BEAT;
+      }
+    }
+    function start(){ if(!ensure()) return; if(ctx.state==="suspended") ctx.resume(); step=0; next=ctx.currentTime+0.1; clearInterval(timer); timer=setInterval(tick,50); }
+    function stop(){ clearInterval(timer); timer=null; if(master){ master.gain.cancelScheduledValues(ctx.currentTime); const old=master; master=ctx.createGain(); master.gain.value=0.5; master.connect(ctx.destination); old.disconnect(); } }
+    return {
+      get on(){ return on; },
+      set(v){ on=v; if(on) start(); else stop(); },
+      roll(){ if(on&&ctx){ const t=ctx.currentTime;
+        const o=ctx.createOscillator(), g=ctx.createGain(); o.type="sine"; o.frequency.setValueAtTime(700,t); o.frequency.exponentialRampToValueAtTime(110,t+0.13);
+        g.gain.setValueAtTime(0.35,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.15); o.connect(g); g.connect(master); o.start(t); o.stop(t+0.16);
+        for(let k=0;k<14;k++) noise(t+0.12+k*0.135+Math.random()*0.04,0.045,0.12); } },
+      place(){ if(on&&ctx){ const t=ctx.currentTime; tone(f(72),t,0.07,"square",0.1); tone(f(79),t+0.07,0.1,"square",0.1); } },
+      wrong(){ if(on&&ctx){ tone(f(43),ctx.currentTime,0.22,"square",0.1); } },
+      over(){ if(on&&ctx){ const t=ctx.currentTime; [72,76,79,84].forEach((m,i)=>tone(f(m),t+i*0.12,0.14,"square",0.1)); } }
+    };
+  })();
+  function setSound(v){
+    SND.set(v); const b=$("sound"); b.textContent="♪ SOUND: "+(v?"ON":"OFF"); b.classList.toggle("on",v); b.setAttribute("aria-pressed",String(v));
+    try{ localStorage.setItem("hc100-sound", v?"on":"off"); }catch(e){}
+  }
+  $("sound").onclick=()=>setSound(!SND.on);
+
   // ---------- dice ----------
   const PIPS = {1:[[2,2]],2:[[1,1],[3,3]],3:[[1,1],[2,2],[3,3]],4:[[1,1],[1,3],[3,1],[3,3]],
                 5:[[1,1],[1,3],[2,2],[3,1],[3,3]],6:[[1,1],[1,3],[2,1],[2,3],[3,1],[3,3]]};
-  function dieSVG(n){
-    const dots = PIPS[n].map(([r,c])=>`<circle cx="${c*14+2}" cy="${r*14+2}" r="4.2" fill="#1f2937"/>`).join("");
-    return `<svg viewBox="0 0 60 60" role="img" aria-label="${n}"><rect x="2" y="2" width="56" height="56" rx="10" fill="#fff" stroke="#1f2937" stroke-width="3"/>${dots}</svg>`;
+  function dieSVG(n, edge, dim){
+    const dots = PIPS[n].map(([r,c])=>`<circle cx="${c*14+2}" cy="${r*14+2}" r="4.6" fill="#111827"/>`).join("");
+    return `<svg viewBox="0 0 60 60" role="img" aria-label="${n}" style="opacity:${dim?0.4:1}"><rect x="3" y="3" width="54" height="54" rx="9" fill="#fff" stroke="${edge}" stroke-width="5"/>${dots}</svg>`;
+  }
+  const edgeOf = p => p==="A" ? "#1f5fa8" : "#b3261e";
+  function showDice(faces, live){
+    $("dice").innerHTML = dieSVG(faces[0], live?edgeOf(S.turn):"#6b7280", !live) + dieSVG(faces[1], live?edgeOf(S.turn):"#6b7280", !live);
   }
 
   // ---------- board ----------
@@ -136,27 +245,32 @@
     d.textContent=label||"";
     return d;
   }
-  function drawBoard(){
+  function drawBoard(popLast){
     board.querySelectorAll(".rect").forEach(e=>e.remove());
-    (S.placed||[]).forEach(p=>board.appendChild(rectEl(p.who,p.r,p.c,p.h,p.w,p.h+" × "+p.w)));
+    S.placed.forEach((p,i)=>board.appendChild(rectEl(p.who+(popLast&&i===S.placed.length-1?" pop":""),p.r,p.c,p.h,p.w,p.h+" × "+p.w)));
   }
   function place(who,r,c,h,w){
     for(let i=r;i<r+h;i++) for(let j=c;j<c+w;j++) S.grid[i][j]=who;
-    (S.placed=S.placed||[]).push({who,r,c,h,w});
+    S.placed.push({who,r,c,h,w});
     S.logs[who].push(h+" × "+w+" = "+(h*w));
-    S.passes=0; S.dice=null;
-    drawBoard(); renderSide();
+    S.passes=0; idleFaces=S.dice; S.dice=null;
+    SND.place();
+    drawBoard(true); renderSide();
     nextTurn();
   }
 
   // ---------- turns ----------
   function say(t,warn){ const m=$("msg"); m.textContent=t||""; m.className="msg"+(warn?" warn":""); }
   function renderSide(){
-    $("turn").innerHTML = S.over ? "" : `<span class="${S.turn}">${nameOf(S.turn)}</span>'s turn`;
-    $("dice").innerHTML = S.dice ? dieSVG(S.dice[0])+dieSVG(S.dice[1]) : "";
-    $("roll").disabled = S.over || !!S.dice || isComputer(S.turn);
+    const t=$("turn");
+    if(!S.started){ t.className="turn"; t.textContent="Press START"; }
+    else if(!S.over){ t.className="turn "+S.turn; t.textContent=nameOf(S.turn)+"'s turn"; }
+    if(!S.rolling) showDice(S.dice||idleFaces, !!S.dice);
+    $("roll").disabled = !S.started || S.over || !!S.dice || S.rolling || isComputer(S.turn);
     $("roll").hidden = S.over;
-    $("filled").innerHTML = filled()+" <small>of 100</small>";
+    const n=filled();
+    $("filled").innerHTML = n+" <small>of 100</small>";
+    $("meter").innerHTML = Array.from({length:10},(_,i)=>`<i class="${n>=(i+1)*10?"on":""}"></i>`).join("");
     $("nameA").textContent=nameOf("A"); $("nameB").textContent=nameOf("B");
     $("logA").innerHTML=S.logs.A.map(x=>"<li>"+x+"</li>").join("");
     $("logB").innerHTML=S.logs.B.map(x=>"<li>"+x+"</li>").join("");
@@ -168,19 +282,27 @@
     if(isComputer(S.turn)) setTimeout(roll, 700);
   }
   function endGame(){
-    S.over=true; S.dice=null; renderSide();
-    say(""); $("turn").innerHTML=`<div class="over">Game over. The board is ${filled()} of 100 full.</div>`;
+    S.over=true; if(S.dice) idleFaces=S.dice; S.dice=null; renderSide();
+    say(""); const t=$("turn"); t.className="turn"; t.innerHTML=`<div class="over">GAME OVER<br>${filled()} of 100 full</div>`;
+    SND.over();
     $("again").hidden=false;
   }
   function roll(){
-    if(S.over||S.dice) return;
+    if(S.over||S.dice||S.rolling) return;
     const a=1+Math.floor(Math.random()*6), b=1+Math.floor(Math.random()*6);
-    S.dice=[a,b]; renderSide();
+    S.rolling=true; renderSide(); SND.roll();
+    const pop=$("popper"); pop.classList.remove("pop","spin"); void pop.offsetWidth; pop.classList.add("pop","spin","busy");
+    const spin=setInterval(()=>showDice([1+Math.floor(Math.random()*6),1+Math.floor(Math.random()*6)], true), 90);
+    setTimeout(()=>{ clearInterval(spin); pop.classList.remove("spin","pop","busy"); landed(a,b); }, 2000);
+  }
+  function landed(a,b){
+    S.rolling=false; S.dice=[a,b]; renderSide();
     if(!anyFit(a,b)){
       S.passes++;
+      SND.wrong();
       say(`No room for ${a} × ${b}. ${nameOf(S.turn)} passes.`, true);
       if(S.passes>=2){ setTimeout(endGame, 1200); return; }
-      setTimeout(()=>{ S.dice=null; say(""); nextTurn(); }, 1600);
+      setTimeout(()=>{ idleFaces=S.dice; S.dice=null; say(""); nextTurn(); }, 1600);
       return;
     }
     if(isComputer(S.turn)){
@@ -220,8 +342,8 @@
     if(preview){ preview.remove(); preview=null; }
     const [a,b]=S.dice;
     const right=(s.h===a&&s.w===b)||(s.h===b&&s.w===a);
-    if(!right){ say(`You drew ${s.h} × ${s.w}. The dice say ${a} and ${b}.`, true); return; }
-    if(!free(s.r,s.c,s.h,s.w)){ say("That overlaps an array that's already there.", true); return; }
+    if(!right){ SND.wrong(); say(`You drew ${s.h} × ${s.w}. The dice say ${a} and ${b}.`, true); return; }
+    if(!free(s.r,s.c,s.h,s.w)){ SND.wrong(); say("That overlaps an array that's already there.", true); return; }
     say(""); place(S.turn,s.r,s.c,s.h,s.w);
   });
   board.addEventListener("pointercancel", ()=>{ drag=null; if(preview){preview.remove();preview=null;} });
@@ -229,15 +351,18 @@
   // ---------- start ----------
   function start(){
     const mode=document.querySelector('input[name="mode"]:checked').value;
-    S=fresh(mode); S.placed=[];
-    $("setup").hidden=true; $("play").hidden=false; $("again").hidden=true;
+    S=fresh(mode); S.started=true;
+    $("setup").hidden=true; $("again").hidden=true;
     say(""); drawBoard(); renderSide();
   }
   $("start").onclick=start;
   $("roll").onclick=roll;
-  $("again").onclick=()=>{ $("setup").hidden=false; $("play").hidden=true; $("again").hidden=true;
-    S=fresh("human"); S.placed=[]; drawBoard(); renderSide(); $("turn").innerHTML=""; };
-  S=fresh("human"); S.placed=[]; renderSide(); $("turn").innerHTML="";
+  const popIt=()=>{ if(!$("roll").disabled) roll(); };
+  $("popper").addEventListener("click", popIt);
+  $("popper").addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); popIt(); } });
+  $("again").onclick=()=>{ $("setup").hidden=false; $("again").hidden=true; S=fresh("human"); say(""); drawBoard(); renderSide(); };
+  S=fresh("human"); renderSide();
+  try{ if(localStorage.getItem("hc100-sound")==="on"){ const once=()=>{ setSound(true); removeEventListener("pointerdown",once); }; addEventListener("pointerdown",once); } }catch(e){}
 })();
 </script>
 </body>
