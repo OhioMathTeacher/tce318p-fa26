@@ -31,6 +31,9 @@
  .panel .card{height:100%;display:flex;flex-direction:column;overflow-y:auto;}
  .filledRow{margin-top:auto;padding-top:10px;border-top:1px solid #2a3170;}
  .filledRow h2{margin:4px 0 4px;}
+ .lives{margin-top:8px;font-size:22px;letter-spacing:4px;line-height:1;}
+ .lives .gone{color:#3a4170;} .lives .live{color:var(--red);text-shadow:2px 2px 0 #000;}
+ .lives.lost{animation:shake .5s;}
  .best{margin-top:8px;font-family:var(--pixel);font-size:9px;color:var(--muted);line-height:1.6;}
  .best b{color:var(--yellow);font-size:12px;}
  .hiscore{margin-top:8px;font-family:var(--pixel);font-size:9px;line-height:1.9;}
@@ -170,6 +173,7 @@
     <div class="filledRow"><h2>Filled</h2>
      <div class="filled" id="filled">0 <small>of 100</small></div>
      <div class="meter" id="meter"></div>
+     <div class="lives" id="lives" aria-label="Lives left"></div>
      <div class="best" id="best"></div>
     </div>
     <div class="msg" id="msg"></div>
@@ -190,7 +194,7 @@
 
   function fresh(mode){
     return { mode, started:false, grid: Array.from({length:N},()=>Array(N).fill(null)), placed:[], turn:"A",
-             dice:null, rolling:false, passes:0, over:false, kidsMath:true, total:0, entries:[], pending:null, names:{A:"",B:""} };
+             dice:null, rolling:false, lives:3, over:false, kidsMath:true, total:0, entries:[], pending:null, names:{A:"",B:""} };
   }
   const nm = id => (document.getElementById(id).value||"").trim().slice(0,16);
   const nameOf = p => p==="A" ? (nm("inA")||"Player 1") : (S.mode==="computer" ? "Computer" : (nm("inB")||"Player 2"));
@@ -337,7 +341,7 @@
     const e={who,h,w,p:h*w,prev:S.total,step:"p"};
     e.total=e.prev+e.p;
     S.entries.push(e);
-    S.passes=0; idleFaces=S.dice; S.dice=null;
+    idleFaces=S.dice; S.dice=null;
     SND.place();
     drawBoard(true);
     if(S.kidsMath){ S.pending=e; renderSide(); renderLedger(true); return; }   // the turn waits for the kids' arithmetic
@@ -419,18 +423,20 @@
     $("roll").hidden = S.over || !!S.noRoom;
     $("pass").hidden = !S.noRoom;
     const n=S.total;
+    $("lives").innerHTML=[0,1,2].map(i=>`<span class="${i<S.lives?"live":"gone"}">♥</span>`).join("");
     $("filled").innerHTML = n+" <small>of 100</small>";
     $("meter").innerHTML = Array.from({length:10},(_,i)=>`<i class="${n>=(i+1)*10?"on":""}"></i>`).join("");
     board.classList.toggle("waiting", !!S.dice && !isComputer(S.turn) && !S.over);
   }
   function nextTurn(){
+    if(filled()===N*N){ endGame(); return; }
     S.turn = S.turn==="A" ? "B" : "A";
     renderSide();
     if(isComputer(S.turn)) setTimeout(roll, 700);
   }
   function endGame(){
     S.over=true; if(S.dice) idleFaces=S.dice; S.dice=null; renderSide();
-    say(""); const t=$("turn"); t.className="turn"; t.innerHTML=`<div class="over">GAME OVER<br>${S.total} of 100 full</div>`;
+    say(""); const t=$("turn"); t.className="turn"; t.innerHTML = S.total===100 ? `<div class="over">PERFECT 100!</div>` : `<div class="over">GAME OVER<br>${S.total} of 100 full</div>`;
     SND.over();
     const res=record(S.total); renderBest(); showScores(res);
     if(res.isNew) setTimeout(()=>SND.speak("New high score!"), 700);
@@ -450,11 +456,12 @@
     SND.speak(`${WORD[a]} by ${WORD[b].toLowerCase()} rectangle.`);
     if(!anyFit(a,b)){
       // Stop here on purpose: why a roll has no room is worth talking about, so the game waits for PASS.
-      S.noRoom=true; SND.noRoom();
+      S.noRoom=true; S.lives=Math.max(0,S.lives-1); SND.noRoom();
+      const L=$("lives"); L.classList.remove("lost"); void L.offsetWidth; L.classList.add("lost");
       board.classList.remove("shake"); void board.offsetWidth; board.classList.add("shake");
       const flash=document.createElement("div"); flash.className="noroom"; flash.textContent="NO ROOM!"; board.appendChild(flash);
       setTimeout(()=>flash.remove(), 1500);
-      say(`No room for a ${a} × ${b}. Why not? Talk it over, then press PASS.`, 2);
+      say(`No room for a ${a} × ${b}. Why not? Talk it over, then press PASS.`+(S.lives? ` ${S.lives} ${S.lives===1?"life":"lives"} left.` : " That was your last life."), 2);
       renderSide();
       return;
     }
@@ -527,8 +534,8 @@
   $("km").onclick=()=>setKm(!kidsMath);
   $("pass").onclick=()=>{
     if(!S.noRoom) return;
-    S.noRoom=false; S.passes++; idleFaces=S.dice; S.dice=null; say("");
-    if(S.passes>=2){ endGame(); return; }
+    S.noRoom=false; idleFaces=S.dice; S.dice=null; say("");
+    if(S.lives<=0){ endGame(); return; }
     nextTurn();
   };
   const popIt=()=>{ if(!S.started){ start(); roll(); } else if(!$("roll").disabled) roll(); };
