@@ -298,7 +298,8 @@
   #actModal details.more summary{cursor:pointer;font-weight:700;color:var(--outline);font-size:14px}
   .slice .prog{position:absolute;top:7px;right:30px;font-size:11px;font-weight:700;color:var(--muted)}
   .slice .prog.done{color:var(--ok)}
-  #nag{display:none;align-items:center;gap:12px;margin:8px 0 0;padding:8px 14px;border:1px solid #e7d3a1;background:var(--gold-soft,#fff6dc);border-radius:10px;font-size:13.5px;color:#6b4a08}
+  #exBar{display:none;align-items:center;gap:12px;margin:8px 0 0;padding:8px 14px;border:1px solid #b9cdea;background:#eaf2fc;border-radius:10px;font-size:13.5px;color:#1e3a5f} #exBar.on{display:flex} #exBar .sp{flex:1} #exBar button{font:inherit;font-weight:700;padding:5px 12px;border-radius:8px;border:1px solid #1e3a5f;background:#1e3a5f;color:#fff;cursor:pointer}
+#nag{display:none;align-items:center;gap:12px;margin:8px 0 0;padding:8px 14px;border:1px solid #e7d3a1;background:var(--gold-soft,#fff6dc);border-radius:10px;font-size:13.5px;color:#6b4a08}
   #nag.on{display:flex}
   #nag b{color:#5a3d00}
   /* Gold is the colour of a nudge -- "you have not saved to a file lately". A
@@ -592,6 +593,7 @@
         <div class="note">Opens a complete Profile and Plan in place of yours — save yours first.</div>
         <button data-gear="ex1"><span class="ic">📘</span>Grade 2 · make a ten (EngageNY lesson)</button>
         <button data-gear="ex2"><span class="ic">📗</span>Grade 4 · fractions of a set (original idea)</button>
+<button data-gear="exback" id="gearExBack" style="display:none"><span class="ic">←</span>Leave the example — back to my work</button>
         <div class="sep"></div>
         <div class="hd">genAI planning partner</div>
         <button data-gear="passcode"><span class="ic">🔑</span>Enter the course passcode…</button>
@@ -605,7 +607,8 @@
         <button data-gear="diag"><span class="ic">🩺</span>Report a problem…</button>
       </div></span>
   </div>
-  <div id="nag"><span>💾</span><span id="nagText"></span><span class="sp"></span><button class="go" id="nagSave">⬇ Save to a file</button><button class="later" id="nagLater">Later</button></div>
+  <div id="exBar" role="status"><span>📘</span><span>You're looking at a finished example. Your own work is set aside, safe.</span><span class="sp"></span><button type="button" id="exBack">← Back to my work</button></div>
+<div id="nag"><span>💾</span><span id="nagText"></span><span class="sp"></span><button class="go" id="nagSave">⬇ Save to a file</button><button class="later" id="nagLater">Later</button></div>
   <div class="phasebar">
     <button class="phase on" data-phase="background" title="Weeks 6–7 — your Concept Profile, your question, and the lesson you have (or your idea)."><span class="pnum"><b>1</b></span> Concept Profile</button>
     <button class="phase" data-phase="during" title="Weeks 8–10 — the lesson, minute by minute: the routine before, the activities, the artifact after."><span class="pnum"><b>2</b></span> Plan</button>
@@ -681,7 +684,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 65</div>
+<div id="build">Build 66</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1953,16 +1956,23 @@ function pickShape(){
 
 /* ---------- project bar ---------- */
 document.getElementById("saveProj").onclick=async()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}); const nm=((state.bg||{}).names||"").trim().replace(/[^a-z0-9]+/gi,"-").replace(/^-+|-+$/g,""); const kept=await saveBlob(blob,`bda-planner${nm?"-"+nm:""}-${fileStampTime()}.json`); if(!kept) return; recordFileSave(); logEvent("save","saved the project to a file"); toast("Saved. Keep this file — it's how your plan travels."); };
-document.getElementById("loadProj").onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ state=JSON.parse(r.result); selId=null; save(); renderAll(); toast("Project loaded."); }catch(err){ toast("That file didn't read as a project."); } }; r.readAsText(f); e.target.value=""; };
-function resetProject(){ if(!confirm("Start over with an empty project? Your edits in this browser are lost (a saved .json file is not).")) return; state=blankState(); selId=null; save(); renderAll(); }
+document.getElementById("loadProj").onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ state=JSON.parse(r.result); selId=null; try{ localStorage.removeItem(EX_STASH); }catch(e){} save(); renderAll(); toast("Project loaded."); }catch(err){ toast("That file didn't read as a project."); } }; r.readAsText(f); e.target.value=""; };
+function resetProject(){ const ex=!!exStash(); if(!confirm(ex?"You're looking at an example. Starting over throws away the example AND the work you set aside. Press \u2190 Back to my work first if you want it. Start over anyway?":"Start over with an empty project? Your edits in this browser are lost (a saved .json file is not).")) return; try{ localStorage.removeItem(EX_STASH); }catch(e){} state=blankState(); selId=null; save(); renderAll(); }
 (function(){ const m=document.getElementById("gearMenu"), b=document.getElementById("gearBtn"); b.onclick=e=>{ e.stopPropagation(); m.classList.toggle("open"); }; document.addEventListener("click",e=>{ if(!m.contains(e.target)) m.classList.remove("open"); });
   m.querySelectorAll("[data-gear]").forEach(x=>x.onclick=()=>{ m.classList.remove("open"); const k=x.dataset.gear;
-    if(k==="ex1"||k==="ex2"){ if(!confirm("Open the finished example? It replaces what is here — press Save first if you want to keep your work.")) return; loadExample(k==="ex1"?1:2); toast("A finished example — look around; ↺ or Load brings your own work back."); }
+    if(k==="ex1"||k==="ex2"){ if(!confirm("Open the finished example? Your own work is set aside, and \u2190 Back to my work brings it back. To be extra safe, press Save first.")) return; if(loadExample(k==="ex1"?1:2)) toast("A finished example. \u2190 Back to my work, at the top, brings your own work back."); } else if(k==="exback"){ backToMine(); }
     else if(k==="passcode"){ const p=prompt("The course passcode (from class):", ""); if(p&&p.trim()){ try{ localStorage.setItem("bda-passcode",p.trim()); }catch(e){} toast("Passcode saved on this browser."); } }
     else if(k==="forget"){ try{ localStorage.removeItem("bda-passcode"); }catch(e){} toast("Forgotten. You'll be asked next time."); }
     else if(k==="diag") openDiag();
     else if(k==="reset") resetProject(); }); })();
-function loadExample(n){ logEvent("example","loaded example "+n); state=JSON.parse(JSON.stringify(n===2?SAMPLES.idea:SAMPLES.lesson)); selId=null; save(); renderAll(); }
+const EX_STASH="bda-before-example";
+function exStash(){ try{ return localStorage.getItem(EX_STASH); }catch(e){ return null; } }
+function renderExBar(){ const on=!!exStash(); const b=document.getElementById("exBar"); if(b) b.classList.toggle("on",on); const g=document.getElementById("gearExBack"); if(g) g.style.display=on?"":"none"; }
+// Opening an example used to overwrite the student's work, and the only way back was a file
+// they may never have saved. Now their work is set aside first, and Back to my work restores
+// it. Switching from one example to the other keeps the first set-aside copy, which is theirs.
+function loadExample(n){ if(!exStash()){ try{ localStorage.setItem(EX_STASH,JSON.stringify(state)); }catch(e){ alert("This browser couldn't set your work aside. Press Save (the \u2193 disk button) to keep a copy first, then open the example."); return false; } } logEvent("example","loaded example "+n); state=JSON.parse(JSON.stringify(n===2?SAMPLES.idea:SAMPLES.lesson)); selId=null; save(); renderAll(); return true; }
+function backToMine(){ const raw=exStash(); if(!raw) return; let mine; try{ mine=JSON.parse(raw); }catch(e){ toast("Couldn't read your set-aside work. Use Load if you saved a file."); return; } state=mine; try{ localStorage.removeItem(EX_STASH); }catch(e){} logEvent("example","back to own work"); selId=null; save(); renderAll(); toast("Your own work is back."); }
 
 /* ---------- the problem report ---------- */
 // Refreshed every time the panel opens, and again as they type, so the text on screen is
@@ -2085,8 +2095,8 @@ function showArrival(w){
   d.onclick=function(e){ if(e.target===d) closeArrival(false); };   // click the backdrop
 }
 let toastT; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.style.opacity=1; clearTimeout(toastT); toastT=setTimeout(()=>t.style.opacity=0,2600); }
-function renderAll(){ renderTop(); renderPlan(); }
-load(); renderAll();
+function renderAll(){ renderTop(); renderPlan(); renderExBar(); }
+load(); renderAll(); document.getElementById("exBack").onclick=backToMine;
 // Arriving from the Studio's hand-off button: pull the work across straight away,
 // through the same path (and the same overwrite question) as the button in 1c.
 try{ if(new URLSearchParams(location.search).get("from")==="studio"){
