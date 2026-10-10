@@ -59,8 +59,9 @@
    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:10% 10%;box-shadow:0 0 0 6px #000,0 12px 30px rgba(0,0,0,.5);}
  .board.waiting{cursor:crosshair;}
  .rect{white-space:nowrap;overflow:hidden;position:absolute;border:3px solid;border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:var(--pixel);font-size:clamp(8px,1.6vw,12px);}
- .rect.A{background:var(--a-fill);border-color:var(--a-line);color:var(--a-line);}
- .rect.B{background:var(--b-fill);border-color:var(--b-line);color:var(--b-line);}
+ .rect.A{background:rgba(120,180,255,.38);border-color:var(--a-line);color:var(--a-line);}
+ .rect.B{background:rgba(255,120,110,.34);border-color:var(--b-line);color:var(--b-line);}
+ .rect span{background:rgba(251,248,236,.85);padding:2px 5px;border-radius:3px;}
  .rect.preview{opacity:.8;border-style:dashed;}
  .rect.pop{animation:pop .25s ease-out;}
  @keyframes pop{0%{transform:scale(.85);}70%{transform:scale(1.04);}100%{transform:scale(1);}}
@@ -188,27 +189,52 @@
   const isComputer = p => S.mode==="computer" && p==="B";
 
   // ---------- 8-bit sound: square-wave melody, triangle bass, noise for the dice ----------
-  // "Pop Goes the Weasel" (England, 1850s) -- public domain; this 8-bit arrangement is made here, in code.
-  // Times are in eighth notes (6/8 time, six to a bar). A pop sound lands on the word "POP!" in bar 7.
+  // ---------- sound: three public-domain tunes, arranged here in code (no audio files) ----------
+  // Each tune is a list of [MIDI note (0 = rest), length in units]; "unit" is seconds per unit.
+  // The music runs through a soft filter so it sits under the game; the effects do not.
+  const SONGS = (function(){
+    const minuet = (function(){   // Bach (attr. Petzold), Minuet in G, BWV Anh. 114 -- units are quarter notes
+      const b1=[[74,1],[67,.5],[69,.5],[71,.5],[72,.5]], b2=[[74,1],[67,1],[67,1]], b3=[[76,1],[72,.5],[74,.5],[76,.5],[78,.5]],
+            b4=[[79,1],[67,1],[67,1]], b5=[[72,1],[74,.5],[72,.5],[71,.5],[69,.5]], b6=[[71,1],[72,.5],[71,.5],[69,.5],[67,.5]],
+            b7=[[66,1],[67,.5],[69,.5],[71,.5],[67,.5]], b8=[[69,3]], b15=[[69,1],[71,.5],[69,.5],[67,.5],[66,.5]], b16=[[67,3]];
+      const mel=[].concat(b1,b2,b3,b4,b5,b6,b7,b8, b1,b2,b3,b4,b5,b6,b15,b16);
+      const bass=[43,43,48,43,48,43,50,50, 43,43,48,43,48,43,50,43].map(m=>[m,3]);
+      return {name:"MINUET", unit:0.5, mel, bass};
+    })();
+    const elise = (function(){    // Beethoven, Für Elise, opening theme -- units are sixteenth notes
+      const f1=[[76,1],[75,1],[76,1],[71,1],[74,1],[72,1]], f2=[[69,2],[0,1],[60,1],[64,1],[69,1]], f3=[[71,2],[0,1],[64,1],[68,1],[71,1]],
+            f4=[[72,2],[0,1],[64,1],[76,1],[75,1]], f7=[[71,2],[0,1],[64,1],[72,1],[71,1]];
+      const mel=[].concat([[76,1],[75,1]], f1,f2,f3,f4, f1,f2,f7, [[69,4]]);
+      const bass=[[0,8],[45,6],[40,6],[45,6],[0,6],[45,6],[40,6],[45,4]];
+      return {name:"FÜR ELISE", unit:0.19, mel, bass};
+    })();
+    const ode = (function(){      // Beethoven, "Ode to Joy" -- units are quarter notes
+      const A=[[76,1],[76,1],[77,1],[79,1],[79,1],[77,1],[76,1],[74,1],[72,1],[72,1],[74,1],[76,1]];
+      const B=[[74,1],[74,1],[76,1],[72,1],[74,1],[76,.5],[77,.5],[76,1],[72,1],[74,1],[76,.5],[77,.5],[76,1],[74,1],[72,1],[74,1],[67,2]];
+      const mel=[].concat(A,[[76,1.5],[74,.5],[74,2]], A,[[74,1.5],[72,.5],[72,2]], B, A,[[74,1.5],[72,.5],[72,2]]);
+      const bass=[]; [48,43,48,43, 48,43,48,48, 43,48,43,48, 48,43,48,48].forEach(m=>{ bass.push([m,2],[m+7,2]); });
+      return {name:"ODE TO JOY", unit:0.45, mel, bass};
+    })();
+    return [minuet, elise, ode];
+  })();
+
   const SND = (function(){
-    let ctx=null, master=null, on=false, timer=null, next=0, step=0;
+    let ctx=null, master=null, music=null, song=-1, timer=null, next=0, step=0, seq=[], LOOP=0, UNIT=0.5;
     const f = m => 440*Math.pow(2,(m-69)/12);
-    const B1=[[72,2],[72,1],[74,2],[74,1]], B2=[[76,1],[79,1],[76,1],[72,3]];
-    const MEL=[].concat(B1,B2, B1,[[76,3],[72,3]], B1,B2, [[81,3],[74,2],[77,1]],[[76,3],[72,3]]);
-    const BASS=[[48,55],[48,55],[43,50],[48,55],[48,55],[48,55],[41,48],[43,48]];   // two dotted quarters per bar
-    const BEAT=0.2;   // one eighth note
-    const seq=[]; let t=0; MEL.forEach(([m,d])=>{ seq.push({t,m,d,v:"mel"}); t+=d; });
-    BASS.forEach((pair,i)=>{ seq.push({t:i*6,m:pair[0],d:3,v:"bass"}); seq.push({t:i*6+3,m:pair[1],d:3,v:"bass"}); });
-    seq.push({t:36,v:"pop"});
-    seq.sort((x,y)=>x.t-y.t);
-    const LOOP=t;
-    function ensure(){ if(ctx) return true; try{ ctx=new (window.AudioContext||window.webkitAudioContext)(); master=ctx.createGain(); master.gain.value=0.5; master.connect(ctx.destination); return true; }catch(e){ return false; } }
-    function tone(freq,start,dur,type,vol){
+    function build(sg){
+      seq=[]; let t=0; sg.mel.forEach(([m,d])=>{ if(m) seq.push({t,m,d,v:"mel"}); t+=d; }); LOOP=t;
+      let tb=0; sg.bass.forEach(([m,d])=>{ if(m) seq.push({t:tb,m,d,v:"bass"}); tb+=d; });
+      seq.sort((x,y)=>x.t-y.t); UNIT=sg.unit;
+    }
+    function ensure(){ if(ctx) return true;
+      try{ ctx=new (window.AudioContext||window.webkitAudioContext)(); master=ctx.createGain(); master.gain.value=0.5; master.connect(ctx.destination); return true; }catch(e){ return false; } }
+    function musicBus(){ const g=ctx.createGain(), lp=ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=1800; g.gain.value=0.55; g.connect(lp); lp.connect(master); return g; }
+    function tone(freq,start,dur,type,vol,dest){
       const o=ctx.createOscillator(), g=ctx.createGain();
       o.type=type; o.frequency.value=freq;
-      g.gain.setValueAtTime(0,start); g.gain.linearRampToValueAtTime(vol,start+0.01);
-      g.gain.setValueAtTime(vol,start+Math.max(0.02,dur-0.04)); g.gain.linearRampToValueAtTime(0,start+dur);
-      o.connect(g); g.connect(master); o.start(start); o.stop(start+dur+0.02);
+      g.gain.setValueAtTime(0,start); g.gain.linearRampToValueAtTime(vol,start+0.015);
+      g.gain.setValueAtTime(vol,start+Math.max(0.03,dur-0.05)); g.gain.linearRampToValueAtTime(0,start+dur);
+      o.connect(g); g.connect(dest||master); o.start(start); o.stop(start+dur+0.02);
     }
     function noise(start,dur,vol){
       const len=Math.floor(ctx.sampleRate*dur), buf=ctx.createBuffer(1,len,ctx.sampleRate), d=buf.getChannelData(0);
@@ -221,43 +247,45 @@
       g.gain.setValueAtTime(0.35,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.15); o.connect(g); g.connect(master); o.start(t); o.stop(t+0.16);
     }
     function tick(){
-      const ahead=ctx.currentTime+0.2;
+      const ahead=ctx.currentTime+0.25;
       while(next<ahead){
-        const loopStart=next - (seq[step].t*BEAT);
-        const e=seq[step];
-        if(e.v==="pop") popAt(next);
-        else tone(f(e.m), next, e.d*BEAT*0.92, e.v==="mel"?"square":"triangle", e.v==="mel"?0.07:0.12);
+        const loopStart=next-(seq[step].t*UNIT), e=seq[step];
+        tone(f(e.m), next, e.d*UNIT*0.9, e.v==="mel"?"square":"triangle", e.v==="mel"?0.06:0.11, music);
         step++;
-        if(step>=seq.length){ step=0; next=loopStart+LOOP*BEAT+seq[0].t*BEAT; }
-        else next=loopStart+seq[step].t*BEAT;
+        if(step>=seq.length){ step=0; next=loopStart+LOOP*UNIT+seq[0].t*UNIT; } else next=loopStart+seq[step].t*UNIT;
       }
     }
-    function start(){ if(!ensure()) return; if(ctx.state==="suspended") ctx.resume(); step=0; next=ctx.currentTime+0.1; clearInterval(timer); timer=setInterval(tick,50); }
-    function stop(){ clearInterval(timer); timer=null; if(master){ master.gain.cancelScheduledValues(ctx.currentTime); const old=master; master=ctx.createGain(); master.gain.value=0.5; master.connect(ctx.destination); old.disconnect(); } }
+    function stopMusic(){ clearInterval(timer); timer=null; if(music){ try{ music.disconnect(); }catch(e){} music=null; } }
+    const on = () => song>=0;
     return {
-      get on(){ return on; },
-      set(v){ on=v; if(on) start(); else stop(); },
-      roll(){ if(on&&ctx){ const t=ctx.currentTime;
-        popAt(t);
-        for(let k=0;k<14;k++) noise(t+0.12+k*0.135+Math.random()*0.04,0.045,0.12); } },
-      place(){ if(on&&ctx){ const t=ctx.currentTime; tone(f(72),t,0.07,"square",0.1); tone(f(79),t+0.07,0.1,"square",0.1); } },
-      wrong(){ if(on&&ctx){ tone(f(43),ctx.currentTime,0.22,"square",0.1); } },
-      noRoom(){ if(on&&ctx){ const t=ctx.currentTime;   // a game-show "over the limit" buzzer: two low, detuned sawtooth tones
+      get song(){ return song; },
+      get on(){ return on(); },
+      play(i){   // -1 = off
+        stopMusic(); song=i; if(i<0) return;
+        if(!ensure()) return; if(ctx.state==="suspended") ctx.resume();
+        build(SONGS[i]); music=musicBus(); step=0; next=ctx.currentTime+0.15; timer=setInterval(tick,50);
+      },
+      roll(){ if(on()&&ctx){ const t=ctx.currentTime; popAt(t); for(let k=0;k<14;k++) noise(t+0.12+k*0.135+Math.random()*0.04,0.045,0.12); } },
+      place(){ if(on()&&ctx){ const t=ctx.currentTime; tone(f(72),t,0.07,"square",0.1); tone(f(79),t+0.07,0.1,"square",0.1); } },
+      wrong(){ if(on()&&ctx){ tone(f(43),ctx.currentTime,0.22,"square",0.1); } },
+      noRoom(){ if(on()&&ctx){ const t=ctx.currentTime;   // a game-show "over the limit" buzzer: two low, detuned sawtooth tones
         [[98,0.2],[104,0.2],[49,0.14]].forEach(([hz,v])=>{ const o=ctx.createOscillator(), g=ctx.createGain(); o.type="sawtooth"; o.frequency.value=hz;
           g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+0.02); g.gain.setValueAtTime(v,t+0.85); g.gain.linearRampToValueAtTime(0,t+0.95);
           o.connect(g); g.connect(master); o.start(t); o.stop(t+1); }); } },
-      speak(text){ if(!on||!("speechSynthesis" in window)) return;
+      speak(text){ if(!on()||!("speechSynthesis" in window)) return;
         try{ window.speechSynthesis.cancel(); const u=new window.SpeechSynthesisUtterance(text); u.pitch=0.1; u.rate=0.8; u.volume=1;
           const v=window.speechSynthesis.getVoices().find(x=>/^en(-|_)US/i.test(x.lang))||window.speechSynthesis.getVoices().find(x=>/^en/i.test(x.lang)); if(v) u.voice=v;
           window.speechSynthesis.speak(u); }catch(e){} },
-      over(){ if(on&&ctx){ const t=ctx.currentTime; [72,76,79,84].forEach((m,i)=>tone(f(m),t+i*0.12,0.14,"square",0.1)); } }
+      over(){ if(on()&&ctx){ const t=ctx.currentTime; [72,76,79,84].forEach((m,i)=>tone(f(m),t+i*0.12,0.14,"square",0.1)); } }
     };
   })();
-  function setSound(v){
-    SND.set(v); if(!v){ try{ window.speechSynthesis.cancel(); }catch(e){} } const b=$("sound"); b.textContent="♪ SOUND: "+(v?"ON":"OFF"); b.classList.toggle("on",v); b.setAttribute("aria-pressed",String(v));
-    try{ localStorage.setItem("hc100-sound", v?"on":"off"); }catch(e){}
+  // SOUND cycles: OFF -> each song -> OFF. The effects and the robot voice are on whenever a song is.
+  function setSong(i){
+    SND.play(i); if(i<0){ try{ window.speechSynthesis.cancel(); }catch(e){} }
+    const b=$("sound"); b.textContent = i<0 ? "♪ SOUND: OFF" : "♪ "+SONGS[i].name; b.classList.toggle("on",i>=0); b.setAttribute("aria-pressed",String(i>=0));
+    try{ localStorage.setItem("hc100-song", String(i)); }catch(e){}
   }
-  $("sound").onclick=()=>setSound(!SND.on);
+  $("sound").onclick=()=>{ const i=SND.song; setSong(i+1>=SONGS.length ? -1 : i+1); };
 
   // ---------- dice ----------
   const PIPS = {1:[[2,2]],2:[[1,1],[3,3]],3:[[1,1],[2,2],[3,3]],4:[[1,1],[1,3],[3,1],[3,3]],
@@ -288,7 +316,7 @@
     const d=document.createElement("div");
     d.className="rect "+cls;
     d.style.left=(c*10)+"%"; d.style.top=(r*10)+"%"; d.style.width=(w*10)+"%"; d.style.height=(h*10)+"%";
-    d.textContent=label||"";
+    if(label){ const t=document.createElement("span"); t.textContent=label; d.appendChild(t); }
     return d;
   }
   function drawBoard(popLast){
@@ -470,7 +498,7 @@
   $("again").onclick=()=>{ $("again").hidden=true; S=fresh(vsMode); say(""); drawBoard(); renderSide(); renderLedger(); };
   S=fresh("human"); renderSide();
   try{ if(localStorage.getItem("hc100-kidsmath")==="off") setKm(false); }catch(e){}
-  try{ if(localStorage.getItem("hc100-sound")==="on"){ const once=()=>{ setSound(true); removeEventListener("pointerdown",once); }; addEventListener("pointerdown",once); } }catch(e){}
+  try{ const saved=parseInt(localStorage.getItem("hc100-song"),10); if(saved>=0&&saved<SONGS.length){ const once=()=>{ setSong(saved); removeEventListener("pointerdown",once); }; addEventListener("pointerdown",once); } }catch(e){}
 })();
 </script>
 </body>
