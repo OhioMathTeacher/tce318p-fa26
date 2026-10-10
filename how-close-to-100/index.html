@@ -407,6 +407,7 @@
     const inp=L.querySelector("input"); if(inp&&focus!==false) inp.focus();
     L.scrollTop=L.scrollHeight;
   }
+  const PRAISE=["Good job","Nice","That's right","Yes"];
   function check(id){
     const e=S.pending, inp=$(id); if(!e||!inp) return;
     const v=parseInt(inp.value.trim(),10);
@@ -417,6 +418,9 @@
     }
     SND.place();
     if(id==="ansP" && e.prev>0){ e.step="t"; renderLedger(); return; }
+    // Say the fact back once the line is done: the sum, or the product for the very first array.
+    const cheer=PRAISE[S.entries.length%PRAISE.length];
+    SND.speak(e.prev>0 ? `${cheer}, ${e.prev} plus ${e.p} equals ${e.total}.` : `${cheer}, ${e.h} times ${e.w} equals ${e.p}.`);
     e.step="done"; S.total=e.total; S.pending=null;
     renderLedger(false); renderSide(); nextTurn();
   }
