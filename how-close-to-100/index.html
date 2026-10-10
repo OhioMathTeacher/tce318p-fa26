@@ -41,6 +41,7 @@
  .best b{color:var(--yellow);font-size:12px;}
  .hiscore{margin-top:8px;font-family:var(--pixel);font-size:9px;line-height:1.9;}
  .hiscore .new{display:block;color:var(--yellow);font-size:12px;margin-bottom:4px;animation:blink .6s steps(2) 6;}
+ .hiscore .pts{font-size:16px;color:#fff;}
  .hiscore ol{margin:0;padding-left:22px;color:#fff;} .hiscore li.me{color:var(--green);}
  .hiscore button{margin-top:6px;font-size:8px;padding:6px 8px;}
  @keyframes blink{50%{opacity:0;}}
@@ -392,6 +393,9 @@
   function team(){ const a=ini(nm("inA"))||"P1", b=S.mode==="computer"?"CPU":(ini(nm("inB"))||"P2"); return a+" & "+b; }
   function scores(){ try{ const v=JSON.parse(localStorage.getItem(HS)||"[]"); return Array.isArray(v)?v:[]; }catch(e){ return []; } }
   const line = x => x.p+" · "+x.s+" in "+x.r+" rolls";
+  $("best").title="Click to clear the high score on this device";
+  $("best").style.cursor="pointer";
+  $("best").addEventListener("click",()=>{ if(scores().length&&confirm("Clear the high score on this device?")){ try{ localStorage.removeItem(HS); }catch(e){} renderBest(); } });
   function renderBest(){
     const top=scores().filter(x=>x.r!=null)[0], el=$("best"); el.textContent="";
     if(!top){ el.textContent="BEST: none yet"; return; }
@@ -409,21 +413,13 @@
     try{ localStorage.setItem(HS,JSON.stringify(top)); }catch(e){}
     return {top, me, isNew: !prev || me.p>prev.p};
   }
+  // Game over says NEW HIGH SCORE! when it is one, and nothing more. The BEST line holds the record.
   function showScores(res){
     const box=document.createElement("div"); box.className="hiscore";
     if(res.isNew){ const n=document.createElement("span"); n.className="new"; n.textContent="NEW HIGH SCORE!"; box.appendChild(n); }
-    const h=document.createElement("div"); h.textContent="TOP 5 (points · squares in rolls)"; box.appendChild(h);
-    const ol=document.createElement("ol");
-    res.top.forEach(x=>{ const li=document.createElement("li"); li.textContent=line(x)+"  "+x.t; if(x===res.me||(x.d===res.me.d&&x.s===res.me.s)) li.className="me"; ol.appendChild(li); });
-    box.appendChild(ol);
-    const sum=document.createElement("div"); sum.style.margin="0 0 6px";
-    sum.textContent=`${res.me.s} squares × 10 = ${10*res.me.s}   ${res.me.r} rolls × 5 = ${5*res.me.r}   ${10*res.me.s} − ${5*res.me.r} = ${res.me.p} POINTS`;
-    box.insertBefore(sum, box.firstChild.nextSibling && res.isNew ? box.firstChild.nextSibling : box.firstChild);
-    const clr=document.createElement("button"); clr.className="ghost"; clr.textContent="CLEAR SCORES";
-    clr.onclick=()=>{ if(confirm("Clear the high scores on this device?")){ try{ localStorage.removeItem(HS); }catch(e){} renderBest(); box.remove(); } };
-    box.appendChild(clr);
     const m=$("msg"); m.textContent=""; m.className="msg"; m.appendChild(box);
   }
+
 
   // ---------- turns ----------
   function say(t,warn){ const m=$("msg"); m.textContent=t||""; m.className="msg"+(warn===2?" stop":warn?" warn":""); }
