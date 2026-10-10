@@ -42,6 +42,9 @@
  .ledger .tot{color:var(--yellow);font-weight:800;}
  .ledger .hint{font-size:13px;color:var(--yellow);min-height:1.2em;}
  .ledger .empty{color:var(--muted);font-size:14px;}
+ .setup .nm{display:flex;flex-direction:column;gap:4px;font-family:var(--pixel);font-size:9px;margin:8px 0;}
+ .setup .nm.A{color:#8fc3ff;} .setup .nm.B{color:#ff9b93;}
+ .setup .nm input{font:600 16px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:7px 9px;border-radius:5px;border:2px solid currentColor;background:#0b1030;color:#fff;}
  .setup .switch{margin-top:10px;padding-top:10px;border-top:1px solid #2a3170;}
 
  /* the board */
@@ -95,6 +98,8 @@
  button:disabled{opacity:.35;cursor:default;}
  .ghost{background:var(--panel);color:var(--ink);box-shadow:3px 3px 0 #000;}
  .sound{font-size:10px;padding:9px 12px;}
+ .switches{display:flex;gap:10px;flex-wrap:wrap;}
+ #vs.cpu{background:var(--b-line);color:#fff;}
  .sound.on{background:var(--green);color:#06260f;}
  .msg{min-height:2.6em;font-size:14px;margin-top:12px;color:var(--ink);}
  .msg.warn{color:var(--yellow);}
@@ -111,7 +116,10 @@
 <main>
  <div class="top">
   <h1>How Close<br>to 100?</h1>
-  <button class="ghost sound" id="sound" aria-pressed="false">♪ SOUND: OFF</button>
+  <div class="switches">
+   <button class="ghost sound" id="vs" aria-label="Play with: switch between a partner and the computer">PLAY WITH: PARTNER</button>
+   <button class="ghost sound" id="sound" aria-pressed="false">♪ SOUND: OFF</button>
+  </div>
  </div>
  <div class="stripes"><i></i><i></i><i></i><i></i><i></i></div>
  <div class="sub">The game from <a href="https://www.youcubed.org/tasks/how-close-to-100/">YouCubed</a> (Stanford). Roll two dice, draw an array that size, and fill the grid together.</div>
@@ -130,9 +138,9 @@
 
   <div class="panel">
    <div class="card setup" id="setup">
-    <h2>Play with</h2>
-    <label><input type="radio" name="mode" value="human" checked> a partner, on this screen</label>
-    <label><input type="radio" name="mode" value="computer"> the computer</label>
+    <h2>Setup</h2>
+    <label class="nm A">Blue player <input id="inA" maxlength="16" placeholder="Player A" autocomplete="off"></label>
+    <label class="nm B" id="nmB">Red player <input id="inB" maxlength="16" placeholder="Player B" autocomplete="off"></label>
     <label class="switch"><input type="checkbox" id="kidsMath" checked> Kids do the math: type each product and each new total</label>
     <div style="margin-top:12px"><button class="go" id="start">START</button></div>
    </div>
@@ -169,9 +177,9 @@
 
   function fresh(mode){
     return { mode, started:false, grid: Array.from({length:N},()=>Array(N).fill(null)), placed:[], turn:"A",
-             dice:null, rolling:false, passes:0, over:false, kidsMath:true, total:0, entries:[], pending:null };
+             dice:null, rolling:false, passes:0, over:false, kidsMath:true, total:0, entries:[], pending:null, names:{A:"",B:""} };
   }
-  const nameOf = p => p==="A" ? "Player A" : (S.mode==="computer" ? "Computer" : "Player B");
+  const nameOf = p => p==="A" ? (S.names.A||"Player A") : (S.mode==="computer" ? "Computer" : (S.names.B||"Player B"));
   const isComputer = p => S.mode==="computer" && p==="B";
 
   // ---------- 8-bit sound: square-wave melody, triangle bass, noise for the dice ----------
@@ -421,10 +429,19 @@
   });
   board.addEventListener("pointercancel", ()=>{ drag=null; if(preview){preview.remove();preview=null;} });
 
+  // ---------- PLAY WITH: one click flips partner <-> computer, and works mid-game for Player B ----------
+  let vsMode="human";
+  function setVs(m){
+    vsMode=m; $("nmB").hidden=(m==="computer"); const b=$("vs"); b.textContent="PLAY WITH: "+(m==="computer"?"COMPUTER":"PARTNER"); b.classList.toggle("cpu",m==="computer");
+    if(S){ S.mode=m; renderSide();
+      if(S.started&&!S.over&&S.turn==="B"&&m==="computer"&&!S.dice&&!S.rolling&&!S.pending&&!S.noRoom) setTimeout(roll,500); }
+  }
+  $("vs").onclick=()=>setVs(vsMode==="computer"?"human":"computer");
+
   // ---------- start ----------
   function start(){
-    const mode=document.querySelector('input[name="mode"]:checked').value;
-    S=fresh(mode); S.started=true; S.kidsMath=$("kidsMath").checked;
+    S=fresh(vsMode); S.started=true;
+    S.names={A:$("inA").value.trim().slice(0,16), B:$("inB").value.trim().slice(0,16)}; S.kidsMath=$("kidsMath").checked;
     try{ localStorage.setItem("hc100-kidsmath", S.kidsMath?"on":"off"); }catch(e){}
     $("setup").hidden=true; $("again").hidden=true;
     say(""); drawBoard(); renderSide(); renderLedger();
@@ -440,7 +457,7 @@
   const popIt=()=>{ if(!$("roll").disabled) roll(); };
   $("popper").addEventListener("click", popIt);
   $("popper").addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); popIt(); } });
-  $("again").onclick=()=>{ $("setup").hidden=false; $("again").hidden=true; S=fresh("human"); say(""); drawBoard(); renderSide(); renderLedger(); };
+  $("again").onclick=()=>{ $("setup").hidden=false; $("again").hidden=true; S=fresh(vsMode); say(""); drawBoard(); renderSide(); renderLedger(); };
   S=fresh("human"); renderSide();
   try{ if(localStorage.getItem("hc100-kidsmath")==="off") $("kidsMath").checked=false; }catch(e){}
   try{ if(localStorage.getItem("hc100-sound")==="on"){ const once=()=>{ setSound(true); removeEventListener("pointerdown",once); }; addEventListener("pointerdown",once); } }catch(e){}
