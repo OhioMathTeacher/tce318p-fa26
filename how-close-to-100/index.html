@@ -25,14 +25,30 @@
  .stripes i{flex:1;} .stripes i:nth-child(1){background:var(--red);} .stripes i:nth-child(2){background:var(--orange);} .stripes i:nth-child(3){background:var(--yellow);} .stripes i:nth-child(4){background:var(--green);} .stripes i:nth-child(5){background:var(--blue);}
  .sub{color:var(--muted);font-size:13px;margin:0 0 16px;}
  .sub a{color:inherit;}
- .layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:22px;align-items:start;}
- @media (max-width:780px){ .layout{grid-template-columns:1fr;} }
+ .layout{display:grid;grid-template-columns:230px minmax(0,1fr) 300px;grid-template-areas:"ledger board panel";gap:20px;align-items:start;}
+ .ledgerCol{grid-area:ledger;} .boardCol{grid-area:board;} .panel{grid-area:panel;}
+ @media (max-width:1100px){ .layout{grid-template-columns:minmax(0,1fr) 300px;grid-template-areas:"board panel" "ledger panel";} }
+ @media (max-width:780px){ .layout{grid-template-columns:1fr;grid-template-areas:"board" "panel" "ledger";} }
+ /* the running total */
+ .ledger{font-size:17px;font-variant-numeric:tabular-nums;}
+ .ledger .row{border-left:5px solid;padding:4px 0 6px 8px;margin:0 0 8px;}
+ .ledger .row.A{border-color:#5ea6ff;} .ledger .row.B{border-color:#ff7d73;}
+ .ledger .line{display:flex;align-items:center;gap:6px;min-height:34px;}
+ .ledger .line .eq{white-space:nowrap;}
+ .ledger input{width:3.4em;font:inherit;font-weight:700;padding:3px 6px;border:2px solid var(--yellow);border-radius:4px;background:#0b1030;color:#fff;text-align:center;}
+ .ledger input.bad{border-color:var(--red);animation:shake .4s;}
+ .ledger .ok{font-family:var(--pixel);font-size:10px;padding:8px 9px;background:var(--yellow);color:#111;box-shadow:2px 2px 0 #000;}
+ .ledger .ans{font-weight:800;color:#fff;}
+ .ledger .tot{color:var(--yellow);font-weight:800;}
+ .ledger .hint{font-size:13px;color:var(--yellow);min-height:1.2em;}
+ .ledger .empty{color:var(--muted);font-size:14px;}
+ .setup .switch{margin-top:10px;padding-top:10px;border-top:1px solid #2a3170;}
 
  /* the board */
  .board{position:relative;width:100%;max-width:560px;aspect-ratio:1;border:8px solid var(--tan);outline:3px solid #000;border-radius:4px;touch-action:none;user-select:none;-webkit-user-select:none;background:#fbf8ec;
    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:10% 10%;box-shadow:0 0 0 6px #000,0 12px 30px rgba(0,0,0,.5);}
  .board.waiting{cursor:crosshair;}
- .rect{position:absolute;border:3px solid;border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:var(--pixel);font-size:clamp(8px,1.6vw,12px);}
+ .rect{white-space:nowrap;overflow:hidden;position:absolute;border:3px solid;border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:var(--pixel);font-size:clamp(8px,1.6vw,12px);}
  .rect.A{background:var(--a-fill);border-color:var(--a-line);color:var(--a-line);}
  .rect.B{background:var(--b-fill);border-color:var(--b-line);color:var(--b-line);}
  .rect.preview{opacity:.8;border-style:dashed;}
@@ -87,10 +103,6 @@
  .meter{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin-top:10px;}
  .meter i{height:10px;background:#0b1030;border:1px solid #000;}
  .meter i.on{background:var(--green);}
- .logs{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:14px;}
- .logs h3{font-family:var(--pixel);font-size:9px;margin:0 0 6px;}
- .logs .A h3{color:#8fc3ff;} .logs .B h3{color:#ff9b93;}
- .logs ol{margin:0;padding-left:20px;} .logs li{margin:1px 0;}
  .setup label{display:block;margin:6px 0;font-size:15px;}
  .over{font-family:var(--pixel);font-size:12px;line-height:1.6;color:var(--yellow);}
 </style>
@@ -105,7 +117,14 @@
  <div class="sub">The game from <a href="https://www.youcubed.org/tasks/how-close-to-100/">YouCubed</a> (Stanford). Roll two dice, draw an array that size, and fill the grid together.</div>
 
  <div class="layout">
-  <div>
+  <div class="ledgerCol">
+   <div class="card">
+    <h2>Running total</h2>
+    <div class="ledger" id="ledger"><div class="empty">Each array goes here.</div></div>
+   </div>
+  </div>
+
+  <div class="boardCol">
    <div class="board" id="board" aria-label="A 10 by 10 grid"></div>
   </div>
 
@@ -114,6 +133,7 @@
     <h2>Play with</h2>
     <label><input type="radio" name="mode" value="human" checked> a partner, on this screen</label>
     <label><input type="radio" name="mode" value="computer"> the computer</label>
+    <label class="switch"><input type="checkbox" id="kidsMath" checked> Kids do the math: type each product and each new total</label>
     <div style="margin-top:12px"><button class="go" id="start">START</button></div>
    </div>
 
@@ -135,14 +155,6 @@
     <div class="meter" id="meter"></div>
    </div>
 
-   <div class="card">
-    <h2>Number sentences</h2>
-    <div class="logs">
-     <div class="A"><h3 id="nameA">Player A</h3><ol id="logA"></ol></div>
-     <div class="B"><h3 id="nameB">Player B</h3><ol id="logB"></ol></div>
-    </div>
-   </div>
-
    <div><button class="ghost" id="again" hidden>NEW GAME</button></div>
   </div>
  </div>
@@ -157,7 +169,7 @@
 
   function fresh(mode){
     return { mode, started:false, grid: Array.from({length:N},()=>Array(N).fill(null)), placed:[], turn:"A",
-             dice:null, rolling:false, passes:0, over:false, logs:{A:[],B:[]} };
+             dice:null, rolling:false, passes:0, over:false, kidsMath:true, total:0, entries:[], pending:null };
   }
   const nameOf = p => p==="A" ? "Player A" : (S.mode==="computer" ? "Computer" : "Player B");
   const isComputer = p => S.mode==="computer" && p==="B";
@@ -217,11 +229,15 @@
         [[98,0.2],[104,0.2],[49,0.14]].forEach(([hz,v])=>{ const o=ctx.createOscillator(), g=ctx.createGain(); o.type="sawtooth"; o.frequency.value=hz;
           g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+0.02); g.gain.setValueAtTime(v,t+0.85); g.gain.linearRampToValueAtTime(0,t+0.95);
           o.connect(g); g.connect(master); o.start(t); o.stop(t+1); }); } },
+      speak(text){ if(!on||!("speechSynthesis" in window)) return;
+        try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.pitch=0.1; u.rate=0.8; u.volume=1;
+          const v=speechSynthesis.getVoices().find(x=>/^en(-|_)US/i.test(x.lang))||speechSynthesis.getVoices().find(x=>/^en/i.test(x.lang)); if(v) u.voice=v;
+          speechSynthesis.speak(u); }catch(e){} },
       over(){ if(on&&ctx){ const t=ctx.currentTime; [72,76,79,84].forEach((m,i)=>tone(f(m),t+i*0.12,0.14,"square",0.1)); } }
     };
   })();
   function setSound(v){
-    SND.set(v); const b=$("sound"); b.textContent="♪ SOUND: "+(v?"ON":"OFF"); b.classList.toggle("on",v); b.setAttribute("aria-pressed",String(v));
+    SND.set(v); if(!v){ try{ speechSynthesis.cancel(); }catch(e){} } const b=$("sound"); b.textContent="♪ SOUND: "+(v?"ON":"OFF"); b.classList.toggle("on",v); b.setAttribute("aria-pressed",String(v));
     try{ localStorage.setItem("hc100-sound", v?"on":"off"); }catch(e){}
   }
   $("sound").onclick=()=>setSound(!SND.on);
@@ -260,16 +276,54 @@
   }
   function drawBoard(popLast){
     board.querySelectorAll(".rect").forEach(e=>e.remove());
-    S.placed.forEach((p,i)=>board.appendChild(rectEl(p.who+(popLast&&i===S.placed.length-1?" pop":""),p.r,p.c,p.h,p.w,p.h+" × "+p.w)));
+    S.placed.forEach((p,i)=>board.appendChild(rectEl(p.who+(popLast&&i===S.placed.length-1?" pop":""),p.r,p.c,p.h,p.w,(p.w>1&&p.h>1)||p.w>=3?p.h+" × "+p.w:"")));
   }
   function place(who,r,c,h,w){
     for(let i=r;i<r+h;i++) for(let j=c;j<c+w;j++) S.grid[i][j]=who;
     S.placed.push({who,r,c,h,w});
-    S.logs[who].push(h+" × "+w+" = "+(h*w));
+    const e={who,h,w,p:h*w,prev:S.total,step:"p"};
+    e.total=e.prev+e.p;
+    S.entries.push(e);
     S.passes=0; idleFaces=S.dice; S.dice=null;
     SND.place();
-    drawBoard(true); renderSide();
+    drawBoard(true);
+    if(S.kidsMath){ S.pending=e; renderSide(); renderLedger(true); return; }   // the turn waits for the kids' arithmetic
+    e.step="done"; S.total=e.total; renderSide(); renderLedger();
     nextTurn();
+  }
+
+  // ---------- the running total ----------
+  // With "kids do the math" on, the app never shows a product or a total until a child has typed it.
+  function renderLedger(focus){
+    const L=$("ledger");
+    if(!S.entries.length){ L.innerHTML='<div class="empty">Each array goes here.</div>'; return; }
+    L.innerHTML=S.entries.map((e,i)=>{
+      const live=e===S.pending;
+      const box=(id)=>`<input id="${id}" inputmode="numeric" autocomplete="off" aria-label="answer"> <button class="ok" data-ok="${id}">OK</button>`;
+      let l1=`<div class="line"><span class="eq">${e.h} × ${e.w} =</span> `+(live&&e.step==="p"?box("ansP"):`<span class="ans">${e.p}</span>`)+`</div>`;
+      let l2="";
+      if(i===0){ if(!(live&&e.step==="p")) l2=`<div class="line"><span class="eq">total</span> <span class="tot">${e.total}</span></div>`; }
+      else if(!(live&&e.step==="p")) l2=`<div class="line"><span class="eq">${e.prev} + ${e.p} =</span> `+(live&&e.step==="t"?box("ansT"):`<span class="tot">${e.total}</span>`)+`</div>`;
+      const hint=live?`<div class="hint" id="hint"></div>`:"";
+      return `<div class="row ${e.who}">${l1}${l2}${hint}</div>`;
+    }).join("");
+    L.querySelectorAll("[data-ok]").forEach(b=>b.onclick=()=>check(b.dataset.ok));
+    L.querySelectorAll("input").forEach(inp=>inp.addEventListener("keydown",ev=>{ if(ev.key==="Enter") check(inp.id); }));
+    const inp=L.querySelector("input"); if(inp&&focus!==false) inp.focus();
+    L.scrollTop=L.scrollHeight;
+  }
+  function check(id){
+    const e=S.pending, inp=$(id); if(!e||!inp) return;
+    const v=parseInt(inp.value.trim(),10);
+    const want = id==="ansP" ? e.p : e.total;
+    if(v!==want){
+      SND.wrong(); inp.classList.remove("bad"); void inp.offsetWidth; inp.classList.add("bad");
+      $("hint").textContent="Not quite. Try again."; inp.select(); return;
+    }
+    SND.place();
+    if(id==="ansP" && e.prev>0){ e.step="t"; renderLedger(); return; }
+    e.step="done"; S.total=e.total; S.pending=null;
+    renderLedger(false); renderSide(); nextTurn();
   }
 
   // ---------- turns ----------
@@ -279,15 +333,12 @@
     if(!S.started){ t.className="turn"; t.textContent="Press START"; }
     else if(!S.over){ t.className="turn "+S.turn; t.textContent=nameOf(S.turn)+"'s turn"; }
     if(!S.rolling) showDice(S.dice||idleFaces, !!S.dice);
-    $("roll").disabled = !S.started || S.over || !!S.dice || S.rolling || !!S.noRoom || isComputer(S.turn);
+    $("roll").disabled = !S.started || S.over || !!S.dice || S.rolling || !!S.noRoom || !!S.pending || isComputer(S.turn);
     $("roll").hidden = S.over || !!S.noRoom;
     $("pass").hidden = !S.noRoom;
-    const n=filled();
+    const n=S.total;
     $("filled").innerHTML = n+" <small>of 100</small>";
     $("meter").innerHTML = Array.from({length:10},(_,i)=>`<i class="${n>=(i+1)*10?"on":""}"></i>`).join("");
-    $("nameA").textContent=nameOf("A"); $("nameB").textContent=nameOf("B");
-    $("logA").innerHTML=S.logs.A.map(x=>"<li>"+x+"</li>").join("");
-    $("logB").innerHTML=S.logs.B.map(x=>"<li>"+x+"</li>").join("");
     board.classList.toggle("waiting", !!S.dice && !isComputer(S.turn) && !S.over);
   }
   function nextTurn(){
@@ -297,7 +348,7 @@
   }
   function endGame(){
     S.over=true; if(S.dice) idleFaces=S.dice; S.dice=null; renderSide();
-    say(""); const t=$("turn"); t.className="turn"; t.innerHTML=`<div class="over">GAME OVER<br>${filled()} of 100 full</div>`;
+    say(""); const t=$("turn"); t.className="turn"; t.innerHTML=`<div class="over">GAME OVER<br>${S.total} of 100 full</div>`;
     SND.over();
     $("again").hidden=false;
   }
@@ -309,8 +360,10 @@
     const spin=setInterval(()=>showDice([1+Math.floor(Math.random()*6),1+Math.floor(Math.random()*6)], true), 90);
     setTimeout(()=>{ clearInterval(spin); pop.classList.remove("spin","pop","busy"); landed(a,b); }, 2000);
   }
+  const WORD=["","One","Two","Three","Four","Five","Six"];
   function landed(a,b){
     S.rolling=false; S.dice=[a,b]; renderSide();
+    SND.speak(`${WORD[a]} by ${WORD[b].toLowerCase()} rectangle.`);
     if(!anyFit(a,b)){
       // Stop here on purpose: why a roll has no room is worth talking about, so the game waits for PASS.
       S.noRoom=true; SND.noRoom();
@@ -339,7 +392,7 @@
   }
   function span(a,z){ return {r:Math.min(a.r,z.r), c:Math.min(a.c,z.c), h:Math.abs(a.r-z.r)+1, w:Math.abs(a.c-z.c)+1}; }
   board.addEventListener("pointerdown", e=>{
-    if(!S||S.over||!S.dice||isComputer(S.turn)) return;
+    if(!S||S.over||!S.dice||S.pending||isComputer(S.turn)) return;
     try{ board.setPointerCapture(e.pointerId); }catch(err){}
     drag={start:cellAt(e)}; move(e);
   });
@@ -367,9 +420,10 @@
   // ---------- start ----------
   function start(){
     const mode=document.querySelector('input[name="mode"]:checked').value;
-    S=fresh(mode); S.started=true;
+    S=fresh(mode); S.started=true; S.kidsMath=$("kidsMath").checked;
+    try{ localStorage.setItem("hc100-kidsmath", S.kidsMath?"on":"off"); }catch(e){}
     $("setup").hidden=true; $("again").hidden=true;
-    say(""); drawBoard(); renderSide();
+    say(""); drawBoard(); renderSide(); renderLedger();
   }
   $("start").onclick=start;
   $("roll").onclick=roll;
@@ -382,8 +436,9 @@
   const popIt=()=>{ if(!$("roll").disabled) roll(); };
   $("popper").addEventListener("click", popIt);
   $("popper").addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); popIt(); } });
-  $("again").onclick=()=>{ $("setup").hidden=false; $("again").hidden=true; S=fresh("human"); say(""); drawBoard(); renderSide(); };
+  $("again").onclick=()=>{ $("setup").hidden=false; $("again").hidden=true; S=fresh("human"); say(""); drawBoard(); renderSide(); renderLedger(); };
   S=fresh("human"); renderSide();
+  try{ if(localStorage.getItem("hc100-kidsmath")==="off") $("kidsMath").checked=false; }catch(e){}
   try{ if(localStorage.getItem("hc100-sound")==="on"){ const once=()=>{ setSound(true); removeEventListener("pointerdown",once); }; addEventListener("pointerdown",once); } }catch(e){}
 })();
 </script>
