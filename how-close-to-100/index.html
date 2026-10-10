@@ -25,7 +25,14 @@
  .stripes i{flex:1;} .stripes i:nth-child(1){background:var(--red);} .stripes i:nth-child(2){background:var(--orange);} .stripes i:nth-child(3){background:var(--yellow);} .stripes i:nth-child(4){background:var(--green);} .stripes i:nth-child(5){background:var(--blue);}
  .sub{color:var(--muted);font-size:13px;margin:0 0 16px;}
  .sub a{color:inherit;}
- .layout{display:grid;grid-template-columns:230px minmax(0,1fr) 300px;grid-template-areas:"ledger board panel";gap:20px;align-items:start;}
+ .layout{display:grid;grid-template-columns:230px minmax(0,1fr) 300px;grid-template-areas:"ledger board panel";gap:20px;align-items:stretch;}
+ .ledgerCol{height:0;min-height:100%;}   /* the board, not the list, sets the row height */
+ .ledgerCol .card{height:100%;display:flex;flex-direction:column;}
+ .panel .card{height:100%;display:flex;flex-direction:column;}
+ .filledRow{margin-top:auto;padding-top:10px;border-top:1px solid #2a3170;}
+ .filledRow h2{margin:4px 0 4px;}
+ .ledgerCol .ledger{flex:1;overflow-y:auto;min-height:0;max-height:560px;}
+ .panel{justify-content:space-between;}
  .ledgerCol{grid-area:ledger;} .boardCol{grid-area:board;} .panel{grid-area:panel;}
  @media (max-width:1100px){ .layout{grid-template-columns:minmax(0,1fr) 300px;grid-template-areas:"board panel" "ledger panel";} }
  @media (max-width:780px){ .layout{grid-template-columns:1fr;grid-template-areas:"board" "panel" "ledger";} }
@@ -74,13 +81,13 @@
  .turn{font-family:var(--pixel);font-size:13px;line-height:1.5;margin-top:4px;padding:8px 10px;border-radius:4px;background:#0b1030;}
  .turn.A{background:var(--a-line);} .turn.B{background:var(--b-line);}
  /* the Pop-O-Matic: two dice under a clear dome */
- .popper{position:relative;width:220px;margin:16px auto 10px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+ .popper{position:relative;width:200px;margin:8px auto 6px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
  .popper.busy{cursor:default;}
- .dome{position:relative;height:132px;border-radius:50% 50% 8px 8px / 80% 80% 8px 8px;border:3px solid rgba(255,255,255,.75);
+ .dome{position:relative;height:106px;border-radius:50% 50% 8px 8px / 80% 80% 8px 8px;border:3px solid rgba(255,255,255,.75);
    background:radial-gradient(ellipse at 30% 22%,rgba(255,255,255,.55) 0 12%,rgba(255,255,255,.08) 30%,rgba(160,200,255,.12) 70%);
    box-shadow:inset 0 -10px 18px rgba(255,255,255,.12),0 0 0 3px #000;transform-origin:50% 100%;}
  .dome .dice{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:center;gap:18px;}
- .dice svg{width:62px;height:62px;filter:drop-shadow(3px 3px 0 #000);}
+ .dice svg{width:56px;height:56px;filter:drop-shadow(3px 3px 0 #000);}
  .base{height:30px;margin:0 -10px;border-radius:6px 6px 14px 14px;border:3px solid #000;background:linear-gradient(#f7e64c,#d4be1e);box-shadow:0 6px 0 #000;}
  .burst{position:absolute;left:50%;top:-18px;transform:translate(-50%,0) scale(0);font-family:var(--pixel);font-size:22px;color:var(--yellow);text-shadow:3px 3px 0 var(--red),5px 5px 0 #000;pointer-events:none;opacity:0;}
  .popper.pop .dome{animation:squash .35s ease-out;}
@@ -98,10 +105,12 @@
  button:disabled{opacity:.35;cursor:default;}
  .ghost{background:var(--panel);color:var(--ink);box-shadow:3px 3px 0 #000;}
  .sound{font-size:10px;padding:9px 12px;}
- .switches{display:flex;gap:10px;flex-wrap:wrap;}
+ .switches{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:flex-end;}
+ .nmIn{width:130px;font:600 15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:8px 10px;border-radius:6px;border:3px solid;background:#0b1030;color:#fff;box-shadow:3px 3px 0 #000;}
+ .nmIn.A{border-color:#5ea6ff;} .nmIn.B{border-color:#ff7d73;} .nmIn::placeholder{color:#8a93b8;}
  #vs.cpu{background:var(--b-line);color:#fff;}
  .sound.on{background:var(--green);color:#06260f;}
- .msg{min-height:2.6em;font-size:14px;margin-top:12px;color:var(--ink);}
+ .msg{min-height:2.2em;font-size:14px;margin-top:12px;color:var(--ink);}
  .msg.warn{color:var(--yellow);}
  .filled{font-family:var(--pixel);font-size:26px;color:#fff;}
  .filled small{font-size:10px;color:var(--muted);}
@@ -118,6 +127,9 @@
   <h1>How Close<br>to 100?</h1>
   <div class="switches">
    <button class="ghost sound" id="vs" aria-label="Play with: switch between a partner and the computer">PLAY WITH: PARTNER</button>
+   <input class="nmIn A" id="inA" maxlength="16" placeholder="Player 1" autocomplete="off" aria-label="Blue player's name">
+   <input class="nmIn B" id="inB" maxlength="16" placeholder="Player 2" autocomplete="off" aria-label="Red player's name">
+   <button class="ghost sound on" id="km" aria-pressed="true">KIDS DO MATH: ON</button>
    <button class="ghost sound" id="sound" aria-pressed="false">♪ SOUND: OFF</button>
   </div>
  </div>
@@ -137,14 +149,6 @@
   </div>
 
   <div class="panel">
-   <div class="card setup" id="setup">
-    <h2>Setup</h2>
-    <label class="nm A">Blue player <input id="inA" maxlength="16" placeholder="Player A" autocomplete="off"></label>
-    <label class="nm B" id="nmB">Red player <input id="inB" maxlength="16" placeholder="Player B" autocomplete="off"></label>
-    <label class="switch"><input type="checkbox" id="kidsMath" checked> Kids do the math: type each product and each new total</label>
-    <div style="margin-top:12px"><button class="go" id="start">START</button></div>
-   </div>
-
    <div class="card" id="play">
     <div class="turn" id="turn"></div>
     <div class="popper" id="popper" role="button" tabindex="0" aria-label="Pop the dice">
@@ -154,16 +158,16 @@
     </div>
     <button class="go" id="roll">POP!</button>
     <button class="pass" id="pass" hidden>PASS</button>
+    <button class="go" id="again" hidden>NEW GAME</button>
+    <div class="filledRow"><h2>Filled</h2>
+     <div class="filled" id="filled">0 <small>of 100</small></div>
+     <div class="meter" id="meter"></div>
+    </div>
     <div class="msg" id="msg"></div>
    </div>
 
-   <div class="card">
-    <h2>Filled</h2>
-    <div class="filled" id="filled">0 <small>of 100</small></div>
-    <div class="meter" id="meter"></div>
-   </div>
 
-   <div><button class="ghost" id="again" hidden>NEW GAME</button></div>
+
   </div>
  </div>
 </main>
@@ -179,7 +183,8 @@
     return { mode, started:false, grid: Array.from({length:N},()=>Array(N).fill(null)), placed:[], turn:"A",
              dice:null, rolling:false, passes:0, over:false, kidsMath:true, total:0, entries:[], pending:null, names:{A:"",B:""} };
   }
-  const nameOf = p => p==="A" ? (S.names.A||"Player A") : (S.mode==="computer" ? "Computer" : (S.names.B||"Player B"));
+  const nm = id => (document.getElementById(id).value||"").trim().slice(0,16);
+  const nameOf = p => p==="A" ? (nm("inA")||"Player 1") : (S.mode==="computer" ? "Computer" : (nm("inB")||"Player 2"));
   const isComputer = p => S.mode==="computer" && p==="B";
 
   // ---------- 8-bit sound: square-wave melody, triangle bass, noise for the dice ----------
@@ -342,10 +347,10 @@
   function say(t,warn){ const m=$("msg"); m.textContent=t||""; m.className="msg"+(warn===2?" stop":warn?" warn":""); }
   function renderSide(){
     const t=$("turn");
-    if(!S.started){ t.className="turn"; t.textContent="Press START"; }
+    if(!S.started){ t.className="turn"; t.textContent="Press POP! to start"; }
     else if(!S.over){ t.className="turn "+S.turn; t.textContent=nameOf(S.turn)+"'s turn"; }
     if(!S.rolling) showDice(S.dice||idleFaces, !!S.dice);
-    $("roll").disabled = !S.started || S.over || !!S.dice || S.rolling || !!S.noRoom || !!S.pending || isComputer(S.turn);
+    $("roll").disabled = !S.started ? false : S.over || !!S.dice || S.rolling || !!S.noRoom || !!S.pending || isComputer(S.turn);
     $("roll").hidden = S.over || !!S.noRoom;
     $("pass").hidden = !S.noRoom;
     const n=S.total;
@@ -432,7 +437,7 @@
   // ---------- PLAY WITH: one click flips partner <-> computer, and works mid-game for Player B ----------
   let vsMode="human";
   function setVs(m){
-    vsMode=m; $("nmB").hidden=(m==="computer"); const b=$("vs"); b.textContent="PLAY WITH: "+(m==="computer"?"COMPUTER":"PARTNER"); b.classList.toggle("cpu",m==="computer");
+    vsMode=m; $("inB").hidden=(m==="computer"); const b=$("vs"); b.textContent="PLAY WITH: "+(m==="computer"?"COMPUTER":"PARTNER"); b.classList.toggle("cpu",m==="computer");
     if(S){ S.mode=m; renderSide();
       if(S.started&&!S.over&&S.turn==="B"&&m==="computer"&&!S.dice&&!S.rolling&&!S.pending&&!S.noRoom) setTimeout(roll,500); }
   }
@@ -441,25 +446,30 @@
   // ---------- start ----------
   function start(){
     S=fresh(vsMode); S.started=true;
-    S.names={A:$("inA").value.trim().slice(0,16), B:$("inB").value.trim().slice(0,16)}; S.kidsMath=$("kidsMath").checked;
+    S.kidsMath=kidsMath;
     try{ localStorage.setItem("hc100-kidsmath", S.kidsMath?"on":"off"); }catch(e){}
-    $("setup").hidden=true; $("again").hidden=true;
+    $("again").hidden=true;
     say(""); drawBoard(); renderSide(); renderLedger();
   }
-  $("start").onclick=start;
-  $("roll").onclick=roll;
+  // POP! is also the start: the first press locks in the switches as they are, starts the game, and rolls.
+  $("roll").onclick=()=>{ if(!S.started) start(); roll(); };
+  ["inA","inB"].forEach(id=>$(id).addEventListener("input",()=>{ if(S&&S.started&&!S.over) renderSide(); }));
+  let kidsMath=true;
+  function setKm(v){ kidsMath=v; const b=$("km"); b.textContent="KIDS DO MATH: "+(v?"ON":"OFF"); b.classList.toggle("on",v); b.setAttribute("aria-pressed",String(v));
+    if(S&&S.started) S.kidsMath=v; try{ localStorage.setItem("hc100-kidsmath", v?"on":"off"); }catch(e){} }
+  $("km").onclick=()=>setKm(!kidsMath);
   $("pass").onclick=()=>{
     if(!S.noRoom) return;
     S.noRoom=false; S.passes++; idleFaces=S.dice; S.dice=null; say("");
     if(S.passes>=2){ endGame(); return; }
     nextTurn();
   };
-  const popIt=()=>{ if(!$("roll").disabled) roll(); };
+  const popIt=()=>{ if(!S.started){ start(); roll(); } else if(!$("roll").disabled) roll(); };
   $("popper").addEventListener("click", popIt);
   $("popper").addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); popIt(); } });
-  $("again").onclick=()=>{ $("setup").hidden=false; $("again").hidden=true; S=fresh(vsMode); say(""); drawBoard(); renderSide(); renderLedger(); };
+  $("again").onclick=()=>{ $("again").hidden=true; S=fresh(vsMode); say(""); drawBoard(); renderSide(); renderLedger(); };
   S=fresh("human"); renderSide();
-  try{ if(localStorage.getItem("hc100-kidsmath")==="off") $("kidsMath").checked=false; }catch(e){}
+  try{ if(localStorage.getItem("hc100-kidsmath")==="off") setKm(false); }catch(e){}
   try{ if(localStorage.getItem("hc100-sound")==="on"){ const once=()=>{ setSound(true); removeEventListener("pointerdown",once); }; addEventListener("pointerdown",once); } }catch(e){}
 })();
 </script>
