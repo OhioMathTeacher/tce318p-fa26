@@ -230,14 +230,14 @@
           g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+0.02); g.gain.setValueAtTime(v,t+0.85); g.gain.linearRampToValueAtTime(0,t+0.95);
           o.connect(g); g.connect(master); o.start(t); o.stop(t+1); }); } },
       speak(text){ if(!on||!("speechSynthesis" in window)) return;
-        try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.pitch=0.1; u.rate=0.8; u.volume=1;
-          const v=speechSynthesis.getVoices().find(x=>/^en(-|_)US/i.test(x.lang))||speechSynthesis.getVoices().find(x=>/^en/i.test(x.lang)); if(v) u.voice=v;
-          speechSynthesis.speak(u); }catch(e){} },
+        try{ window.speechSynthesis.cancel(); const u=new window.SpeechSynthesisUtterance(text); u.pitch=0.1; u.rate=0.8; u.volume=1;
+          const v=window.speechSynthesis.getVoices().find(x=>/^en(-|_)US/i.test(x.lang))||window.speechSynthesis.getVoices().find(x=>/^en/i.test(x.lang)); if(v) u.voice=v;
+          window.speechSynthesis.speak(u); }catch(e){} },
       over(){ if(on&&ctx){ const t=ctx.currentTime; [72,76,79,84].forEach((m,i)=>tone(f(m),t+i*0.12,0.14,"square",0.1)); } }
     };
   })();
   function setSound(v){
-    SND.set(v); if(!v){ try{ speechSynthesis.cancel(); }catch(e){} } const b=$("sound"); b.textContent="♪ SOUND: "+(v?"ON":"OFF"); b.classList.toggle("on",v); b.setAttribute("aria-pressed",String(v));
+    SND.set(v); if(!v){ try{ window.speechSynthesis.cancel(); }catch(e){} } const b=$("sound"); b.textContent="♪ SOUND: "+(v?"ON":"OFF"); b.classList.toggle("on",v); b.setAttribute("aria-pressed",String(v));
     try{ localStorage.setItem("hc100-sound", v?"on":"off"); }catch(e){}
   }
   $("sound").onclick=()=>setSound(!SND.on);
