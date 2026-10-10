@@ -389,35 +389,34 @@
   const ini = s => (s||"").replace(/[^A-Za-z0-9]/g,"").slice(0,3).toUpperCase();
   function team(){ const a=ini(nm("inA"))||"P1", b=S.mode==="computer"?"CPU":(ini(nm("inB"))||"P2"); return a+" & "+b; }
   function scores(){ try{ const v=JSON.parse(localStorage.getItem(HS)||"[]"); return Array.isArray(v)?v:[]; }catch(e){ return []; } }
-  const perRoll = x => (x&&x.r ? (x.s/x.r).toFixed(1) : null);
+  const line = x => x.p+" · "+x.s+" in "+x.r+" rolls";
   function renderBest(){
-    const list=scores(), top=list[0], el=$("best"); el.textContent="";
+    const top=scores().filter(x=>x.r!=null)[0], el=$("best"); el.textContent="";
     if(!top){ el.textContent="BEST: none yet"; return; }
-    el.append("BEST "); const b=document.createElement("b"); b.textContent=top.s; el.append(b, (top.r!=null?" in "+top.r+" rolls":"")+" · "+top.t);
-    const br=list.filter(x=>x.r).reduce((m,x)=>!m||x.s/x.r>m.s/m.r?x:m, null);
-    if(br){ el.append(document.createElement("br"), "MOST PER ROLL "); const c=document.createElement("b"); c.textContent=perRoll(br); el.append(c, " · "+br.t); }
+    if(top.p==null) top.p=points(top.s,top.r);
+    el.append("BEST "); const b=document.createElement("b"); b.textContent=top.p; el.append(b, " · "+top.s+" in "+top.r+" rolls · "+top.t);
   }
+  // POINTS = 10 for every square filled - 5 for every roll. Filling matters most; fewer rolls breaks ties.
+  const points = (sq,rolls) => 10*sq - 5*rolls;
   function record(score){
-    const rk=x=>(x.r==null?999:x.r);   // older scores saved before rolls were counted sort last on a tie
-    const better=(x,y)=>y.s-x.s||rk(x)-rk(y)||x.d-y.d;
-    const list=scores(), prev=list.length?list.slice().sort(better)[0]:null, me={s:score,r:S.rolls,t:team(),d:Date.now()};
-    const rate=x=>(x.r? x.s/x.r : 0);
-    const prevRate=list.reduce((m,x)=>Math.max(m,rate(x)),0);
-    list.push(me); list.sort(better); const keep=list.slice(0,40); const top=keep.slice(0,5);
-    try{ localStorage.setItem(HS,JSON.stringify(keep)); }catch(e){}
-    const bestRate=keep.reduce((m,x)=>rate(x)>rate(m)?x:m, keep[0]);
-    return {top, me, isNew: !prev || better(me,prev)<0, bestRate, newRate: rate(me)>prevRate && me.r>0};
+    const better=(x,y)=>y.p-x.p||x.d-y.d;
+    const list=scores().filter(x=>x.r!=null).map(x=>({...x, p:points(x.s,x.r)}));   // drop any saved before rolls were counted
+    const prev=list.length?list.slice().sort(better)[0]:null;
+    const me={s:score, r:S.rolls, p:points(score,S.rolls), t:team(), d:Date.now()};
+    list.push(me); list.sort(better); const top=list.slice(0,5);
+    try{ localStorage.setItem(HS,JSON.stringify(top)); }catch(e){}
+    return {top, me, isNew: !prev || me.p>prev.p};
   }
   function showScores(res){
     const box=document.createElement("div"); box.className="hiscore";
     if(res.isNew){ const n=document.createElement("span"); n.className="new"; n.textContent="NEW HIGH SCORE!"; box.appendChild(n); }
-    const h=document.createElement("div"); h.textContent="TOP 5"; box.appendChild(h);
+    const h=document.createElement("div"); h.textContent="TOP 5 (points · squares in rolls)"; box.appendChild(h);
     const ol=document.createElement("ol");
-    res.top.forEach(x=>{ const li=document.createElement("li"); li.textContent=x.s+(x.r!=null?" · "+x.r+" rolls":"")+"  "+x.t; if(x===res.me||(x.d===res.me.d&&x.s===res.me.s)) li.className="me"; ol.appendChild(li); });
+    res.top.forEach(x=>{ const li=document.createElement("li"); li.textContent=line(x)+"  "+x.t; if(x===res.me||(x.d===res.me.d&&x.s===res.me.s)) li.className="me"; ol.appendChild(li); });
     box.appendChild(ol);
-    if(res.bestRate&&res.bestRate.r){ const pr=document.createElement("div"); pr.style.marginTop="6px";
-      pr.textContent=(res.newRate?"NEW RECORD! ":"")+"Most per roll: "+perRoll(res.bestRate)+" · "+res.bestRate.t+"  (this game: "+(perRoll(res.me)||"–")+")";
-      if(res.newRate) pr.style.color="var(--green)"; box.appendChild(pr); }
+    const sum=document.createElement("div"); sum.style.margin="0 0 6px";
+    sum.textContent=`${res.me.s} squares × 10 = ${10*res.me.s}   ${res.me.r} rolls × 5 = ${5*res.me.r}   ${10*res.me.s} − ${5*res.me.r} = ${res.me.p} POINTS`;
+    box.insertBefore(sum, box.firstChild.nextSibling && res.isNew ? box.firstChild.nextSibling : box.firstChild);
     const clr=document.createElement("button"); clr.className="ghost"; clr.textContent="CLEAR SCORES";
     clr.onclick=()=>{ if(confirm("Clear the high scores on this device?")){ try{ localStorage.removeItem(HS); }catch(e){} renderBest(); box.remove(); } };
     box.appendChild(clr);
@@ -452,7 +451,6 @@
     SND.over();
     const res=record(S.total); renderBest(); showScores(res);
     if(res.isNew) setTimeout(()=>SND.speak("New high score!"), 700);
-    else if(res.newRate) setTimeout(()=>SND.speak("New record: most per roll!"), 700);
     $("again").hidden=false;
   }
   function roll(){
