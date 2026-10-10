@@ -21,6 +21,12 @@
  a{color:#2563eb;}
  .home{display:inline-block;margin:0 0 10px;font-size:12px;color:#6b7280;text-decoration:none;}
  .home:hover{color:#2563eb;text-decoration:underline;}
+ .block>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:8px;}
+ .block>summary::-webkit-details-marker{display:none;}
+ .block>summary::before{content:"\25B8";font-size:12px;color:#6b7280;}
+ .block[open]>summary::before{content:"\25BE";}
+ .block>summary h2{margin:0;}
+ .block[open]>summary{margin-bottom:8px;}
 </style>
 </head>
 <body>
@@ -29,74 +35,65 @@
 <h1>Week 8 · Second session — Clinic</h1>
 <div class="sub">Act II · test the task · <em>does it make the thinking visible?</em> · the first time your task meets someone who has never seen it</div>
 
-<div class="goals"><strong>Today's goals:</strong> You brought a task. Today you find out whether it does its job. Classmates who have never seen it will solve it while you watch. You'll compare their thinking with any solutions your source published. Only then will you take it to a genAI planning partner. <strong>Human first, machine second.</strong></div>
+<div class="goals"><strong>Today's goals:</strong> You brought a task. Today you find out whether it does its job. A classmate who has never seen it will explore it while you watch. You'll compare their thinking with any solutions your source published. Only then will you take it to a genAI planning partner. <strong>Human first, machine second.</strong></div>
 
-<div class="block b-set">
- <h2>1 · What your task has to do <span class="time">(~5 min)</span></h2>
+<details class="block b-set" name="wk8d2" open>
+ <summary><h2>1 · What your task has to do <span class="time">(~5 min)</span></h2></summary>
  <ul>
   <li>The task is the main part of your lesson — the <strong>During</strong>. Its job is to make students' thinking <strong>visible</strong>: what they write, draw, and say should tell you something about your research question.</li>
-  <li>So today we test two things: does the task <strong>reveal the thinking your question is about</strong>, and is it <strong>posed</strong> so a child can enter it and show that thinking?</li>
+  <li>So today we test two things: does the task <strong>show the thinking your question is about</strong>, and can a child at your grade <strong>get started</strong> on it?</li>
  </ul>
-</div>
+</details>
 
-<div class="block b-work">
- <h2>2 · Cold test — take turns <span class="time">(~20 min)</span></h2>
+<details class="block b-work" name="wk8d2">
+ <summary><h2>2 · Cold test — explore, then decide <span class="time">(~30 min)</span></h2></summary>
  <ul>
-  <li>You'll be matched with your <strong>Task Testers</strong>: one or two classmates who have <strong>not seen your task</strong>. That's the point. They meet it the way a student would.</li>
-  <li><strong>Round 1 (10 min):</strong> Partner A poses their task the way they would to students, hands over the materials, and <strong>stops talking</strong>. Partner B solves it, <strong>thinking aloud</strong>. A watches and does not rescue, hint, or explain — even when B pauses or heads down a "wrong" path. A <strong>photographs B's work</strong>.</li>
-  <li><strong>Round 2 (10 min):</strong> switch. B poses, A solves aloud, B watches and photographs.</li>
-  <li><strong>In a group of three:</strong> three rounds of 5 minutes each.</li>
-  <li><strong>When you're the tester:</strong> actually try it. Think aloud. Get stuck honestly — don't perform.</li>
+  <li>Pair up with a classmate who has <strong>not seen your task</strong>. You are each other's <strong>Task Testers</strong>.</li>
+  <li><strong>Round 1 (10 min):</strong> Partner A poses their task the way they would to students, hands over the materials, and <strong>stops talking</strong>. Partner B explores it, <strong>thinking aloud</strong>. Getting an answer isn't the point; watching how someone gets into it is. A doesn't rescue, hint, or explain, and <strong>photographs B's work</strong>.</li>
+  <li><strong>Round 2 (10 min):</strong> switch. B poses, A explores aloud, B watches and photographs.</li>
+  <li><strong>Decide together (10 min), one task at a time:</strong> Put the tester's work next to <strong>any solutions your source published</strong> (an NRICH Solutions page, Van de Walle's or YouCubed's teacher notes, the student work in a JSTOR article — or your own solution if there are none). Can you find <strong>three really different strategies</strong>? Is the task <strong>rich enough</strong>, and does it <strong>fit your research question</strong>? Write down what your tester says.</li>
  </ul>
- <p class="purpose">Purpose: the hardest part is not helping. Noticing how badly you want to rescue — and holding back — is the exact move you'll need in the field.</p>
-</div>
+ <p class="purpose">Purpose: the hardest part is not helping. And people rarely solve a task the way you predict, which is exactly what you need to see before you teach it.</p>
+</details>
 
-<div class="block b-share">
- <h2>3 · Compare and judge the task — together <span class="time">(~15 min, about half on each task)</span></h2>
+<details class="block b-set" name="wk8d2">
+ <summary><h2>3 · Read the assignment together <span class="time">(~10 min)</span></h2></summary>
  <ul>
-  <li>Now look together at two things: how your Task Testers just solved it, and <strong>any solutions your source published</strong> — an NRICH Solutions page, Van de Walle's or YouCubed's teacher notes, or the student work in a JSTOR article. If your source has none, use your own solution.</li>
-  <li>Pull out <strong>three genuinely different solution strategies</strong> for your task from what you have between you — your testers' work and the published solutions. Where did people think in ways you didn't expect?</li>
-  <li>Then ask your Task Testers directly: is this task <strong>genuinely rich</strong>, and does it <strong>fit your research question</strong>? Capture their feedback.</li>
- </ul>
- <p class="purpose">Purpose: people rarely solve a task the way we predict. If yours can be solved three really different ways, it can show you how different students think.</p>
-</div>
-
-<div class="block b-set">
- <h2>4 · Read the assignment together <span class="time">(~10 min)</span></h2>
- <ul>
-  <li>Open the <a href="week-8-rich-task.docx">Rich Task assignment</a> and read it together, rubric included. You've just watched your task get solved, so you'll know what each part is asking.</li>
+  <li>Open the <a href="week-8-rich-task.docx">Rich Task assignment</a> and read it together, rubric included. You've just watched your task get explored, so you'll know what each part is asking.</li>
   <li>Look for what's easy to miss:
    <ul>
     <li>the <strong>Ohio standard</strong> your task targets (the first rubric row)</li>
     <li><strong>where students might get stuck</strong>, and what that would tell you</li>
-    <li><strong>three really different strategies</strong>, from your Task Testers and any published solutions</li>
+    <li><strong>three really different strategies</strong>, from your Task Tester and any published solutions</li>
     <li><strong>two documents</strong>: your task, and your two-reads reflection</li>
    </ul>
   </li>
   <li>Ask your questions now.</li>
  </ul>
-</div>
+</details>
 
-<div class="block b-work">
- <h2>5 · Then the genAI planning partner — and start the assignment <span class="time">(~30 min)</span></h2>
+<details class="block b-work" name="wk8d2">
+ <summary><h2>4 · Work time <span class="time">(~35 min)</span></h2></summary>
  <ul>
-  <li>Now, and only now, open the <strong><a href="../bda-planner/bda-planner.html">BDA&nbsp;Planner</a></strong> and go to <strong>Plan → During</strong>. Type your task in, then press <strong>Check this</strong>. It reads your task against your research question and asks you about it. The Planner already has your question and your concept, so there's nothing else to copy in.</li>
-  <li>The genAI planning partner is a <strong>critic</strong>, not a designer, and the strategies it names are <em>possibilities to watch for</em> — not how children actually think. What you watched in block 3 really happened; what it names is a guess.</li>
-  <li>Press <strong>Set aside</strong> on anything that isn't useful. The Planner keeps a record of what you set aside and what you kept, so your two-reads reflection is already half written.</li>
-  <li>Start the <a href="week-8-rich-task.docx">Rich Task assignment</a>: revise your task from both reads, and begin the two-reads reflection.</li>
+  <li>Open the <strong><a href="../bda-planner/bda-planner.html">BDA&nbsp;Planner</a></strong>, go to <strong>Plan → During</strong>, type your task in, and press <strong>Check this</strong>. The Planner walks you through the rest.</li>
+  <li>Then start revising your task from both reads: your Task Tester first, the Planner second.</li>
  </ul>
- <p class="purpose">Purpose: the same order as your research question. People read it first. The machine adds ideas after that. You decide what to use.</p>
-</div>
+</details>
 
 <div class="wrap">
  <strong>Wrap-up &amp; looking ahead:</strong>
  <ul>
-  <li>Finish the <a href="week-8-rich-task.docx">Rich Task assignment</a> for this week — carry <strong>both reads</strong> (your Task Testers' solving and the published solutions, then the genAI planning partner's check) into your revision. The Planner has already recorded what you kept and what you set aside.</li>
-  <li>Next week you design the <strong>Before</strong> — the routine that opens your lesson and surfaces students' <em>entry</em> thinking on the same mathematics.</li>
+  <li>Finish the <a href="week-8-rich-task.docx">Rich Task assignment</a>. <strong>Due Sunday, Oct 18, 11:59 p.m.</strong></li>
+  <li>Next week you design the <strong>Before</strong> — the warm-up routine that opens your lesson.</li>
  </ul>
 </div>
 
 <p class="canvas-note">Assignment links, the submission dropbox, and due dates are in <strong>Canvas</strong>, below the link to this outline. This page is the lesson outline only — no names, no grades.</p>
 </main>
+<script>
+  const blocks = [...document.querySelectorAll("details.block")];
+  addEventListener("beforeprint", () => blocks.forEach(d => { d.removeAttribute("name"); d.open = true; }));
+  addEventListener("afterprint",  () => blocks.forEach(d => d.setAttribute("name", "wk8d2")));
+</script>
 </body>
 </html>
