@@ -21,6 +21,12 @@
  a{color:#2563eb;}
  .home{display:inline-block;margin:0 0 10px;font-size:12px;color:#6b7280;text-decoration:none;}
  .home:hover{color:#2563eb;text-decoration:underline;}
+ .block>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:8px;}
+ .block>summary::-webkit-details-marker{display:none;}
+ .block>summary::before{content:"\25B8";font-size:12px;color:#6b7280;}
+ .block[open]>summary::before{content:"\25BE";}
+ .block>summary h2{margin:0;}
+ .block[open]>summary{margin-bottom:8px;}
 </style>
 </head>
 <body>
@@ -31,16 +37,16 @@
 
 <div class="goals"><strong>Today's goals:</strong> Solve three rich tasks from three different places, and say what makes each one rich. Then find a task that could help answer <strong>your</strong> research question. That task is the During of your lesson, and you bring it to our next class.</div>
 
-<div class="block b-set">
- <h2>0 · Housekeeping <span class="time">(~5 min)</span></h2>
+<details class="block b-set" name="wk8d1" open>
+ <summary><h2>0 · Housekeeping <span class="time">(~5 min)</span></h2></summary>
  <ul>
   <li><strong>From your Concept Profiles:</strong> Sample student work.</li>
   <li><strong>The written guidelines come first.</strong> If something I said in class differs from an assignment's guidelines, follow the guidelines. When in doubt, check the assignment.</li>
  </ul>
-</div>
+</details>
 
-<div class="block b-set">
- <h2>1 · Where we're going <span class="time">(~5 min)</span></h2>
+<details class="block b-set" name="wk8d1">
+ <summary><h2>1 · Where we're going <span class="time">(~5 min)</span></h2></summary>
  <ul>
   <li><strong>Your research question is in.</strong> Today you look for a task that could help answer it: the <strong>During</strong> of your lesson.</li>
   <li><strong>For the next three weeks, you'll test each other's work, one piece of your lesson at a time.</strong>
@@ -53,35 +59,35 @@
   <li><strong>Where to find tasks — four places only:</strong> <a href="https://nrich.maths.org/curriculum-linked-problems-primary-teachers">NRICH</a>, <a href="https://www.youcubed.org/tasks/">YouCubed</a>, Van de Walle, chapters 3 and 4 in Canvas (<a href="https://miamioh.instructure.com/courses/258364/files/folder/van%20de%20Walle%20Readings">Hamilton</a> · <a href="https://miamioh.instructure.com/courses/258372/files/folder/van%20de%20Walle%20Readings">Oxford</a>), and articles on <a href="https://www.jstor.org/">JSTOR</a> from journals like <em>Teaching Children Mathematics</em>, which often show real student work. <strong style="background:#ffeb3b;color:#000;padding:0 .2em">No Teachers Pay Teachers</strong>, and nothing that isn't from one of these four.</li>
   <li><strong><a href="six-things.html">The six things a rich task does</a></strong> are also in the <a href="week-8-rich-task.docx">Rich Task assignment</a>. Keep the page open. After each task today, we check it against that list.</li>
  </ul>
-</div>
+</details>
 
-<div class="block b-work">
- <h2>2 · Bowls on Two Tables — Van de Walle <span class="time">(~20 min)</span></h2>
+<details class="block b-work" name="wk8d1">
+ <summary><h2>2 · Bowls on Two Tables — Van de Walle <span class="time">(~20 min)</span></h2></summary>
  <ul>
   <li><strong>The task (kindergarten–grade 1):</strong> <a href="bowls-on-two-tables.pdf">Bowls on Two Tables</a> (handout).</li>
   <li><strong>Solve it (15 min)</strong> with a partner. Use counters and the two tables on the handout.</li>
   <li><strong>Check it (5 min):</strong> Which of the six things on the rich-task list did this task do? If this were the During of a kindergarten lesson, what would it show you about how a child thinks?</li>
  </ul>
-</div>
+</details>
 
-<div class="block b-work">
- <h2>3 · How Close to 100? — YouCubed <span class="time">(~20 min)</span></h2>
+<details class="block b-work" name="wk8d1">
+ <summary><h2>3 · How Close to 100? — YouCubed <span class="time">(~20 min)</span></h2></summary>
  <ul>
   <li><strong>The game (grades 3–5):</strong> <a href="https://www.youcubed.org/tasks/how-close-to-100/">How Close to 100?</a> (handout).</li>
   <li><strong>Play it (15 min)</strong> with a partner, on the handout or <a href="../how-close-to-100/">on screen</a>.</li>
   <li><strong>Check it (5 min):</strong> Which of the six things on the rich-task list did it do? What would it show you about how a child thinks, if it were your During?</li>
  </ul>
-</div>
+</details>
 
-<div class="block b-share">
- <h2>4 · Scavenger hunt — find a task for your question <span class="time">(~20 min)</span></h2>
+<details class="block b-share" name="wk8d1">
+ <summary><h2>4 · Scavenger hunt — find a task for your question <span class="time">(~20 min)</span></h2></summary>
  <ul>
   <li><strong>Start on NRICH (15 min).</strong> Go to the <a href="https://nrich.maths.org/curriculum-linked-problems-primary-teachers">primary collection</a> and find the mathematics your research question is about. NRICH is British, so its year levels are one higher than our grades: a US grade 3 is "Year 4." Many NRICH problems have a <strong>Solutions</strong> page with work sent in by real students, which helps next class.</li>
   <li>If a task from Van de Walle, YouCubed, or a JSTOR article fits your question better, use it.</li>
   <li><strong>Test each candidate with three questions:</strong> Does it fit my research question? Could a child at my grade get started on it? Can it be solved at least three different ways? If the answer to any of them is no, keep looking.</li>
   <li><strong>Post your best candidate (5 min):</strong> its title, where you found it, and a link.</li>
  </ul>
-</div>
+</details>
 
 <div class="wrap">
  <strong>Debrief &amp; homework <span style="font-weight:400;color:#6b7280">(~10 min)</span>:</strong>
@@ -95,5 +101,10 @@
 
 <p class="canvas-note">Assignment links, the submission dropbox, and due dates are in <strong>Canvas</strong>, below the link to this outline. This page is the lesson outline only — no names, no grades.</p>
 </main>
+<script>
+  const blocks = [...document.querySelectorAll("details.block")];
+  addEventListener("beforeprint", () => blocks.forEach(d => { d.removeAttribute("name"); d.open = true; }));
+  addEventListener("afterprint",  () => blocks.forEach(d => d.setAttribute("name", "wk8d1")));
+</script>
 </body>
 </html>
