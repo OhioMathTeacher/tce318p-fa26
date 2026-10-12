@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What Makes a Task Rich — TCE 318P</title>
+
+<style>
+ :root{--red:#C41E3A;}
+ body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:820px;margin:0 auto;padding:20px 16px 48px;color:#1f2937;line-height:1.5;}
+ h1{font-size:22px;margin:0 0 2px;} .sub{color:#6b7280;font-size:13px;margin-bottom:16px;}
+ .block{padding:12px 16px;margin:12px 0;border-left:4px solid var(--red);border-radius:2px;background:#e8dcf0;}
+ .block h2{font-size:16px;margin:0 0 4px;}
+ .block p{margin:0;}
+ details{margin-top:8px;}
+ summary{cursor:pointer;color:#2563eb;font-size:14px;}
+ .ex{background:#fff;border-radius:6px;padding:10px 14px;margin-top:6px;}
+ .ex div{margin:4px 0;}
+ .lbl{font-weight:600;display:inline-block;min-width:72px;}
+ .test{background:#fff3cd;padding:12px 16px;border-radius:6px;margin-top:18px;}
+ .toolbar{margin:10px 0;}
+ button{font:inherit;font-size:13px;padding:4px 10px;border:1px solid #9ca3af;border-radius:4px;background:#fff;cursor:pointer;}
+ a{color:#2563eb;}
+ .home{display:inline-block;margin:0 0 10px;font-size:12px;color:#6b7280;text-decoration:none;}
+ .home:hover{color:#2563eb;text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<a class="home" href="wk8day1.html">← Week 8 · First session</a>
+<h1>What Makes a Task Rich</h1>
+<div class="sub">The six things from the <a href="week-8-rich-task.docx">Rich Task assignment</a></div>
+
+<div class="toolbar"><button id="all" type="button">Show all examples</button></div>
+
+<div class="block">
+ <h2>1 · Worthwhile mathematics</h2>
+ <p>It targets a significant concept (your standard), not a trick or a one-step skill.</p>
+ <details><summary>Example</summary><div class="ex">
+  <div><span class="lbl">Not yet:</span> How many months have 28 days?</div>
+  <div><span class="lbl">Richer:</span> Find all the ways to make 10 with two numbers. How do you know you have them all?</div>
+ </div></details>
+</div>
+
+<div class="block">
+ <h2>2 · Open to learners (low floor, high ceiling)</h2>
+ <p>Students can get in, and it still holds real depth.</p>
+ <details><summary>Example</summary><div class="ex">
+  <div><span class="lbl">Not yet:</span> What is 6 × 4?</div>
+  <div><span class="lbl">Richer:</span> A rectangle is made of 24 squares. What could it look like? How many different ones can you make?</div>
+ </div></details>
+</div>
+
+<div class="block">
+ <h2>3 · Open to strategies</h2>
+ <p>It can be solved in genuinely different ways, with different representations (a diagram, a table, a number line, symbols).</p>
+ <details><summary>Example</summary><div class="ex">
+  <div><span class="lbl">Not yet:</span> Use the standard algorithm to solve 52 − 27.</div>
+  <div><span class="lbl">Richer:</span> Kim has 52 stickers. Lee has 27. How many more does Kim have?</div>
+ </div></details>
+</div>
+
+<div class="block">
+ <h2>4 · Demands reasoning</h2>
+ <p>It asks students to show or justify their thinking, not just give an answer, so how they think becomes visible.</p>
+ <details><summary>Example</summary><div class="ex">
+  <div><span class="lbl">Not yet:</span> Which is bigger, 3/4 or 2/3? Circle one.</div>
+  <div><span class="lbl">Richer:</span> Which is bigger, 3/4 or 2/3? Convince a friend who thinks they are the same.</div>
+ </div></details>
+</div>
+
+<div class="block">
+ <h2>5 · Cognitively demanding</h2>
+ <p>It can't be answered by a memorized procedure; it makes students actually do mathematics.</p>
+ <details><summary>Example</summary><div class="ex">
+  <div><span class="lbl">Not yet:</span> Round 347 to the nearest ten.</div>
+  <div><span class="lbl">Richer:</span> I rounded a number to the nearest ten and got 350. What could my number have been? Find them all.</div>
+ </div></details>
+</div>
+
+<div class="block">
+ <h2>6 · Extendable</h2>
+ <p>There is a "what if…?"; it can be pushed further.</p>
+ <details><summary>Example</summary><div class="ex">
+  <div><span class="lbl">Not yet:</span> Find the perimeter of a 3 by 5 rectangle.</div>
+  <div><span class="lbl">Richer:</span> Then: what if the perimeter has to stay 16? What other rectangles could you make? What if it were 20?</div>
+ </div></details>
+</div>
+
+<div class="test"><strong>The test of richness:</strong> if your task cannot be solved in at least three genuinely different ways, it is not rich yet. Keep building.</div>
+</main>
+<script>
+ const btn = document.getElementById('all');
+ const ds = [...document.querySelectorAll('details')];
+ function sync(){ btn.textContent = ds.every(d => d.open) ? 'Hide all examples' : 'Show all examples'; }
+ btn.addEventListener('click', () => { const open = !ds.every(d => d.open); ds.forEach(d => d.open = open); sync(); });
+ ds.forEach(d => d.addEventListener('toggle', sync));
+</script>
+</body>
+</html>
