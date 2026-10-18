@@ -684,7 +684,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 69</div>
+<div id="build">Build 70</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -2043,9 +2043,28 @@ async function diagPrint(){
     try{ await navigator.clipboard.writeText(t); toast("Copied — paste it into Canvas or an email."); }
     catch(e){ toast("This browser wouldn't let us copy — select the text and copy it by hand."); }
   };
+  // The second caller that awaited before saveBlob. diagText awaits diagSnapshot, so on
+  // iOS the share sheet was no longer inside the tap and the report saved under a UUID --
+  // exactly the Journaler failure, on the one file a stuck student sends to get help.
+  // Same two-tap shape as mkDocx (Build 69): build on the first tap, save on the second
+  // with nothing awaited in front of it. Desktops keep one tap.
+  let diagReady=null;
   document.getElementById("diagTxt").onclick=async()=>{
-    const t=await diagText(said.value);
-    await saveBlob(new Blob([t],{type:"text/plain"}),"bda-planner-report-"+new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")+".txt");
+    const b=document.getElementById("diagTxt"), LABEL="Save as a file";
+    const nm=()=>"bda-planner-report-"+new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")+".txt";
+    if(IOS){
+      if(diagReady){ const blob=diagReady; diagReady=null; b.textContent=LABEL;
+        saveBlob(blob,nm()).catch(e=>{ logEvent("error","diag: "+e.message); toast("Couldn't save the report: "+e.message); }); return; }
+      b.disabled=true; b.textContent="Building…";
+      try{ const t=await diagText(said.value); diagReady=new Blob([t],{type:"text/plain"});
+           b.textContent="Tap again to save the report"; toast("Report ready — tap the button again to save it."); }
+      catch(e){ diagReady=null; b.textContent=LABEL; logEvent("error","diag: "+e.message); toast("Couldn't build the report: "+e.message); }
+      b.disabled=false; return;
+    }
+    b.disabled=true;
+    try{ const t=await diagText(said.value); await saveBlob(new Blob([t],{type:"text/plain"}),nm()); }
+    catch(e){ logEvent("error","diag: "+e.message); toast("Couldn't save the report: "+e.message); }
+    b.disabled=false;
   };
   document.getElementById("diagClear").onclick=()=>{
     if(!confirm("Empty the record of what the app has been doing on this browser? Your work is not touched.")) return;
