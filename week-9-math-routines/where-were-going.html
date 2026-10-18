@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where We're Going — TCE 318P</title>
+
+<style>
+ :root{--accent:#C41E3A;--due:#b42318;--due-bg:#fde8e6;--conf:#6d28d9;--conf-bg:#efe7fb;--class-bg:#fbeef0;--line:#d1d5db;}
+ body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:1180px;margin:0 auto;padding:20px 16px 48px;color:#1f2937;line-height:1.4;font-size:13.5px;background:#fff;}
+ h1{font-size:22px;margin:0 0 2px;} .sub{color:#6b7280;font-size:13px;margin-bottom:16px;}
+ .home{display:inline-block;margin:0 0 10px;font-size:12px;color:#6b7280;text-decoration:none;}
+ .home:hover{color:#2563eb;text-decoration:underline;}
+ a{color:#2563eb;}
+ .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:#4b5563;margin:0 0 14px;}
+ .legend span::before{content:"";display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px;}
+ .lg-class::before{background:var(--class-bg);border:1px solid var(--accent);}
+ .lg-due::before{background:var(--due-bg);border:1px solid var(--due);}
+ .lg-own::before{background:#fff;border:1px dashed #6b7280;}
+ .lg-conf::before{background:var(--conf-bg);border:1px solid var(--conf);}
+
+ .cal{display:grid;grid-template-columns:110px repeat(6,minmax(0,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line);}
+ .cal > div{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:7px;min-height:84px;}
+ .cal .hd{min-height:0;background:#f3f4f6;font-weight:700;font-size:12px;text-align:center;padding:6px;}
+ .cal .wk{background:#f9fafb;}
+ .wk b{display:block;color:var(--accent);font-size:13px;text-transform:uppercase;letter-spacing:.05em;}
+ .wk span{display:block;color:#6b7280;font-size:12px;margin-top:2px;}
+ .date{font-size:11.5px;color:#6b7280;font-weight:700;margin-bottom:4px;}
+ .dn{display:none;}
+ .stop{border-radius:5px;padding:6px 8px;margin:0 0 6px;background:var(--class-bg);border-left:3px solid var(--accent);}
+ .stop .what{font-weight:600;}
+ .stop .more{font-size:12px;color:#4b5563;margin-top:3px;}
+ .due{background:var(--due-bg);border-left-color:var(--due);} .due .what{color:var(--due);}
+ .conf{background:var(--conf-bg);border-left-color:var(--conf);} .conf .what{color:var(--conf);}
+ .home-work{background:#fff;border:1px dashed #9ca3af;border-left:3px solid #9ca3af;}
+ .next{background:#f3f4f6;border-left-color:#9ca3af;}
+ .today{outline:2px solid var(--accent);outline-offset:-2px;}
+ .pts{display:inline-block;font-size:10.5px;font-weight:700;padding:0 5px;border-radius:9px;background:#fff;border:1px solid currentColor;margin-left:3px;}
+ .sec{display:inline-block;font-size:10.5px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;margin-right:4px;}
+ .tic{background:#fff7e0;border-radius:6px;padding:12px 16px;margin-top:18px;}
+ .tic h2{font-size:15px;margin:0 0 4px;}
+
+ @media (max-width:860px){
+  .cal{display:block;border:0;}
+  .cal .hd{display:none;}
+  .cal > div{border:0;min-height:0;padding:0;}
+  .cal .wk{background:none;margin:18px 0 8px;padding-bottom:4px;border-bottom:2px solid var(--accent);}
+  .cal .empty{display:none;}
+  .cal .day{margin:0 0 6px;}
+  .dn{display:inline;}
+ }
+</style>
+</head>
+<body>
+<main>
+<a class="home" href="wk9day1.html">← Week 9 · First session</a>
+<h1>Where We're Going</h1>
+<div class="sub">The rest of Act II — the Before and the After, then the whole lesson reviewed and revised · Oct 19 – Nov 5</div>
+
+<div class="legend"><span class="lg-class">Class</span><span class="lg-due">Due on Canvas</span><span class="lg-own">On your own</span></div>
+
+<div class="cal">
+ <div class="hd"></div><div class="hd">Mon</div><div class="hd">Tue</div><div class="hd">Wed</div><div class="hd">Thu</div><div class="hd">Fri</div><div class="hd">Sat–Sun</div>
+
+ <!-- Week 9 -->
+ <div class="wk"><b>Week 9</b><span>The Before and the After</span></div>
+ <div class="day"><div class="date"><span class="dn">Mon </span>Oct 19</div>
+  <div class="stop "><div class="what"><span class="sec">Oxford</span>The Before</div><div class="more">One routine in the <a href="../bda-planner/bda-planner.html">BDA Planner</a> · a classmate looks · then the genAI planning partner.</div></div>
+ </div>
+ <div class="day"><div class="date"><span class="dn">Tue </span>Oct 20</div>
+  <div class="stop "><div class="what"><span class="sec">Hamilton</span>The Before</div><div class="more">One routine in the <a href="../bda-planner/bda-planner.html">BDA Planner</a> · a classmate looks · then the genAI planning partner.</div></div>
+ </div>
+ <div class="day"><div class="date"><span class="dn">Wed </span>Oct 21</div>
+  <div class="stop "><div class="what"><span class="sec">Oxford</span>The After</div><div class="more">In the Planner · a classmate looks · then the genAI planning partner.</div></div>
+ </div>
+ <div class="day"><div class="date"><span class="dn">Thu </span>Oct 22</div>
+  <div class="stop "><div class="what"><span class="sec">Hamilton</span>The After</div><div class="more">In the Planner · a classmate looks · then the genAI planning partner.</div></div>
+ </div>
+ <div class="empty"></div>
+ <div class="day"><div class="date"><span class="dn">Weekend </span>Oct 24–25</div>
+  <div class="stop due"><div class="what">Math Routine due Sun · 11:59 p.m. <span class="pts">25 pts</span></div><div class="more">One page: your original and revised routine, then your reflection. <a href="week-9-routine.docx">Guideline</a></div></div>
+  <div class="stop home-work"><div class="what">Get your plan ready for review</div><div class="more">Finish your After, name your read, and assemble the whole plan.</div></div>
+ </div>
+
+ <!-- Week 10 -->
+ <div class="wk"><b>Week 10</b><span>Review and revise</span></div>
+ <div class="day"><div class="date"><span class="dn">Mon </span>Oct 26</div>
+  <div class="stop "><div class="what"><span class="sec">Oxford</span>Review in groups of three</div><div class="more">Peer-review sheet on each whole plan · then Check this on all three panes.</div></div>
+ </div>
+ <div class="day"><div class="date"><span class="dn">Tue </span>Oct 27</div>
+  <div class="stop "><div class="what"><span class="sec">Hamilton</span>Review in groups of three</div><div class="more">Peer-review sheet on each whole plan · then Check this on all three panes.</div></div>
+ </div>
+ <div class="day"><div class="date"><span class="dn">Wed </span>Oct 28</div>
+  <div class="stop "><div class="what"><span class="sec">Oxford</span>Revision day 🍩</div><div class="more">The assignment and the field-teaching guidelines · then revise.</div></div>
+ </div>
+ <div class="day"><div class="date"><span class="dn">Thu </span>Oct 29</div>
+  <div class="stop "><div class="what"><span class="sec">Hamilton</span>Revision day 🍩</div><div class="more">The assignment and the field-teaching guidelines · then revise.</div></div>
+ </div>
+ <div class="empty"></div>
+ <div class="day"><div class="date"><span class="dn">Weekend </span>Oct 31–Nov 1</div>
+  <div class="stop due"><div class="what">Investigation Plan due Sun · 11:59 p.m. <span class="pts">25 pts</span></div><div class="more">Your revised plan + how you used the feedback. No grace period. <a href="../week-10-investigation-plan/week-10-investigation-plan.docx">Guideline</a></div></div>
+ </div>
+
+ <!-- Week 11 -->
+ <div class="wk"><b>Week 11</b><span>Act III begins</span></div>
+ <div class="day"><div class="date"><span class="dn">Mon–Thu </span>Nov 2–5</div>
+  <div class="stop next"><div class="what">Field enactment</div><div class="more">Teach what you built — the Before, During, and/or After — and collect the work. I visit you at your placement.</div></div>
+ </div>
+ <div class="empty"></div><div class="empty"></div><div class="empty"></div><div class="empty"></div><div class="empty"></div>
+</div>
+</main>
+</body>
+</html>
