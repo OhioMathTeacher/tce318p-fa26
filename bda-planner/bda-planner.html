@@ -684,7 +684,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 68</div>
+<div id="build">Build 69</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1829,6 +1829,10 @@ async function buildDocx(){
   if(media.length){ files.push({name:"word/_rels/document.xml.rels",content:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+drels.join("")+'</Relationships>'}); media.forEach(m=>files.push({name:m.name,bytes:m.bytes})); }
   return zipStore(files);
 }
+// iOS: the built .docx waits here between the first tap and the second. Keyed on the plan,
+// so an edit in between means the second tap builds again instead of saving a stale file.
+let docxReady=null;
+function docxKey(){ try{ return JSON.stringify(assemblePlan())+"|"+planTitle(); }catch(e){ return String(Math.random()); } }
 function slugify(t){ return (t||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); }
 
 // ── Handing a file to the student ──────────────────────────────────────────────
@@ -1928,7 +1932,20 @@ function renderShare(){
       <div class="dl" style="grid-template-columns:1fr"><div><button class="primary" id="mkRecord">🖨 Generate Document 2 — PDF</button><div class="cap">opens Print → Save as PDF — a record, not a draft, so PDF only · upload to Canvas with your plan</div></div></div>
     </div>`;
   wrap.querySelectorAll("[data-sh]").forEach(el=>{ el.oninput=()=>{ sh[el.dataset.sh]=el.value; save(); }; });
-  document.getElementById("mkDocx").onclick=async()=>{ const b=document.getElementById("mkDocx"); b.disabled=true; b.textContent="Building…"; try{ const blob=await buildDocx(); const kept=await saveBlob(blob,(slugify(planTitle())||"investigation-plan")+".docx"); if(kept) toast("Word file built — open it and keep writing."); logEvent("docx","built the Word plan"+(kept?"":" (cancelled)")); }catch(e){ logEvent("error","docx: "+e.message); toast("Couldn't build the Word file: "+e.message); } b.disabled=false; b.textContent="⬇ Generate Investigation Plan — Word"; };
+  // ⚠ On iOS the share sheet must open inside the tap (Journaler: "an await before .click()
+  // throws that away"). Building the .docx awaits the card pictures, so iOS gets two taps:
+  // the first builds, the second saves -- with nothing awaited before navigator.share.
+  // Before this, an iPad saved the plan under a UUID instead of its name. Desktops keep one tap.
+  document.getElementById("mkDocx").onclick=async()=>{ const b=document.getElementById("mkDocx"); const LABEL="⬇ Generate Investigation Plan — Word"; const name=(slugify(planTitle())||"investigation-plan")+".docx";
+    const done=kept=>{ if(kept) toast("Word file built — open it and keep writing."); logEvent("docx","built the Word plan"+(kept?"":" (cancelled)")); };
+    if(IOS){
+      if(docxReady && docxReady.key===docxKey()){ const blob=docxReady.blob; docxReady=null; b.textContent=LABEL; saveBlob(blob,name).then(done).catch(e=>{ logEvent("error","docx: "+e.message); toast("Couldn't save the Word file: "+e.message); }); return; }
+      b.disabled=true; b.textContent="Building…";
+      try{ const blob=await buildDocx(); docxReady={key:docxKey(),blob}; b.textContent="⬇ Tap again to save the Word file"; toast("Word file ready — tap the button again to save it."); }
+      catch(e){ docxReady=null; b.textContent=LABEL; logEvent("error","docx: "+e.message); toast("Couldn't build the Word file: "+e.message); }
+      b.disabled=false; return;
+    }
+    b.disabled=true; b.textContent="Building…"; try{ const blob=await buildDocx(); done(await saveBlob(blob,name)); }catch(e){ logEvent("error","docx: "+e.message); toast("Couldn't build the Word file: "+e.message); } b.disabled=false; b.textContent=LABEL; };
   document.getElementById("mkRecord").onclick=()=>printRecord(sh.who||names[0]||g.names);
   document.getElementById("mkPdf").onclick=printPlan;
   wireInfo();
