@@ -684,7 +684,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 66</div>
+<div id="build">Build 67</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1753,7 +1753,7 @@ window.addEventListener("message",e=>{
 });
 function pickArtifact(){
   const a=state.after=Object.assign(blankAfter(),state.after||{});
-  const B=openPick("After — what artifact?","What you carry out of the room. Pick the one a student's response to could answer your research question.",
+  const B=openPick("After — what artifact?","What you carry out of the room. Pick the one a student's response could answer your research question with.",
     `<div class="ptiles">${Object.entries(AFTER_KINDS).map(([k,v])=>`<button class="ptile ${k===a.kind?"on":""}" data-k="${k}"><div class="pi">${AFTER_META[k].icon}</div><div class="pn">${esc(v)}</div><div class="ps">${esc(AFTER_SUB[k]||"")}</div></button>`).join("")}</div>`);
   B.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{ state.after.kind=b.dataset.k; save(); renderPlan(); closePick(); openAfter(); });
 }
