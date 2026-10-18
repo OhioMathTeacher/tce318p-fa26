@@ -21,6 +21,12 @@
  a{color:#2563eb;}
  .home{display:inline-block;margin:0 0 10px;font-size:12px;color:#6b7280;text-decoration:none;}
  .home:hover{color:#2563eb;text-decoration:underline;}
+ .block>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:8px;}
+ .block>summary::-webkit-details-marker{display:none;}
+ .block>summary::before{content:"\25B8";font-size:12px;color:#6b7280;}
+ .block[open]>summary::before{content:"\25BE";}
+ .block>summary h2{margin:0;}
+ .block[open]>summary{margin-bottom:8px;}
 </style>
 </head>
 <body>
@@ -31,30 +37,30 @@
 
 <div class="goals"><strong>Today's goals:</strong> In groups of three, read each other's <strong>whole plan</strong> against each research question — <em>would running this actually tell you what you want to know?</em> Then a genAI planning partner does the same. You revise from both reads next class. <strong>Human first, machine second.</strong></div>
 
-<div class="block b-set">
- <h2>1 · What a whole-lesson review asks <span class="time">(~10 min)</span></h2>
+<details class="block b-set" name="wk10d1" open>
+ <summary><h2>1 · What a whole-lesson review asks <span class="time">(~10 min)</span></h2></summary>
  <ul>
   <li>You've read one task (Week&nbsp;8) and built a Before and an After (Week&nbsp;9). Today you read a <strong>whole lesson</strong> — and the question is no longer "is this piece good?" but <strong>"does this lesson, run start to finish, produce evidence about the research question?"</strong></li>
   <li>Four things to press on, with the <strong>After</strong> in focus: does the arc <strong>answer the question</strong>? Where could a student get through the whole lesson <strong>without revealing any thinking</strong>? Is the <strong>Before handing over the move</strong> the During is meant to reveal? Will the <strong>After capture evidence you could actually analyze</strong>?</li>
  </ul>
-</div>
+</details>
 
-<div class="block b-work">
- <h2>2 · Review in groups of three <span class="time">(~45 min)</span></h2>
+<details class="block b-work" name="wk10d1">
+ <summary><h2>2 · Review in groups of three <span class="time">(~45 min)</span></h2></summary>
  <ul>
   <li>Open your plan in the <a href="../bda-planner/bda-planner.html">BDA&nbsp;Planner</a> — Plan → All three — and state your <strong>research question</strong> out loud. The question is the measuring stick: your group can't judge whether the lesson answers it until they know exactly what you're trying to find out.</li>
   <li>Read each plan in turn — about <strong>15 minutes</strong> per plan — filling in the <a href="week-10-peer-review-sheet.docx">peer-review sheet</a> as you go. Be concrete: point to <strong>where</strong> a student could finish without showing thinking, <strong>where</strong> the Before might give the move away, and whether the After's capture would hold up against <em>their</em> question.</li>
   <li>Hand each author their sheets. You'll carry them into your revision.</li>
  </ul>
-</div>
+</details>
 
-<div class="block b-work">
- <h2>3 · Then the genAI planning partner <span class="time">(~25 min)</span></h2>
+<details class="block b-work" name="wk10d1">
+ <summary><h2>3 · Then the genAI planning partner <span class="time">(~25 min)</span></h2></summary>
  <ul>
   <li>In the <a href="../bda-planner/bda-planner.html">BDA&nbsp;Planner</a>, press <strong>Check this</strong> on each of the three panes — <strong>Before</strong>, <strong>During</strong>, <strong>After</strong>. Follow up with <strong>Ask me</strong>.</li>
   <li>The genAI planning partner is a <strong>critic</strong>, not a designer. If it rewrites your lesson, push back and keep the parts that are you.</li>
  </ul>
-</div>
+</details>
 
 <div class="wrap">
  <strong>Wrap-up &amp; looking ahead:</strong>
@@ -65,5 +71,10 @@
 
 <p class="canvas-note">Assignment links, the submission dropbox, and due dates are in <strong>Canvas</strong>, below the link to this outline. This page is the lesson outline only — no names, no grades.</p>
 </main>
+<script>
+  const blocks = [...document.querySelectorAll("details.block")];
+  addEventListener("beforeprint", () => blocks.forEach(d => { d.removeAttribute("name"); d.open = true; }));
+  addEventListener("afterprint",  () => blocks.forEach(d => d.setAttribute("name", "wk10d1")));
+</script>
 </body>
 </html>

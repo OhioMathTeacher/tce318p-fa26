@@ -21,6 +21,12 @@
  a{color:#2563eb;}
  .home{display:inline-block;margin:0 0 10px;font-size:12px;color:#6b7280;text-decoration:none;}
  .home:hover{color:#2563eb;text-decoration:underline;}
+ .block>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:8px;}
+ .block>summary::-webkit-details-marker{display:none;}
+ .block>summary::before{content:"\25B8";font-size:12px;color:#6b7280;}
+ .block[open]>summary::before{content:"\25BE";}
+ .block>summary h2{margin:0;}
+ .block[open]>summary{margin-bottom:8px;}
 </style>
 </head>
 <body>
@@ -31,25 +37,25 @@
 
 <div class="goals"><strong>Today's goals:</strong> Design the <strong>Before</strong> of your lesson — a short routine that opens on the same mathematics your task investigates and surfaces students' <em>entry</em> thinking. First we judge real routines against a shared task — does each warm up the thinking, or give the task away? Then you type one Before for your own rich task into the BDA&nbsp;Planner and show it to a classmate.</div>
 
-<div class="block b-set">
- <h2>0 · Where we're going <span class="time">(~5 min)</span></h2>
+<details class="block b-set" name="wk9d1" open>
+ <summary><h2>0 · Where we're going <span class="time">(~5 min)</span></h2></summary>
  <ul>
   <li>The rest of Act II on one page: <a href="where-were-going.html">Where We're Going →</a></li>
  </ul>
-</div>
+</details>
 
-<div class="block b-work">
- <h2>1 · Before, or give-away? — judging routines <span class="time">(~25 min)</span></h2>
+<details class="block b-work" name="wk9d1">
+ <summary><h2>1 · Before, or give-away? — judging routines <span class="time">(~25 min)</span></h2></summary>
  <ul>
   <li>Your rich task is the <strong>During</strong> — the main event. The <strong>Before</strong> is a brief, low-floor warm-up on the <em>same concept</em> that surfaces how students already think. The danger is the pull to help: a routine that hands over the strategy, picture, or procedure the task is meant to reveal <strong>gives the task away</strong>.</li>
   <li>Together we walk <a href="week-9-routine-slides.html">four real routines against one shared task</a>. For each: <strong>does it warm up the thinking, or hand the task away?</strong> Argue it — some clearly prime, some clearly give it away, some are worth a fight.</li>
   <li>We land one principle: <strong>a good Before warms up the same mathematics and surfaces entry thinking, but withholds the task's move</strong> — so the task can still reveal what students bring.</li>
  </ul>
  <p class="purpose">Purpose: you already sense when a warm-up "gives it away." Today you name what makes the difference. You ran these routines in Week 3 as a participant; now you judge them as a diagnostician.</p>
-</div>
+</details>
 
-<div class="block b-share">
- <h2>2 · Your turn — build your Before and try it <span class="time">(~50 min)</span></h2>
+<details class="block b-share" name="wk9d1">
+ <summary><h2>2 · Your turn — build your Before and try it <span class="time">(~50 min)</span></h2></summary>
  <ul>
   <li><strong>Consider (~10 min).</strong> Open the <a href="https://visiblethinking.weebly.com/daily-routines.html">routines library</a> and go to the shelf for your concept — number talks, Which One Doesn't Belong?, Same &amp; Different, Notice &amp; Wonder, estimation, and more. Find <strong>one</strong> routine that could warm up your rich task without giving it away.</li>
   <li><strong>Develop (~20 min).</strong> Type it into the <a href="../bda-planner/bda-planner.html">BDA&nbsp;Planner</a> — Plan → Before. Run it past the test: <em>could a student still show me something of their own on the task, or did this warm-up already do its work?</em></li>
@@ -57,7 +63,7 @@
   <li><strong>The genAI planning partner (~5 min).</strong> Press <strong>Check this</strong> on your Before, then follow up with <strong>Ask me</strong>. Out of time? Do it at home.</li>
  </ul>
  <p class="purpose">Purpose: your task is the filter. A routine earns its place as your Before only if it primes the thinking your task investigates — and leaves the task's move for students to make.</p>
-</div>
+</details>
 
 <div class="wrap">
  <strong>Wrap-up &amp; looking ahead:</strong>
@@ -69,5 +75,10 @@
 
 <p class="canvas-note">Assignment links, the submission dropbox, and due dates are in <strong>Canvas</strong>, below the link to this outline. This page is the lesson outline only — no names, no grades.</p>
 </main>
+<script>
+  const blocks = [...document.querySelectorAll("details.block")];
+  addEventListener("beforeprint", () => blocks.forEach(d => { d.removeAttribute("name"); d.open = true; }));
+  addEventListener("afterprint",  () => blocks.forEach(d => d.setAttribute("name", "wk9d1")));
+</script>
 </body>
 </html>

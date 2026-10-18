@@ -21,6 +21,12 @@
  a{color:#2563eb;}
  .home{display:inline-block;margin:0 0 10px;font-size:12px;color:#6b7280;text-decoration:none;}
  .home:hover{color:#2563eb;text-decoration:underline;}
+ .block>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:8px;}
+ .block>summary::-webkit-details-marker{display:none;}
+ .block>summary::before{content:"\25B8";font-size:12px;color:#6b7280;}
+ .block[open]>summary::before{content:"\25BE";}
+ .block>summary h2{margin:0;}
+ .block[open]>summary{margin-bottom:8px;}
 </style>
 </head>
 <body>
@@ -31,22 +37,22 @@
 
 <div class="goals"><strong>Today's goals:</strong> Revise your Investigation Plan from both reads — your group's and the genAI planning partner's — and get ready to take it into the field. Donuts.</div>
 
-<div class="block b-set">
- <h2>1 · The assignment and the field ahead <span class="time">(~20 min)</span></h2>
+<details class="block b-set" name="wk10d2" open>
+ <summary><h2>1 · The assignment and the field ahead <span class="time">(~20 min)</span></h2></summary>
  <ul>
   <li><strong>What you submit.</strong> Open the <a href="week-10-investigation-plan.docx">Investigation Plan assignment</a> together. Ask your questions about the deliverable now.</li>
   <li><strong>What you do with it.</strong> In Weeks&nbsp;11&#8211;12 you take this lesson into your placement and run it. Read the <a href="teaching-your-lesson.docx">field-teaching guidelines</a> together: you teach <strong>one or more</strong> of your pieces (Before, During, and/or After) — not necessarily the whole lesson — with one or more students, and you <strong>collect the work</strong>. Pseudonyms; a backup student on the same concept if yours is out.</li>
   <li>Quick go-around: given what you know of your placement, <strong>which piece(s) are you likely to teach</strong>, and what will you be able to collect?</li>
  </ul>
-</div>
+</details>
 
-<div class="block b-work">
- <h2>2 · Revise <span class="time">(~60 min)</span></h2>
+<details class="block b-work" name="wk10d2">
+ <summary><h2>2 · Revise <span class="time">(~60 min)</span></h2></summary>
  <ul>
   <li>Revise your plan in the <a href="../bda-planner/bda-planner.html">BDA&nbsp;Planner</a> from <strong>both reads</strong>: your peer-review sheets first, then the genAI planning partner's.</li>
   <li>Start your reflection: which feedback did you act on, which did you set aside, and why?</li>
  </ul>
-</div>
+</details>
 
 <div class="wrap">
  <strong>Wrap-up &amp; looking ahead:</strong>
@@ -58,5 +64,10 @@
 
 <p class="canvas-note">Assignment links, the submission dropbox, and due dates are in <strong>Canvas</strong>, below the link to this outline. This page is the lesson outline only — no names, no grades.</p>
 </main>
+<script>
+  const blocks = [...document.querySelectorAll("details.block")];
+  addEventListener("beforeprint", () => blocks.forEach(d => { d.removeAttribute("name"); d.open = true; }));
+  addEventListener("afterprint",  () => blocks.forEach(d => d.setAttribute("name", "wk10d2")));
+</script>
 </body>
 </html>

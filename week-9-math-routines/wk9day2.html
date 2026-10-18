@@ -21,6 +21,12 @@
  a{color:#2563eb;}
  .home{display:inline-block;margin:0 0 10px;font-size:12px;color:#6b7280;text-decoration:none;}
  .home:hover{color:#2563eb;text-decoration:underline;}
+ .block>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:8px;}
+ .block>summary::-webkit-details-marker{display:none;}
+ .block>summary::before{content:"\25B8";font-size:12px;color:#6b7280;}
+ .block[open]>summary::before{content:"\25BE";}
+ .block>summary h2{margin:0;}
+ .block[open]>summary{margin-bottom:8px;}
 </style>
 </head>
 <body>
@@ -31,8 +37,8 @@
 
 <div class="goals"><strong>Today's goals:</strong> Design the <strong>After</strong> — the piece that <em>captures</em> students' thinking so you can analyze it later. Type it into the BDA&nbsp;Planner, show it to a classmate, then get the genAI planning partner's read. Human first, machine second.</div>
 
-<div class="block b-work">
- <h2>1 · The After — the capture <span class="time">(~30 min)</span></h2>
+<details class="block b-work" name="wk9d2" open>
+ <summary><h2>1 · The After — the capture <span class="time">(~30 min)</span></h2></summary>
  <ul>
   <li>Your <strong>During</strong> is where the thinking happens — but thinking evaporates. The <strong>After</strong> is how you <strong>capture</strong> it: a short artifact you physically collect, plus a question or two that pushes the reasoning. Skip it and you finish the lesson holding nothing to analyze.</li>
   <li><strong>The Planner offers four kinds of After.</strong> Pick the one a student's response could answer your research question with:
@@ -46,23 +52,23 @@
   <li>Weak vs. strong, same task: <em>"did everyone get it? thumbs up"</em> leaves you a nodding room and nothing to read; <em>"draw where 3/4 sits and write one sentence on how you decided"</em> leaves you holding the reasoning. The test: <strong>would a student's response leave me holding evidence I could hold up against my research question?</strong> If it can be answered without revealing any thinking, it isn't a capture yet.</li>
  </ul>
  <p class="purpose">Purpose: the After is the most-skipped, least-planned piece — and the one that decides whether you walk out with data.</p>
-</div>
+</details>
 
-<div class="block b-share">
- <h2>2 · Your turn — build your After <span class="time">(~35 min)</span></h2>
+<details class="block b-share" name="wk9d2">
+ <summary><h2>2 · Your turn — build your After <span class="time">(~35 min)</span></h2></summary>
  <ul>
   <li><strong>Develop (~20 min).</strong> Type your After into the <a href="../bda-planner/bda-planner.html">BDA&nbsp;Planner</a> — Plan → After: the artifact you'll collect and the question(s) that push the thinking.</li>
   <li><strong>A classmate looks (~15 min).</strong> Share your task and your research question. Then show your classmate your After: <em>could a student finish it without showing any thinking?</em> Then swap.</li>
  </ul>
-</div>
+</details>
 
-<div class="block b-set">
- <h2>3 · The genAI planning partner <span class="time">(~15 min)</span></h2>
+<details class="block b-set" name="wk9d2">
+ <summary><h2>3 · The genAI planning partner <span class="time">(~15 min)</span></h2></summary>
  <ul>
   <li>Press <strong>Check this</strong> on your After, then follow up with <strong>Ask me</strong>. Out of time? Do it at home.</li>
   <li>The genAI planning partner is a critic, not a designer. Keep what is useful and <strong>Set aside</strong> what is not.</li>
  </ul>
-</div>
+</details>
 
 <div class="wrap">
  <strong>Wrap-up &amp; looking ahead:</strong>
@@ -75,5 +81,10 @@
 
 <p class="canvas-note">Assignment links, the submission dropbox, and due dates are in <strong>Canvas</strong>, below the link to this outline. This page is the lesson outline only — no names, no grades.</p>
 </main>
+<script>
+  const blocks = [...document.querySelectorAll("details.block")];
+  addEventListener("beforeprint", () => blocks.forEach(d => { d.removeAttribute("name"); d.open = true; }));
+  addEventListener("afterprint",  () => blocks.forEach(d => d.setAttribute("name", "wk9d2")));
+</script>
 </body>
 </html>
