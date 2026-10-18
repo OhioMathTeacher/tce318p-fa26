@@ -684,7 +684,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 67</div>
+<div id="build">Build 68</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1346,7 +1346,10 @@ function printAs(name, build){
   window.print();
 }
 // Safe in a filename on every platform, and still readable.
-function fileStamp(){ return new Date().toISOString().slice(0,10); }
+// The student's own calendar date. toISOString() is UTC, so a PDF printed after 8pm
+// Eastern was named for tomorrow (found 10/17 at 9:30pm: "— 2026-10-18").
+function fileStamp(){ const d=new Date(), p=n=>String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; }
 // Date AND time, in the student's own clock. Two reasons, both found on Todd's iPhone:
 // toISOString() is UTC, so anyone saving after 8pm Eastern got tomorrow's date on today's
 // work; and a date alone collides on the second save of a day, leaving the browser to
