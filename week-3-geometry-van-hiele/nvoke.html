@@ -54,6 +54,8 @@
   body.embed.inline .libgrid .ghdr{font-size:11px;margin:6px 2px 1px}
   body.embed.inline .libgrid .ghdr .mkbtn{padding:2px 6px;font-size:11px}
   body.embed.inline .tplhint{display:none}
+  body.embed.inline .tplhint.hasslots{display:block;text-align:center}  /* the Planner hides the hint, but Sort's squares control has to stay */
+  body.embed.inline .tplhint .tpltext{display:none}
   body.embed.inline .stage2 .canvasWrap{min-height:0;padding:10px;border-width:1px;border-radius:10px}
   body.embed.inline .stage2 .board{max-width:300px}
   body.embed.inline .stage2 .board.sort{max-width:300px}
@@ -351,7 +353,7 @@
     <div class="rail" id="tplRail">
       <button class="railbtn on" data-tpl="wodb" title="Which One Doesn't Belong? — four figures, and every one of them can be argued out. Shows you which property a person is reasoning from. Holds up to 4."><svg viewBox="0 0 36 36" fill="currentColor"><rect x="4" y="4" width="12" height="12" rx="2"/><rect x="20" y="4" width="12" height="12" rx="2"/><rect x="4" y="20" width="12" height="12" rx="2"/><rect x="20" y="20" width="12" height="12" rx="2"/></svg><span>WODB</span></button>
       <button class="railbtn" data-tpl="same-diff" title="Same &amp; Different — two figures side by side. Name what holds and what changes; pushes past the label toward properties. Holds 2."><svg viewBox="0 0 36 36" fill="currentColor"><rect x="3" y="11" width="13" height="14" rx="2"/><rect x="20" y="11" width="13" height="14" rx="2"/></svg><span>Same&amp;Diff</span></button>
-      <button class="railbtn" data-tpl="sort" title="Sort — a handful of figures. Group them and state the rule, then regroup a different way. The rule is the diagnosis. Holds up to 9."><svg viewBox="0 0 36 36" fill="currentColor"><rect x="4" y="4" width="8" height="8" rx="1.5"/><rect x="14" y="4" width="8" height="8" rx="1.5"/><rect x="24" y="4" width="8" height="8" rx="1.5"/><rect x="4" y="14" width="8" height="8" rx="1.5"/><rect x="14" y="14" width="8" height="8" rx="1.5"/><rect x="24" y="14" width="8" height="8" rx="1.5"/><rect x="4" y="24" width="8" height="8" rx="1.5"/><rect x="14" y="24" width="8" height="8" rx="1.5"/><rect x="24" y="24" width="8" height="8" rx="1.5"/></svg><span>Sort</span></button>
+      <button class="railbtn" data-tpl="sort" title="Sort — a handful of figures. Group them and state the rule, then regroup a different way. The rule is the diagnosis. Holds 2 to 16 — you choose how many."><svg viewBox="0 0 36 36" fill="currentColor"><rect x="4" y="4" width="8" height="8" rx="1.5"/><rect x="14" y="4" width="8" height="8" rx="1.5"/><rect x="24" y="4" width="8" height="8" rx="1.5"/><rect x="4" y="14" width="8" height="8" rx="1.5"/><rect x="14" y="14" width="8" height="8" rx="1.5"/><rect x="24" y="14" width="8" height="8" rx="1.5"/><rect x="4" y="24" width="8" height="8" rx="1.5"/><rect x="14" y="24" width="8" height="8" rx="1.5"/><rect x="24" y="24" width="8" height="8" rx="1.5"/></svg><span>Sort</span></button>
       <button class="railbtn" data-tpl="ispy" title="I Spy — a field of figures. Name a property and let them find everything that fits. Holds up to 24."><svg viewBox="0 0 36 36" fill="currentColor"><circle cx="9" cy="11" r="5"/><rect x="19" y="5" width="10" height="10" rx="1.5"/><path d="M17 31 L10 20 L24 20 Z"/><circle cx="27" cy="26" r="4"/></svg><span>I Spy</span></button>
       <button class="railbtn" data-tpl="single" title="Single — one figure, asked wide open: what do you see, and how do you know? Holds 1."><svg viewBox="0 0 36 36" fill="currentColor"><rect x="8" y="8" width="20" height="20" rx="3"/></svg><span>Single</span></button>
     </div>
@@ -785,10 +787,18 @@ const LIB=Object.fromEntries(CARD_LIBRARY.map(c=>[c.id,c]));
 const TEMPLATES={
   wodb:{label:"Which One Doesn't Belong?", max:4, prompt:"Which one doesn't belong? Say how you know.", sub:"How do you know?"},
   "same-diff":{label:"Same & Different", max:2, prompt:"What's the same? What's different?", sub:"What do you see?"},
-  sort:{label:"Sort", max:9, prompt:"Sort these and state your rule.", sub:""},
+  sort:{label:"Sort", max:16, prompt:"Sort these and state your rule.", sub:""},
   ispy:{label:"I Spy", max:24, prompt:"I spy a shape that… (name a property)", sub:"How do you know it fits?"},
   single:{label:"Single card", max:1, prompt:"What do you see? · How do you know?", sub:"How do you know?"}
 };
+/* Sort holds as many squares as the author asks for (2–16; 9 until they change it), so the count lives on
+   the card itself. Every other template's size is fixed by its max. */
+const SORT_MIN=2, SORT_DEF=9;
+function slotsOf(set){ return set&&set.template==="sort"?Math.max(SORT_MIN,Math.min(TEMPLATES.sort.max,+set.slots||SORT_DEF)):TEMPLATES[(set&&set.template)||"wodb"].max; }
+// A builder set → a pack card. The one place this happens: saving a pack, the Planner sync, and the
+// share export all used to build it by hand, and a field added to one (Sort's slots) was missed in another.
+function setToCard(st,i){ return {id:`${st.template}-${i+1}`, template:st.template, members:st.members, layout:st.layout, ...(st.slots?{slots:st.slots}:{}), prompt:st.prompt||TEMPLATES[st.template].prompt}; }
+function sortCols(n){ return n<=4?2:n<=9?3:4; }
 function posLabel(t,x,y){
   /* darker than a decoration: a question can ask "which belong with shape 7?" */
   return `<text x="${x}" y="${y}" font-size="0.46" font-weight="800" fill="#5b6b82" font-family="Inter,system-ui,sans-serif">${t}</text>`;
@@ -824,11 +834,12 @@ function imageSetSVG(set,px=520){
     return svg(`${-W/2} -1.9 ${W} 3.8`, px, Math.round(px*3.8/W), body+lab);
   }
   if(T==="sort"){
-    const gap=2.5, out=[], lab=[];
-    for(let i=0;i<Math.min(M.length,9);i++){const c=i%3,r=Math.floor(i/3);
-      out.push(placeMember(M[i],(c-1)*gap,(r-1)*gap,0.72));
-      lab.push(posLabel(String(i+1),(c-1)*gap-0.98,(r-1)*gap-0.82));}
-    return svg("-3.9 -3.9 7.8 7.8",px,px,out.join("")+lab.join(""));
+    const n=Math.max(slotsOf(set),M.length), cols=sortCols(n), rows=Math.ceil(n/cols), gap=2.5, out=[], lab=[];
+    const W=cols*gap+0.3, H=rows*gap+0.3;
+    for(let i=0;i<Math.min(M.length,TEMPLATES.sort.max);i++){const c=i%cols,r=Math.floor(i/cols), x=(c-(cols-1)/2)*gap, y=(r-(rows-1)/2)*gap;
+      out.push(placeMember(M[i],x,y,0.72));
+      lab.push(posLabel(String(i+1),x-0.98,y-0.82));}
+    return svg(`${(-W/2).toFixed(2)} ${(-H/2).toFixed(2)} ${W} ${H}`,px,Math.round(px*H/W),out.join("")+lab.join(""));
   }
   const L=scatterLayout(M.length), places=set.layout||L.places;
   const body=M.slice(0,places.length).map((m,i)=>{const p=places[i];
@@ -858,7 +869,7 @@ function normalizeFigure(f){
   return {kind:"circle", r:0.9};
 }
 function cardToImageSet(card){
-  if(card.template) return {template:card.template, members:(card.members||[]).map(m=>Object.assign({},m)), layout:card.layout, prompt:card.prompt||""};
+  if(card.template) return {template:card.template, members:(card.members||[]).map(m=>Object.assign({},m)), layout:card.layout, prompt:card.prompt||"", ...(card.template==="sort"&&card.slots?{slots:card.slots}:{})};
   if(card.cells) return {template:"wodb", members:card.cells.slice(0,4).map(c=>({figure:shapeToAtom(CELL[c]||{shape:"square"}), rotate:0, color:"gray"})), prompt:card.prompt||""};
   const f=card.figure;
   if(f && f.type==="scene") return {template:"ispy", members:f.items.map(it=>({figure:shapeToAtom({shape:it.shape, _wh:it.wh, pts:it.pts, rotate:it.rotate}), rotate:0, color:"gray"})), prompt:card.prompt||""};
@@ -971,7 +982,7 @@ function initEmbed(){
 function syncToPlanner(){
   const name=(document.getElementById("presName").value||"").trim()||"Before cards";
   const pack={packFormat:"provoke-cards/v1", name, mode:"see", builtWith:"builder", prompt:"What did you see? · How do you know?",
-    cards:builder.sets.map((st,i)=>({id:`${st.template}-${i+1}`, template:st.template, members:st.members, layout:st.layout, prompt:st.prompt||TEMPLATES[st.template].prompt}))};
+    cards:builder.sets.map(setToCard)};
   const thumbs=builder.sets.map(st=>imageSetSVG(st,160));
   window.parent.postMessage({type:"nvoke-pack", pack, thumbs, inline:document.body.classList.contains("inline")}, "*");
 }
@@ -1015,7 +1026,7 @@ function initBuilder(){
   document.querySelectorAll("#tplRail .railbtn").forEach(b=>b.onclick=()=>{
     document.querySelectorAll("#tplRail .railbtn").forEach(x=>x.classList.toggle("on",x===b));
     builder.cur.template=b.dataset.tpl; builder.sel=-1;
-    const max=TEMPLATES[b.dataset.tpl].max; if(builder.cur.members.length>max) builder.cur.members=builder.cur.members.slice(0,max);
+    const max=slotsOf(builder.cur); if(builder.cur.members.length>max) builder.cur.members=builder.cur.members.slice(0,max);
     renderTplHint(); renderCanvas(); renderTool();});
   document.getElementById("cardSearch").oninput=e=>renderLibGrid(e.target.value.trim().toLowerCase());
   document.getElementById("addSet").onclick=addSet;
@@ -1028,8 +1039,17 @@ function initBuilder(){
     if(addCardFigure(deFigure())) closeEditor();};
   document.getElementById("setPrompt").oninput=e=>builder.cur.prompt=e.target.value;
 }
-function renderTplHint(){const t=TEMPLATES[builder.cur.template];
-  document.getElementById("tplHint").textContent=`${t.label} · holds ${t.max===1?"1 shape":"up to "+t.max+" shapes"} · your partner is asked: “${t.prompt}”`;}
+function renderTplHint(){const t=TEMPLATES[builder.cur.template], el=document.getElementById("tplHint");
+  if(builder.cur.template==="sort"){ const n=slotsOf(builder.cur);
+    el.classList.add("hasslots");
+    el.innerHTML=`<span class="tpltext">${t.label} · </span><span class="slotctl">squares: <button class="tbtn" data-slot="-1" title="Fewer squares">−</button> <b>${n}</b> <button class="tbtn" data-slot="1" title="More squares">＋</button></span><span class="tpltext"> · your partner is asked: “${t.prompt}”</span>`;
+    el.querySelectorAll("[data-slot]").forEach(b=>b.onclick=()=>{ const cur=builder.cur, want=slotsOf(cur)+ +b.dataset.slot;
+      if(want<SORT_MIN||want>TEMPLATES.sort.max){ toast(`A sort holds ${SORT_MIN} to ${TEMPLATES.sort.max} squares.`); return; }
+      if(want<cur.members.length){ toast("Remove a shape first — every square is full."); return; }
+      cur.slots=want; renderTplHint(); renderCanvas(); });
+    return; }
+  el.classList.remove("hasslots");
+  el.textContent=`${t.label} · holds ${t.max===1?"1 shape":"up to "+t.max+" shapes"} · your partner is asked: “${t.prompt}”`;}
 function renderLibGrid(q){
   const groups={};
   CARD_LIBRARY.forEach(c=>{ if(q && !c.label.toLowerCase().includes(q) && !c.group.toLowerCase().includes(q)) return;
@@ -1050,14 +1070,14 @@ function renderLibGrid(q){
 }
 let libOpen=null;
 function addCard(id){
-  const cur=builder.cur, max=TEMPLATES[cur.template].max;
-  if(cur.members.length>=max){ toast(`That template holds up to ${max} cards.`); return; }
+  const cur=builder.cur, max=slotsOf(cur);
+  if(cur.members.length>=max){ toast(cur.template==="sort"?`Every square is full — press ＋ next to “squares” for more.`:`That template holds up to ${max} cards.`); return; }
   cur.members.push({ref:id, rotate:0, color:"gray"}); builder.sel=cur.members.length-1;
   renderCanvas(); renderTool();
 }
 function addCardFigure(figure){
-  const cur=builder.cur, max=TEMPLATES[cur.template].max;
-  if(cur.members.length>=max){ toast(`That template holds up to ${max} cards.`); return false; }
+  const cur=builder.cur, max=slotsOf(cur);
+  if(cur.members.length>=max){ toast(cur.template==="sort"?`Every square is full — press ＋ next to “squares” for more.`:`That template holds up to ${max} cards.`); return false; }
   cur.members.push({figure:figure, rotate:0, color:"gray"}); builder.sel=cur.members.length-1;
   renderCanvas(); renderTool(); return true;
 }
@@ -1110,13 +1130,13 @@ function renderCanvas(){
     wrap.querySelectorAll(".mc").forEach(d=>d.onclick=()=>selectMember(+d.dataset.i));
     return;
   }
-  const cls=t==="wodb"?"wodb":t==="sort"?"sort":t==="single"?"single":"samediff", n=TEMPLATES[t].max;
+  const cls=t==="wodb"?"wodb":t==="sort"?"sort":t==="single"?"single":"samediff", n=slotsOf(cur);
   let cells="";
   for(let i=0;i<n;i++){const m=cur.members[i];
     cells+= m
       ? `<div class="cell2 filled ${i===builder.sel?'sel':''}" data-i="${i}">${cellSVG(m)}</div>`
       : `<div class="cell2 empty" data-i="${i}"><span class="ph">＋</span></div>`;}
-  wrap.innerHTML=`<div class="board ${cls}">${cells}</div>`;
+  wrap.innerHTML=`<div class="board ${cls}"${t==="sort"?` style="grid-template-columns:repeat(${sortCols(n)},1fr);max-width:${sortCols(n)===4?430:sortCols(n)===2?240:340}px"`:""}>${cells}</div>`;
   wrap.querySelectorAll(".cell2").forEach(d=>d.onclick=()=>{const i=+d.dataset.i;
     if(cur.members[i]) selectMember(i);
     else { builder.sel=-1; renderTool(); toast("Pick a card on the left to fill this slot."); }});
@@ -1139,18 +1159,19 @@ function addSet(){
   const cur=builder.cur;
   if(!cur.members.length){toast("Add some cards first.");return;}
   const set={template:cur.template, members:cur.members.map(m=>Object.assign({},m)), prompt:cur.prompt||""};
+  if(cur.template==="sort") set.slots=slotsOf(cur);
   if(cur.template==="ispy") set.layout=scatterLayout(set.members.length).places;
   if(builder.editing>=0 && builder.editing<builder.sets.length){ builder.sets[builder.editing]=set; toast("Card updated."); }
   else { builder.sets.push(set); toast("Card added — build another, or Save your pack."); }
   builder.editing=-1;
-  builder.cur={template:cur.template, members:[], prompt:""}; builder.sel=-1;
+  builder.cur={template:cur.template, members:[], prompt:"", ...(cur.template==="sort"?{slots:slotsOf(cur)}:{})}; builder.sel=-1;
   document.getElementById("setPrompt").value="";
   document.getElementById("addSet").textContent="＋ Add card";
   renderCanvas(); renderTool(); renderSetList();
 }
 function editImageSet(i){
   const s=builder.sets[i]; if(!s) return;
-  builder.cur={template:s.template, members:s.members.map(m=>Object.assign({},m)), prompt:s.prompt||"", layout:s.layout};
+  builder.cur={template:s.template, members:s.members.map(m=>Object.assign({},m)), prompt:s.prompt||"", layout:s.layout, ...(s.slots?{slots:s.slots}:{})};
   builder.editing=i; builder.sel=-1;
   document.getElementById("setPrompt").value=s.prompt||"";
   document.querySelectorAll("#tplRail .railbtn").forEach(x=>x.classList.toggle("on",x.dataset.tpl===s.template));
@@ -1207,8 +1228,7 @@ async function savePresentation(){
   if((PACKS[name]||{}).builtIn){ toast(`“${name}” is a built-in pack — pick a different name.`); return; }
   const pack={packFormat:"provoke-cards/v1", name, mode:"see", builtWith:"builder",
     prompt:"What did you see? · How do you know?",
-    cards:builder.sets.map((s,i)=>({id:`${s.template}-${i+1}`, template:s.template,
-      members:s.members, layout:s.layout, prompt:s.prompt||TEMPLATES[s.template].prompt}))};
+    cards:builder.sets.map(setToCard)};
   if(builder.origName && builder.origName!==name && !(PACKS[builder.origName]||{}).builtIn){
     delete PACKS[builder.origName]; try{ await idbDel(builder.origName); }catch(e){}
   }
@@ -1270,7 +1290,7 @@ async function copyPresentation(name){
   const sets=p.cards.map(cardToImageSet);
   const clone={packFormat:"provoke-cards/v1", name:nn, mode:"see", builtWith:"builder",
     prompt:p.prompt||"What did you see? · How do you know?",
-    cards:sets.map((s,idx)=>({id:`${s.template}-${idx+1}`, template:s.template, members:s.members, layout:s.layout, prompt:s.prompt||TEMPLATES[s.template].prompt}))};
+    cards:sets.map(setToCard)};
   PACKS[nn]=clone; try{ await idbPut(nn,clone); }catch(e){}
   refreshPackSel(); renderDrawer(); toast(`Copied to “${nn}” — now editable in Build.`);
 }
