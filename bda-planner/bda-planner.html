@@ -731,7 +731,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 72</div>
+<div id="build">Build 73</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -2202,7 +2202,12 @@ function pickShape(){
 
 /* ---------- project bar ---------- */
 document.getElementById("saveProj").onclick=async()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}); const nm=((state.bg||{}).names||"").trim().replace(/[^a-z0-9]+/gi,"-").replace(/^-+|-+$/g,""); const kept=await saveBlob(blob,`bda-planner${nm?"-"+nm:""}-${fileStampTime()}.json`); if(!kept) return; recordFileSave(); logEvent("save","saved the project to a file"); toast("Saved. Keep this file — it's how your plan travels."); };
-document.getElementById("loadProj").onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ state=JSON.parse(r.result); selId=null; try{ localStorage.removeItem(EX_STASH); }catch(e){} save(); renderAll(); toast("Project loaded."); }catch(err){ toast("That file didn't read as a project."); } }; r.readAsText(f); e.target.value=""; };
+document.getElementById("loadProj").onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ let inc=null; try{ inc=JSON.parse(r.result); }catch(err){}
+    // Check before replacing anything: a file that isn't a Planner project used to overwrite the saved work
+    // first and fail after (a Research Question Studio backup did, 10/20).
+    if(inc&&inc.kind==="tce318p-rqstudio-backup"){ alert("That's a Research Question Studio backup, not a Planner project. Open it in the Research Question Studio with \u201cRestore from a file\u201d. Nothing here was changed."); return; }
+    if(!inc||typeof inc!=="object"||!inc.bg||typeof inc.bg!=="object"||!Array.isArray(inc.during)){ toast("That file didn't read as a Planner project. Nothing was changed."); return; }
+    try{ state=Object.assign(blankState(),inc); selId=null; try{ localStorage.removeItem(EX_STASH); }catch(e){} save(); renderAll(); toast("Project loaded."); }catch(err){ toast("That file didn't read as a project."); } }; r.readAsText(f); e.target.value=""; };
 function resetProject(){ const ex=!!exStash(); if(!confirm(ex?"You're looking at an example. Starting over throws away the example AND the work you set aside. Press \u2190 Back to my work first if you want it. Start over anyway?":"Start over with an empty project? Your edits in this browser are lost (a saved .json file is not).")) return; try{ localStorage.removeItem(EX_STASH); }catch(e){} state=blankState(); selId=null; save(); renderAll(); }
 (function(){ const m=document.getElementById("gearMenu"), b=document.getElementById("gearBtn"); b.onclick=e=>{ e.stopPropagation(); m.classList.toggle("open"); }; document.addEventListener("click",e=>{ if(!m.contains(e.target)) m.classList.remove("open"); });
   m.querySelectorAll("[data-gear]").forEach(x=>x.onclick=()=>{ m.classList.remove("open"); const k=x.dataset.gear;
