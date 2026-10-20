@@ -174,6 +174,8 @@
   .cell2.sel{border-color:var(--outline);border-style:solid;box-shadow:0 0 0 3px #5590e055}
   .cell2 .ph{color:#cbd3de;font-size:30px;font-weight:800;line-height:1}
   .cell2 svg{width:90%;height:90%}
+  .cell2 .ph small{display:block;font-size:11px;font-weight:600;margin-top:4px}
+  .cell2 input.slotin{width:86%;font:inherit;font-size:18px;font-weight:700;text-align:center;padding:8px 4px;border:1.5px solid var(--outline);border-radius:8px}
   .toolstrip{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:12px 0;padding:10px 12px;
     border:2px solid var(--line);border-radius:14px;background:#fbfaf6}
   .swatch{width:26px;height:26px;border-radius:50%;border:2px solid #0002;cursor:pointer}
@@ -721,11 +723,22 @@ function atomElt(a, st){
     for(let p=0;p<10;p++){ if(!set.has(p)) continue; const col=p%5,row=p<5?0:1; g+=`<circle cx="${col+0.5}" cy="${row+0.5}" r="0.34" fill="${MARK}"/>`; }
     return `<g transform="translate(-1.3 -0.52) scale(0.52)">${g}</g>`;
   }
+  if(a.kind==="text") return textElt(a.text,S);
   if(!a.pts) return "";
   let s=`<polygon points="${a.pts.map(q=>q.join(',')).join(' ')}" fill="${F}" stroke="${S}" stroke-width="${W}" stroke-linejoin="round"/>`;
   if(a.ticks) s+=a.pts.map((_,i)=>tickSVG(a.pts[i],a.pts[(i+1)%a.pts.length])).join("");
   if(a.rights) s+=(a.rights==="all"?a.pts.map((_,i)=>i):a.rights).map(i=>rightSVG(a.pts,i)).join("");
   return s;
+}
+/* Typed text on a card ("7+8", "12 counters in 4 groups"): wrapped to a few lines and sized to fit the
+   same 3.4-unit square every shape fills. Drawn in the paint's ink, so gray reads as black. */
+function textElt(t,ink){
+  const words=String(t||"").trim().split(/\s+/).filter(Boolean); if(!words.length) return "";
+  const len=words.join(" ").length, cap=Math.max(6,Math.ceil(Math.sqrt(len)*1.9)), lines=[];
+  words.forEach(w=>{ const L=lines[lines.length-1]; if(L!=null&&(L+" "+w).length<=cap) lines[lines.length-1]=L+" "+w; else lines.push(w); });
+  const longest=Math.max(...lines.map(l=>l.length)), fs=+Math.min(1.5,3.3/(0.62*longest),3.2/(1.25*lines.length)).toFixed(3);
+  return `<text x="0" y="0" text-anchor="middle" font-size="${fs}" font-weight="700" font-family="Inter,system-ui,sans-serif" fill="${ink}">`
+    +lines.map((l,i)=>`<tspan x="0" dy="${i?1.2*fs:(0.35-0.6*(lines.length-1))*fs}">${escapeHtml(l)}</tspan>`).join("")+`</text>`;
 }
 function atomSVG(a,px=300,st){
   const rot=a.rotate?` transform="rotate(${a.rotate})"`:"";
@@ -843,7 +856,8 @@ function imageSetSVG(set,px=520){
   }
   const L=scatterLayout(M.length), places=set.layout||L.places;
   const body=M.slice(0,places.length).map((m,i)=>{const p=places[i];
-    return placeMember(Object.assign({},m,{rotate:(m.rotate||0)+(p.rot||0)}),p.cx,p.cy,p.s);}).join("");
+    const tx=m.figure&&m.figure.kind==="text"; // text stays level and small enough not to run into its neighbor
+    return placeMember(Object.assign({},m,{rotate:(m.rotate||0)+(tx?0:p.rot||0)}),p.cx,p.cy,tx?Math.min(p.s,0.6):p.s);}).join("");
   return svg(`${(-L.W/2).toFixed(2)} ${(-L.H/2).toFixed(2)} ${L.W} ${L.H}`, px, Math.round(px*L.H/L.W), body);
 }
 
@@ -964,6 +978,12 @@ function initEmbed(){
   if(embedTpl){ document.body.classList.add("tpllock"); pick(embedTpl); }
   const hdr=document.querySelector("#apphdr .hdrbar"); if(hdr){ const n=document.createElement("div"); n.className="embednote"; n.innerHTML=(embedTpl?`<b>${escapeHtml(TEMPLATES[embedTpl].label||embedTpl)}</b> — `:"")+"build the cards for your Before routine, then press “Use these cards in the Planner.” Nothing here is turned in."; hdr.after(n); }
   document.getElementById("presName").placeholder="Name these cards (e.g. Same or Different — triangles)…";
+  window.addEventListener("message",e=>{
+    const d=e.data||{}; if(d.type!=="nvoke-addtext"||!Array.isArray(d.texts)) return;
+    const t=embedTpl||builder.cur.template, per=t==="sort"?slotsOf(builder.cur):TEMPLATES[t].max, texts=d.texts.map(x=>String(x).trim()).filter(Boolean);
+    for(let k=0;k<texts.length;k+=per) builder.sets.push({template:t, members:texts.slice(k,k+per).map(x=>({figure:{kind:"text",text:x}, rotate:0, color:"gray"})), prompt:"", ...(t==="sort"?{slots:per}:{}), ...(t==="ispy"?{layout:scatterLayout(Math.min(per,texts.length-k)).places}:{})});
+    renderSetList(); toast(texts.length===1?"Your text card is on the board.":`Your ${texts.length} text cards are on the board.`);
+  });
   window.addEventListener("message",e=>{
     const d=e.data||{}; if(d.type!=="nvoke-load"||!d.pack||!Array.isArray(d.pack.cards)) return;
     builder.sets=d.pack.cards.map(cardToImageSet); builder.cur={template:embedTpl||"wodb", members:[], prompt:""}; builder.sel=-1; builder.editing=-1; builder.origName=null;
@@ -1126,8 +1146,10 @@ function renderCanvas(){
     wrap.innerHTML=(cur.members.length?`<div style="width:100%;text-align:center">${imageSetSVG(cur,340)}</div>`
       :`<span class="small">Click cards on the left to scatter them here…</span>`)
       +`<div class="memrow" style="width:100%;justify-content:center">`+cur.members.map((m,i)=>
-        `<div class="mc ${i===builder.sel?'sel':''}" data-i="${i}" title="click to select">${cellSVG(m,40)}</div>`).join("")+`</div>`;
+        `<div class="mc ${i===builder.sel?'sel':''}" data-i="${i}" title="click to select">${cellSVG(m,40)}</div>`).join("")+`</div>`
+      +`<div style="width:100%;text-align:center;margin-top:6px"><span class="cell2 typenew" style="display:inline-flex;aspect-ratio:auto;width:200px;padding:6px;border-style:dashed"><span class="small">＋ type a number or expression</span></span></div>`;
     wrap.querySelectorAll(".mc").forEach(d=>d.onclick=()=>selectMember(+d.dataset.i));
+    const tn=wrap.querySelector(".typenew"); tn.onclick=()=>typeInSlot(tn,"");
     return;
   }
   const cls=t==="wodb"?"wodb":t==="sort"?"sort":t==="single"?"single":"samediff", n=slotsOf(cur);
@@ -1135,11 +1157,21 @@ function renderCanvas(){
   for(let i=0;i<n;i++){const m=cur.members[i];
     cells+= m
       ? `<div class="cell2 filled ${i===builder.sel?'sel':''}" data-i="${i}">${cellSVG(m)}</div>`
-      : `<div class="cell2 empty" data-i="${i}"><span class="ph">＋</span></div>`;}
+      : `<div class="cell2 empty" data-i="${i}" title="Click to type a number or expression — or pick a shape on the left"><span class="ph">＋${i===cur.members.length?"<small>type, or pick a shape</small>":""}</span></div>`;}
   wrap.innerHTML=`<div class="board ${cls}"${t==="sort"?` style="grid-template-columns:repeat(${sortCols(n)},1fr);max-width:${sortCols(n)===4?430:sortCols(n)===2?240:340}px"`:""}>${cells}</div>`;
   wrap.querySelectorAll(".cell2").forEach(d=>d.onclick=()=>{const i=+d.dataset.i;
     if(cur.members[i]) selectMember(i);
-    else { builder.sel=-1; renderTool(); toast("Pick a card on the left to fill this slot."); }});
+    else { builder.sel=-1; renderTool(); typeInSlot(d,""); }});
+}
+/* Type into a slot: a new text card at the next free slot, or (i given) new words for the text card there. */
+function typeInSlot(cell,val,i){
+  cell.innerHTML=`<input class="slotin" maxlength="40" placeholder="7 + 8">`; cell.onclick=null;
+  const inp=cell.querySelector("input"); inp.value=val||""; inp.focus(); inp.select(); let done=false;
+  const finish=keep=>{ if(done) return; done=true; const t=inp.value.trim();
+    if(keep&&t){ if(i!=null){ builder.cur.members[i].figure={kind:"text",text:t}; builder.sel=i; renderCanvas(); renderTool(); } else addCardFigure({kind:"text",text:t}); }
+    else renderCanvas(); };
+  inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); finish(true); } else if(e.key==="Escape") finish(false); };
+  inp.onblur=()=>finish(true);
 }
 function renderTool(){
   const strip=document.getElementById("toolStrip"), m=builder.cur.members[builder.sel];
@@ -1149,11 +1181,13 @@ function renderTool(){
     +PAINT_ORDER.map(c=>`<span class="swatch ${m.color===c?'sel':''}" data-c="${c}" title="${c}" style="background:${PAINT[c]}${c==='white'?';border-color:#bbb':''}"></span>`).join("")
     +`<button class="tbtn" id="tFill">${m.fillStyle==='outline'?'◻ outline':'◼ solid'}</button>`
     +`<button class="tbtn" id="tRot">↻ ${m.rotate||0}°</button>`
+    +(m.figure&&m.figure.kind==="text"?`<button class="tbtn" id="tText">✏️ edit text</button>`:"")
     +`<button class="tbtn" id="tDel">🗑 remove</button>`;
   strip.querySelectorAll(".swatch").forEach(s=>s.onclick=()=>paintSel(s.dataset.c));
   document.getElementById("tFill").onclick=fillSel;
   document.getElementById("tRot").onclick=rotateSel;
   document.getElementById("tDel").onclick=removeSel;
+  const tt=document.getElementById("tText"); if(tt) tt.onclick=()=>{ const i=builder.sel, c=document.querySelector(`#canvasWrap .cell2[data-i="${i}"]`)||document.querySelector("#canvasWrap .typenew"); if(c) typeInSlot(c,m.figure.text,i); };
 }
 function addSet(){
   const cur=builder.cur;

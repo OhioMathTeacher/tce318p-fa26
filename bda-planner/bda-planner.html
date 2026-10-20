@@ -336,6 +336,7 @@
   .slice .minithumbs{display:flex;gap:4px;margin:4px 0 2px}
   .slice .minithumbs span{width:38px;height:38px;border:1px solid var(--line);border-radius:6px;background:#fff;overflow:hidden;display:block}
   .slice .minithumbs svg{width:100%;height:100%}
+  .slice .minithumbs span.tc{width:auto;min-width:38px;max-width:90px;padding:0 6px;line-height:38px;text-align:center;font-weight:700;font-size:13px;white-space:nowrap;text-overflow:ellipsis}
   .slidesbox{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--ground);margin-top:6px}
   .slidesbox .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:4px 0}
   .slidesbox .row input[type=text]{flex:1;min-width:220px}
@@ -730,7 +731,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 71</div>
+<div id="build">Build 72</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1667,7 +1668,7 @@ function routineMeta(name){ return ROUTINE_LIST.find(r=>r[0]===name); }
 function renderBefore(){
   const b=state.before=Object.assign(blankBefore(),state.before||{});
   const pr=beforeProgress(b);
-  const card=b.name||b.useSlides?`<div class="slice filled" data-bopen style="--tint:#f1e8ff;border-color:var(--before)"><div><div class="sicon">${b.useSlides?"📊":ROUTINE_ICON}</div><div class="sn" style="color:var(--before)">${esc(b.name||"Untitled")}${b.useSlides&&!b.name?` <span class="small" style="font-weight:600;color:var(--muted)">— which routine is it?</span>`:""}</div>${b.useSlides&&(b.slides||[]).length?`<div class="slidethumbs">${b.slides.map((x,i)=>`<img src="${x.img}" alt="Slide ${i+1}" title="Slide ${i+1} — click to see it full size" data-pslide="${i}">`).join("")}</div>`:b.pack&&b.pack.thumbs?`<div class="minithumbs">${b.pack.thumbs.slice(0,5).map(t=>`<span>${t}</span>`).join("")}${b.pack.thumbs.length>5?`<span class="small" style="border:0;width:auto;line-height:38px">+${b.pack.thumbs.length-5}</span>`:""}</div>`:""}<div class="st">${esc(b.prompt)}</div></div><div class="sm"><input type="text" inputmode="numeric" placeholder="15" data-bmin value="${esc(b.min)}">min</div><span class="prog ${pr[0]===pr[1]?"done":""}">${progLabel(pr)}</span><button class="sx" data-bclear title="Clear this routine">✕</button></div>`
+  const card=b.name||b.useSlides?`<div class="slice filled" data-bopen style="--tint:#f1e8ff;border-color:var(--before)"><div><div class="sicon">${b.useSlides?"📊":ROUTINE_ICON}</div><div class="sn" style="color:var(--before)">${esc(b.name||"Untitled")}${b.useSlides&&!b.name?` <span class="small" style="font-weight:600;color:var(--muted)">— which routine is it?</span>`:""}</div>${b.useSlides&&(b.slides||[]).length?`<div class="slidethumbs">${b.slides.map((x,i)=>`<img src="${x.img}" alt="Slide ${i+1}" title="Slide ${i+1} — click to see it full size" data-pslide="${i}">`).join("")}</div>`:b.pack&&b.pack.thumbs?`<div class="minithumbs">${b.pack.thumbs.slice(0,5).map(t=>`<span>${t}</span>`).join("")}${b.pack.thumbs.length>5?`<span class="small" style="border:0;width:auto;line-height:38px">+${b.pack.thumbs.length-5}</span>`:""}</div>`:(()=>{ const t=(b.cards||[]).map(cardPlain).map(x=>x.trim()).filter(Boolean); return t.length?`<div class="minithumbs">${t.slice(0,5).map(x=>`<span class="tc" title="${esc(x)}">${esc(x.replace(/\n/g," / "))}</span>`).join("")}${t.length>5?`<span class="small" style="border:0;width:auto;line-height:38px">+${t.length-5}</span>`:""}</div>`:""; })()}<div class="st">${esc(b.prompt)}</div></div><div class="sm"><input type="text" inputmode="numeric" placeholder="15" data-bmin value="${esc(b.min)}">min</div><span class="prog ${pr[0]===pr[1]?"done":""}">${progLabel(pr)}</span><button class="sx" data-bclear title="Clear this routine">✕</button></div>`
     :`<div class="slice empty" data-brpick><div>Click to select<br>a routine</div></div>`;
   return `<div class="pane before"><div class="ph"><span class="tag">Before</span><h2>One routine</h2>${I("The routine that opens the lesson — one, short, and it primes the concept without giving away the move the During is meant to reveal. Build it like an nVoke pack: cards you show, one question you ask.")}</div>
     <div class="slices">${card}</div>
@@ -1818,7 +1819,7 @@ function openBefore(){
     <div style="display:flex;gap:10px;align-items:center;margin:2px 0 6px"><label style="margin:0;white-space:nowrap">What you say <span class="hint">— the posing question, exactly</span></label><input type="text" data-b="prompt" value="${esc(b.prompt)}" placeholder="What's the same? What's different?" style="flex:1"></div>
     ${b.useSlides?slidesPanel(b):(R&&R[3])
       ?`<iframe class="nvinline" src="${NVOKE_URL}&tpl=${R[3]}&inline=1" title="Card editor"></iframe>
-        <details style="margin-top:4px"><summary class="small" style="cursor:pointer">Or plain text cards — a number or an expression each</summary><div class="nv">${CARD_TOOLS}<div class="cards">${cards}<div class="ncard add big" data-addcard title="Add a card and type what's on it">＋ card</div></div></div></details>`
+        ${(b.cards||[]).length?`<div class="nv" style="margin-top:8px"><div class="striplabel" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">🖐 Your text cards, from before the board took typing. ${(b.pack&&b.pack.thumbs&&b.pack.thumbs.length)?"The plan uses the board's cards; these are kept.":"The plan uses these until the board has a card."}<button class="tbtn" data-totboard title="Copies these onto the board as cards. These stay here until you remove them.">⬆ Put my text cards on the board</button></div>${CARD_TOOLS}<div class="cards">${cards}<div class="ncard add big" data-addcard title="Add a card and type what's on it">＋ card</div></div></div>`:""}`
       :`<div class="nv" style="margin-top:6px"><div class="striplabel">🖐 Your cards — what students see, one card each. Type on a card; select text to underline, color, or resize it.</div>${CARD_TOOLS}<div class="cards">${cards}<div class="ncard add big" data-addcard title="Add a card and type what's on it: a number, an expression, a figure described">＋ card</div></div></div>`}
     </div>
     <div class="tabp ${beforeTab===1?"on":""}" data-tabp="1">
@@ -1843,6 +1844,9 @@ function openBefore(){
   const ticks=()=>{ const p=beforeParts(state.before); M.querySelectorAll("[data-tk]").forEach(t=>t.classList.toggle("no",!p[+t.dataset.tk])); };
   M.querySelectorAll("[data-b],[data-cardtext]").forEach(el=>{ const f=el.oninput; el.oninput=e=>{ f(e); ticks(); }; });
   M.querySelector("[data-chg]").onclick=pickRoutine;
+  M.querySelectorAll("[data-totboard]").forEach(bt=>bt.onclick=()=>{ const f=M.querySelector("iframe.nvinline"), t=(state.before.cards||[]).map(cardPlain).map(x=>x.replace(/\s*\n\s*/g," ").trim()).filter(Boolean);
+    if(!t.length){ toast("Type something on a text card first."); return; } if(!f||!nvokeReady){ toast("The card editor is still loading — try again in a moment."); return; }
+    f.contentWindow.postMessage({type:"nvoke-addtext",texts:t},"*"); });
   if(b.useSlides) wireSlides(M);
   const g=M.querySelector("[data-go1]"); if(g) g.onclick=()=>{ renderPlan(); openActivity(first.id); };
 }
