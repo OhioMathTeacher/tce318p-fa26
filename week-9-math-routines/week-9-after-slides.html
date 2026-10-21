@@ -54,6 +54,8 @@
  .closer{display:flex;align-items:center;gap:28px;margin-top:18px;}
  .closer .candy{flex:0 0 auto;width:clamp(110px,13vw,190px);height:auto;transform:rotate(-6deg);}
  .closer .prompt{margin:0;}
+ /* a small chihuahua peeks in from a different edge on each slide. Easy to miss, on purpose. */
+ #pup{position:fixed;bottom:-3px;width:clamp(44px,4.4vw,62px);height:auto;z-index:5;}
  .sort .primes{color:var(--green);font-weight:800;} .sort .usurps{color:var(--red);font-weight:800;} .sort .off{color:var(--amber);font-weight:800;}
  .sort .why{color:var(--ink);font-weight:400;}
  /* per-routine resolve */
@@ -238,6 +240,19 @@
 
 </div>
 
+<svg id="pup" style="left:72%" viewBox="0 0 120 112" role="img" aria-label="A small chihuahua peeking in"><title>¡Hola!</title>
+ <polygon points="22,50 6,2 48,30" fill="#e3ad72"/><polygon points="98,50 114,2 72,30" fill="#e3ad72"/>
+ <polygon points="24,42 14,12 42,31" fill="#f4c6b4"/><polygon points="96,42 106,12 78,31" fill="#f4c6b4"/>
+ <ellipse cx="60" cy="62" rx="38" ry="34" fill="#e8b97f"/>
+ <ellipse cx="60" cy="82" rx="18" ry="13" fill="#f7e6cc"/>
+ <circle cx="45" cy="60" r="7.5" fill="#2b1d14"/><circle cx="75" cy="60" r="7.5" fill="#2b1d14"/>
+ <circle cx="47.5" cy="57.5" r="2.4" fill="#fff"/><circle cx="77.5" cy="57.5" r="2.4" fill="#fff"/>
+ <ellipse cx="60" cy="75" rx="5.5" ry="3.8" fill="#2b1d14"/>
+ <path d="M54 83 Q60 88 66 83" fill="none" stroke="#2b1d14" stroke-width="2" stroke-linecap="round"/>
+ <ellipse cx="40" cy="104" rx="11" ry="7" fill="#e8b97f"/><ellipse cx="80" cy="104" rx="11" ry="7" fill="#e8b97f"/>
+ <path d="M36 101v5M44 101v5M76 101v5M84 101v5" stroke="#c9945b" stroke-width="1.6" stroke-linecap="round"/>
+</svg>
+
 <div class="bar">
  <button id="prev">← Back</button>
  <span class="count" id="count"></span>
@@ -254,6 +269,8 @@ function show(n){
   document.getElementById("count").textContent = (i + 1) + " / " + slides.length;
   document.getElementById("prev").style.visibility = i === 0 ? "hidden" : "visible";
   document.getElementById("next").style.visibility = i === slides.length - 1 ? "hidden" : "visible";
+  // a different spot along the bottom edge each slide, clear of Back, Next, and the count
+  document.getElementById("pup").style.left = ["72%", "22%", "63%", "33%", "80%", "14%"][i % 6];
 }
 function at(id){ for (var k = 0; k < slides.length; k++) if (slides[k].id === id) return k; return -1; }
 // the group hub jumps: its Next goes to Check (past the six Afters), and Check's Back returns to it
