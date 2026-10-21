@@ -749,7 +749,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 90</div>
+<div id="build">Build 91</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -830,7 +830,7 @@ const ROUTINE_TPL_NAME={"same-diff":"Same & Different",wodb:"Which One Doesn't B
 const ROUTINES=ROUTINE_LIST.map(r=>r[0]);
 // The probe's one line: the description under its heading and its box label both read it.
 const PROBE_LINE="Three questions you ask one student, one on one, while the class finishes";
-const AFTER_SUB={exit:"Three or more questions on paper at the end; you keep every response.",transcript:"Two or three questions you ask in the closing discussion; you write down what students actually say.",gallery:"Chosen solutions go to the board in an order you set; you photograph the board and annotate it.",probe:PROBE_LINE+", with a jot-your-reasoning prompt. A focus student is a good choice if one is available, since you have their earlier work to compare. Any student in the class is fine."};
+const AFTER_SUB={exit:"Three or more questions on paper at the end; you keep every response.",transcript:"Two or three questions you ask in the closing discussion; you write down what students actually say.",gallery:"Chosen solutions go to the board in an order you set; you photograph the board and annotate it.",probe:PROBE_LINE+", with a jot-your-reasoning prompt. A focus student is a good choice if one is available, since you have their earlier work to compare. Any student in the class is fine.",other:"One you know that isn't listed. You'll name it, and say where it's from."};
 /* Text cards (routines with no nVoke designer: Number Talk, Estimation, Choral Counting, Number Strings,
    Other). A card is a plain string (older plans), or the RICH mark + a small, sanitized HTML: b/i/u, a few
    sizes and colors, lines with alignment, stacked fractions. Still a string, so a stale Build ≤70 tab that
@@ -866,9 +866,11 @@ function cardForAI(c){ const t=cardPlain(c).replace(/\n/g," / ").replace(/ {2,}/
   const u=[...T.content.querySelectorAll("u")].map(x=>x.textContent.trim()).filter(Boolean), b=[...T.content.querySelectorAll("b")].map(x=>x.textContent.trim()).filter(Boolean), col=[...T.content.querySelectorAll('span[style*="color"]')].map(x=>x.textContent.trim()).filter(Boolean);
   return t+(u.length?` [underlined: ${u.join(", ")}]`:"")+(b.length?` [bold: ${b.join(", ")}]`:"")+(col.length?` [in color: ${col.join(", ")}]`:""); }
 function blankBefore(){ return {id:"before",type:"before",name:"",prompt:"",cards:[],slides:[],useSlides:false,min:"",objective:"",withhold:"",entry:"",guard:"",students:"",teacher:"",thread:""}; }
-function blankAfter(){ return {id:"after",type:"after",kind:"",min:"",objective:"",prompts:[["",""],["",""],["",""]],questions:"",order:"",captures:"",answers:"",students:"",teacher:""}; }
-const AFTER_KINDS={exit:"Exit slip",transcript:"Closing discussion",gallery:"Strategy gallery",probe:"One-on-one probe"};
-const AFTER_META={exit:{icon:"📝",tint:"#e6f4ea"},transcript:{icon:"🎙️",tint:"#e3f1ff"},gallery:{icon:"🖼️",tint:"#fff3d6"},probe:{icon:"👤",tint:"#f3e8ff"}};
+function blankAfter(){ return {id:"after",type:"after",kind:"",name:"",source:"",min:"",objective:"",prompts:[["",""],["",""],["",""]],questions:"",order:"",captures:"",answers:"",students:"",teacher:""}; }
+const AFTER_KINDS={exit:"Exit slip",transcript:"Closing discussion",gallery:"Strategy gallery",probe:"One-on-one probe",other:"Other…"};
+// what to call this After anywhere it is shown: its own name when it is "Other…"
+const afterKindName=a=>a.kind==="other"?((a.name||"").trim()||"Other"):(AFTER_KINDS[a.kind]||"");
+const AFTER_META={exit:{icon:"📝",tint:"#e6f4ea"},transcript:{icon:"🎙️",tint:"#e3f1ff"},gallery:{icon:"🖼️",tint:"#fff3d6"},probe:{icon:"👤",tint:"#f3e8ff"},other:{icon:"✏️",tint:"#f3f4f6"}};
 // The After's boxes, step by step: ONE list. The editor draws its labels from it and Check this
 // sends the same words, so the genAI partner reads what the student sees (on 21 Oct it quoted a
 // raw field name, would_a_response_answer_the_RQ, back to a candidate). Rename a box here and
@@ -880,7 +882,7 @@ const AFTER_STEPS=[
     {k:"answers",label:"Would students' responses provide evidence for your research question? In what way(s)?",req:true,hint:"— the one test the After has to pass; your question is on the Profile tab"}]},
 ];
 const afterLabel=k=>AFTER_STEPS.flatMap(s=>s.fields).find(f=>f.k===k).label;
-const afterStep1=kind=>kind==="gallery"?"The board":"The questions";
+const afterStep1=kind=>kind==="gallery"?"The board":kind==="other"?"What it is":"The questions";
 const exitLabels=i=>[`Student Question ${i}`,`How does Student Question ${i} help answer your research question?`];
 // exit-slip accordion: every question starts closed (Todd, 21 Oct); only one just added with ＋ opens
 let exitJustAdded=-1;
@@ -1682,7 +1684,8 @@ function readContent(tab){
   if(tab==="before"){ const b=state.before||{}; const sl=b.useSlides?(b.slides||[]):[]; const cards=sl.length?`${sl.length} slides from the candidate's own deck — ${sl.map((x,i)=>`slide ${i+1}: ${(x.text||"").trim()||"(a picture, no text)"}`).join(" / ")}`:b.pack&&b.pack.pack?`${b.pack.pack.cards.length} nVoke cards (${b.pack.pack.cards.map(c=>c.template).join(", ")}) — ${b.pack.pack.cards.map(c=>c.prompt).filter(Boolean).join(" / ")}`:(b.cards||[]).map(cardForAI).filter(Boolean).join(" · "); return {routine:b.name, cards, what_you_say:b.prompt, what_students_do:b.students, what_I_do:b.teacher, objective:b.objective, must_not_give_away:b.withhold, entry_thinking:b.entry, over_scaffold_check:b.guard, connection_to_activity_1:b.thread, minutes:String(b.min||"")}; }
   if(tab==="after"){ const a=state.after||{}, t=v=>(v==null?"":String(v)).trim();
     const art=a.kind==="exit"?(a.prompts||[]).filter(r=>t(r[0])).map((r,i)=>{ const L=exitLabels(i+1); return `${L[0]}: ${r[0]}\n${L[1]} ${r[1]||""}`; }).join("\n\n"):a.kind==="gallery"?a.order:a.questions;
-    const o={"Kind of After":AFTER_KINDS[a.kind]||"", Minutes:String(a.min||""), ["1 · "+afterStep1(a.kind)]:art};
+    const o={"Kind of After":afterKindName(a), Minutes:String(a.min||""), ["1 · "+afterStep1(a.kind)]:art};
+    if(a.kind==="other") o["Where it's from"]=a.source||"";
     for(const s of AFTER_STEPS) o[`${s.n} · ${s.step}`]=s.fields.filter(f=>t(a[f.k])).map(f=>`${f.label}${/[?…]$/.test(f.label)?"":":"} ${a[f.k]}`).join("\n");
     return o; }
   const o={}; (state.during||[]).forEach((a,i)=>{ const A=ACTIVITIES[a.type]; if(!A){ o[`activity_${i+1}`]="(no activity chosen yet)"; return; } const own=a.type==="script"?`four questions — collaborate: ${a.four.collab} / ask: ${a.four.ask} / share: ${a.four.share} / think first: ${a.four.think}`:(A.extra?`${A.extra.label}: ${a.extra}`:""); o[`activity_${i+1}_${A.name}`]=[`title: ${a.title}`,`minutes: ${a.min}`,own,`what students do: ${a.students}`,`what I do: ${a.teacher}`,`objective: ${a.objective}`,`key questions: ${a.questions}`,`anticipated responses: ${a.anticipate}`,`connection to next: ${a.thread}`].filter(x=>x&&!/:\s*$/.test(x)).join("\n"); });
@@ -1738,7 +1741,7 @@ function renderDuring(){
 function renderAfter(){
   const a=state.after=Object.assign(blankAfter(),state.after||{});
   const M=AFTER_META[a.kind]; const pr=afterProgress(a);
-  const card=M?`<div class="slice filled" data-aopen style="--tint:${M.tint};border-color:var(--after)"><div><div class="sicon">${M.icon}</div><div class="sn" style="color:var(--after)">${esc(AFTER_KINDS[a.kind])}</div><div class="st">${esc(a.captures)}</div></div><div class="sm"><input type="text" inputmode="numeric" placeholder="10" data-amin value="${esc(a.min)}">min</div><span class="prog ${pr[0]===pr[1]?"done":""}">${progLabel(pr)}</span><button class="sx" data-aclear title="Clear the After">✕</button></div>`
+  const card=M?`<div class="slice filled" data-aopen style="--tint:${M.tint};border-color:var(--after)"><div><div class="sicon">${M.icon}</div><div class="sn" style="color:var(--after)">${esc(afterKindName(a))}</div><div class="st">${esc(a.captures)}</div></div><div class="sm"><input type="text" inputmode="numeric" placeholder="10" data-amin value="${esc(a.min)}">min</div><span class="prog ${pr[0]===pr[1]?"done":""}">${progLabel(pr)}</span><button class="sx" data-aclear title="Clear the After">✕</button></div>`
     :`<div class="slice empty" data-arpick><div>Click to choose<br>how it ends</div></div>`;
   return `<div class="pane after"><div class="ph"><span class="tag">After</span><h2>How it ends</h2>${I("How the lesson ends, and what you carry out of the room: evidence for your research question.")}</div>
     <div class="slices">${card}</div>
@@ -1982,8 +1985,9 @@ function openAfter(){
   if(a.kind==="exit"){ while(a.prompts.length<3) a.prompts.push(["",""]); const rq=((state.bg||{}).question||"").trim(); art=`<div class="tip" style="margin-top:4px">For each question, say how it helps answer your research question.${rq?`<br><b>Your research question:</b> ${esc(rq)}`:""}</div><div class="rows">${a.prompts.map((r,i)=>`<details class="exitq" data-q="${i}"${exitOpen(r,i)?" open":""}><summary><b>${exitLabels(i+1)[0]}</b><span class="qprev">${esc(exitPreview(r))}</span><span class="qok">${exitDone(r)?"✓":""}</span>${a.prompts.length>3?`<button class="tbtn delq" data-delp="${i}" title="Delete ${exitLabels(i+1)[0]}" aria-label="Delete ${exitLabels(i+1)[0]}">✕</button>`:""}</summary><div class="qbody"><textarea data-p="${i}:0" aria-label="${exitLabels(i+1)[0]}" style="min-height:63px">${esc(r[0])}</textarea><label>${exitLabels(i+1)[1]} <span class="hint">How are they connected?</span></label><textarea data-p="${i}:1" style="min-height:84px">${esc(r[1])}</textarea></div></details>`).join("")}</div>${a.prompts.length<8?`<button class="tbtn" data-addp style="margin-top:8px">＋ another question</button>`:""}`; }
   else if(a.kind==="transcript"){ art=`<label>The questions you'll ask <span class="hint">— two or three, each with why</span></label><textarea data-af="questions" style="min-height:140px">${esc(a.questions)}</textarea><div class="tip">During the discussion, write down what students actually say, word for word when you can. Keep your notes as you wrote them; they are your evidence.</div>`; }
   else if(a.kind==="gallery"){ art=`<label>Which solutions go to the board, in what order, and the connecting question</label><textarea data-af="order" style="min-height:96px">${esc(a.order)}</textarea><div class="tip">Photograph the board and annotate the photo. That photo is your evidence.</div>`; }
+  else if(a.kind==="other"){ art=`<label>Where it's from <span class="hint">— a book, a course, a teacher, a website</span></label><input type="text" data-af="source" value="${esc(a.source)}"><label>What students do or make, and what you keep<span class="req">*</span></label><textarea data-af="questions" style="min-height:96px">${esc(a.questions)}</textarea>`; }
   else { art=`<label>${PROBE_LINE} <span class="hint">— and a “jot your reasoning” prompt</span></label><textarea data-af="questions" style="min-height:96px">${esc(a.questions)}</textarea>`; }
-  const head=`<h2>After</h2><span class="sicon" style="font-size:24px">${Mt.icon}</span><span class="cur" style="font-weight:800;font-size:15px">${esc(AFTER_KINDS[a.kind])}</span><a class="chg" data-chg style="font-size:12.5px;color:var(--outline);cursor:pointer;text-decoration:underline">change</a><span class="mins"><input type="text" inputmode="numeric" placeholder="10" data-af="min" value="${esc(a.min)}">min</span><button class="tbtn" data-close>✕</button>`;
+  const head=`<h2>After</h2><span class="sicon" style="font-size:24px">${Mt.icon}</span>${a.kind==="other"?`<input type="text" data-af="name" value="${esc(a.name)}" placeholder="Name your After" style="width:auto;flex:1;max-width:280px;font-weight:800;padding:5px 8px;border:1px solid var(--line);border-radius:7px;font-size:15px">`:`<span class="cur" style="font-weight:800;font-size:15px">${esc(AFTER_KINDS[a.kind])}</span>`}<a class="chg" data-chg style="font-size:12.5px;color:var(--outline);cursor:pointer;text-decoration:underline">change</a><span class="mins"><input type="text" inputmode="numeric" placeholder="10" data-af="min" value="${esc(a.min)}">min</span><button class="tbtn" data-close>✕</button>`;
   const body=`<div class="tip" style="margin-top:8px">${esc(AFTER_SUB[a.kind]||"")}</div>
     <div class="step">1 · ${afterStep1(a.kind)}</div>${art}
     ${AFTER_STEPS.map(st=>`<div class="step">${st.n} · ${st.step}</div>`+(st.two?`<div class="two">${st.fields.map(f=>`<div>${afterField(f,a)}</div>`).join("")}</div>`:st.fields.map(f=>afterField(f,a)).join(""))).join("\n    ")}`;
@@ -2012,7 +2016,8 @@ function pickArtifact(){
   const a=state.after=Object.assign(blankAfter(),state.after||{});
   const B=openPick("After: how does the lesson end?","What you carry out of the room. Pick the one most likely to give you evidence for your research question.",
     `<div class="ptiles">${Object.entries(AFTER_KINDS).map(([k,v])=>`<button class="ptile ${k===a.kind?"on":""}" data-k="${k}"><div class="pi">${AFTER_META[k].icon}</div><div class="pn">${esc(v)}</div><div class="ps">${esc(AFTER_SUB[k]||"")}</div></button>`).join("")}</div>`);
-  B.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{ state.after.kind=b.dataset.k; save(); renderPlan(); closePick(); openAfter(); });
+  B.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{ state.after.kind=b.dataset.k; save(); renderPlan(); closePick(); openAfter();
+    if(b.dataset.k==="other"){ const inp=document.querySelector('#actHead [data-af="name"]'); if(inp){ inp.focus(); inp.select(); } } });
 }
 
 /* ---------- ③ Share: Document 1 the Investigation Plan (.docx/.pdf) · Document 2 how you used the feedback (.pdf) ---------- */
@@ -2029,12 +2034,12 @@ function assemblePlan(){
   return {
     title:planTitle(), grade:nz(g.grade), names:nz(g.names), section:g.section==="oxford"?"Oxford":g.section==="hamilton"?"Hamilton":"",
     focus:lines([g.question, g.concept&&"The concept: "+g.concept]),
-    materials:lines([...new Set(durings.map(d=>nz(d.a.materials)).filter(Boolean)), cardsNote&&"Before: "+cardsNote, AFTER_KINDS[af.kind]&&"After: "+AFTER_KINDS[af.kind]]),
+    materials:lines([...new Set(durings.map(d=>nz(d.a.materials)).filter(Boolean)), cardsNote&&"Before: "+cardsNote, afterKindName(af)&&"After: "+afterKindName(af)]),
     objectives:lines([nz(b.objective)&&"Before — "+b.objective, ...durings.map(d=>nz(d.a.objective)&&`Activity ${d.i} (${d.A.name}) — ${d.a.objective}`), nz(af.objective)&&"After — "+af.objective]),
     standards:lines([...(g.standards||[]).map(c=>`${c}  ${stdText(c)}`), ...(g.practices||[]).map(c=>{ const p=OM.practices.find(x=>x[0]===c); return p?`${c}  ${p[1]}`:c; })]),
     before:lines([(nz(b.name)||slides.length)&&`${nz(b.name)||"Untitled"}${nz(b.min)?` · ${b.min} min`:""}`, nz(b.prompt)&&"What I say: "+b.prompt, cardsNote, nz(b.students)&&"Students: "+b.students, nz(b.teacher)&&"Teacher: "+b.teacher, nz(b.withhold)&&"Not given away: "+b.withhold, nz(b.thread)&&"→ "+b.thread]),
     during:durings.map(d=>lines([`${d.i} · ${d.A.name}${nz(d.a.title)?" — "+d.a.title:""}${nz(d.a.min)?` · ${d.a.min} min`:""}`, d.own, nz(d.a.students)&&"Students: "+d.a.students, nz(d.a.teacher)&&"Teacher: "+d.a.teacher, nz(d.a.questions)&&"Key questions: "+d.a.questions, nz(d.a.anticipate)&&"Anticipated: "+d.a.anticipate, nz(d.a.thread)&&"→ "+d.a.thread])).join("\n\n"),
-    after:lines([AFTER_KINDS[af.kind]&&`${AFTER_KINDS[af.kind]}${nz(af.min)?` · ${af.min} min`:""}`, artifact, nz(af.students)&&"Students: "+af.students, nz(af.teacher)&&"Teacher: "+af.teacher]),
+    after:lines([afterKindName(af)&&`${afterKindName(af)}${nz(af.min)?` · ${af.min} min`:""}`, af.kind==="other"&&nz(af.source)&&"From: "+af.source, artifact, nz(af.students)&&"Students: "+af.students, nz(af.teacher)&&"Teacher: "+af.teacher]),
     assessment:lines([nz(af.captures)&&"What it will show me: "+af.captures, nz(af.answers)&&afterLabel("answers")+" "+af.answers, ...durings.map(d=>nz(d.a.anticipate)&&`During ${d.i}, anticipated: ${d.a.anticipate}`)]),
     feedback:nz(sh.twoReads), reflection:nz(sh.reflection),
     thumbs:slides.length?[]:(b.pack&&b.pack.thumbs)||[], slides, textCards:slides.length||(b.pack&&b.pack.thumbs&&b.pack.thumbs.length)?[]:(b.cards||[]).filter(c=>cardPlain(c).trim()), exit:af.kind==="exit"?(af.prompts||[]).filter(r=>nz(r[0])):[],
