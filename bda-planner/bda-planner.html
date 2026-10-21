@@ -740,7 +740,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 83</div>
+<div id="build">Build 84</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1446,7 +1446,7 @@ body{background:#fff!important;margin:0;padding:24px 16px 48px}
 </style></head><body>
 <div class="pdfbar"><div class="lead">This is your whole ${esc(what)}. Use the button to save it as a PDF, and submit that file.</div>
 <button type="button" onclick="window.print()">🖨 Save as PDF / Print</button>
-${WINDOWS?`<p class="tip">In the print window, set <b>Destination</b> to <b>Save as PDF</b>, not <b>Adobe PDF</b>. Adobe PDF often fails.</p>`:IOS?`<p class="tip">On an iPad or iPhone: the button opens the print options. Tap the Share icon there, then <b>Save to Files</b>.</p>`:""}
+${ANDROID?`<p class="tip">On Android: the print screen opens on <b>Select a printer</b>. Tap it and choose <b>Save as PDF</b>, then the round PDF button. If nothing happens when you press the button, close any print screen you left open earlier and try again.</p>`:WINDOWS?`<p class="tip">In the print window, set <b>Destination</b> to <b>Save as PDF</b>, not <b>Adobe PDF</b>. Adobe PDF often fails.</p>`:IOS?`<p class="tip">On an iPad or iPhone: the button opens the print options. Tap the Share icon there, then <b>Save to Files</b>.</p>`:""}
 </div>
 <div id="profilePrint">${html}</div></body></html>`);
   w.document.close();
