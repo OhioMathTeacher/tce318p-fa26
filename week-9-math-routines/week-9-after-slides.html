@@ -72,6 +72,15 @@
    padding:10px 16px;font-size:13px;color:var(--muted);background:linear-gradient(transparent,#fff 40%);}
  .bar button{border:1px solid #d1d5db;background:#fff;border-radius:20px;padding:7px 16px;font:inherit;cursor:pointer;color:var(--ink);}
  .bar button:hover{border-color:var(--red);color:var(--red);}
+ /* the group hub (slide 3) and the Home button on each After */
+ .hub{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:22px;}
+ .hubbtn{display:flex;align-items:center;justify-content:center;min-height:clamp(90px,16vh,170px);border:3px solid var(--red);border-radius:22px;
+   background:#fff;color:var(--red);font-size:clamp(22px,2.8vw,42px);font-weight:800;text-decoration:none;}
+ .hubbtn:hover,.hubbtn:focus-visible{background:var(--red);color:#fff;outline:none;}
+ .home{display:inline-block;margin-top:18px;border:2px solid var(--red);border-radius:999px;padding:6px 20px;color:var(--red);
+   font-size:clamp(14px,1.4vw,20px);font-weight:700;text-decoration:none;background:#fff;}
+ .home:hover,.home:focus-visible{background:var(--red);color:#fff;outline:none;}
+ @media(max-width:680px){.hub{grid-template-columns:repeat(2,1fr);}}
  .count{font-variant-numeric:tabular-nums;}
  .capture{border:2px solid #e5e7eb;border-radius:12px;padding:16px 20px;background:#fff;margin-top:8px;}
  .capture .q{font-size:clamp(17px,1.95vw,30px);line-height:1.32;font-weight:600;margin:4px 0;}
@@ -104,14 +113,16 @@
   <p class="prompt" style="margin-top:14px">The lesson is over. Next: six Afters someone might plan. For each, would students’ responses leave you holding evidence for <em>this</em> question, on <em>this</em> math? Or does it miss?</p>
  </section>
 
- <section class="slide">
+ <section class="slide" id="groups" data-next="check">
   <div class="kick">In your group</div>
-  <div class="big"><b>Goal:</b> decide whether your After would give you evidence of students’ understanding of a fraction of a group, and convince the room.</div>
-  <ol class="steps">
-   <li>Count off by 6. Group 1 takes After 1, Group 2 takes After 2, and so on. Your After is linked in block 1 of today’s outline.</li>
-   <li>Capture, or miss? Hold it up against the question and the standard. Agree on one sentence that says why. <em>(~8 min)</em></li>
-   <li>One of you presents it to the room: read the After, then give your verdict and your why. <em>(~2 min)</em></li>
-  </ol>
+  <div class="hub">
+   <a class="hubbtn" href="#after-1">Group 1</a>
+   <a class="hubbtn" href="#after-2">Group 2</a>
+   <a class="hubbtn" href="#after-3">Group 3</a>
+   <a class="hubbtn" href="#after-4">Group 4</a>
+   <a class="hubbtn" href="#after-5">Group 5</a>
+   <a class="hubbtn" href="#after-6">Group 6</a>
+  </div>
  </section>
 
  <section class="slide" id="after-1">
@@ -119,7 +130,8 @@
   <div class="kick small">After 1 · judge it</div>
   <div class="routine"><span class="tag">Closing discussion</span></div>
   <div class="capture"><div class="q">“Thumbs up if you got 9. Thumbs sideways if you’re not sure.”</div></div>
-  <p class="prompt">Capture, or miss? Hold it up against the question and the standard.</p>
+  <p class="prompt">Capture, or miss? Hold it up against the question and the standard. Agree on one sentence that says why.</p>
+  <a class="home" href="#groups">← Home</a>
  </section>
 
 
@@ -129,7 +141,8 @@
   <div class="routine"><span class="tag">Exit slip</span></div>
   <div class="capture"><div class="q">What is 3/4 of 20?</div><div class="lines" style="width:30%"></div></div>
   <p class="fig-cap">(a half sheet, collected at the door)</p>
-  <p class="prompt">Capture, or miss? Hold it up against the question and the standard.</p>
+  <p class="prompt">Capture, or miss? Hold it up against the question and the standard. Agree on one sentence that says why.</p>
+  <a class="home" href="#groups">← Home</a>
  </section>
 
 
@@ -139,7 +152,8 @@
   <div class="routine"><span class="tag">Exit slip</span></div>
   <div class="capture"><div class="q">Write a fraction that is equal to 3/4. Draw a picture to prove it.</div><div class="lines"></div><div class="lines"></div></div>
   <p class="fig-cap">(a half sheet, collected at the door)</p>
-  <p class="prompt">Capture, or miss? Hold it up against the question and the standard.</p>
+  <p class="prompt">Capture, or miss? Hold it up against the question and the standard. Agree on one sentence that says why.</p>
+  <a class="home" href="#groups">← Home</a>
  </section>
 
 
@@ -149,7 +163,8 @@
   <div class="routine"><span class="tag">Strategy gallery</span></div>
   <div class="capture"><div class="q">“I’ll put the three clearest solutions on the board, best one last, and we’ll talk about what they have in common.”</div></div>
   <p class="fig-cap">(the evidence is a photo of the board)</p>
-  <p class="prompt">Capture, or miss? Hold it up against the question and the standard.</p>
+  <p class="prompt">Capture, or miss? Hold it up against the question and the standard. Agree on one sentence that says why.</p>
+  <a class="home" href="#groups">← Home</a>
  </section>
 
 
@@ -158,7 +173,8 @@
   <div class="kick small">After 5 · judge it</div>
   <div class="routine"><span class="tag">Closing discussion</span></div>
   <div class="capture"><div class="q">“Let’s review. To find 3/4 of a number: divide by 4, then multiply by 3. Everyone copy the rule into your notebook.”</div></div>
-  <p class="prompt">Capture, or miss? Hold it up against the question and the standard.</p>
+  <p class="prompt">Capture, or miss? Hold it up against the question and the standard. Agree on one sentence that says why.</p>
+  <a class="home" href="#groups">← Home</a>
  </section>
 
 
@@ -168,11 +184,12 @@
   <div class="routine"><span class="tag">One-on-one probe</span></div>
   <div class="capture"><div class="q">Here are 20 counters. Show me 3/4 of them. How do you know?</div><div class="q">A friend says 3/4 of 12 is 3. What would you tell them?</div><div class="q" style="font-weight:400">Jot your reasoning here:</div><div class="lines"></div></div>
   <p class="fig-cap">(three minutes with one student while the class finishes)</p>
-  <p class="prompt">Capture, or miss? Hold it up against the question and the standard.</p>
+  <p class="prompt">Capture, or miss? Hold it up against the question and the standard. Agree on one sentence that says why.</p>
+  <a class="home" href="#groups">← Home</a>
  </section>
 
 
- <section class="slide">
+ <section class="slide" id="check" data-prev="groups">
   <div class="kick">Check: what each After captures</div>
   <ul class="sort">
    <li><span class="off">1 · Thumbs up.</span> <span class="why">A room of nods. Nothing to read later, and nothing about how.</span></li>
@@ -216,13 +233,24 @@ function show(n){
   document.getElementById("prev").style.visibility = i === 0 ? "hidden" : "visible";
   document.getElementById("next").style.visibility = i === slides.length - 1 ? "hidden" : "visible";
 }
-document.getElementById("next").onclick = function(){ show(i + 1); };
-document.getElementById("prev").onclick = function(){ show(i - 1); };
+function at(id){ for (var k = 0; k < slides.length; k++) if (slides[k].id === id) return k; return -1; }
+// the group hub jumps: its Next goes to Check (past the six Afters), and Check's Back returns to it
+function step(d){
+  var to = slides[i].getAttribute(d > 0 ? "data-next" : "data-prev");
+  var k = to ? at(to) : -1;
+  show(k >= 0 ? k : i + d);
+}
+document.getElementById("next").onclick = function(){ step(1); };
+document.getElementById("prev").onclick = function(){ step(-1); };
 document.addEventListener("keydown", function(e){
-  if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") { e.preventDefault(); show(i + 1); }
-  else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); show(i - 1); }
+  if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") { e.preventDefault(); step(1); }
+  else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); step(-1); }
 });
-document.getElementById("deck").addEventListener("click", function(){ show(i + 1); });
+document.getElementById("deck").addEventListener("click", function(e){
+  var a = e.target.closest && e.target.closest('a[href^="#"]');
+  if (a) { e.preventDefault(); var k = at(a.getAttribute("href").slice(1)); if (k >= 0) show(k); return; }
+  step(1);
+});
 // #after-3 in the address opens that slide, so a group can pull up its own After
 var start = 0;
 slides.forEach(function(s, k){ if (s.id && "#" + s.id === location.hash) start = k; });
