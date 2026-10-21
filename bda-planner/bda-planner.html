@@ -740,7 +740,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 87</div>
+<div id="build">Build 88</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -858,6 +858,18 @@ function blankBefore(){ return {id:"before",type:"before",name:"",prompt:"",card
 function blankAfter(){ return {id:"after",type:"after",kind:"",min:"",objective:"",prompts:[["",""],["",""],["",""]],questions:"",order:"",captures:"",answers:"",students:"",teacher:""}; }
 const AFTER_KINDS={exit:"Exit slip",transcript:"Closing discussion",gallery:"Strategy gallery",probe:"One-on-one probe"};
 const AFTER_META={exit:{icon:"📝",tint:"#e6f4ea"},transcript:{icon:"🎙️",tint:"#e3f1ff"},gallery:{icon:"🖼️",tint:"#fff3d6"},probe:{icon:"👤",tint:"#f3e8ff"}};
+// The After's boxes, step by step: ONE list. The editor draws its labels from it and Check this
+// sends the same words, so the genAI partner reads what the student sees (on 21 Oct it quoted a
+// raw field name, would_a_response_answer_the_RQ, back to a candidate). Rename a box here and
+// the screen and the genAI partner change together.
+const AFTER_STEPS=[
+  {n:2, step:"Procedures", two:true, fields:[{k:"students",label:"What students do",req:true},{k:"teacher",label:"What I do"}]},
+  {n:3, step:"Objective", fields:[{k:"objective",label:"By the end of these minutes, students can…",req:true,h:90}]},
+  {n:4, step:"What it captures", fields:[{k:"captures",label:"What it will show you about students' thinking",h:70},
+    {k:"answers",label:"Would a student's response answer your research question?",req:true,hint:"— the one test the After has to pass; your question is on the Profile tab"}]},
+];
+const afterStep1=kind=>kind==="gallery"?"The board":"The questions";
+const exitLabels=i=>[`Student Question ${i}`,`How does Student Question ${i} help answer your research question?`];
 const ROUTINE_ICON="🖐";
 function beforeParts(b){ return [(b.pack&&b.pack.thumbs&&b.pack.thumbs.length)||(b.useSlides&&(b.slides||[]).length)||(b.prompt||"").trim()||(b.cards||[]).some(c=>cardPlain(c).trim()), b.students, b.objective, b.withhold||b.entry||b.guard, b.thread].map(v=>!!(v&&String(v).trim())); }
 function beforeProgress(b){ const p=beforeParts(b); return [p.filter(Boolean).length, p.length]; }
@@ -1651,7 +1663,11 @@ function readContent(tab){
     collected_work:(g.samplesRows||[]).filter(r=>(r[0]||"").trim()).map(r=>`${r[0]}: ${r[1]} — ${r[2]}`).join("\n")
   };
   if(tab==="before"){ const b=state.before||{}; const sl=b.useSlides?(b.slides||[]):[]; const cards=sl.length?`${sl.length} slides from the candidate's own deck — ${sl.map((x,i)=>`slide ${i+1}: ${(x.text||"").trim()||"(a picture, no text)"}`).join(" / ")}`:b.pack&&b.pack.pack?`${b.pack.pack.cards.length} nVoke cards (${b.pack.pack.cards.map(c=>c.template).join(", ")}) — ${b.pack.pack.cards.map(c=>c.prompt).filter(Boolean).join(" / ")}`:(b.cards||[]).map(cardForAI).filter(Boolean).join(" · "); return {routine:b.name, cards, what_you_say:b.prompt, what_students_do:b.students, what_I_do:b.teacher, objective:b.objective, must_not_give_away:b.withhold, entry_thinking:b.entry, over_scaffold_check:b.guard, connection_to_activity_1:b.thread, minutes:String(b.min||"")}; }
-  if(tab==="after"){ const a=state.after||{}; const art=a.kind==="exit"?(a.prompts||[]).filter(r=>r[0]).map((r,i)=>`Student Question ${i+1}: ${r[0]} / How it helps answer my research question: ${r[1]}`).join("\n"):a.kind==="gallery"?a.order:a.questions; return {artifact:AFTER_KINDS[a.kind]||"", the_artifact:art, what_students_do:a.students, what_I_do:a.teacher, objective:a.objective, what_it_captures:a.captures, would_a_response_answer_the_RQ:a.answers, minutes:String(a.min||"")}; }
+  if(tab==="after"){ const a=state.after||{}, t=v=>(v==null?"":String(v)).trim();
+    const art=a.kind==="exit"?(a.prompts||[]).filter(r=>t(r[0])).map((r,i)=>{ const L=exitLabels(i+1); return `${L[0]}: ${r[0]}\n${L[1]} ${r[1]||""}`; }).join("\n\n"):a.kind==="gallery"?a.order:a.questions;
+    const o={"Kind of After":AFTER_KINDS[a.kind]||"", Minutes:String(a.min||""), ["1 · "+afterStep1(a.kind)]:art};
+    for(const s of AFTER_STEPS) o[`${s.n} · ${s.step}`]=s.fields.filter(f=>t(a[f.k])).map(f=>`${f.label}${/[?…]$/.test(f.label)?"":":"} ${a[f.k]}`).join("\n");
+    return o; }
   const o={}; (state.during||[]).forEach((a,i)=>{ const A=ACTIVITIES[a.type]; if(!A){ o[`activity_${i+1}`]="(no activity chosen yet)"; return; } const own=a.type==="script"?`four questions — collaborate: ${a.four.collab} / ask: ${a.four.ask} / share: ${a.four.share} / think first: ${a.four.think}`:(A.extra?`${A.extra.label}: ${a.extra}`:""); o[`activity_${i+1}_${A.name}`]=[`title: ${a.title}`,`minutes: ${a.min}`,own,`what students do: ${a.students}`,`what I do: ${a.teacher}`,`objective: ${a.objective}`,`key questions: ${a.questions}`,`anticipated responses: ${a.anticipate}`,`connection to next: ${a.thread}`].filter(x=>x&&!/:\s*$/.test(x)).join("\n"); });
   return o;
 }
@@ -1938,23 +1954,18 @@ function viewSlides(i){
 function showSlide(i){ const sl=state.before.slides, V=document.getElementById("slideView"); slideAt=Math.max(0,Math.min(sl.length-1,i)); V.querySelector("img").src=sl[slideAt].img; V.querySelector("img").alt=`Slide ${slideAt+1}`; V.querySelector("[data-svn]").textContent=`${slideAt+1} / ${sl.length}`; V.querySelector('[data-sv="-1"]').disabled=slideAt===0; V.querySelector('[data-sv="1"]').disabled=slideAt===sl.length-1; }
 function closeSlides(){ const V=document.getElementById("slideView"); if(V) V.classList.remove("open"); document.removeEventListener("keydown",slideKeys,true); }
 function slideKeys(e){ if(e.key==="Escape"){ e.stopPropagation(); e.preventDefault(); closeSlides(); } else if(e.key==="ArrowRight"||e.key===" "){ e.preventDefault(); showSlide(slideAt+1); } else if(e.key==="ArrowLeft"){ e.preventDefault(); showSlide(slideAt-1); } }
+function afterField(f,a){ return `<label>${esc(f.label)}${f.req?'<span class="req">*</span>':""}${f.hint?` <span class="hint">${esc(f.hint)}</span>`:""}</label><textarea data-af="${f.k}"${f.h?` style="min-height:${f.h}px"`:""}>${esc(a[f.k])}</textarea>`; }
 function openAfter(){
   const a=state.after=Object.assign(blankAfter(),state.after||{}); const Mt=AFTER_META[a.kind]; if(!Mt){ pickArtifact(); return; }
   let art="";
-  if(a.kind==="exit"){ while(a.prompts.length<3) a.prompts.push(["",""]); const rq=((state.bg||{}).question||"").trim(); art=`<div class="tip" style="margin-top:4px">For each question, say how it helps answer your research question.${rq?`<br><b>Your research question:</b> ${esc(rq)}`:""}</div><div class="rows">${a.prompts.map((r,i)=>`<div class="exitq"><label>Student Question ${i+1}</label><textarea data-p="${i}:0" style="min-height:90px">${esc(r[0])}</textarea><label>How does Student Question ${i+1} help answer your research question? <span class="hint">How are they connected?</span></label><textarea data-p="${i}:1" style="min-height:120px">${esc(r[1])}</textarea></div>`).join("")}</div>${a.prompts.length<8?`<button class="tbtn" data-addp style="margin-top:8px">＋ another question</button>`:""}`; }
+  if(a.kind==="exit"){ while(a.prompts.length<3) a.prompts.push(["",""]); const rq=((state.bg||{}).question||"").trim(); art=`<div class="tip" style="margin-top:4px">For each question, say how it helps answer your research question.${rq?`<br><b>Your research question:</b> ${esc(rq)}`:""}</div><div class="rows">${a.prompts.map((r,i)=>`<div class="exitq"><label>${exitLabels(i+1)[0]}</label><textarea data-p="${i}:0" style="min-height:90px">${esc(r[0])}</textarea><label>${exitLabels(i+1)[1]} <span class="hint">How are they connected?</span></label><textarea data-p="${i}:1" style="min-height:120px">${esc(r[1])}</textarea></div>`).join("")}</div>${a.prompts.length<8?`<button class="tbtn" data-addp style="margin-top:8px">＋ another question</button>`:""}`; }
   else if(a.kind==="transcript"){ art=`<label>The questions you'll ask <span class="hint">— two or three, each with why</span></label><textarea data-af="questions" style="min-height:140px">${esc(a.questions)}</textarea><div class="tip">During the discussion, write down what students actually say, word for word when you can. Keep your notes as you wrote them; they are your evidence.</div>`; }
   else if(a.kind==="gallery"){ art=`<label>Which solutions go to the board, in what order, and the connecting question</label><textarea data-af="order" style="min-height:96px">${esc(a.order)}</textarea><div class="tip">Photograph the board and annotate the photo. That photo is your evidence.</div>`; }
   else { art=`<label>Three questions for one focus student <span class="hint">— and a “jot your reasoning” prompt</span></label><textarea data-af="questions" style="min-height:96px">${esc(a.questions)}</textarea>`; }
   const head=`<h2>After</h2><span class="sicon" style="font-size:24px">${Mt.icon}</span><span class="cur" style="font-weight:800;font-size:15px">${esc(AFTER_KINDS[a.kind])}</span><a class="chg" data-chg style="font-size:12.5px;color:var(--outline);cursor:pointer;text-decoration:underline">change</a><span class="mins"><input type="text" inputmode="numeric" placeholder="10" data-af="min" value="${esc(a.min)}">min</span><button class="tbtn" data-close>✕</button>`;
   const body=`<div class="tip" style="margin-top:8px">${esc(AFTER_SUB[a.kind]||"")}</div>
-    <div class="step">1 · ${a.kind==="gallery"?"The board":"The questions"}</div>${art}
-    <div class="step">2 · Procedures</div>
-    <div class="two"><div><label>What students do<span class="req">*</span></label><textarea data-af="students">${esc(a.students)}</textarea></div><div><label>What I do</label><textarea data-af="teacher">${esc(a.teacher)}</textarea></div></div>
-    <div class="step">3 · Objective</div>
-    <label>By the end of these minutes, students can…<span class="req">*</span></label><textarea data-af="objective" style="min-height:90px">${esc(a.objective)}</textarea>
-    <div class="step">4 · What it captures</div>
-    <label>What it will show you about students' thinking</label><textarea data-af="captures" style="min-height:70px">${esc(a.captures)}</textarea>
-    <label>Would a student's response answer your research question?<span class="req">*</span> <span class="hint">— the one test the After has to pass; your question is on the Profile tab</span></label><textarea data-af="answers">${esc(a.answers)}</textarea>`;
+    <div class="step">1 · ${afterStep1(a.kind)}</div>${art}
+    ${AFTER_STEPS.map(st=>`<div class="step">${st.n} · ${st.step}</div>`+(st.two?`<div class="two">${st.fields.map(f=>`<div>${afterField(f,a)}</div>`).join("")}</div>`:st.fields.map(f=>afterField(f,a)).join(""))).join("\n    ")}`;
   const last=state.during[state.during.length-1];
   const foot=`${last?`<button class="tbtn" data-golast>◀ Activity ${state.during.length}</button>`:""}<span style="flex:1"></span><span class="small" data-prog></span><button class="primary" data-close>Done</button>`;
   const M=showModal(head,body,foot,()=>afterProgress(state.after),openAfter); M.dataset.reopen="after"; M.querySelector(".box").classList.remove("wide");
