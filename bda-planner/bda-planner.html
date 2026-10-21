@@ -509,9 +509,9 @@
     #profilePrint .std{margin:2pt 0 2pt 0}
     #profilePrint .std b{font-family:monospace}
     #profilePrint .note{font-size:10pt;color:#444;margin-top:12pt}
-    #profilePrint table.pm{width:100%;border-collapse:collapse;margin:0 0 10pt;page-break-inside:auto}
-    #profilePrint table.pm td{border:1px solid #333;padding:6pt 8pt;vertical-align:top;font-size:11pt}
-    #profilePrint table.pm td.lb{width:2.1in;background:#eef3fa}
+    #profilePrint table.pm{width:100%;border-collapse:separate;border-spacing:0;border:1pt solid #333;margin:0 0 10pt;break-inside:avoid;page-break-inside:avoid}
+    #profilePrint table.pm td{border:0;padding:6pt 8pt;vertical-align:top;font-size:11pt}
+    #profilePrint table.pm td.lb{width:2.1in;background:#eef3fa;border-right:1pt solid #333}
     #profilePrint table.pm td.lb b{display:block;font-size:11pt}
     #profilePrint table.pm td.lb span{font-size:8.5pt;color:#555}
     #profilePrint table.pm tr{page-break-inside:avoid}
@@ -735,7 +735,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 76</div>
+<div id="build">Build 77</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1980,7 +1980,7 @@ function assemblePlan(){
   const slides=b.useSlides?(b.slides||[]):[];
   const cardsNote=slides.length?`${slides.length} slide${slides.length===1?"":"s"} (my own deck${b.slidesLink?": "+b.slidesLink:""}) — see the slide pages`:b.pack&&b.pack.thumbs&&b.pack.thumbs.length?`${b.pack.thumbs.length} card${b.pack.thumbs.length===1?"":"s"} (${b.pack.pack.name||"nVoke"}) — see the handout pages`:(b.cards||[]).map(cardPlain).filter(nz).length?"Cards: "+(b.cards||[]).map(cardPlain).filter(nz).map(t=>t.replace(/\n/g," / ")).join(" · "):"";
   const durings=(state.during||[]).map((a,i)=>{ const A=ACTIVITIES[a.type]; if(!A) return null; const own=a.type==="script"?lines([a.four.collab&&"Collaborate: "+a.four.collab,a.four.ask&&"Ask: "+a.four.ask,a.four.share&&"Share: "+a.four.share,a.four.think&&"Think first: "+a.four.think]):(A.extra&&nz(a.extra)?A.extra.label+": "+a.extra:""); return {i:i+1,A,a,own}; }).filter(Boolean);
-  const artifact=af.kind==="exit"?(af.prompts||[]).filter(r=>nz(r[0])).map((r,i)=>`Student Question ${i+1}: ${r[0]}${nz(r[1])?`\nHow it helps answer my research question: ${r[1]}`:""}`).join("\n"):af.kind==="gallery"?nz(af.order):nz(af.questions);
+  const artifact=af.kind==="exit"?(af.prompts||[]).filter(r=>nz(r[0])).map((r,i)=>`Student Question ${i+1}: ${r[0]}${nz(r[1])?`\nHow it helps answer my research question: ${r[1]}`:""}`).join("\n\n"):af.kind==="gallery"?nz(af.order):nz(af.questions);
   return {
     title:planTitle(), grade:nz(g.grade), names:nz(g.names), section:g.section==="oxford"?"Oxford":g.section==="hamilton"?"Hamilton":"",
     focus:lines([g.question, g.concept&&"The concept: "+g.concept]),
@@ -2041,7 +2041,7 @@ async function buildDocx(){
   body+=placemat([{label:"Lesson Flow — Before (baseline)",hint:"The routine: what you show, what you say, what it primes and what it withholds.",text:A.before},{label:"Lesson Flow — During (primary instrument)",hint:"The activities in order: what students do, what you do, how each connects to the next.",text:A.during},{label:"Lesson Flow — After (the capture)",hint:"How the lesson ends, and what you carry out of the room.",text:A.after}]);
   body+=placemat([{label:"Assessment — name your read",hint:"How will you know what students understand? What you'll look for in the work on the task and the After — and what would not count as evidence.",text:A.assessment}]);
   body+=placemat([{label:"Reflection & Next Steps",hint:"Complete after you teach in the field (Weeks 11 and 12): what worked, what didn't, surprising student thinking, what you'd change.",text:A.reflection}]);
-  body+=wPara("Attach student handouts and any printed materials students will need. The Before's cards and the exit slip, if built in the app, follow on the next pages.",{size:18,italic:true,color:"52606D",before:80,after:0});
+  body+=wPara("Handouts built in the Planner (the Before's cards, the exit slip) follow on the next pages. Attach anything else students will need.",{size:18,italic:true,color:"52606D",before:80,after:0});
   if(A.thumbs.length){ body+='<w:p><w:r><w:br w:type="page"/></w:r></w:p>'+wPara("Handout — the Before's cards",{bold:true,size:26,after:40})+wPara((state.before.prompt||"")+"",{size:22,italic:true,after:120}); for(let i=0;i<A.thumbs.length;i++){ const png=await svgToPng(A.thumbs[i],900); if(png) body+=imageXml(png,900,media,drels,`Card ${i+1}`); } }
   if(A.textCards.length){ body+='<w:p><w:r><w:br w:type="page"/></w:r></w:p>'+wPara("Handout — the Before's cards",{bold:true,size:26,after:40})+wPara((state.before.prompt||"")+"",{size:22,italic:true,after:120}); A.textCards.forEach((c,i)=>{ body+=wPara(`Card ${i+1}`,{size:18,italic:true,color:"52606D",after:20})+`<w:tbl><w:tblPr><w:tblW w:w="10080" w:type="dxa"/>${TBL_BORDERS}<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="10080"/></w:tblGrid><w:tr><w:trPr><w:cantSplit/></w:trPr>${wCell(10080,cardDocx(c))}</w:tr></w:tbl>`+wPara("",{after:160}); }); }
   if(A.slides.length){ body+='<w:p><w:r><w:br w:type="page"/></w:r></w:p>'+wPara("The Before — my slides",{bold:true,size:26,after:40})+wPara((state.before.prompt||"")+"",{size:22,italic:true,after:120}); A.slides.forEach((x,i)=>{ body+=imageXml(x.img,0,media,drels,"",{w:6.5,aspect:(x.h&&x.w)?x.h/x.w:0.5625,keepNext:true})+wPara(`Slide ${i+1}`,{size:18,italic:true,color:"52606D",after:240}); }); }
@@ -2115,10 +2115,10 @@ function printPlan(){
     <table class="pm">${cell("Materials Needed","All physical and digital resources, manipulatives, handouts.",A.materials)}</table>
     <table class="pm">${cell("Learning Objectives","Clear, measurable objectives — one per part, in order.",A.objectives)}</table>
     <table class="pm">${cell("Standards Alignment","The 1 to 2 Ohio Mathematics standards your lesson addresses.",A.standards)}</table>
-    <table class="pm">${cell("Lesson Flow — Before (baseline)","The routine: what you show, what you say, what it primes and what it withholds.",A.before)}${cell("Lesson Flow — During (primary instrument)","The activities in order: what students do, what you do, how each connects to the next.",A.during)}${cell("Lesson Flow — After (the capture)","How the lesson ends, and what you carry out of the room.",A.after)}</table>
+    <table class="pm">${cell("Lesson Flow — Before (baseline)","The routine: what you show, what you say, what it primes and what it withholds.",A.before)}</table><table class="pm">${cell("Lesson Flow — During (primary instrument)","The activities in order: what students do, what you do, how each connects to the next.",A.during)}</table><table class="pm">${cell("Lesson Flow — After (the capture)","How the lesson ends, and what you carry out of the room.",A.after)}</table>
     <table class="pm">${cell("Assessment — name your read","What you'll look for in the work on the task and the After — and what would not count as evidence.",A.assessment)}</table>
     <table class="pm">${cell("Reflection & Next Steps","Complete after you teach in the field (Weeks 11 and 12).",A.reflection)}</table>
-    <p class="note">Attach student handouts and any printed materials students will need. The Before's cards and the exit slip, if built in the app, follow.</p>
+    <p class="note">Handouts built in the Planner (the Before's cards, the exit slip) follow on the next pages. Attach anything else students will need.</p>
     ${A.textCards.length?`<div class="hand"><h2>Handout — the Before's cards</h2><p><i>${esc(state.before.prompt||"")}</i></p>${A.textCards.map(c=>`<div class="pcard">${cardHTML(c)}</div>`).join("")}</div>`:""}
     ${A.slides.length?`<div class="hand"><h2>The Before — my slides</h2><p><i>${esc(state.before.prompt||"")}</i></p>${A.slides.map(x=>`<img src="${x.img}" style="width:100%;height:auto;margin:0 0 12px;border:1px solid #ccc">`).join("")}</div>`:""}
     ${A.thumbs.length?`<div class="hand"><h2>Handout — the Before's cards</h2><p><i>${esc(state.before.prompt||"")}</i></p>${A.thumbs.map(t=>`<img src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(t)}">`).join("")}</div>`:""}
