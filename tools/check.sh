@@ -36,7 +36,7 @@ G = ["window","document","navigator","location","history","localStorage","sessio
      "URL","URLSearchParams","Image","crypto","ResizeObserver","MutationObserver","getComputedStyle",
      "innerWidth","innerHeight","scrollTo","print","matchMedia","structuredClone","TextEncoder",
      "TextDecoder","btoa","atob","HTMLAnchorElement","HTMLElement","Node","Intl","queueMicrotask",
-     "performance","AbortController","CustomEvent","Event","FormData","DOMParser","XMLHttpRequest"]
+     "performance","getSelection","AbortController","CustomEvent","Event","FormData","DOMParser","XMLHttpRequest"]
 cfg = ("export default [{\n"
        "  languageOptions: { ecmaVersion: 2023, sourceType: \"script\",\n"
        "    globals: " + json.dumps({g: "readonly" for g in G}, indent=0).replace("\n","") + " },\n"
