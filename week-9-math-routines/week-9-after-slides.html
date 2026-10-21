@@ -51,6 +51,11 @@
  .sort.hearts li{display:flex;align-items:center;gap:16px;border-left:none;padding-left:0;margin:2px 0;}
  .sort.hearts .candy{flex:0 0 auto;width:clamp(64px,7.4vw,104px);height:auto;transform:rotate(-5deg);}
  .sort.hearts li:nth-child(even) .candy{transform:rotate(4deg);}
+ /* Check: six cards, two across, so all six fit above the timeline */
+ .sort.hearts.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 22px;margin-top:4px;}
+ .sort.hearts.grid li{margin:0;align-items:flex-start;background:#fafafa;border:1px solid #eee;border-radius:14px;padding:10px 14px 10px 8px;
+   font-size:clamp(13px,1.35vw,20px);line-height:1.28;}
+ .sort.hearts.grid .candy{width:clamp(54px,5.6vw,80px);}
  .closer{display:flex;align-items:center;gap:28px;margin-top:18px;}
  .closer .candy{flex:0 0 auto;width:clamp(110px,13vw,190px);height:auto;transform:rotate(-6deg);}
  .closer .prompt{margin:0;}
@@ -228,7 +233,7 @@
 
  <section class="slide" id="check" data-prev="groups" data-name="Check">
   <div class="kick">Check: what each After captures</div>
-  <ul class="sort hearts">
+  <ul class="sort hearts grid">
    <li><svg class="candy" viewBox="0 0 100 92" aria-hidden="true"><path d="M50 88 C22 67 3 50 3 29 C3 14 14 4 28 4 C39 4 46 10 50 19 C54 10 61 4 72 4 C86 4 97 14 97 29 C97 50 78 67 50 88 Z" fill="#f9c6d3"/><g font-size="18"><text x="50" y="48">MISS U</text></g></svg><span><span class="off">1 · Thumbs up.</span> <span class="why">A room of nods. Nothing to read later, and nothing about how.</span></span></li>
    <li><svg class="candy" viewBox="0 0 100 92" aria-hidden="true"><path d="M50 88 C22 67 3 50 3 29 C3 14 14 4 28 4 C39 4 46 10 50 19 C54 10 61 4 72 4 C86 4 97 14 97 29 C97 50 78 67 50 88 Z" fill="#dccaf1"/><g font-size="18"><text x="50" y="40">SAY</text><text x="50" y="58">HOW</text></g></svg><span><span class="off">2 · 3/4 of 20.</span> <span class="why">Right math, but it keeps only the answer. The question asks <em>how</em>.</span></span></li>
    <li><svg class="candy" viewBox="0 0 100 92" aria-hidden="true"><path d="M50 88 C22 67 3 50 3 29 C3 14 14 4 28 4 C39 4 46 10 50 19 C54 10 61 4 72 4 C86 4 97 14 97 29 C97 50 78 67 50 88 Z" fill="#c7ecd7"/><g font-size="18"><text x="50" y="40">NOT MY</text><text x="50" y="58">TYPE</text></g></svg><span><span class="off">3 · A fraction equal to 3/4.</span> <span class="why">Real thinking, about the wrong math. That is equivalence (3.NF.3), not a fraction of a group.</span></span></li>
