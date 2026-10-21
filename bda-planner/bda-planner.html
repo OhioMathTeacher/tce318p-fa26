@@ -434,10 +434,12 @@
   /* Plan the board (Strategy gallery): frames on a whiteboard, left to right, and the connecting question on a sticky note */
   .wb{background:#fcfdfc;border:7px solid #c9ced6;border-radius:10px;box-shadow:inset 0 0 0 1px #e5e7eb;padding:14px 14px 12px;margin-top:4px}
   .wb .frames{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-  .wb .fr{flex:1;min-width:0;position:relative;border:2px dashed #b9c3d0;border-radius:10px;background:#fff;padding:6px 8px 22px;display:flex;flex-direction:column}
+  .wb .fr{flex:1;min-width:0;position:relative;border:2px dashed #b9c3d0;border-radius:10px;background:#fff;padding:6px 8px 8px;display:flex;flex-direction:column}
   .wb .fr .fh{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:800;color:var(--after);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px}
   .wb .fr textarea{flex:1;min-height:62px;border:none;padding:2px;font-size:14px;background:transparent;resize:vertical}
-  .wb .fr .cam{position:absolute;right:8px;bottom:4px;font-size:15px;opacity:.45}
+  .wb .fr .why{border-top:1px dashed #e5e7eb;margin-top:4px;padding-top:4px}
+  .wb .fr .why label{margin:0;font-size:11.5px;color:#b42318;font-weight:700}
+  .wb .fr .why input{border:none;padding:2px;font-size:13px;width:100%}
   .wb .fr .x{border:none;background:none;cursor:pointer;color:#9aa3af;font-size:13px;padding:0 2px}
   .wb .fh .arr{color:#9aa3af;font-weight:400;margin-left:4px}
   .wb .note{margin:14px auto 0;max-width:520px;background:#fff3a8;border-radius:3px;box-shadow:0 3px 6px rgba(0,0,0,.12);padding:8px 12px 10px;transform:rotate(-1deg)}
@@ -726,7 +728,7 @@
   <ol>
     <li><b>2c &mdash; The question I'm asking.</b> You wrote a first read of this in Week&nbsp;6, before the storm. <b>Your storm came across with your work:</b> every question you wrote is listed under the box, with your Week&nbsp;6 one at the top. Click any of them to put it in the box. Nothing is lost either way &mdash; the list keeps them all, so you can put the old one back.</li>
     <li><b>Press Check this.</b> It reads your question against your concept and the work you collected, and pushes on it: is it open, is it investigable, is it about how students reason rather than whether they were right?</li>
-    <li><b>Show me options</b> widens it; <b>Ask me</b> follows up. Neither one writes your question &mdash; if it tries, push back.</li>
+    <li><b>Check this asks; it never writes your question.</b> If it tries, push back.</li>
     <li><b>Land one question</b> and say why you chose it. That is the one you carry into the field.</li>
   </ol>
   <div class="acts">
@@ -844,7 +846,7 @@ const ROUTINE_TPL_NAME={"same-diff":"Same & Different",wodb:"Which One Doesn't B
 const ROUTINES=ROUTINE_LIST.map(r=>r[0]);
 // The probe's one line: the description under its heading and its box label both read it.
 const PROBE_LINE="Three questions you ask one student, one on one, while the class finishes";
-const AFTER_SUB={exit:"Three or more questions on paper at the end; you keep every response.",transcript:"Two or three questions you ask in the closing discussion; you write down what students actually say.",gallery:"Chosen solutions go to the board in an order you set; you photograph the board and annotate it.",probe:PROBE_LINE+", with a jot-your-reasoning prompt. A focus student is a good choice if one is available, since you have their earlier work to compare. Any student in the class is fine.",other:"One you know that isn't listed. You'll name it, and say where it's from."};
+const AFTER_SUB={exit:"Three or more questions on paper at the end; you keep every response.",transcript:"Two or three questions you ask in the closing discussion; you write down what students actually say.",gallery:"The solutions you expect students to produce, made now, shared in the order you plan, and one question that connects them.",probe:PROBE_LINE+", with a jot-your-reasoning prompt. A focus student is a good choice if one is available, since you have their earlier work to compare. Any student in the class is fine.",mistake:"Sample work with a mistake in it, made now. Students find the mistake, fix it, and explain.",other:"One you know that isn't listed. You'll name it, and say where it's from."};
 /* Text cards (routines with no nVoke designer: Number Talk, Estimation, Choral Counting, Number Strings,
    Other). A card is a plain string (older plans), or the RICH mark + a small, sanitized HTML: b/i/u, a few
    sizes and colors, lines with alignment, stacked fractions. Still a string, so a stale Build ≤70 tab that
@@ -881,10 +883,10 @@ function cardForAI(c){ const t=cardPlain(c).replace(/\n/g," / ").replace(/ {2,}/
   return t+(u.length?` [underlined: ${u.join(", ")}]`:"")+(b.length?` [bold: ${b.join(", ")}]`:"")+(col.length?` [in color: ${col.join(", ")}]`:""); }
 function blankBefore(){ return {id:"before",type:"before",name:"",prompt:"",cards:[],slides:[],useSlides:false,min:"",objective:"",withhold:"",entry:"",guard:"",students:"",teacher:"",thread:""}; }
 function blankAfter(){ return {id:"after",type:"after",kind:"",name:"",source:"",min:"",objective:"",prompts:[["",""],["",""],["",""]],questions:"",order:"",captures:"",answers:"",students:"",teacher:""}; }
-const AFTER_KINDS={exit:"Exit slip",transcript:"Closing discussion",gallery:"Strategy gallery",probe:"One-on-one probe",other:"Other…"};
+const AFTER_KINDS={exit:"Exit slip",transcript:"Closing discussion",gallery:"Strategy gallery",probe:"One-on-one probe",mistake:"Catch my mistake",other:"Other…"};
 // what to call this After anywhere it is shown: its own name when it is "Other…"
 const afterKindName=a=>a.kind==="other"?((a.name||"").trim()||"Other"):(AFTER_KINDS[a.kind]||"");
-const AFTER_META={exit:{icon:"📝",tint:"#e6f4ea"},transcript:{icon:"🎙️",tint:"#e3f1ff"},gallery:{icon:"🖼️",tint:"#fff3d6"},probe:{icon:"👤",tint:"#f3e8ff"},other:{icon:"✏️",tint:"#f3f4f6"}};
+const AFTER_META={exit:{icon:"📝",tint:"#e6f4ea"},transcript:{icon:"🎙️",tint:"#e3f1ff"},gallery:{icon:"🖼️",tint:"#fff3d6"},probe:{icon:"👤",tint:"#f3e8ff"},mistake:{icon:"🔍",tint:"#fde8e8"},other:{icon:"✏️",tint:"#f3f4f6"}};
 // The After's boxes, step by step: ONE list. The editor draws its labels from it and Check this
 // sends the same words, so the genAI partner reads what the student sees (on 21 Oct it quoted a
 // raw field name, would_a_response_answer_the_RQ, back to a candidate). Rename a box here and
@@ -896,12 +898,24 @@ const AFTER_STEPS=[
     {k:"answers",label:"Would students' responses provide evidence for your research question? In what way(s)?",req:true,hint:"— the one test the After has to pass; your question is on the Profile tab"}]},
 ];
 const afterLabel=k=>AFTER_STEPS.flatMap(s=>s.fields).find(f=>f.k===k).label;
-const afterStep1=kind=>kind==="gallery"?"Plan the board":kind==="other"?"What it is":"The questions";
-// Plan the board: frames left to right plus a connecting question. One source (a.board); what Check this,
-// the progress count, and the PDF read is galleryText(). An older plan's single box (a.order) seeds frame 1.
-const BOARD_ORD=["1st","2nd","3rd","4th","5th","6th"], BOARD_MAX=6, BOARD_PH=["e.g., counts them one by one","e.g., makes 4 equal groups","e.g., 12 ÷ 4 = 3, then 3 × 3"];
-const boardOf=a=>a.board&&Array.isArray(a.board.cols)?a.board:{cols:[a.order||"","",""],q:""};
-const galleryText=a=>{ const b=boardOf(a); return [...b.cols.map((c,i)=>(c||"").trim()?`${BOARD_ORD[i]} up: ${c.trim()}`:""), (b.q||"").trim()?`Connecting question: ${b.q.trim()}`:""].filter(Boolean).join("\n"); };
+const afterStep1=kind=>kind==="gallery"?"Plan the board":kind==="mistake"?"Plan the mistakes":kind==="other"?"What it is":"The questions";
+// The board: 1-6 frames left to right plus a sticky note, made NOW in the plan (once submitted, it's done).
+// Strategy gallery: the solutions you expect, in order, and a connecting question (a.board).
+// Catch my mistake: sample work with a mistake in it, the misconception each shows, and what you ask (a.mboard).
+// One source per kind; what Check this, the progress count, and the PDF read is galleryText().
+const BOARD_MAX=6;
+const BOARD_CFG={
+  gallery:{key:"board", frame:i=>`Solution ${i+1}`, intro:"Make each solution you expect students to produce, one per frame, in the order you'll share them. Then write the one question that connects them.",
+    ph:["e.g., counts all 12, one by one, and stops at 9","e.g., makes 4 equal groups of 3, then takes 3 groups: 9","e.g., 12 ÷ 4 = 3, then 3 × 3 = 9"],
+    note:"🗨 Connecting question", noteOut:"Connecting question", notePh:"e.g., Where is the 3/4 in each one?"},
+  mistake:{key:"mboard", frame:i=>`Mistake ${i+1}`, intro:"Make sample work with a mistake in it, one per frame, the kind students really make. Under each, name the misconception it shows. Then write what you'll ask students.",
+    ph:["e.g., 3/4 of 12: 12 ÷ 3 = 4","e.g., circles 3 counters and says that's 3/4","e.g., 3/4 of 12 = 3 × 4 = 12"],
+    why:"The misconception it shows", whyPh:["e.g., divides by the numerator","e.g., treats 3/4 as 3 things","e.g., multiplies the parts of the fraction"],
+    note:"🗨 What you ask students", noteOut:"What I ask students", notePh:"e.g., Find the mistake. Fix it. How do you know?"}};
+const boardOf=a=>{ const C=BOARD_CFG[a.kind]||BOARD_CFG.gallery, b=a[C.key];
+  return b&&Array.isArray(b.cols)?b:{cols:[a.kind==="gallery"?(a.order||""):"","",""],why:["","",""],q:""}; };
+const galleryText=a=>{ const C=BOARD_CFG[a.kind]||BOARD_CFG.gallery, b=boardOf(a), t=v=>(v||"").trim();
+  return [...b.cols.map((c,i)=>t(c)||t((b.why||[])[i])?`${C.frame(i)}: ${t(c)}${C.why&&t((b.why||[])[i])?`\n  ${C.why}: ${t(b.why[i])}`:""}`:""), t(b.q)?`${C.noteOut}: ${t(b.q)}`:""].filter(Boolean).join("\n"); };
 const exitLabels=i=>[`Student Question ${i}`,`How does Student Question ${i} help answer your research question?`];
 // exit-slip accordion: every question starts closed (Todd, 21 Oct); only one just added with ＋ opens
 let exitJustAdded=-1;
@@ -911,7 +925,7 @@ const exitOpen=(r,i)=>i===exitJustAdded;
 const ROUTINE_ICON="🖐";
 function beforeParts(b){ return [(b.pack&&b.pack.thumbs&&b.pack.thumbs.length)||(b.useSlides&&(b.slides||[]).length)||(b.prompt||"").trim()||(b.cards||[]).some(c=>cardPlain(c).trim()), b.students, b.objective, b.withhold||b.entry||b.guard, b.thread].map(v=>!!(v&&String(v).trim())); }
 function beforeProgress(b){ const p=beforeParts(b); return [p.filter(Boolean).length, p.length]; }
-function afterProgress(a){ const art=a.kind==="exit"?(a.prompts||[]).filter(r=>(r[0]||"").trim()&&(r[1]||"").trim()).length>=3:a.kind==="gallery"?galleryText(a):a.questions; const need=[art, a.students, a.objective, a.answers]; return [need.filter(v=>v&&String(v).trim()).length, need.length]; }
+function afterProgress(a){ const art=a.kind==="exit"?(a.prompts||[]).filter(r=>(r[0]||"").trim()&&(r[1]||"").trim()).length>=3:(a.kind==="gallery"||a.kind==="mistake")?galleryText(a):a.questions; const need=[art, a.students, a.objective, a.answers]; return [need.filter(v=>v&&String(v).trim()).length, need.length]; }
 function progLabel(pr){ return pr[0]===pr[1]?"✓ done":pr.join(" of "); }
 let seq=0; function uid(){ return "a"+(++seq)+"_"+Math.random().toString(36).slice(2,6); }
 
@@ -1660,7 +1674,8 @@ function readsBar(tab){ const R=(state.reads&&state.reads[tab])||null; const las
   // that reads their question against the five criteria they were handed in class. The
   // other two stay on Before/During/After, where Week 10's Document 2 names all three.
   if(tab==="question") return `<div class="reads"><span>Second read:</span><button class="ghost" data-read="check" data-tab="${tab}" title="Checks your question against the five things a research question has to do.">Check this</button><span class="later">AI &middot; optional &middot; asks, never writes</span></div>${last?renderRead(tab,last):""}${renderLog(tab,R)}`;
-  return `<div class="reads"><span>Second reads:</span><button class="ghost" data-read="ask" data-tab="${tab}" title="The genAI planning partner asks you two or three questions about what you wrote here.">Ask me</button><button class="ghost" data-read="options" data-tab="${tab}" title="Three directions you could take instead of, or alongside, your first attempt. Needs a first attempt.">Show me options</button><button class="ghost" data-read="check" data-tab="${tab}" title="Reads what you wrote against the rubric for this part.">Check this</button><span class="later">AI · optional · asks, never writes</span></div>${last?renderRead(tab,last):""}${renderLog(tab,R)}`; }
+  return `<div class="reads"><span>Second reads:</span><button class="ghost" data-read="ask" data-tab="${tab}" title="The genAI planning partner asks you two or three questions about what you wrote here.">Ask me</button><button class="ghost" data-read="check" data-tab="${tab}" title="Reads what you wrote against the rubric for this part.">Check this</button><span class="later">AI · optional · asks, never writes</span></div>${last?renderRead(tab,last):""}${renderLog(tab,R)}`; }
+// "Show me options" is retired (Build 92); its name stays so reads students already got still show their label
 const READ_NAMES={ask:"Ask me",options:"Show me options",check:"Check this"};
 // Every read is kept in R.log, and until now only the newest was ever drawn: a second
 // read overwrote the first on screen and ✕ removed it, while Document 2 asks for "two or
@@ -1702,7 +1717,7 @@ function readContent(tab){
   };
   if(tab==="before"){ const b=state.before||{}; const sl=b.useSlides?(b.slides||[]):[]; const cards=sl.length?`${sl.length} slides from the candidate's own deck — ${sl.map((x,i)=>`slide ${i+1}: ${(x.text||"").trim()||"(a picture, no text)"}`).join(" / ")}`:b.pack&&b.pack.pack?`${b.pack.pack.cards.length} nVoke cards (${b.pack.pack.cards.map(c=>c.template).join(", ")}) — ${b.pack.pack.cards.map(c=>c.prompt).filter(Boolean).join(" / ")}`:(b.cards||[]).map(cardForAI).filter(Boolean).join(" · "); return {routine:b.name, cards, what_you_say:b.prompt, what_students_do:b.students, what_I_do:b.teacher, objective:b.objective, must_not_give_away:b.withhold, entry_thinking:b.entry, over_scaffold_check:b.guard, connection_to_activity_1:b.thread, minutes:String(b.min||"")}; }
   if(tab==="after"){ const a=state.after||{}, t=v=>(v==null?"":String(v)).trim();
-    const art=a.kind==="exit"?(a.prompts||[]).filter(r=>t(r[0])).map((r,i)=>{ const L=exitLabels(i+1); return `${L[0]}: ${r[0]}\n${L[1]} ${r[1]||""}`; }).join("\n\n"):a.kind==="gallery"?galleryText(a):a.questions;
+    const art=a.kind==="exit"?(a.prompts||[]).filter(r=>t(r[0])).map((r,i)=>{ const L=exitLabels(i+1); return `${L[0]}: ${r[0]}\n${L[1]} ${r[1]||""}`; }).join("\n\n"):(a.kind==="gallery"||a.kind==="mistake")?galleryText(a):a.questions;
     const o={"Kind of After":afterKindName(a), Minutes:String(a.min||""), ["1 · "+afterStep1(a.kind)]:art};
     if(a.kind==="other") o["Where it's from"]=a.source||"";
     for(const s of AFTER_STEPS) o[`${s.n} · ${s.step}`]=s.fields.filter(f=>t(a[f.k])).map(f=>`${f.label}${/[?…]$/.test(f.label)?"":":"} ${a[f.k]}`).join("\n");
@@ -2003,11 +2018,10 @@ function openAfter(){
   let art="";
   if(a.kind==="exit"){ while(a.prompts.length<3) a.prompts.push(["",""]); const rq=((state.bg||{}).question||"").trim(); art=`<div class="tip" style="margin-top:4px">For each question, say how it helps answer your research question.${rq?`<br><b>Your research question:</b> ${esc(rq)}`:""}</div><div class="rows">${a.prompts.map((r,i)=>`<details class="exitq" data-q="${i}"${exitOpen(r,i)?" open":""}><summary><b>${exitLabels(i+1)[0]}</b><span class="qprev">${esc(exitPreview(r))}</span><span class="qok">${exitDone(r)?"✓":""}</span>${a.prompts.length>3?`<button class="tbtn delq" data-delp="${i}" title="Delete ${exitLabels(i+1)[0]}" aria-label="Delete ${exitLabels(i+1)[0]}">✕</button>`:""}</summary><div class="qbody"><textarea data-p="${i}:0" aria-label="${exitLabels(i+1)[0]}" style="min-height:63px">${esc(r[0])}</textarea><label>${exitLabels(i+1)[1]} <span class="hint">How are they connected?</span></label><textarea data-p="${i}:1" style="min-height:84px">${esc(r[1])}</textarea></div></details>`).join("")}</div>${a.prompts.length<8?`<button class="tbtn" data-addp style="margin-top:8px">＋ another question</button>`:""}`; }
   else if(a.kind==="transcript"){ art=`<label>The questions you'll ask <span class="hint">— two or three, each with why</span></label><textarea data-af="questions" style="min-height:140px">${esc(a.questions)}</textarea><div class="tip">During the discussion, write down what students actually say, word for word when you can. Keep your notes as you wrote them; they are your evidence.</div>`; }
-  else if(a.kind==="gallery"){ const bd=boardOf(a); art=`<div class="tip" style="margin-top:4px">While students work, look for the solutions that show different thinking (often two or three). Plan the order they go up, left to right, and the one question that connects them.</div>
-    <div class="wb"><div class="frames">${bd.cols.map((c,i)=>`<div class="fr"><div class="fh"><span>${BOARD_ORD[i]} up${i<bd.cols.length-1?`<span class="arr">➜</span>`:""}</span>${bd.cols.length>1?`<button class="x" data-bdel="${i}" title="Remove this frame">✕</button>`:""}</div><textarea data-bcol="${i}" placeholder="${BOARD_PH[i]||""}" aria-label="${BOARD_ORD[i]} up">${esc(c)}</textarea><span class="cam" title="When you teach, photograph the board">📷</span></div>`).join("")}</div>
-    <div class="note"><label>🗨 Connecting question</label><textarea data-bq placeholder="e.g., Where is the 3/4 in each one?">${esc(bd.q)}</textarea></div>
-    ${bd.cols.length<BOARD_MAX?`<button class="tbtn add" data-badd>＋ another frame</button>`:""}</div>
-    <div class="tip">📷 When you teach, photograph the real board. That photo is your evidence.</div>`; }
+  else if(a.kind==="gallery"||a.kind==="mistake"){ const C=BOARD_CFG[a.kind], bd=boardOf(a); art=`<div class="tip" style="margin-top:4px">${C.intro}</div>
+    <div class="wb"><div class="frames">${bd.cols.map((c,i)=>`<div class="fr"><div class="fh"><span>${C.frame(i)}${i<bd.cols.length-1?`<span class="arr">➜</span>`:""}</span>${bd.cols.length>1?`<button class="x" data-bdel="${i}" title="Remove this frame">✕</button>`:""}</div><textarea data-bcol="${i}" placeholder="${C.ph[i]||""}" aria-label="${C.frame(i)}">${esc(c)}</textarea>${C.why?`<div class="why"><label>${C.why}</label><input type="text" data-bwhy="${i}" placeholder="${C.whyPh[i]||""}" value="${esc((bd.why||[])[i]||"")}"></div>`:""}</div>`).join("")}</div>
+    <div class="note"><label>${C.note}</label><textarea data-bq placeholder="${C.notePh}">${esc(bd.q)}</textarea></div>
+    ${bd.cols.length<BOARD_MAX?`<button class="tbtn add" data-badd>＋ another frame</button>`:""}</div>`; }
   else if(a.kind==="other"){ art=`<label>Where it's from <span class="hint">— a book, a course, a teacher, a website</span></label><input type="text" data-af="source" value="${esc(a.source)}"><label>What students do or make, and what you keep<span class="req">*</span></label><textarea data-af="questions" style="min-height:96px">${esc(a.questions)}</textarea>`; }
   else { art=`<label>${PROBE_LINE} <span class="hint">— and a “jot your reasoning” prompt</span></label><textarea data-af="questions" style="min-height:96px">${esc(a.questions)}</textarea>`; }
   const head=`<h2>After</h2><span class="sicon" style="font-size:24px">${Mt.icon}</span>${a.kind==="other"?`<input type="text" data-af="name" value="${esc(a.name)}" placeholder="Name your After" style="width:auto;flex:1;max-width:280px;font-weight:800;padding:5px 8px;border:1px solid var(--line);border-radius:7px;font-size:15px">`:`<span class="cur" style="font-weight:800;font-size:15px">${esc(AFTER_KINDS[a.kind])}</span>`}<a class="chg" data-chg style="font-size:12.5px;color:var(--outline);cursor:pointer;text-decoration:underline">change</a><span class="mins"><input type="text" inputmode="numeric" placeholder="10" data-af="min" value="${esc(a.min)}">min</span><button class="tbtn" data-close>✕</button>`;
@@ -2018,12 +2032,14 @@ function openAfter(){
   const foot=`${last?`<button class="tbtn" data-golast>◀ Activity ${state.during.length}</button>`:""}<span style="flex:1"></span><span class="small" data-prog></span><button class="primary" data-close>Done</button>`;
   const M=showModal(head,body,foot,()=>afterProgress(state.after),openAfter); M.dataset.reopen="after"; M.querySelector(".box").classList.remove("wide");
   M.querySelector("[data-chg]").onclick=pickArtifact;
-  if(a.kind==="gallery"){ const keep=()=>{ if(!state.after.board) state.after.board=boardOf(state.after); return state.after.board; };
+  if(a.kind==="gallery"||a.kind==="mistake"){ const C=BOARD_CFG[a.kind];
+    const keep=()=>{ const A=state.after; if(!A[C.key]) A[C.key]=boardOf(A); if(!Array.isArray(A[C.key].why)) A[C.key].why=A[C.key].cols.map(()=>""); return A[C.key]; };
     const progNow=()=>{ const el=M.querySelector("[data-prog]"); if(el){ const [d,t]=afterProgress(state.after); el.textContent=d===t?`✓ all ${t===5?"five":"four"} written`:`${d} of ${t} written`; } };
     M.querySelectorAll("[data-bcol]").forEach(t=>t.addEventListener("input",()=>{ keep().cols[+t.dataset.bcol]=t.value; save(); progNow(); }));
+    M.querySelectorAll("[data-bwhy]").forEach(t=>t.addEventListener("input",()=>{ keep().why[+t.dataset.bwhy]=t.value; save(); progNow(); }));
     const q=M.querySelector("[data-bq]"); if(q) q.addEventListener("input",()=>{ keep().q=q.value; save(); progNow(); });
-    const add=M.querySelector("[data-badd]"); if(add) add.onclick=()=>{ keep().cols.push(""); save(); openAfter(); };
-    M.querySelectorAll("[data-bdel]").forEach(x=>x.onclick=()=>{ const k=+x.dataset.bdel, b=keep(); if((b.cols[k]||"").trim()&&!confirm(`Remove the ${BOARD_ORD[k]} frame? What you wrote in it goes too.`)) return; b.cols.splice(k,1); save(); openAfter(); }); }
+    const add=M.querySelector("[data-badd]"); if(add) add.onclick=()=>{ const b=keep(); b.cols.push(""); b.why.push(""); save(); openAfter(); };
+    M.querySelectorAll("[data-bdel]").forEach(x=>x.onclick=()=>{ const k=+x.dataset.bdel, b=keep(); if(((b.cols[k]||"")+(b.why[k]||"")).trim()&&!confirm(`Remove ${C.frame(k)}? What you wrote in it goes too.`)) return; b.cols.splice(k,1); b.why.splice(k,1); save(); openAfter(); }); }
   M.querySelectorAll("details.exitq").forEach(d=>d.querySelectorAll("textarea").forEach(t=>t.addEventListener("input",()=>{
     const r=state.after.prompts[+d.dataset.q]||["",""]; d.querySelector(".qprev").textContent=exitPreview(r); d.querySelector(".qok").textContent=exitDone(r)?"✓":""; })));
   const g=M.querySelector("[data-golast]"); if(g) g.onclick=()=>{ renderPlan(); openActivity(last.id); };
@@ -2059,7 +2075,7 @@ function assemblePlan(){
   const slides=b.useSlides?(b.slides||[]):[];
   const cardsNote=slides.length?`${slides.length} slide${slides.length===1?"":"s"} (my own deck${b.slidesLink?": "+b.slidesLink:""}) — see the slide pages`:b.pack&&b.pack.thumbs&&b.pack.thumbs.length?`${b.pack.thumbs.length} card${b.pack.thumbs.length===1?"":"s"} (${b.pack.pack.name||"nVoke"}) — see the handout pages`:(b.cards||[]).map(cardPlain).filter(nz).length?"Cards: "+(b.cards||[]).map(cardPlain).filter(nz).map(t=>t.replace(/\n/g," / ")).join(" · "):"";
   const durings=(state.during||[]).map((a,i)=>{ const A=ACTIVITIES[a.type]; if(!A) return null; const own=a.type==="script"?lines([a.four.collab&&"Collaborate: "+a.four.collab,a.four.ask&&"Ask: "+a.four.ask,a.four.share&&"Share: "+a.four.share,a.four.think&&"Think first: "+a.four.think]):(A.extra&&nz(a.extra)?A.extra.label+": "+a.extra:""); return {i:i+1,A,a,own}; }).filter(Boolean);
-  const artifact=af.kind==="exit"?(af.prompts||[]).filter(r=>nz(r[0])).map((r,i)=>`Student Question ${i+1}: ${r[0]}${nz(r[1])?`\nHow it helps answer my research question: ${r[1]}`:""}`).join("\n\n"):af.kind==="gallery"?galleryText(af):nz(af.questions);
+  const artifact=af.kind==="exit"?(af.prompts||[]).filter(r=>nz(r[0])).map((r,i)=>`Student Question ${i+1}: ${r[0]}${nz(r[1])?`\nHow it helps answer my research question: ${r[1]}`:""}`).join("\n\n"):(af.kind==="gallery"||af.kind==="mistake")?galleryText(af):nz(af.questions);
   return {
     title:planTitle(), grade:nz(g.grade), names:nz(g.names), section:g.section==="oxford"?"Oxford":g.section==="hamilton"?"Hamilton":"",
     focus:lines([g.question, g.concept&&"The concept: "+g.concept]),
