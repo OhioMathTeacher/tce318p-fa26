@@ -775,7 +775,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 96</div>
+<div id="build">Build 97</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -2548,7 +2548,7 @@ function showArrival(w){
   d.onclick=function(e){ if(e.target===d) closeArrival(false); };   // click the backdrop
 }
 /* ---------- "Update available": the page is a static file, so a new build reaches a student only when they
-   reload. Check the published copy now and then (on returning to the tab, and every 10 minutes) and, when its
+   reload. Check the published copy now and then (on returning to the tab or the window, and every 10 minutes) and, when its
    Build number is higher, offer a one-click update. Work is autosaved, so reloading loses nothing. ---------- */
 const MY_BUILD=parseInt((document.getElementById("build")||{}).textContent?.replace(/\D+/g,"")||"0",10);
 let updLast=0;
@@ -2560,6 +2560,8 @@ async function checkUpdate(){
 }
 document.getElementById("updBtn").onclick=()=>{ try{ save(); }catch(e){} logEvent("update",`updating from Build ${MY_BUILD}`); location.reload(); };
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) checkUpdate(); });
+// coming back from another app (VS Code, Word) to a window that never left the screen fires focus, not visibilitychange
+window.addEventListener("focus",checkUpdate);
 setInterval(checkUpdate,10*60*1000); setTimeout(checkUpdate,5000);
 /* ---------- What's new: the build number opens a short list of changes, written for candidates. A dot shows
    until they've opened it once since the newest entry. "Seen" is kept apart from the plan (bda-news-seen). ---------- */
