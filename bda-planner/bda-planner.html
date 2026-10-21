@@ -735,7 +735,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 78</div>
+<div id="build">Build 79</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -2040,7 +2040,7 @@ async function buildDocx(){
   body+=placemat([{label:"Standards Alignment",hint:"The 1 to 2 Ohio Mathematics standards your lesson addresses.",text:A.standards}]);
   body+=placemat([{label:"Lesson Flow — Before (baseline)",hint:"The routine: what you show, what you say, what it primes and what it withholds.",text:A.before},{label:"Lesson Flow — During (primary instrument)",hint:"The activities in order: what students do, what you do, how each connects to the next.",text:A.during},{label:"Lesson Flow — After (the capture)",hint:"How the lesson ends, and what you carry out of the room.",text:A.after}]);
   body+=placemat([{label:"Assessment — name your read",hint:"How will you know what students understand? What you'll look for in the work on the task and the After — and what would not count as evidence.",text:A.assessment}]);
-  body+=placemat([{label:"How the feedback shaped my After",hint:"How useful my classmate's and the genAI planning partner's reads were, and what changed from my early drafts.",text:A.feedback}]);
+  body+=placemat([{label:"How the feedback shaped my After",hint:"How useful my group's and the genAI planning partner's reads were, and what changed from my early drafts.",text:A.feedback}]);
   body+=placemat([{label:"Reflection & Next Steps",hint:"Complete after you teach in the field (Weeks 11 and 12): what worked, what didn't, surprising student thinking, what you'd change.",text:A.reflection}]);
   body+=wPara("Handouts built in the Planner (the Before's cards, the exit slip) follow on the next pages. Attach anything else students will need.",{size:18,italic:true,color:"52606D",before:80,after:0});
   if(A.thumbs.length){ body+='<w:p><w:r><w:br w:type="page"/></w:r></w:p>'+wPara("Handout — the Before's cards",{bold:true,size:26,after:40})+wPara((state.before.prompt||"")+"",{size:22,italic:true,after:120}); for(let i=0;i<A.thumbs.length;i++){ const png=await svgToPng(A.thumbs[i],900); if(png) body+=imageXml(png,900,media,drels,`Card ${i+1}`); } }
@@ -2118,7 +2118,7 @@ function printPlan(){
     <table class="pm">${cell("Standards Alignment","The 1 to 2 Ohio Mathematics standards your lesson addresses.",A.standards)}</table>
     <table class="pm">${cell("Lesson Flow — Before (baseline)","The routine: what you show, what you say, what it primes and what it withholds.",A.before)}</table><table class="pm">${cell("Lesson Flow — During (primary instrument)","The activities in order: what students do, what you do, how each connects to the next.",A.during)}</table><table class="pm">${cell("Lesson Flow — After (the capture)","How the lesson ends, and what you carry out of the room.",A.after)}</table>
     <table class="pm">${cell("Assessment — name your read","What you'll look for in the work on the task and the After — and what would not count as evidence.",A.assessment)}</table>
-    <table class="pm">${cell("How the feedback shaped my After","How useful my classmate's and the genAI planning partner's reads were, and what changed from my early drafts.",A.feedback)}</table>
+    <table class="pm">${cell("How the feedback shaped my After","How useful my group's and the genAI planning partner's reads were, and what changed from my early drafts.",A.feedback)}</table>
     <table class="pm">${cell("Reflection & Next Steps","Complete after you teach in the field (Weeks 11 and 12).",A.reflection)}</table>
     <p class="note">Handouts built in the Planner (the Before's cards, the exit slip) follow on the next pages, then the genAI planning partner's reads. Attach anything else students will need.</p>
     ${A.textCards.length?`<div class="hand"><h2>Handout — the Before's cards</h2><p><i>${esc(state.before.prompt||"")}</i></p>${A.textCards.map(c=>`<div class="pcard">${cardHTML(c)}</div>`).join("")}</div>`:""}
@@ -2154,9 +2154,9 @@ function renderShare(){
   const wrap=document.getElementById("shareTiles");
   const rows=[["Your research question and the concept","Profile · 2a, 2c",A.focus],["Materials needed","Plan · every part",A.materials],["Learning objectives — one per part","Plan · Before, During, After",A.objectives],["Standards alignment, full text","Profile · 2a",A.standards],["Lesson flow — Before (baseline)","Plan · Before",A.before],["Lesson flow — During (primary instrument)","Plan · During",A.during],["Lesson flow — After (the capture)","Plan · After",A.after],["Assessment — name your read","Plan · After",A.assessment],["How the feedback shaped my After","Share · above",A.feedback],["Reflection & next steps","Share · after teaching",A.reflection],["Handout — the Before's cards","Plan · Before",A.thumbs.length?"x":""],["Handout — the exit slip","Plan · After",A.exit.length?"x":""],["Appendix — the genAI planning partner's reads","Plan · Check this, Ask me",readsLogHTML()?"x":""]];
   const first=((((state.reads||{}).after||{}).log)||[]).find(e=>e.snap);
-  wrap.innerHTML=`<div class="tile"><h2><span class="n">1</span>Your reflection on the feedback${I("Your After was read twice before you teach it: by a classmate and by the genAI planning partner. This paragraph says what those reads were worth to you, with specifics. It prints in your Investigation Plan.")}</h2>
+  wrap.innerHTML=`<div class="tile"><h2><span class="n">1</span>Your reflection on the feedback${I("Your After was read twice before you teach it: by your group and by the genAI planning partner. This paragraph says what those reads were worth to you, with specifics. It prints in your Investigation Plan.")}</h2>
       <label>How the feedback shaped my After <span class="hint">— one paragraph</span></label>
-      <p class="small" style="margin:2px 0 8px;font-size:14px;color:var(--ink)">How useful was your classmate's feedback, and the genAI planning partner's, as you planned and revised your After? Be specific about your After: what changed from your early drafts, and why? What did you keep, and what did you set aside?</p>
+      <p class="small" style="margin:2px 0 8px;font-size:14px;color:var(--ink)">How useful was your group's feedback, and the genAI planning partner's, as you planned and revised your After? Be specific about your After: what changed from your early drafts, and why? What did you keep, and what did you set aside?</p>
       <textarea data-sh="twoReads" style="min-height:200px">${esc(sh.twoReads||"")}</textarea>
       ${first?`<details class="about" style="margin-top:8px"><summary>Your After when you first asked the genAI planning partner (${new Date(first.ts).toLocaleDateString()})</summary><p class="small" style="white-space:pre-wrap;margin:6px 0 0;font-size:14px;color:var(--ink)">${esc(first.snap||"")}</p></details>`:""}
     </div>
