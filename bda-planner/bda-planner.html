@@ -395,6 +395,13 @@
   #pickModal .bh{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
   #pickModal .bh h2{margin:0;font-size:18px;color:var(--outline)}
   #pickModal .bb{flex:1;overflow:auto;padding:12px 18px 18px}
+  .vrow{margin:12px 0 0}
+  .vrow .vh{font-weight:800;font-size:14px;margin-bottom:5px}
+  .vseg{display:flex;flex-wrap:wrap;gap:6px}
+  .vseg button{border:2px solid var(--line);background:#fff;border-radius:10px;padding:7px 12px;font:inherit;font-size:14px;cursor:pointer;text-align:left;flex:1;min-width:150px}
+  .vseg button b{display:block;font-size:14px}
+  .vseg button span{font-size:12.5px;color:var(--muted)}
+  .vseg button.on{border-color:var(--outline);background:var(--during-soft)}
   .ptiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:10px}
   .ptile{border:2px solid var(--line);border-radius:12px;padding:12px 13px;cursor:pointer;background:#fff;text-align:left;font:inherit}
   .ptile:hover{border-color:var(--outline);background:#f4f8fd}
@@ -689,6 +696,7 @@
         <div class="hd">genAI planning partner</div>
         <button data-gear="passcode"><span class="ic">🔑</span>Enter the course passcode…</button>
         <button data-gear="forget"><span class="ic">🚫</span>Forget the passcode on this browser</button>
+        <button data-gear="voice"><span class="ic">🎚</span>How your planning partner sounds…</button>
         <div class="sep"></div>
         <div class="hd">This project</div>
         <button data-gear="reset"><span class="ic">↺</span>Start over with an empty project</button>
@@ -775,7 +783,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 98</div>
+<div id="build">Build 99</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -792,7 +800,7 @@ async function askWorker(payload){
   const pc=passcode(); if(!pc) return null;
   const g=state.bg||{};
   const profile={grade:g.grade,context:hostText(g),concept:g.concept,students:(g.studentsRows||[]).map(r=>r.join(" — ")).join("; "),first_question:g.question,samples:(g.samplesRows||[]).map(r=>r.slice(0,3).join(" · ")).join("\n"),standards:(g.standards||[]).map(c=>c+" "+stdText(c)).join("\n")};
-  const r=await fetch(WORKER_URL+"/chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(Object.assign({passcode:pc,sid:sid(),name:g.names||"",section:g.section||"",profile},payload))});
+  const r=await fetch(WORKER_URL+"/chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(Object.assign({passcode:pc,sid:sid(),name:g.names||"",section:g.section||"",profile,voice:voiceGet()},payload))});
   const j=await r.json().catch(()=>({error:"bad reply"}));
   if(r.status===401){ try{localStorage.removeItem("bda-passcode");}catch(e){} logEvent("ai","passcode refused"); toast("That passcode didn't work — try again."); return null; }
   if(r.status===429){ const shared=j.error==="cap-network"||j.error==="cap-course"; logEvent("ai",shared?"shared cap reached ("+j.error+")":"daily turn cap reached"); toast(shared?"The genAI planning partner has hit a shared daily limit — tell your instructor; this shouldn't happen in normal use.":`You've used today's ${j.cap} turns. Tomorrow.`); return null; }
@@ -2398,7 +2406,27 @@ function resetProject(){ const ex=!!exStash(); if(!confirm(ex?"You're looking at
     else if(k==="passcode"){ const p=prompt("The course passcode (from class):", ""); if(p&&p.trim()){ try{ localStorage.setItem("bda-passcode",p.trim()); }catch(e){} toast("Passcode saved on this browser."); } }
     else if(k==="forget"){ try{ localStorage.removeItem("bda-passcode"); }catch(e){} toast("Forgotten. You'll be asked next time."); }
     else if(k==="diag") openDiag();
+    else if(k==="voice") openVoice();
     else if(k==="reset") resetProject(); }); })();
+/* ---------- how the planning partner sounds: fixed choices, kept in this browser (bda-voice), sent with each
+   read. The worker accepts only these values and turns each into one fixed line of instruction. ---------- */
+const VOICE_OPTS=[
+  ["tone","Tone",[["gentle","Gentle","Starts with what's working; suggestions as invitations"],["balanced","Balanced","The usual"],["direct","Direct","Gets to the problem first"]]],
+  ["amount","How much at once",[["one","One thing at a time","Just the most useful point"],["three","Up to three","The usual"]]],
+  ["length","Length",[["brief","Brief","Shorter replies"],["standard","Standard","The usual"]]],
+  ["style","Style",[["plain","Plain","Short, plain sentences (the usual)"],["conversational","Conversational","Like a friendly colleague talking"]]]];
+const VOICE_DEFAULT={tone:"balanced",amount:"three",length:"standard",style:"plain"};
+function voiceGet(){ let v={}; try{ v=JSON.parse(localStorage.getItem("bda-voice")||"{}")||{}; }catch(e){} const out={...VOICE_DEFAULT}; for(const [k,,ch] of VOICE_OPTS) if(ch.some(c=>c[0]===v[k])) out[k]=v[k]; return out; }
+function openVoice(){
+  const v=voiceGet();
+  const B=openPick("How your planning partner sounds","Change how Ask me and Check this talk to you. Your choice is kept on this browser.",
+    `${VOICE_OPTS.map(([k,label,ch])=>`<div class="vrow"><div class="vh">${label}</div><div class="vseg">${ch.map(([val,name,sub])=>`<button data-vk="${k}" data-vv="${val}" class="${v[k]===val?"on":""}"><b>${name}</b><span>${sub}</span></button>`).join("")}</div></div>`).join("")}
+    <p class="small" style="margin:14px 0 0;color:var(--muted)">These change how it talks, not what it does. It still never writes any part of your lesson, and Gentle still tells you the biggest problem it sees.</p>
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="tbtn" data-vreset>Back to the usual</button><span style="flex:1"></span><button class="primary" data-vdone>Done</button></div>`);
+  B.querySelectorAll("[data-vk]").forEach(b=>b.onclick=()=>{ const cur=voiceGet(); cur[b.dataset.vk]=b.dataset.vv; try{ localStorage.setItem("bda-voice",JSON.stringify(cur)); }catch(e){} B.querySelectorAll(`[data-vk="${b.dataset.vk}"]`).forEach(x=>x.classList.toggle("on",x===b)); logEvent("voice",`${b.dataset.vk} → ${b.dataset.vv}`); });
+  B.querySelector("[data-vreset]").onclick=()=>{ try{ localStorage.removeItem("bda-voice"); }catch(e){} closePick(true); openVoice(); toast("Back to the usual."); };
+  B.querySelector("[data-vdone]").onclick=()=>closePick(true);
+}
 const EX_STASH="bda-before-example";
 function exStash(){ try{ return localStorage.getItem(EX_STASH); }catch(e){ return null; } }
 function renderExBar(){ const on=!!exStash(); const b=document.getElementById("exBar"); if(b) b.classList.toggle("on",on); const g=document.getElementById("gearExBack"); if(g) g.style.display=on?"":"none"; }
@@ -2566,9 +2594,9 @@ setInterval(checkUpdate,10*60*1000); setTimeout(checkUpdate,5000);
 /* ---------- What's new: the build number opens a short list of changes, written for candidates. A dot shows
    until they've opened it once since the newest entry. "Seen" is kept apart from the plan (bda-news-seen). ---------- */
 const NEWS=[   // the last three builds students would notice; older ones live in the GitHub history (NEWS_LOG)
+  [99,["You can change how the planning partner sounds: gentler or more direct, one point at a time, shorter replies. Find it under ⚙ → How your planning partner sounds."]],
   [97,["The Update available button shows up as soon as you come back to the Planner from another app, so you don't have to reload to get a new build."]],
-  [96,["Every During activity and the After can have your own slides now. Open one and look for 📊 Upload my slides. Slides print in your Investigation Plan.","Click the build number in the corner (like you just did) to see what's changed in the Planner."]],
-  [95,["Slides you upload take up less room in your browser now.","Under your slides, the Planner shows how much room all of them use."]]];
+  [96,["Every During activity and the After can have your own slides now. Open one and look for 📊 Upload my slides. Slides print in your Investigation Plan.","Click the build number in the corner (like you just did) to see what's changed in the Planner."]]];
 const NEWS_LOG="https://github.com/OhioMathTeacher/tce318p-fa26/commits/main/bda-planner/bda-planner.html";
 function newsSeen(){ try{ return +localStorage.getItem("bda-news-seen")||0; }catch(e){ return 0; } }
 function newsMark(){ const B=document.getElementById("build"); if(B) B.classList.toggle("fresh",newsSeen()<NEWS[0][0]); }
