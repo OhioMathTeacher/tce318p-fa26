@@ -821,7 +821,7 @@ const ROUTINE_TPL_NAME={"same-diff":"Same & Different",wodb:"Which One Doesn't B
 const ROUTINES=ROUTINE_LIST.map(r=>r[0]);
 // The probe's one line: the description under its heading and its box label both read it.
 const PROBE_LINE="Three questions you ask one student, one on one, while the class finishes";
-const AFTER_SUB={exit:"Three or more questions on paper at the end; you keep every response.",transcript:"Two or three questions you ask in the closing discussion; you write down what students actually say.",gallery:"Chosen solutions go to the board in an order you set; you photograph the board and annotate it.",probe:PROBE_LINE+", with a jot-your-reasoning prompt."};
+const AFTER_SUB={exit:"Three or more questions on paper at the end; you keep every response.",transcript:"Two or three questions you ask in the closing discussion; you write down what students actually say.",gallery:"Chosen solutions go to the board in an order you set; you photograph the board and annotate it.",probe:PROBE_LINE+", with a jot-your-reasoning prompt. A focus student is a good choice if one is available, since you have their earlier work to compare. Any student in the class is fine."};
 /* Text cards (routines with no nVoke designer: Number Talk, Estimation, Choral Counting, Number Strings,
    Other). A card is a plain string (older plans), or the RICH mark + a small, sanitized HTML: b/i/u, a few
    sizes and colors, lines with alignment, stacked fractions. Still a string, so a stale Build ≤70 tab that
@@ -1726,7 +1726,7 @@ function renderAfter(){
   const M=AFTER_META[a.kind]; const pr=afterProgress(a);
   const card=M?`<div class="slice filled" data-aopen style="--tint:${M.tint};border-color:var(--after)"><div><div class="sicon">${M.icon}</div><div class="sn" style="color:var(--after)">${esc(AFTER_KINDS[a.kind])}</div><div class="st">${esc(a.captures)}</div></div><div class="sm"><input type="text" inputmode="numeric" placeholder="10" data-amin value="${esc(a.min)}">min</div><span class="prog ${pr[0]===pr[1]?"done":""}">${progLabel(pr)}</span><button class="sx" data-aclear title="Clear the After">✕</button></div>`
     :`<div class="slice empty" data-arpick><div>Click to choose<br>how it ends</div></div>`;
-  return `<div class="pane after"><div class="ph"><span class="tag">After</span><h2>How it ends</h2>${I("How the lesson ends, and what you carry out of the room: students' responses that provide evidence for your research question.")}</div>
+  return `<div class="pane after"><div class="ph"><span class="tag">After</span><h2>How it ends</h2>${I("How the lesson ends, and what you carry out of the room: evidence for your research question.")}</div>
     <div class="slices">${card}</div>
     <div class="small" style="margin-top:8px">Click the card to write it: the questions, what students do, the objective, what it will show you.</div>
     ${readsBar("after")}</div>`;
@@ -1990,7 +1990,7 @@ window.addEventListener("message",e=>{
 });
 function pickArtifact(){
   const a=state.after=Object.assign(blankAfter(),state.after||{});
-  const B=openPick("After: how does the lesson end?","What you carry out of the room. Pick the one whose students' responses would provide evidence for your research question.",
+  const B=openPick("After: how does the lesson end?","What you carry out of the room. Pick the one most likely to give you evidence for your research question.",
     `<div class="ptiles">${Object.entries(AFTER_KINDS).map(([k,v])=>`<button class="ptile ${k===a.kind?"on":""}" data-k="${k}"><div class="pi">${AFTER_META[k].icon}</div><div class="pn">${esc(v)}</div><div class="ps">${esc(AFTER_SUB[k]||"")}</div></button>`).join("")}</div>`);
   B.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{ state.after.kind=b.dataset.k; save(); renderPlan(); closePick(); openAfter(); });
 }
