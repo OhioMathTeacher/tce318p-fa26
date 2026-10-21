@@ -430,7 +430,8 @@
   .rout .opt .acts button{font-size:11.5px;padding:3px 8px}
   .exitrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
   .exitrow textarea{min-height:56px}
-  .exitq{border-left:3px solid #e5e7eb;padding-left:12px;margin-top:14px}
+  .exitq{border-left:3px solid #e5e7eb;padding-left:12px;margin-top:14px;position:relative}
+  .exitq .delq{position:absolute;top:-4px;right:0;padding:2px 9px;line-height:1.2}
   .sec{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
   /* arriving from the Studio */
   /* 2c holds a whole research question. As an <input> everything past the width was
@@ -1773,6 +1774,10 @@ function wireFields(root,rerender){
   root.querySelectorAll("[data-addcard]").forEach(el=>el.onclick=()=>{ state.before.cards.push(""); save(); rerender(); const ta=root.querySelectorAll("[data-cardtext]"); ta[ta.length-1]?.focus(); });
   root.querySelectorAll("[data-delcard]").forEach(el=>el.onclick=()=>{ state.before.cards.splice(+el.dataset.delcard,1); save(); rerender(); });
   root.querySelectorAll("[data-addp]").forEach(el=>el.onclick=()=>{ state.after.prompts.push(["",""]); save(); rerender(); });
+  // ✕ on an exit-slip tile (shown only above three, the rubric minimum); asks first if the tile has writing in it
+  root.querySelectorAll("[data-delp]").forEach(el=>el.onclick=()=>{ const k=+el.dataset.delp, r=state.after.prompts[k]||["",""];
+    if(((r[0]||"")+(r[1]||"")).trim()&&!confirm(`Delete ${exitLabels(k+1)[0]}? What you wrote in it goes too.`)) return;
+    state.after.prompts.splice(k,1); save(); rerender(); });
 }
 function wirePlan(){
   const P=document.getElementById("panes");
@@ -1961,7 +1966,7 @@ function afterField(f,a){ return `<label>${esc(f.label)}${f.req?'<span class="re
 function openAfter(){
   const a=state.after=Object.assign(blankAfter(),state.after||{}); const Mt=AFTER_META[a.kind]; if(!Mt){ pickArtifact(); return; }
   let art="";
-  if(a.kind==="exit"){ while(a.prompts.length<3) a.prompts.push(["",""]); const rq=((state.bg||{}).question||"").trim(); art=`<div class="tip" style="margin-top:4px">For each question, say how it helps answer your research question.${rq?`<br><b>Your research question:</b> ${esc(rq)}`:""}</div><div class="rows">${a.prompts.map((r,i)=>`<div class="exitq"><label>${exitLabels(i+1)[0]}</label><textarea data-p="${i}:0" style="min-height:90px">${esc(r[0])}</textarea><label>${exitLabels(i+1)[1]} <span class="hint">How are they connected?</span></label><textarea data-p="${i}:1" style="min-height:120px">${esc(r[1])}</textarea></div>`).join("")}</div>${a.prompts.length<8?`<button class="tbtn" data-addp style="margin-top:8px">＋ another question</button>`:""}`; }
+  if(a.kind==="exit"){ while(a.prompts.length<3) a.prompts.push(["",""]); const rq=((state.bg||{}).question||"").trim(); art=`<div class="tip" style="margin-top:4px">For each question, say how it helps answer your research question.${rq?`<br><b>Your research question:</b> ${esc(rq)}`:""}</div><div class="rows">${a.prompts.map((r,i)=>`<div class="exitq">${a.prompts.length>3?`<button class="tbtn delq" data-delp="${i}" title="Delete ${exitLabels(i+1)[0]}" aria-label="Delete ${exitLabels(i+1)[0]}">✕</button>`:""}<label>${exitLabels(i+1)[0]}</label><textarea data-p="${i}:0" style="min-height:90px">${esc(r[0])}</textarea><label>${exitLabels(i+1)[1]} <span class="hint">How are they connected?</span></label><textarea data-p="${i}:1" style="min-height:120px">${esc(r[1])}</textarea></div>`).join("")}</div>${a.prompts.length<8?`<button class="tbtn" data-addp style="margin-top:8px">＋ another question</button>`:""}`; }
   else if(a.kind==="transcript"){ art=`<label>The questions you'll ask <span class="hint">— two or three, each with why</span></label><textarea data-af="questions" style="min-height:140px">${esc(a.questions)}</textarea><div class="tip">During the discussion, write down what students actually say, word for word when you can. Keep your notes as you wrote them; they are your evidence.</div>`; }
   else if(a.kind==="gallery"){ art=`<label>Which solutions go to the board, in what order, and the connecting question</label><textarea data-af="order" style="min-height:96px">${esc(a.order)}</textarea><div class="tip">Photograph the board and annotate the photo. That photo is your evidence.</div>`; }
   else { art=`<label>${PROBE_LINE} <span class="hint">— and a “jot your reasoning” prompt</span></label><textarea data-af="questions" style="min-height:96px">${esc(a.questions)}</textarea>`; }
