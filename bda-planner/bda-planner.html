@@ -740,7 +740,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 88</div>
+<div id="build">Build 89</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1724,7 +1724,7 @@ function renderAfter(){
   const M=AFTER_META[a.kind]; const pr=afterProgress(a);
   const card=M?`<div class="slice filled" data-aopen style="--tint:${M.tint};border-color:var(--after)"><div><div class="sicon">${M.icon}</div><div class="sn" style="color:var(--after)">${esc(AFTER_KINDS[a.kind])}</div><div class="st">${esc(a.captures)}</div></div><div class="sm"><input type="text" inputmode="numeric" placeholder="10" data-amin value="${esc(a.min)}">min</div><span class="prog ${pr[0]===pr[1]?"done":""}">${progLabel(pr)}</span><button class="sx" data-aclear title="Clear the After">✕</button></div>`
     :`<div class="slice empty" data-arpick><div>Click to choose<br>how it ends</div></div>`;
-  return `<div class="pane after"><div class="ph"><span class="tag">After</span><h2>How it ends</h2>${I("How the lesson ends, and what you carry out of the room: evidence a student's response could answer your research question with.")}</div>
+  return `<div class="pane after"><div class="ph"><span class="tag">After</span><h2>How it ends</h2>${I("How the lesson ends, and what you carry out of the room: students' responses that provide evidence for your research question.")}</div>
     <div class="slices">${card}</div>
     <div class="small" style="margin-top:8px">Click the card to write it: the questions, what students do, the objective, what it will show you.</div>
     ${readsBar("after")}</div>`;
@@ -1962,7 +1962,7 @@ function openAfter(){
   if(a.kind==="exit"){ while(a.prompts.length<3) a.prompts.push(["",""]); const rq=((state.bg||{}).question||"").trim(); art=`<div class="tip" style="margin-top:4px">For each question, say how it helps answer your research question.${rq?`<br><b>Your research question:</b> ${esc(rq)}`:""}</div><div class="rows">${a.prompts.map((r,i)=>`<div class="exitq"><label>${exitLabels(i+1)[0]}</label><textarea data-p="${i}:0" style="min-height:90px">${esc(r[0])}</textarea><label>${exitLabels(i+1)[1]} <span class="hint">How are they connected?</span></label><textarea data-p="${i}:1" style="min-height:120px">${esc(r[1])}</textarea></div>`).join("")}</div>${a.prompts.length<8?`<button class="tbtn" data-addp style="margin-top:8px">＋ another question</button>`:""}`; }
   else if(a.kind==="transcript"){ art=`<label>The questions you'll ask <span class="hint">— two or three, each with why</span></label><textarea data-af="questions" style="min-height:140px">${esc(a.questions)}</textarea><div class="tip">During the discussion, write down what students actually say, word for word when you can. Keep your notes as you wrote them; they are your evidence.</div>`; }
   else if(a.kind==="gallery"){ art=`<label>Which solutions go to the board, in what order, and the connecting question</label><textarea data-af="order" style="min-height:96px">${esc(a.order)}</textarea><div class="tip">Photograph the board and annotate the photo. That photo is your evidence.</div>`; }
-  else { art=`<label>Three questions for one focus student <span class="hint">— and a “jot your reasoning” prompt</span></label><textarea data-af="questions" style="min-height:96px">${esc(a.questions)}</textarea>`; }
+  else { art=`<label>Three questions for one student <span class="hint">— and a “jot your reasoning” prompt</span></label><textarea data-af="questions" style="min-height:96px">${esc(a.questions)}</textarea>`; }
   const head=`<h2>After</h2><span class="sicon" style="font-size:24px">${Mt.icon}</span><span class="cur" style="font-weight:800;font-size:15px">${esc(AFTER_KINDS[a.kind])}</span><a class="chg" data-chg style="font-size:12.5px;color:var(--outline);cursor:pointer;text-decoration:underline">change</a><span class="mins"><input type="text" inputmode="numeric" placeholder="10" data-af="min" value="${esc(a.min)}">min</span><button class="tbtn" data-close>✕</button>`;
   const body=`<div class="tip" style="margin-top:8px">${esc(AFTER_SUB[a.kind]||"")}</div>
     <div class="step">1 · ${afterStep1(a.kind)}</div>${art}
@@ -1988,7 +1988,7 @@ window.addEventListener("message",e=>{
 });
 function pickArtifact(){
   const a=state.after=Object.assign(blankAfter(),state.after||{});
-  const B=openPick("After: how does the lesson end?","What you carry out of the room. Pick the one a student's response could answer your research question with.",
+  const B=openPick("After: how does the lesson end?","What you carry out of the room. Pick the one whose students' responses would provide evidence for your research question.",
     `<div class="ptiles">${Object.entries(AFTER_KINDS).map(([k,v])=>`<button class="ptile ${k===a.kind?"on":""}" data-k="${k}"><div class="pi">${AFTER_META[k].icon}</div><div class="pn">${esc(v)}</div><div class="ps">${esc(AFTER_SUB[k]||"")}</div></button>`).join("")}</div>`);
   B.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{ state.after.kind=b.dataset.k; save(); renderPlan(); closePick(); openAfter(); });
 }
