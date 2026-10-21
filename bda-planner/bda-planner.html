@@ -740,7 +740,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 84</div>
+<div id="build">Build 85</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -2199,8 +2199,8 @@ function renderShare(){
     <div class="tile"><h2><span class="n">2</span>Your Investigation Plan${I("Week 10's Investigation Plan, in the course's 3-Pager placemat: prompts on the left, your plan on the right. One PDF holds everything you submit.")}</h2>
       <p class="small" style="margin:4px 0 10px;font-size:14px;color:var(--ink)"><b>Generate Investigation Plan</b> gathers everything you've written on the Profile, Plan and Share tabs into one PDF: the 3-Pager, your reflection on the feedback, your handouts, and the genAI planning partner's reads. Anything still empty comes out empty. Write it here in the Planner and generate again.</p>
       <label>Lesson title</label><input type="text" data-sh="title" value="${esc(planTitle())}" placeholder="What you'd call this lesson">
-      <table class="fill">${rows.map(r=>`<tr><td class="st ${r[2]&&String(r[2]).trim()?"ok":"no"}">${r[2]&&String(r[2]).trim()?"✓":"○"}</td><td>${esc(r[0])}</td><td class="src">${esc(r[1])}</td></tr>`).join("")}</table>
-      <label>After teaching — reflection &amp; next steps <span class="hint">— Weeks 11–13; leave it empty for now</span></label><textarea data-sh="reflection" style="min-height:120px">${esc(sh.reflection||"")}</textarea>
+      <details class="about planlist"><summary>What goes into your plan · ${rows.filter(r=>r[2]&&String(r[2]).trim()).length} of ${rows.length} written</summary><table class="fill">${rows.map(r=>`<tr><td class="st ${r[2]&&String(r[2]).trim()?"ok":"no"}">${r[2]&&String(r[2]).trim()?"✓":"○"}</td><td>${esc(r[0])}</td><td class="src">${esc(r[1])}</td></tr>`).join("")}</table></details>
+      <label>After teaching — reflection &amp; next steps <span class="hint">— Weeks 11–13; leave it empty for now</span></label><textarea data-sh="reflection" style="flex:1 1 auto;min-height:400px">${esc(sh.reflection||"")}</textarea>
       <div class="dl" style="grid-template-columns:1fr"><div><button class="primary" id="mkPdf">🖨 Generate Investigation Plan — PDF</button><div class="cap">opens Print → Save as PDF · this one file is what you upload to Canvas</div></div></div>
     </div>`;
   wrap.querySelectorAll("[data-sh]").forEach(el=>{ el.oninput=()=>{ sh[el.dataset.sh]=el.value; save(); }; });
