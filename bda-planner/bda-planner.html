@@ -775,7 +775,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 97</div>
+<div id="build">Build 98</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -2565,18 +2565,17 @@ window.addEventListener("focus",checkUpdate);
 setInterval(checkUpdate,10*60*1000); setTimeout(checkUpdate,5000);
 /* ---------- What's new: the build number opens a short list of changes, written for candidates. A dot shows
    until they've opened it once since the newest entry. "Seen" is kept apart from the plan (bda-news-seen). ---------- */
-const NEWS=[
+const NEWS=[   // the last three builds students would notice; older ones live in the GitHub history (NEWS_LOG)
+  [97,["The Update available button shows up as soon as you come back to the Planner from another app, so you don't have to reload to get a new build."]],
   [96,["Every During activity and the After can have your own slides now. Open one and look for 📊 Upload my slides. Slides print in your Investigation Plan.","Click the build number in the corner (like you just did) to see what's changed in the Planner."]],
-  [95,["Slides you upload take up less room in your browser now.","Under your slides, the Planner shows how much room all of them use."]],
-  [94,["Switching your routine or your After asks first when you've already written something.","Reflection & Next Steps is no longer part of the Investigation Plan. Anything you typed there is still saved."]],
-  [93,["Share has a Feedback copy (Word) for your group's comments. Make your changes in the Planner, then submit the PDF."]],
-  [92,["A new After: Catch my mistake.","The Strategy gallery is a board now, where you lay out the solutions you expect.","Show me options is gone; Ask me and Check this are still there."]]];
+  [95,["Slides you upload take up less room in your browser now.","Under your slides, the Planner shows how much room all of them use."]]];
+const NEWS_LOG="https://github.com/OhioMathTeacher/tce318p-fa26/commits/main/bda-planner/bda-planner.html";
 function newsSeen(){ try{ return +localStorage.getItem("bda-news-seen")||0; }catch(e){ return 0; } }
 function newsMark(){ const B=document.getElementById("build"); if(B) B.classList.toggle("fresh",newsSeen()<NEWS[0][0]); }
 function openNews(){
   let P=document.getElementById("newsPop");
   if(!P){ P=document.createElement("div"); P.id="newsPop"; P.setAttribute("role","dialog"); P.setAttribute("aria-label","What's new");
-    P.innerHTML=`<h3>What's new in the Planner <button class="tbtn" data-nx title="Close">✕</button></h3>${NEWS.map(([n,items])=>`<h4>Build ${n}</h4><ul>${items.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>`).join("")}`;
+    P.innerHTML=`<h3>What's new in the Planner <button class="tbtn" data-nx title="Close">✕</button></h3>${NEWS.map(([n,items])=>`<h4>Build ${n}</h4><ul>${items.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>`).join("")}<p class="small" style="margin:12px 0 2px;color:var(--muted)">Every change, in technical detail: <a href="${NEWS_LOG}" target="_blank" rel="noopener">the Planner's history on GitHub</a></p>`;
     document.body.appendChild(P); P.querySelector("[data-nx]").onclick=closeNews; }
   P.classList.add("open"); try{ localStorage.setItem("bda-news-seen",String(NEWS[0][0])); }catch(e){} newsMark(); logEvent("news","opened What's new");
 }
