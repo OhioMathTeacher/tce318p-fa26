@@ -162,7 +162,7 @@
   </div>
  </section>
 
- <section class="slide" id="after-1">
+ <section class="slide" id="after-1" data-next="groups" data-prev="groups">
   <div class="taskbar"><b>The task</b> · Here are 12 counters. Show me 3/4 of them, and tell me how you know it’s 3/4.<br><b>Question</b> · How do students understand a fraction of a group? &nbsp;<b>Standard</b> · 3.NF.1</div>
   <div class="kick small">After 1 · judge it</div>
   <div class="routine"><span class="tag">Closing discussion</span></div>
@@ -172,7 +172,7 @@
  </section>
 
 
- <section class="slide" id="after-2">
+ <section class="slide" id="after-2" data-next="groups" data-prev="groups">
   <div class="taskbar"><b>The task</b> · Here are 12 counters. Show me 3/4 of them, and tell me how you know it’s 3/4.<br><b>Question</b> · How do students understand a fraction of a group? &nbsp;<b>Standard</b> · 3.NF.1</div>
   <div class="kick small">After 2 · judge it</div>
   <div class="routine"><span class="tag">Exit slip</span></div>
@@ -183,7 +183,7 @@
  </section>
 
 
- <section class="slide" id="after-3">
+ <section class="slide" id="after-3" data-next="groups" data-prev="groups">
   <div class="taskbar"><b>The task</b> · Here are 12 counters. Show me 3/4 of them, and tell me how you know it’s 3/4.<br><b>Question</b> · How do students understand a fraction of a group? &nbsp;<b>Standard</b> · 3.NF.1</div>
   <div class="kick small">After 3 · judge it</div>
   <div class="routine"><span class="tag">Exit slip</span></div>
@@ -194,7 +194,7 @@
  </section>
 
 
- <section class="slide" id="after-4">
+ <section class="slide" id="after-4" data-next="groups" data-prev="groups">
   <div class="taskbar"><b>The task</b> · Here are 12 counters. Show me 3/4 of them, and tell me how you know it’s 3/4.<br><b>Question</b> · How do students understand a fraction of a group? &nbsp;<b>Standard</b> · 3.NF.1</div>
   <div class="kick small">After 4 · judge it</div>
   <div class="routine"><span class="tag">Strategy gallery</span></div>
@@ -205,7 +205,7 @@
  </section>
 
 
- <section class="slide" id="after-5">
+ <section class="slide" id="after-5" data-next="groups" data-prev="groups">
   <div class="taskbar"><b>The task</b> · Here are 12 counters. Show me 3/4 of them, and tell me how you know it’s 3/4.<br><b>Question</b> · How do students understand a fraction of a group? &nbsp;<b>Standard</b> · 3.NF.1</div>
   <div class="kick small">After 5 · judge it</div>
   <div class="routine"><span class="tag">Closing discussion</span></div>
@@ -215,7 +215,7 @@
  </section>
 
 
- <section class="slide" id="after-6">
+ <section class="slide" id="after-6" data-next="groups" data-prev="groups">
   <div class="taskbar"><b>The task</b> · Here are 12 counters. Show me 3/4 of them, and tell me how you know it’s 3/4.<br><b>Question</b> · How do students understand a fraction of a group? &nbsp;<b>Standard</b> · 3.NF.1</div>
   <div class="kick small">After 6 · judge it</div>
   <div class="routine"><span class="tag">One-on-one probe</span></div>
@@ -290,8 +290,10 @@ function show(n){
   i = Math.max(0, Math.min(slides.length - 1, n));
   slides.forEach(function(s, k){ s.classList.toggle("on", k === i); });
   Array.prototype.forEach.call(document.querySelectorAll("#tl button"), function(b, k){ b.classList.toggle("on", k === i); if (k === i) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current"); });
-  document.getElementById("prev").style.visibility = i === 0 ? "hidden" : "visible";
-  document.getElementById("next").style.visibility = i === slides.length - 1 ? "hidden" : "visible";
+  // on an After, the only way out is Home: no Back or Next, and taps and arrow keys go Home too
+  var onAfter = /^after-/.test(slides[i].id || "");
+  document.getElementById("prev").style.visibility = (i === 0 || onAfter) ? "hidden" : "visible";
+  document.getElementById("next").style.visibility = (i === slides.length - 1 || onAfter) ? "hidden" : "visible";
   // a different spot around the side edges each slide, half hidden
   var spot = [["right", "30%"], ["left", "44%"], ["right", "58%"], ["left", "26%"], ["right", "16%"], ["left", "62%"]][i % 6];
   var pup = document.getElementById("pup");
