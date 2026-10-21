@@ -298,6 +298,7 @@
   #actModal details.more summary{cursor:pointer;font-weight:700;color:var(--outline);font-size:14px}
   .slice .prog{position:absolute;top:7px;right:30px;font-size:11px;font-weight:700;color:var(--muted)}
   .slice .prog.done{color:var(--ok)}
+  #wvBar{display:flex;gap:12px;align-items:flex-start;margin:8px 0 0;padding:10px 14px;border:1px solid #e3b25c;background:#fff4e0;border-radius:10px;font-size:14px;line-height:1.45;color:#5a3a06} #wvBar .wvaddr{margin-top:6px;font:12.5px ui-monospace,Menlo,Consolas,monospace;word-break:break-all;user-select:all;background:#fff;border:1px solid #ecd3a6;border-radius:6px;padding:4px 7px} #wvBar .wvbtns{display:flex;flex-direction:column;gap:6px} #wvBar button{font:inherit;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #d29a3a;background:#fff;color:#5a3a06;cursor:pointer;white-space:nowrap}
   #exBar{display:none;align-items:center;gap:12px;margin:8px 0 0;padding:8px 14px;border:1px solid #b9cdea;background:#eaf2fc;border-radius:10px;font-size:13.5px;color:#1e3a5f} #exBar.on{display:flex} #exBar .sp{flex:1} #exBar button{font:inherit;font-weight:700;padding:5px 12px;border-radius:8px;border:1px solid #1e3a5f;background:#1e3a5f;color:#fff;cursor:pointer}
 #nag{display:none;align-items:center;gap:12px;margin:8px 0 0;padding:8px 14px;border:1px solid #e7d3a1;background:var(--gold-soft,#fff6dc);border-radius:10px;font-size:13.5px;color:#6b4a08}
   #nag.on{display:flex}
@@ -735,7 +736,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 79</div>
+<div id="build">Build 80</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -981,6 +982,7 @@ async function diagSnapshot(){
   const sr=(g.studentsRows||[]).filter(r=>(r||[]).join("").trim()).length;
   const sa=(g.samplesRows||[]).filter(r=>(r||[]).join("").trim()).length;
   const ph=(g.samplesRows||[]).filter(r=>(r||[])[3]).length;
+  o["In-app browser"]=WEBVIEW?"YES: a page inside another app (Canvas, email…). It cannot print or save, and its storage is separate.":"no";
   o["Profile filled"]=`concept ${g.concept?"yes":"no"} · question ${g.question?"yes":"no"} · standards ${(g.standards||[]).length} · students ${sr} · work samples ${sa} (${ph} with a picture)`;
   const dur=(state.during||[]).filter(a=>a&&a.type).length;
   o["Plan filled"]=`before ${(state.before||{}).kind?"chosen":"empty"} · during ${dur} card(s) · after ${(state.after||{}).kind?"chosen":"empty"}`;
@@ -1420,6 +1422,7 @@ const APP_TITLE=document.title;
    The browser's own "Save as PDF" always works, so say so before the dialog opens. */
 const WINDOWS=/Windows/i.test(navigator.userAgent);
 function printAs(name, build){
+  if(WEBVIEW){ logEvent("error","print attempted inside an in-app browser"); wvWarn("This built-in browser can't make a PDF."); }
   let skip=false; try{ skip=localStorage.getItem("bda-pdfnote-off")==="1"; }catch(e){}
   if(!WINDOWS||skip){ printNow(name,build); return; }
   let N=document.getElementById("pdfNote");
@@ -2083,7 +2086,35 @@ function slugify(t){ return (t||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").rep
 // IS the right answer and a share sheet would be a worse one.
 const IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
             (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+// ⚠ AN IN-APP BROWSER IS NOT A BROWSER (ported from Journaler-284, where a student's
+//   Android tablet "could not print or download anything", 2026-09-10). A link tapped in
+//   the Canvas app opens in Canvas's own embedded page, which cannot print, cannot save a
+//   file, and keeps storage Chrome or Safari never sees. Every PDF and every Save failed
+//   there in silence. Android's WebView carries "; wv)" and a "Version/x.y" token Chrome
+//   never has, and the Canvas app signs itself "candroid"; on iOS an embedded page has no
+//   "Safari/" token (Chrome and Firefox there still carry it, being Safari underneath).
+const ANDROID = /Android/i.test(navigator.userAgent);
+const WEBVIEW = ANDROID
+  ? /; ?wv\)|Version\/\d+\.\d+ .*Chrome\/|candroid/i.test(navigator.userAgent)
+  : (IOS && !/Safari\//.test(navigator.userAgent));
+const OPEN_IN_CHROME_URL = "intent://" + location.host + location.pathname + "#Intent;scheme=https;package=com.android.chrome;end";
+// Said on opening AND at the moment a PDF or a Save is asked for: a student who closed
+// the banner and then pressed Generate must not be left with a silent nothing.
+function wvWarn(lead){
+  let B=document.getElementById("wvBar");
+  if(!B){ B=document.createElement("div"); B.id="wvBar"; B.setAttribute("role","alert");
+    const host=document.getElementById("exBar"); if(host&&host.parentNode) host.parentNode.insertBefore(B,host); else document.body.prepend(B); }
+  const addr=location.href.split("#")[0];
+  const how=ANDROID?"Open the BDA Planner in <b>Chrome</b> instead: tap ⋮ and choose <b>Open in browser</b>, or use the button."
+                   :"Open the BDA Planner in <b>Safari</b> instead: tap the ⋯ or compass icon and choose <b>Open in Safari</b>, or copy the address below into Safari.";
+  B.innerHTML=`<div>${lead?`<b>${esc(lead)}</b> `:""}This page is inside another app (like Canvas). It can't make PDFs or save your project file, and it keeps a separate copy of your work. ${how}<div class="wvaddr">${esc(addr)}</div></div><div class="wvbtns"><button type="button" data-wvgo>${ANDROID?"Open in Chrome":"Copy the address"}</button><button type="button" data-wvx aria-label="Close">✕</button></div>`;
+  B.querySelector("[data-wvgo]").onclick=()=>{ if(ANDROID){ location.href=OPEN_IN_CHROME_URL; return; }
+    try{ navigator.clipboard.writeText(addr).then(()=>toast("Address copied. Paste it into Safari."),()=>toast("Copy the address shown, then paste it into Safari.")); }catch(e){ toast("Copy the address shown, then paste it into Safari."); } };
+  B.querySelector("[data-wvx]").onclick=()=>B.remove();
+  window.scrollTo(0,0);
+}
 async function saveBlob(blob, name){
+  if(WEBVIEW){ logEvent("error","save attempted inside an in-app browser"); wvWarn("This built-in browser can't save files."); }
   if(IOS && navigator.canShare){
     try{
       const file = new File([blob], name, { type: blob.type || "application/octet-stream" });
@@ -2395,6 +2426,7 @@ try{ if(new URLSearchParams(location.search).get("from")==="studio"){
   history.replaceState(null,"",location.pathname);   // so a reload does not re-import
 } }catch(e){}
 try{ updateNag(+localStorage.getItem(STORE+"-unsaved")||0); }catch(e){} try{ showPhase(localStorage.getItem(STORE+"-phase")||"background"); }catch(e){ showPhase("background"); }
+if(WEBVIEW){ try{ logEvent("boot","in-app browser detected: "+navigator.userAgent.slice(0,160)); }catch(e){} setTimeout(()=>wvWarn(""),0); }
 </script>
 </body>
 </html>
