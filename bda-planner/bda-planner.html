@@ -765,7 +765,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 94</div>
+<div id="build">Build 95</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1845,7 +1845,7 @@ function wirePlan(){
   wireReads(P);
   P.querySelectorAll("[data-brpick]").forEach(el=>el.onclick=pickRoutine);
   P.querySelectorAll("[data-bopen]").forEach(el=>el.onclick=openBefore);
-  P.querySelectorAll("[data-pslide]").forEach(el=>el.onclick=e=>{ e.stopPropagation(); viewSlides(+el.dataset.pslide); });
+  P.querySelectorAll("[data-pslide]").forEach(el=>el.onclick=e=>{ e.stopPropagation(); viewSlides(state.before.slides,+el.dataset.pslide); });
   P.querySelectorAll("[data-bclear]").forEach(el=>el.onclick=e=>{ e.stopPropagation(); const b=state.before; if((b.prompt||b.students||b.objective||(b.cards||[]).some(c=>cardPlain(c))||(b.slides||[]).length)&&!confirm("Clear the routine? What you typed in it is lost.")) return; state.before=blankBefore(); save(); renderPlan(); });
   P.querySelectorAll("[data-arpick]").forEach(el=>el.onclick=pickArtifact);
   P.querySelectorAll("[data-aopen]").forEach(el=>el.onclick=openAfter);
@@ -1908,7 +1908,7 @@ function openBefore(){
   const body=`<div class="ptabs" style="margin-top:6px">${TABS.map((t,i)=>`<button data-tab="${i}" class="${i===beforeTab?"on":""}">${i+1} · ${t}<span class="tk ${parts[i]?"":"no"}" data-tk="${i}">✓</span></button>`).join("")}</div>
     <div class="tabp ${beforeTab===0?"on":""}" data-tabp="0">
     <div style="display:flex;gap:10px;align-items:center;margin:2px 0 6px"><label style="margin:0;white-space:nowrap">What you say <span class="hint">— the posing question, exactly</span></label><input type="text" data-b="prompt" value="${esc(b.prompt)}" placeholder="What's the same? What's different?" style="flex:1"></div>
-    ${b.useSlides?slidesPanel(b):(R&&R[3])
+    ${b.useSlides?slidesPanel(b,BEFORE_SLIDES):(R&&R[3])
       ?`<iframe class="nvinline" src="${NVOKE_URL}&tpl=${R[3]}&inline=1" title="Card editor"></iframe>
         ${(b.cards||[]).length?`<div class="nv" style="margin-top:8px"><div class="striplabel" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">🖐 Your text cards, from before the board took typing. ${(b.pack&&b.pack.thumbs&&b.pack.thumbs.length)?"The plan uses the board's cards; these are kept.":"The plan uses these until the board has a card."}<button class="tbtn" data-totboard title="Copies these onto the board as cards. These stay here until you remove them.">⬆ Put my text cards on the board</button></div>${CARD_TOOLS}<div class="cards">${cards}<div class="ncard add big" data-addcard title="Add a card and type what's on it">＋ card</div></div></div>`:""}`
       :`<div class="nv" style="margin-top:6px"><div class="striplabel">🖐 Your cards — what students see, one card each. Type on a card; select text to underline, color, or resize it.</div>${CARD_TOOLS}<div class="cards">${cards}<div class="ncard add big" data-addcard title="Add a card and type what's on it: a number, an expression, a figure described">＋ card</div></div></div>`}
@@ -1938,32 +1938,48 @@ function openBefore(){
   M.querySelectorAll("[data-totboard]").forEach(bt=>bt.onclick=()=>{ const f=M.querySelector("iframe.nvinline"), t=(state.before.cards||[]).map(cardPlain).map(x=>x.replace(/\s*\n\s*/g," ").trim()).filter(Boolean);
     if(!t.length){ toast("Type something on a text card first."); return; } if(!f||!nvokeReady){ toast("The card editor is still loading — try again in a moment."); return; }
     f.contentWindow.postMessage({type:"nvoke-addtext",texts:t},"*"); });
-  if(b.useSlides) wireSlides(M);
+  if(b.useSlides) wireSlides(M,b,BEFORE_SLIDES);
   const g=M.querySelector("[data-go1]"); if(g) g.onclick=()=>{ renderPlan(); openActivity(first.id); };
 }
-/* ---------- the Before from the candidate's own deck: a PDF (or pictures), or a shared Google Slides link
-   fetched as a PDF by the worker. Each page becomes a picture kept in the plan, like the work-sample photos. ---------- */
-const SLIDE_MAX=12, SLIDE_PX=1280;
-function slidesPanel(b){
-  const sl=b.slides||[];
+/* ---------- slides from the candidate's own deck: a PDF (or pictures), or a shared Google Slides link
+   fetched as a PDF by the worker. Each page becomes a picture kept in the plan, like the work-sample photos.
+   One panel serves any part of the plan: slidesPanel/wireSlides take the part that owns the slides
+   (state.before, an activity, state.after) and its options: label, color, kind (the Before's routine row),
+   reopen (the editor to redraw). Every slide is squeezed under SLIDE_KB, and all of them together under
+   SLIDES_TOTAL_KB, so a photo-heavy deck can't fill the browser's storage. ---------- */
+const SLIDE_MAX=12, SLIDE_PX=960, SLIDE_PX_MIN=800, SLIDE_KB=80, SLIDES_TOTAL_KB=3000;
+const BEFORE_SLIDES={label:"📊 Your slides — the routine as you'll show it",color:"var(--before)",kind:true,short:"The Before is short",reopen:()=>openBefore()};
+function slideKB(list){ return Math.round((list||[]).reduce((n,x)=>n+((x&&x.img)||"").length,0)/1024); }
+function allSlideKB(){ return slideKB([...(state.before||{}).slides||[], ...(state.during||[]).flatMap(a=>a.slides||[]), ...(state.after||{}).slides||[]]); }
+function kbLabel(kb){ return kb>=1000?(kb/1000).toFixed(1)+" MB":kb+" KB"; }
+/* JPEG, stepping quality down and then size, until the slide fits SLIDE_KB */
+function encodeSlide(c){
+  let img;
+  for(const q of [0.75,0.65,0.55]){ img=c.toDataURL("image/jpeg",q); if(img.length/1024<=SLIDE_KB) return {img,w:c.width,h:c.height}; }
+  if(Math.max(c.width,c.height)>SLIDE_PX_MIN){ const sc=SLIDE_PX_MIN/Math.max(c.width,c.height), d=document.createElement("canvas"); d.width=Math.round(c.width*sc); d.height=Math.round(c.height*sc); d.getContext("2d").drawImage(c,0,0,d.width,d.height); c=d; }
+  for(const q of [0.6,0.5,0.4]){ img=c.toDataURL("image/jpeg",q); if(img.length/1024<=SLIDE_KB) break; }
+  return {img,w:c.width,h:c.height};
+}
+function slidesPanel(owner,o){
+  const sl=owner.slides||[];
   return `<div class="slidesbox">
-    <div class="striplabel" style="font-weight:700;font-size:13px;color:var(--before)">📊 Your slides — the routine as you'll show it</div>
-    <div class="row"><label style="margin:0">Which routine is it?</label><select data-slkind style="max-width:280px"><option value="">— pick one —</option>${ROUTINE_LIST.map(r=>`<option ${b.name===r[0]?"selected":""}>${esc(r[0])}</option>`).join("")}<option value="__other" ${b.name&&!routineMeta(b.name)?"selected":""}>Something else (name it above)</option></select></div>
-    <div class="row"><button class="tbtn" data-slpick>⬆ Upload a PDF</button><span class="small">or</span><input type="text" data-sllink placeholder="Paste a Google Slides link" value="${esc(b.slidesLink||"")}"><button class="tbtn" data-slget>Get slides</button></div>
+    <div class="striplabel" style="font-weight:700;font-size:13px;color:${o.color}">${o.label}</div>
+    ${o.kind?`<div class="row"><label style="margin:0">Which routine is it?</label><select data-slkind style="max-width:280px"><option value="">— pick one —</option>${ROUTINE_LIST.map(r=>`<option ${owner.name===r[0]?"selected":""}>${esc(r[0])}</option>`).join("")}<option value="__other" ${owner.name&&!routineMeta(owner.name)?"selected":""}>Something else (name it above)</option></select></div>`:""}
+    <div class="row"><button class="tbtn" data-slpick>⬆ Upload a PDF</button><span class="small">or</span><input type="text" data-sllink placeholder="Paste a Google Slides link" value="${esc(owner.slidesLink||"")}"><button class="tbtn" data-slget>Get slides</button></div>
     <div class="small" style="color:var(--muted)">PowerPoint: File → Save As → PDF, then upload. Google Slides: paste the link (shared “Anyone with the link”), or File → Download → PDF. Up to ${SLIDE_MAX} slides.</div>
     <div class="msg" data-slmsg></div>
-    ${sl.length?`<div class="slidegrid">${sl.map((x,i)=>`<div class="sl" data-slview="${i}"><img src="${x.img}" alt="Slide ${i+1}"><div class="cap"><span>Slide ${i+1}</span><button class="x" data-sldel="${i}" title="Remove this slide">✕</button></div></div>`).join("")}</div><div class="small" style="margin-top:6px;color:var(--muted)">Click a slide to see it full size. Uploading again replaces these.</div>`:""}
+    ${sl.length?`<div class="slidegrid">${sl.map((x,i)=>`<div class="sl" data-slview="${i}"><img src="${x.img}" alt="Slide ${i+1}"><div class="cap"><span>Slide ${i+1}</span><button class="x" data-sldel="${i}" title="Remove this slide">✕</button></div></div>`).join("")}</div><div class="small" style="margin-top:6px;color:var(--muted)">Click a slide to see it full size. Uploading again replaces these. All your slides use ${kbLabel(allSlideKB())} of ${kbLabel(SLIDES_TOTAL_KB)}.</div>`:""}
   </div>`;
 }
-function wireSlides(M){
-  const b=state.before, msg=t=>{ const el=M.querySelector("[data-slmsg]"); if(el) el.innerHTML=t||""; };
-  M.querySelector("[data-slkind]").onchange=e=>{ const v=e.target.value; if(!v) return; if(v==="__other"){ if(routineMeta(b.name)||!b.name) b.name="Untitled"; save(); openBefore(); const inp=document.querySelector('#actHead [data-b="name"]'); if(inp){ inp.focus(); inp.select(); } return; } b.name=v; save(); renderPlan(); openBefore(); };
+function wireSlides(M,owner,o){
+  const b=owner, msg=t=>{ const el=M.querySelector("[data-slmsg]"); if(el) el.innerHTML=t||""; };
+  const kind=M.querySelector("[data-slkind]"); if(kind) kind.onchange=e=>{ const v=e.target.value; if(!v) return; if(v==="__other"){ if(routineMeta(b.name)||!b.name) b.name="Untitled"; save(); o.reopen(); const inp=document.querySelector('#actHead [data-b="name"]'); if(inp){ inp.focus(); inp.select(); } return; } b.name=v; save(); renderPlan(); o.reopen(); };
   M.querySelector("[data-slpick]").onclick=()=>{ const inp=document.createElement("input"); inp.type="file"; inp.multiple=true; inp.accept=".pdf,application/pdf,image/*,.ppt,.pptx,.key,.odp";
     inp.onchange=async()=>{ const fs=[...inp.files]; if(!fs.length) return;
       if(fs.some(f=>/\.(pptx?|key|odp)$/i.test(f.name))){ msg(`<b>That's a slideshow file — the Planner needs it as a PDF.</b><br>PowerPoint: File → Save As → choose <b>PDF</b>. Keynote: File → Export To → PDF. Google Slides: File → Download → PDF. Then upload the PDF here.`); return; }
-      msg("Reading…"); const out=[];
-      for(const f of fs){ if(out.length>=SLIDE_MAX) break; if(/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name)){ const r=await pdfToSlides(await f.arrayBuffer(),SLIDE_MAX-out.length); if(!r){ msg("That file didn't read as a PDF."); return; } out.push(...r.slides); } else if(/^image\//.test(f.type)){ const x=await imageToSlide(f); if(x) out.push(x); } }
-      setSlides(out,fs.map(f=>f.name).join(", "),"",msg); };
+      msg("Reading…"); const out=[]; let total=0;
+      for(const f of fs){ if(out.length>=SLIDE_MAX) break; if(/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name)){ const r=await pdfToSlides(await f.arrayBuffer(),SLIDE_MAX-out.length); if(!r){ msg("That file didn't read as a PDF."); return; } out.push(...r.slides); total+=r.total; } else if(/^image\//.test(f.type)){ const x=await imageToSlide(f); if(x) out.push(x); total++; } }
+      setSlides(owner,o,out,fs.map(f=>f.name).join(", "),"",msg,total); };
     inp.click(); };
   M.querySelector("[data-slget]").onclick=async()=>{ const link=(M.querySelector("[data-sllink]").value||"").trim();
     if(!/^https:\/\/docs\.google\.com\/(a\/[^/]+\/)?(presentation|document)\/d\//.test(link)){ msg("That doesn't look like a Google Slides link. It should start with <b>https://docs.google.com/presentation/d/</b>…"); return; }
@@ -1974,20 +1990,23 @@ function wireSlides(M){
         :j.error==="passcode"?(()=>{ try{ localStorage.removeItem("bda-passcode"); }catch(e){} return "That course passcode didn't match. Click <b>Get slides</b> again and type the passcode from class."; })()
         :j.error==="too big"?"That deck is too big to fetch. Download it as a PDF and upload it instead."
         :"Google didn't hand it over. Download it as a PDF (File → Download → PDF) and upload that."); return; }
-    const res=await pdfToSlides(await r.arrayBuffer(),SLIDE_MAX); if(!res){ msg("Google sent something that didn't read as a PDF. Download it and upload the PDF instead."); return; }
-    setSlides(res.slides,"",link,msg,res.total); };
-  M.querySelectorAll("[data-slview]").forEach(el=>el.onclick=()=>viewSlides(+el.dataset.slview));
-  M.querySelectorAll("[data-sldel]").forEach(el=>el.onclick=e=>{ e.stopPropagation(); b.slides.splice(+el.dataset.sldel,1); save(); renderPlan(); openBefore(); });
+    msg("Reading…"); const res=await pdfToSlides(await r.arrayBuffer(),SLIDE_MAX); if(!res){ msg("Google sent something that didn't read as a PDF. Download it and upload the PDF instead."); return; }
+    setSlides(owner,o,res.slides,"",link,msg,res.total); };
+  M.querySelectorAll("[data-slview]").forEach(el=>el.onclick=()=>viewSlides(b.slides,+el.dataset.slview));
+  M.querySelectorAll("[data-sldel]").forEach(el=>el.onclick=e=>{ e.stopPropagation(); b.slides.splice(+el.dataset.sldel,1); save(); renderPlan(); o.reopen(); });
 }
-function setSlides(list,file,link,msg,total){
+function setSlides(owner,o,list,file,link,msg,total){
   if(!list.length){ msg("No slides came out of that."); return; }
-  const b=state.before; if((b.slides||[]).length&&!confirm(`Replace your ${b.slides.length} slides with these ${list.length}?`)){ msg(""); return; }
-  b.slides=list; b.slidesFrom=file||""; b.slidesLink=link||""; save();
-  logEvent("slides",`added ${list.length} slides${link?" from a link":""}`);
-  renderPlan(); openBefore();
+  const kb=slideKB(list), after=allSlideKB()-slideKB(owner.slides)+kb;
+  if(after>SLIDES_TOTAL_KB){ logEvent("slides",`refused ${list.length} slides: ${kbLabel(after)} over the ${kbLabel(SLIDES_TOTAL_KB)} budget`);
+    msg(`<b>These ${list.length} slides won't fit.</b> All your slides together can use ${kbLabel(SLIDES_TOTAL_KB)}; with these it would be ${kbLabel(after)}. Upload fewer slides (a PDF of just the ones you'll show), or remove slides from another part of the plan.`); return; }
+  if((owner.slides||[]).length&&!confirm(`Replace your ${owner.slides.length} slides with these ${list.length}?`)){ msg(""); return; }
+  owner.slides=list; owner.slidesFrom=file||""; owner.slidesLink=link||""; save();
+  logEvent("slides",`added ${list.length} slides (${kbLabel(kb)})${link?" from a link":""}`);
+  renderPlan(); o.reopen();
   const el=document.querySelector("#actBody [data-slmsg]"); if(!el) return;
   if(storageFailed) el.innerHTML="<b>This browser's storage is full</b> — the slides are showing but won't be kept. Save to a file now (top bar), then remove a few slides or work-sample photos.";
-  else if(total>SLIDE_MAX) el.innerHTML=`Your deck has ${total} slides; the first ${SLIDE_MAX} are here. The Before is short — that's usually plenty.`;
+  else if(total>SLIDE_MAX) el.innerHTML=`Your deck has ${total} slides; the first ${SLIDE_MAX} are here.${o.short?` ${o.short} — that's usually plenty.`:""}`;
 }
 async function pdfToSlides(buf,cap){
   let lib; try{ lib=await loadPdfjs(); }catch(e){ return null; }
@@ -1998,20 +2017,20 @@ async function pdfToSlides(buf,cap){
     const c=document.createElement("canvas"); c.width=Math.round(vp.width); c.height=Math.round(vp.height); const ctx=c.getContext("2d"); ctx.fillStyle="#fff"; ctx.fillRect(0,0,c.width,c.height);
     await page.render({canvasContext:ctx,viewport:vp}).promise;
     let text=""; try{ text=(await page.getTextContent()).items.map(t=>t.str).join(" ").replace(/\s+/g," ").trim().slice(0,600); }catch(e){}
-    slides.push({img:c.toDataURL("image/jpeg",0.8),w:c.width,h:c.height,text});
+    slides.push({...encodeSlide(c),text});
   }
   return {slides,total:doc.numPages};
 }
-function imageToSlide(f){ return new Promise(res=>{ const r=new FileReader(); r.onload=()=>{ const im=new Image(); im.onload=()=>{ const sc=Math.min(1,SLIDE_PX/Math.max(im.width,im.height)); const c=document.createElement("canvas"); c.width=Math.round(im.width*sc); c.height=Math.round(im.height*sc); const x=c.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,c.width,c.height); x.drawImage(im,0,0,c.width,c.height); res({img:c.toDataURL("image/jpeg",0.8),w:c.width,h:c.height,text:""}); }; im.onerror=()=>res(null); im.src=r.result; }; r.onerror=()=>res(null); r.readAsDataURL(f); }); }
-let slideAt=0;
-function viewSlides(i){
-  const sl=(state.before||{}).slides||[]; if(!sl.length) return;
+function imageToSlide(f){ return new Promise(res=>{ const r=new FileReader(); r.onload=()=>{ const im=new Image(); im.onload=()=>{ const sc=Math.min(1,SLIDE_PX/Math.max(im.width,im.height)); const c=document.createElement("canvas"); c.width=Math.round(im.width*sc); c.height=Math.round(im.height*sc); const x=c.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,c.width,c.height); x.drawImage(im,0,0,c.width,c.height); res({...encodeSlide(c),text:""}); }; im.onerror=()=>res(null); im.src=r.result; }; r.onerror=()=>res(null); r.readAsDataURL(f); }); }
+let slideAt=0, slideList=[];
+function viewSlides(list,i){
+  slideList=list||[]; if(!slideList.length) return;
   let V=document.getElementById("slideView");
   if(!V){ V=document.createElement("div"); V.id="slideView"; V.innerHTML=`<img alt=""><div class="bar"><button data-sv="-1">◀ Back</button><span data-svn></span><button data-sv="1">Next ▶</button><button data-svx>✕ Close</button></div>`; document.body.appendChild(V);
     V.onclick=e=>{ if(e.target===V) closeSlides(); }; V.querySelectorAll("[data-sv]").forEach(bt=>bt.onclick=()=>showSlide(slideAt+ +bt.dataset.sv)); V.querySelector("[data-svx]").onclick=closeSlides; }
   V.classList.add("open"); document.addEventListener("keydown",slideKeys,true); showSlide(i);
 }
-function showSlide(i){ const sl=state.before.slides, V=document.getElementById("slideView"); slideAt=Math.max(0,Math.min(sl.length-1,i)); V.querySelector("img").src=sl[slideAt].img; V.querySelector("img").alt=`Slide ${slideAt+1}`; V.querySelector("[data-svn]").textContent=`${slideAt+1} / ${sl.length}`; V.querySelector('[data-sv="-1"]').disabled=slideAt===0; V.querySelector('[data-sv="1"]').disabled=slideAt===sl.length-1; }
+function showSlide(i){ const sl=slideList, V=document.getElementById("slideView"); slideAt=Math.max(0,Math.min(sl.length-1,i)); V.querySelector("img").src=sl[slideAt].img; V.querySelector("img").alt=`Slide ${slideAt+1}`; V.querySelector("[data-svn]").textContent=`${slideAt+1} / ${sl.length}`; V.querySelector('[data-sv="-1"]').disabled=slideAt===0; V.querySelector('[data-sv="1"]').disabled=slideAt===sl.length-1; }
 function closeSlides(){ const V=document.getElementById("slideView"); if(V) V.classList.remove("open"); document.removeEventListener("keydown",slideKeys,true); }
 function slideKeys(e){ if(e.key==="Escape"){ e.stopPropagation(); e.preventDefault(); closeSlides(); } else if(e.key==="ArrowRight"||e.key===" "){ e.preventDefault(); showSlide(slideAt+1); } else if(e.key==="ArrowLeft"){ e.preventDefault(); showSlide(slideAt-1); } }
 function afterField(f,a){ return `<label>${esc(f.label)}${f.req?'<span class="req">*</span>':""}${f.hint?` <span class="hint">${esc(f.hint)}</span>`:""}</label><textarea data-af="${f.k}"${f.h?` style="min-height:${f.h}px"`:""}>${esc(a[f.k])}</textarea>`; }
