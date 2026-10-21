@@ -293,7 +293,8 @@ function show(n){
   // on an After, the only way out is Home: no Back or Next, and taps and arrow keys go Home too
   var onAfter = /^after-/.test(slides[i].id || "");
   document.getElementById("prev").style.visibility = (i === 0 || onAfter) ? "hidden" : "visible";
-  document.getElementById("next").style.visibility = (i === slides.length - 1 || onAfter) ? "hidden" : "visible";
+  // the Groups hearts have no Next either: groups pick a heart; you move on with the Check node or the arrow key
+  document.getElementById("next").style.visibility = (i === slides.length - 1 || onAfter || slides[i].id === "groups") ? "hidden" : "visible";
   // a different spot around the side edges each slide, half hidden
   var spot = [["right", "30%"], ["left", "44%"], ["right", "58%"], ["left", "26%"], ["right", "16%"], ["left", "62%"]][i % 6];
   var pup = document.getElementById("pup");
