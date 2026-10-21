@@ -736,7 +736,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 80</div>
+<div id="build">Build 81</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1405,46 +1405,48 @@ function renderBackground(){
   wireReads(wrap);
   wireInfo();
 }
-/* Every browser names a printed PDF after document.title, and ours is the APP's title --
-   so the Concept Profile, the Investigation Plan and the problem report all reached Files
-   as "BDA Planner — plan it · hand it over · teach it". Found on Todd's iPhone, 9/22.
-   The student then submits three identically-named PDFs to Canvas.
-
-   ⚠ Restoring the title on the next line does NOT work. window.print() hands the page to
-   the system dialog and RETURNS while that dialog is still open -- Journaler hit exactly
-   this on Android (the page tore its print host down on afterprint and printed the nav
-   bar). Nothing the page can observe says when the dialog closes: visibility never
-   changes, there is no blur/focus, and afterprint fires early. So the title is restored on
-   the first real interaction afterwards, by which time the file is named and saved. */
+/* Every browser names a saved PDF after document.title. The printable tab (printAs, below)
+   carries the document's own title, so the file is named for what it is. */
 const APP_TITLE=document.title;
 /* Windows laptops with Acrobat installed default the print dialog to the "Adobe PDF" printer,
    which errors when Acrobat isn't activated or signed in (a 318P student hit this 10/19).
    The browser's own "Save as PDF" always works, so say so before the dialog opens. */
 const WINDOWS=/Windows/i.test(navigator.userAgent);
+// ⚠ THE PDF OPENS IN ITS OWN TAB (Build 81). Printing in place (a hidden print host plus
+//   window.print()) needed a workaround for every device: Android returns from print()
+//   with the dialog still open, the title had to be held until the next touch, and the
+//   student never saw the document they were about to submit. The 318P Journaler, which
+//   brought in a term of Reading Journals from every kind of device, writes the document
+//   into a new tab as a plain page with its own Save as PDF button. Same here: the tab's
+//   fixed title names the file, the student sees the whole plan first, and printing a
+//   plain page is the one thing every browser does reliably.
 function printAs(name, build){
   if(WEBVIEW){ logEvent("error","print attempted inside an in-app browser"); wvWarn("This built-in browser can't make a PDF."); }
-  let skip=false; try{ skip=localStorage.getItem("bda-pdfnote-off")==="1"; }catch(e){}
-  if(!WINDOWS||skip){ printNow(name,build); return; }
-  let N=document.getElementById("pdfNote");
-  if(!N){ N=document.createElement("div"); N.id="pdfNote"; N.innerHTML=`<div class="box"><h3>One thing before the print window</h3><p>Set <b>Destination</b> (or <b>Printer</b>) to <b>Save as PDF</b>, not <b>Adobe PDF</b>. Adobe PDF often fails with an Acrobat error; Save as PDF always works.</p><label><input type="checkbox" data-pnoff> Don't show this again</label><div class="row"><button class="tbtn" data-pncancel>Cancel</button><button class="primary" data-pngo>Continue</button></div></div>`; document.body.appendChild(N); }
-  N.classList.add("open");
-  N.querySelector("[data-pncancel]").onclick=()=>N.classList.remove("open");
-  N.querySelector("[data-pngo]").onclick=()=>{ if(N.querySelector("[data-pnoff]").checked){ try{ localStorage.setItem("bda-pdfnote-off","1"); }catch(e){} } N.classList.remove("open"); setTimeout(()=>printNow(name,build),50); };
-}
-function printNow(name, build){
-  // Restore to the app's real title, NOT to whatever document.title happens to hold now:
-  // print twice without touching the page in between and the second call would capture the
-  // FIRST print's name as the original, leaving the app permanently titled "Concept
-  // Profile — …". Found by driving three prints in a row, 9/22.
+  // window.open must run inside the tap, before anything awaits, or it is a blocked pop-up.
+  const w=window.open("","_blank");
+  if(!w){ logEvent("error","PDF tab blocked"); if(!WEBVIEW) alert("Please allow pop-ups for this page so your document can open in a printable tab, then press the button again."); return; }
   build();
-  document.title=name;
-  let done=false;
-  const restore=()=>{ if(done) return; done=true; document.title=APP_TITLE;
-    ["pointerdown","keydown","touchstart"].forEach(e=>window.removeEventListener(e,restore,true)); };
-  ["pointerdown","keydown","touchstart"].forEach(e=>window.addEventListener(e,restore,true));
-  // A backstop, in case the student saves and never touches this tab again.
-  setTimeout(restore, 120000);
-  window.print();
+  const html=document.getElementById("profilePrint").innerHTML;
+  const what=String(name).split(" — ")[0];
+  // The page's own styles come along, with its print-only rules switched on for the screen,
+  // so the tab shows exactly what will print.
+  const css=[...document.querySelectorAll("style")].map(x=>x.textContent).join("\n").replace(/@media print\s*\{/g,"@media all{");
+  w.document.write(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><base href="${esc(location.href)}"><title>${esc(name)}</title>
+<style>${css}
+body{background:#fff!important;margin:0;padding:24px 16px 48px}
+.pdfbar{max-width:7in;margin:0 auto 22px;font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;color:#1f2933}
+.pdfbar .lead{padding:10px 14px;background:#eef3fa;border-left:4px solid #1F4E96;border-radius:6px;margin:0 0 12px}
+.pdfbar button{font:700 16px system-ui,-apple-system,"Segoe UI",sans-serif;background:#1F4E96;color:#fff;border:0;border-radius:9px;padding:12px 20px;cursor:pointer}
+.pdfbar .tip{font-size:13.5px;color:#4a5a70;margin:10px 0 0}
+@media print{.pdfbar{display:none!important} body{padding:0}}
+</style></head><body>
+<div class="pdfbar"><div class="lead">This is your whole ${esc(what)}. Use the button to save it as a PDF, and submit that file.</div>
+<button type="button" onclick="window.print()">🖨 Save as PDF / Print</button>
+${WINDOWS?`<p class="tip">In the print window, set <b>Destination</b> to <b>Save as PDF</b>, not <b>Adobe PDF</b>. Adobe PDF often fails.</p>`:IOS?`<p class="tip">On an iPad or iPhone: the button opens the print options. Tap the Share icon there, then <b>Save to Files</b>.</p>`:""}
+</div>
+<div id="profilePrint">${html}</div></body></html>`);
+  w.document.close();
+  logEvent("export",what+" opened in a printable tab");
 }
 // Safe in a filename on every platform, and still readable.
 // The student's own calendar date. toISOString() is UTC, so a PDF printed after 8pm
