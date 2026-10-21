@@ -430,8 +430,16 @@
   .rout .opt .acts button{font-size:11.5px;padding:3px 8px}
   .exitrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
   .exitrow textarea{min-height:56px}
-  .exitq{border-left:3px solid #e5e7eb;padding-left:12px;margin-top:14px;position:relative}
-  .exitq .delq{position:absolute;top:-4px;right:0;padding:2px 9px;line-height:1.2}
+  .exitq{border-left:3px solid #e5e7eb;padding-left:12px;margin-top:12px}
+  /* each Student Question is an accordion: header = number, a preview, ✓ when both boxes are written, and ✕ above three */
+  .exitq>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:5px 0;font-size:14px}
+  .exitq>summary::-webkit-details-marker{display:none}
+  .exitq>summary::before{content:"▸";color:#6b7280;transition:transform .12s;display:inline-block}
+  .exitq[open]>summary::before{transform:rotate(90deg)}
+  .exitq .qprev{flex:1;min-width:0;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400}
+  .exitq .qok{color:#166534;font-weight:800}
+  .exitq .delq{padding:2px 9px;line-height:1.2}
+  .exitq .qbody{padding:2px 0 6px}
   .sec{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
   /* arriving from the Studio */
   /* 2c holds a whole research question. As an <input> everything past the width was
@@ -874,6 +882,11 @@ const AFTER_STEPS=[
 const afterLabel=k=>AFTER_STEPS.flatMap(s=>s.fields).find(f=>f.k===k).label;
 const afterStep1=kind=>kind==="gallery"?"The board":"The questions";
 const exitLabels=i=>[`Student Question ${i}`,`How does Student Question ${i} help answer your research question?`];
+// exit-slip accordion: a question with both boxes written (✓) starts closed; anything unfinished, or just added, starts open
+let exitJustAdded=-1;
+const exitDone=r=>!!((r[0]||"").trim()&&(r[1]||"").trim());
+const exitPreview=r=>{ const t=(r[0]||"").trim().replace(/\s+/g," "); return t.length>70?t.slice(0,69)+"…":t; };
+const exitOpen=(r,i)=>i===exitJustAdded||!exitDone(r);
 const ROUTINE_ICON="🖐";
 function beforeParts(b){ return [(b.pack&&b.pack.thumbs&&b.pack.thumbs.length)||(b.useSlides&&(b.slides||[]).length)||(b.prompt||"").trim()||(b.cards||[]).some(c=>cardPlain(c).trim()), b.students, b.objective, b.withhold||b.entry||b.guard, b.thread].map(v=>!!(v&&String(v).trim())); }
 function beforeProgress(b){ const p=beforeParts(b); return [p.filter(Boolean).length, p.length]; }
@@ -1773,9 +1786,9 @@ function wireFields(root,rerender){
   wireCardTools(root);
   root.querySelectorAll("[data-addcard]").forEach(el=>el.onclick=()=>{ state.before.cards.push(""); save(); rerender(); const ta=root.querySelectorAll("[data-cardtext]"); ta[ta.length-1]?.focus(); });
   root.querySelectorAll("[data-delcard]").forEach(el=>el.onclick=()=>{ state.before.cards.splice(+el.dataset.delcard,1); save(); rerender(); });
-  root.querySelectorAll("[data-addp]").forEach(el=>el.onclick=()=>{ state.after.prompts.push(["",""]); save(); rerender(); });
+  root.querySelectorAll("[data-addp]").forEach(el=>el.onclick=()=>{ state.after.prompts.push(["",""]); exitJustAdded=state.after.prompts.length-1; save(); rerender(); exitJustAdded=-1; });
   // ✕ on an exit-slip tile (shown only above three, the rubric minimum); asks first if the tile has writing in it
-  root.querySelectorAll("[data-delp]").forEach(el=>el.onclick=()=>{ const k=+el.dataset.delp, r=state.after.prompts[k]||["",""];
+  root.querySelectorAll("[data-delp]").forEach(el=>el.onclick=e=>{ e.preventDefault(); e.stopPropagation(); const k=+el.dataset.delp, r=state.after.prompts[k]||["",""];
     if(((r[0]||"")+(r[1]||"")).trim()&&!confirm(`Delete ${exitLabels(k+1)[0]}? What you wrote in it goes too.`)) return;
     state.after.prompts.splice(k,1); save(); rerender(); });
 }
@@ -1966,7 +1979,7 @@ function afterField(f,a){ return `<label>${esc(f.label)}${f.req?'<span class="re
 function openAfter(){
   const a=state.after=Object.assign(blankAfter(),state.after||{}); const Mt=AFTER_META[a.kind]; if(!Mt){ pickArtifact(); return; }
   let art="";
-  if(a.kind==="exit"){ while(a.prompts.length<3) a.prompts.push(["",""]); const rq=((state.bg||{}).question||"").trim(); art=`<div class="tip" style="margin-top:4px">For each question, say how it helps answer your research question.${rq?`<br><b>Your research question:</b> ${esc(rq)}`:""}</div><div class="rows">${a.prompts.map((r,i)=>`<div class="exitq">${a.prompts.length>3?`<button class="tbtn delq" data-delp="${i}" title="Delete ${exitLabels(i+1)[0]}" aria-label="Delete ${exitLabels(i+1)[0]}">✕</button>`:""}<label>${exitLabels(i+1)[0]}</label><textarea data-p="${i}:0" style="min-height:90px">${esc(r[0])}</textarea><label>${exitLabels(i+1)[1]} <span class="hint">How are they connected?</span></label><textarea data-p="${i}:1" style="min-height:120px">${esc(r[1])}</textarea></div>`).join("")}</div>${a.prompts.length<8?`<button class="tbtn" data-addp style="margin-top:8px">＋ another question</button>`:""}`; }
+  if(a.kind==="exit"){ while(a.prompts.length<3) a.prompts.push(["",""]); const rq=((state.bg||{}).question||"").trim(); art=`<div class="tip" style="margin-top:4px">For each question, say how it helps answer your research question.${rq?`<br><b>Your research question:</b> ${esc(rq)}`:""}</div><div class="rows">${a.prompts.map((r,i)=>`<details class="exitq" data-q="${i}"${exitOpen(r,i)?" open":""}><summary><b>${exitLabels(i+1)[0]}</b><span class="qprev">${esc(exitPreview(r))}</span><span class="qok">${exitDone(r)?"✓":""}</span>${a.prompts.length>3?`<button class="tbtn delq" data-delp="${i}" title="Delete ${exitLabels(i+1)[0]}" aria-label="Delete ${exitLabels(i+1)[0]}">✕</button>`:""}</summary><div class="qbody"><textarea data-p="${i}:0" aria-label="${exitLabels(i+1)[0]}" style="min-height:90px">${esc(r[0])}</textarea><label>${exitLabels(i+1)[1]} <span class="hint">How are they connected?</span></label><textarea data-p="${i}:1" style="min-height:120px">${esc(r[1])}</textarea></div></details>`).join("")}</div>${a.prompts.length<8?`<button class="tbtn" data-addp style="margin-top:8px">＋ another question</button>`:""}`; }
   else if(a.kind==="transcript"){ art=`<label>The questions you'll ask <span class="hint">— two or three, each with why</span></label><textarea data-af="questions" style="min-height:140px">${esc(a.questions)}</textarea><div class="tip">During the discussion, write down what students actually say, word for word when you can. Keep your notes as you wrote them; they are your evidence.</div>`; }
   else if(a.kind==="gallery"){ art=`<label>Which solutions go to the board, in what order, and the connecting question</label><textarea data-af="order" style="min-height:96px">${esc(a.order)}</textarea><div class="tip">Photograph the board and annotate the photo. That photo is your evidence.</div>`; }
   else { art=`<label>${PROBE_LINE} <span class="hint">— and a “jot your reasoning” prompt</span></label><textarea data-af="questions" style="min-height:96px">${esc(a.questions)}</textarea>`; }
@@ -1978,6 +1991,8 @@ function openAfter(){
   const foot=`${last?`<button class="tbtn" data-golast>◀ Activity ${state.during.length}</button>`:""}<span style="flex:1"></span><span class="small" data-prog></span><button class="primary" data-close>Done</button>`;
   const M=showModal(head,body,foot,()=>afterProgress(state.after),openAfter); M.dataset.reopen="after"; M.querySelector(".box").classList.remove("wide");
   M.querySelector("[data-chg]").onclick=pickArtifact;
+  M.querySelectorAll("details.exitq").forEach(d=>d.querySelectorAll("textarea").forEach(t=>t.addEventListener("input",()=>{
+    const r=state.after.prompts[+d.dataset.q]||["",""]; d.querySelector(".qprev").textContent=exitPreview(r); d.querySelector(".qok").textContent=exitDone(r)?"✓":""; })));
   const g=M.querySelector("[data-golast]"); if(g) g.onclick=()=>{ renderPlan(); openActivity(last.id); };
 }
 /* ---------- nVoke, embedded inline in the Before popup: the cards are an nVoke prompt pack ---------- */
