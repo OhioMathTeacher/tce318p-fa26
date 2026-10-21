@@ -45,6 +45,15 @@
  .handed b{color:var(--red);font-style:normal;}
  .sort{list-style:none;margin:6px 0 0;padding:0;}
  .sort li{font-size:clamp(14px,1.55vw,23px);line-height:1.3;margin:12px 0;padding-left:14px;border-left:4px solid #eee;}
+ /* candy conversation hearts: one per After on Check (in its group's color), one on the closing slide */
+ .candy path{stroke:rgba(0,0,0,.10);stroke-width:1.5;}
+ .candy text{fill:#d6284f;font-weight:900;text-anchor:middle;letter-spacing:.04em;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}
+ .sort.hearts li{display:flex;align-items:center;gap:16px;border-left:none;padding-left:0;margin:2px 0;}
+ .sort.hearts .candy{flex:0 0 auto;width:clamp(64px,7.4vw,104px);height:auto;transform:rotate(-5deg);}
+ .sort.hearts li:nth-child(even) .candy{transform:rotate(4deg);}
+ .closer{display:flex;align-items:center;gap:28px;margin-top:18px;}
+ .closer .candy{flex:0 0 auto;width:clamp(110px,13vw,190px);height:auto;transform:rotate(-6deg);}
+ .closer .prompt{margin:0;}
  .sort .primes{color:var(--green);font-weight:800;} .sort .usurps{color:var(--red);font-weight:800;} .sort .off{color:var(--amber);font-weight:800;}
  .sort .why{color:var(--ink);font-weight:400;}
  /* per-routine resolve */
@@ -204,13 +213,13 @@
 
  <section class="slide" id="check" data-prev="groups">
   <div class="kick">Check: what each After captures</div>
-  <ul class="sort">
-   <li><span class="off">1 · Thumbs up.</span> <span class="why">A room of nods. Nothing to read later, and nothing about how.</span></li>
-   <li><span class="off">2 · 3/4 of 20.</span> <span class="why">Right math, but it keeps only the answer. The question asks <em>how</em>.</span></li>
-   <li><span class="off">3 · A fraction equal to 3/4.</span> <span class="why">Real thinking, about the wrong math. That is equivalence (3.NF.3), not a fraction of a group.</span></li>
-   <li><span class="off">4 · The three clearest solutions.</span> <span class="why">Whose thinking? The clearest solutions may not be the ones that show how students understand a fraction of a group. Choose for your question, not for clarity.</span></li>
-   <li><span class="usurps">5 · Copy the rule.</span> <span class="why">The After became a reteach. It captures the teacher’s thinking, not the students’.</span></li>
-   <li><span class="primes">6 · The probe.</span> <span class="why">New numbers, the same move, and a reason in writing.</span></li>
+  <ul class="sort hearts">
+   <li><svg class="candy" viewBox="0 0 100 92" aria-hidden="true"><path d="M50 88 C22 67 3 50 3 29 C3 14 14 4 28 4 C39 4 46 10 50 19 C54 10 61 4 72 4 C86 4 97 14 97 29 C97 50 78 67 50 88 Z" fill="#f9c6d3"/><g font-size="18"><text x="50" y="48">MISS U</text></g></svg><span><span class="off">1 · Thumbs up.</span> <span class="why">A room of nods. Nothing to read later, and nothing about how.</span></span></li>
+   <li><svg class="candy" viewBox="0 0 100 92" aria-hidden="true"><path d="M50 88 C22 67 3 50 3 29 C3 14 14 4 28 4 C39 4 46 10 50 19 C54 10 61 4 72 4 C86 4 97 14 97 29 C97 50 78 67 50 88 Z" fill="#dccaf1"/><g font-size="18"><text x="50" y="40">SAY</text><text x="50" y="58">HOW</text></g></svg><span><span class="off">2 · 3/4 of 20.</span> <span class="why">Right math, but it keeps only the answer. The question asks <em>how</em>.</span></span></li>
+   <li><svg class="candy" viewBox="0 0 100 92" aria-hidden="true"><path d="M50 88 C22 67 3 50 3 29 C3 14 14 4 28 4 C39 4 46 10 50 19 C54 10 61 4 72 4 C86 4 97 14 97 29 C97 50 78 67 50 88 Z" fill="#c7ecd7"/><g font-size="18"><text x="50" y="40">NOT MY</text><text x="50" y="58">TYPE</text></g></svg><span><span class="off">3 · A fraction equal to 3/4.</span> <span class="why">Real thinking, about the wrong math. That is equivalence (3.NF.3), not a fraction of a group.</span></span></li>
+   <li><svg class="candy" viewBox="0 0 100 92" aria-hidden="true"><path d="M50 88 C22 67 3 50 3 29 C3 14 14 4 28 4 C39 4 46 10 50 19 C54 10 61 4 72 4 C86 4 97 14 97 29 C97 50 78 67 50 88 Z" fill="#fbf0b0"/><g font-size="18"><text x="50" y="40">LOOK</text><text x="50" y="58">CLOSER</text></g></svg><span><span class="off">4 · The three clearest solutions.</span> <span class="why">Whose thinking? The clearest solutions may not be the ones that show how students understand a fraction of a group. Choose for your question, not for clarity.</span></span></li>
+   <li><svg class="candy" viewBox="0 0 100 92" aria-hidden="true"><path d="M50 88 C22 67 3 50 3 29 C3 14 14 4 28 4 C39 4 46 10 50 19 C54 10 61 4 72 4 C86 4 97 14 97 29 C97 50 78 67 50 88 Z" fill="#fdd3b6"/><g font-size="14"><text x="50" y="40">ALL</text><text x="50" y="57">ABOUT ME</text></g></svg><span><span class="usurps">5 · Copy the rule.</span> <span class="why">The After became a reteach. It captures the teacher’s thinking, not the students’.</span></span></li>
+   <li><svg class="candy" viewBox="0 0 100 92" aria-hidden="true"><path d="M50 88 C22 67 3 50 3 29 C3 14 14 4 28 4 C39 4 46 10 50 19 C54 10 61 4 72 4 C86 4 97 14 97 29 C97 50 78 67 50 88 Z" fill="#c9e2f8"/><g font-size="18"><text x="50" y="40">TRUE</text><text x="50" y="58">LUV</text></g></svg><span><span class="primes">6 · The probe.</span> <span class="why">New numbers, the same move, and a reason in writing.</span></span></li>
   </ul>
  </section>
 
@@ -224,7 +233,7 @@
  <section class="slide">
   <div class="kick small">The one question to carry</div>
   <div class="big">Would students’ responses provide evidence for <b>your research question</b>? In what way(s)?</div>
-  <p class="prompt">Now build yours. Then a classmate plays the student.</p>
+  <div class="closer"><svg class="candy" viewBox="0 0 100 92" aria-hidden="true"><path d="M50 88 C22 67 3 50 3 29 C3 14 14 4 28 4 C39 4 46 10 50 19 C54 10 61 4 72 4 C86 4 97 14 97 29 C97 50 78 67 50 88 Z" fill="#f9c6d3"/><g font-size="17"><text x="50" y="40">UR</text><text x="50" y="58">TURN</text></g></svg><p class="prompt">Now build yours. Then a classmate plays the student.</p></div>
  </section>
 
 </div>
