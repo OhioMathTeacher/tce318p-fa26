@@ -431,6 +431,20 @@
   .exitrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
   .exitrow textarea{min-height:56px}
   .exitq{border-left:3px solid #e5e7eb;padding-left:12px;margin-top:12px}
+  /* Plan the board (Strategy gallery): frames on a whiteboard, left to right, and the connecting question on a sticky note */
+  .wb{background:#fcfdfc;border:7px solid #c9ced6;border-radius:10px;box-shadow:inset 0 0 0 1px #e5e7eb;padding:14px 14px 12px;margin-top:4px}
+  .wb .frames{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  .wb .fr{flex:1;min-width:0;position:relative;border:2px dashed #b9c3d0;border-radius:10px;background:#fff;padding:6px 8px 22px;display:flex;flex-direction:column}
+  .wb .fr .fh{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:800;color:var(--after);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px}
+  .wb .fr textarea{flex:1;min-height:62px;border:none;padding:2px;font-size:14px;background:transparent;resize:vertical}
+  .wb .fr .cam{position:absolute;right:8px;bottom:4px;font-size:15px;opacity:.45}
+  .wb .fr .x{border:none;background:none;cursor:pointer;color:#9aa3af;font-size:13px;padding:0 2px}
+  .wb .fh .arr{color:#9aa3af;font-weight:400;margin-left:4px}
+  .wb .note{margin:14px auto 0;max-width:520px;background:#fff3a8;border-radius:3px;box-shadow:0 3px 6px rgba(0,0,0,.12);padding:8px 12px 10px;transform:rotate(-1deg)}
+  .wb .note label{margin:0 0 4px;font-size:13px}
+  .wb .note textarea{min-height:46px;background:transparent;border:none;padding:2px;font-size:14px}
+  .wb .add{margin-top:10px}
+  @media(max-width:640px){ .wb .frames{grid-template-columns:1fr} }
   /* each Student Question is an accordion: header = number, a preview, ✓ when both boxes are written, and ✕ above three */
   .exitq>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:5px 0;font-size:14px}
   .exitq>summary::-webkit-details-marker{display:none}
@@ -749,7 +763,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 91</div>
+<div id="build">Build 92</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -882,7 +896,12 @@ const AFTER_STEPS=[
     {k:"answers",label:"Would students' responses provide evidence for your research question? In what way(s)?",req:true,hint:"— the one test the After has to pass; your question is on the Profile tab"}]},
 ];
 const afterLabel=k=>AFTER_STEPS.flatMap(s=>s.fields).find(f=>f.k===k).label;
-const afterStep1=kind=>kind==="gallery"?"The board":kind==="other"?"What it is":"The questions";
+const afterStep1=kind=>kind==="gallery"?"Plan the board":kind==="other"?"What it is":"The questions";
+// Plan the board: frames left to right plus a connecting question. One source (a.board); what Check this,
+// the progress count, and the PDF read is galleryText(). An older plan's single box (a.order) seeds frame 1.
+const BOARD_ORD=["1st","2nd","3rd","4th","5th","6th"], BOARD_MAX=6, BOARD_PH=["e.g., counts them one by one","e.g., makes 4 equal groups","e.g., 12 ÷ 4 = 3, then 3 × 3"];
+const boardOf=a=>a.board&&Array.isArray(a.board.cols)?a.board:{cols:[a.order||"","",""],q:""};
+const galleryText=a=>{ const b=boardOf(a); return [...b.cols.map((c,i)=>(c||"").trim()?`${BOARD_ORD[i]} up: ${c.trim()}`:""), (b.q||"").trim()?`Connecting question: ${b.q.trim()}`:""].filter(Boolean).join("\n"); };
 const exitLabels=i=>[`Student Question ${i}`,`How does Student Question ${i} help answer your research question?`];
 // exit-slip accordion: every question starts closed (Todd, 21 Oct); only one just added with ＋ opens
 let exitJustAdded=-1;
@@ -892,7 +911,7 @@ const exitOpen=(r,i)=>i===exitJustAdded;
 const ROUTINE_ICON="🖐";
 function beforeParts(b){ return [(b.pack&&b.pack.thumbs&&b.pack.thumbs.length)||(b.useSlides&&(b.slides||[]).length)||(b.prompt||"").trim()||(b.cards||[]).some(c=>cardPlain(c).trim()), b.students, b.objective, b.withhold||b.entry||b.guard, b.thread].map(v=>!!(v&&String(v).trim())); }
 function beforeProgress(b){ const p=beforeParts(b); return [p.filter(Boolean).length, p.length]; }
-function afterProgress(a){ const art=a.kind==="exit"?(a.prompts||[]).filter(r=>(r[0]||"").trim()&&(r[1]||"").trim()).length>=3:a.kind==="gallery"?a.order:a.questions; const need=[art, a.students, a.objective, a.answers]; return [need.filter(v=>v&&String(v).trim()).length, need.length]; }
+function afterProgress(a){ const art=a.kind==="exit"?(a.prompts||[]).filter(r=>(r[0]||"").trim()&&(r[1]||"").trim()).length>=3:a.kind==="gallery"?galleryText(a):a.questions; const need=[art, a.students, a.objective, a.answers]; return [need.filter(v=>v&&String(v).trim()).length, need.length]; }
 function progLabel(pr){ return pr[0]===pr[1]?"✓ done":pr.join(" of "); }
 let seq=0; function uid(){ return "a"+(++seq)+"_"+Math.random().toString(36).slice(2,6); }
 
@@ -1683,7 +1702,7 @@ function readContent(tab){
   };
   if(tab==="before"){ const b=state.before||{}; const sl=b.useSlides?(b.slides||[]):[]; const cards=sl.length?`${sl.length} slides from the candidate's own deck — ${sl.map((x,i)=>`slide ${i+1}: ${(x.text||"").trim()||"(a picture, no text)"}`).join(" / ")}`:b.pack&&b.pack.pack?`${b.pack.pack.cards.length} nVoke cards (${b.pack.pack.cards.map(c=>c.template).join(", ")}) — ${b.pack.pack.cards.map(c=>c.prompt).filter(Boolean).join(" / ")}`:(b.cards||[]).map(cardForAI).filter(Boolean).join(" · "); return {routine:b.name, cards, what_you_say:b.prompt, what_students_do:b.students, what_I_do:b.teacher, objective:b.objective, must_not_give_away:b.withhold, entry_thinking:b.entry, over_scaffold_check:b.guard, connection_to_activity_1:b.thread, minutes:String(b.min||"")}; }
   if(tab==="after"){ const a=state.after||{}, t=v=>(v==null?"":String(v)).trim();
-    const art=a.kind==="exit"?(a.prompts||[]).filter(r=>t(r[0])).map((r,i)=>{ const L=exitLabels(i+1); return `${L[0]}: ${r[0]}\n${L[1]} ${r[1]||""}`; }).join("\n\n"):a.kind==="gallery"?a.order:a.questions;
+    const art=a.kind==="exit"?(a.prompts||[]).filter(r=>t(r[0])).map((r,i)=>{ const L=exitLabels(i+1); return `${L[0]}: ${r[0]}\n${L[1]} ${r[1]||""}`; }).join("\n\n"):a.kind==="gallery"?galleryText(a):a.questions;
     const o={"Kind of After":afterKindName(a), Minutes:String(a.min||""), ["1 · "+afterStep1(a.kind)]:art};
     if(a.kind==="other") o["Where it's from"]=a.source||"";
     for(const s of AFTER_STEPS) o[`${s.n} · ${s.step}`]=s.fields.filter(f=>t(a[f.k])).map(f=>`${f.label}${/[?…]$/.test(f.label)?"":":"} ${a[f.k]}`).join("\n");
@@ -1984,7 +2003,11 @@ function openAfter(){
   let art="";
   if(a.kind==="exit"){ while(a.prompts.length<3) a.prompts.push(["",""]); const rq=((state.bg||{}).question||"").trim(); art=`<div class="tip" style="margin-top:4px">For each question, say how it helps answer your research question.${rq?`<br><b>Your research question:</b> ${esc(rq)}`:""}</div><div class="rows">${a.prompts.map((r,i)=>`<details class="exitq" data-q="${i}"${exitOpen(r,i)?" open":""}><summary><b>${exitLabels(i+1)[0]}</b><span class="qprev">${esc(exitPreview(r))}</span><span class="qok">${exitDone(r)?"✓":""}</span>${a.prompts.length>3?`<button class="tbtn delq" data-delp="${i}" title="Delete ${exitLabels(i+1)[0]}" aria-label="Delete ${exitLabels(i+1)[0]}">✕</button>`:""}</summary><div class="qbody"><textarea data-p="${i}:0" aria-label="${exitLabels(i+1)[0]}" style="min-height:63px">${esc(r[0])}</textarea><label>${exitLabels(i+1)[1]} <span class="hint">How are they connected?</span></label><textarea data-p="${i}:1" style="min-height:84px">${esc(r[1])}</textarea></div></details>`).join("")}</div>${a.prompts.length<8?`<button class="tbtn" data-addp style="margin-top:8px">＋ another question</button>`:""}`; }
   else if(a.kind==="transcript"){ art=`<label>The questions you'll ask <span class="hint">— two or three, each with why</span></label><textarea data-af="questions" style="min-height:140px">${esc(a.questions)}</textarea><div class="tip">During the discussion, write down what students actually say, word for word when you can. Keep your notes as you wrote them; they are your evidence.</div>`; }
-  else if(a.kind==="gallery"){ art=`<label>Which solutions go to the board, in what order, and the connecting question</label><textarea data-af="order" style="min-height:96px">${esc(a.order)}</textarea><div class="tip">Photograph the board and annotate the photo. That photo is your evidence.</div>`; }
+  else if(a.kind==="gallery"){ const bd=boardOf(a); art=`<div class="tip" style="margin-top:4px">While students work, look for the solutions that show different thinking (often two or three). Plan the order they go up, left to right, and the one question that connects them.</div>
+    <div class="wb"><div class="frames">${bd.cols.map((c,i)=>`<div class="fr"><div class="fh"><span>${BOARD_ORD[i]} up${i<bd.cols.length-1?`<span class="arr">➜</span>`:""}</span>${bd.cols.length>1?`<button class="x" data-bdel="${i}" title="Remove this frame">✕</button>`:""}</div><textarea data-bcol="${i}" placeholder="${BOARD_PH[i]||""}" aria-label="${BOARD_ORD[i]} up">${esc(c)}</textarea><span class="cam" title="When you teach, photograph the board">📷</span></div>`).join("")}</div>
+    <div class="note"><label>🗨 Connecting question</label><textarea data-bq placeholder="e.g., Where is the 3/4 in each one?">${esc(bd.q)}</textarea></div>
+    ${bd.cols.length<BOARD_MAX?`<button class="tbtn add" data-badd>＋ another frame</button>`:""}</div>
+    <div class="tip">📷 When you teach, photograph the real board. That photo is your evidence.</div>`; }
   else if(a.kind==="other"){ art=`<label>Where it's from <span class="hint">— a book, a course, a teacher, a website</span></label><input type="text" data-af="source" value="${esc(a.source)}"><label>What students do or make, and what you keep<span class="req">*</span></label><textarea data-af="questions" style="min-height:96px">${esc(a.questions)}</textarea>`; }
   else { art=`<label>${PROBE_LINE} <span class="hint">— and a “jot your reasoning” prompt</span></label><textarea data-af="questions" style="min-height:96px">${esc(a.questions)}</textarea>`; }
   const head=`<h2>After</h2><span class="sicon" style="font-size:24px">${Mt.icon}</span>${a.kind==="other"?`<input type="text" data-af="name" value="${esc(a.name)}" placeholder="Name your After" style="width:auto;flex:1;max-width:280px;font-weight:800;padding:5px 8px;border:1px solid var(--line);border-radius:7px;font-size:15px">`:`<span class="cur" style="font-weight:800;font-size:15px">${esc(AFTER_KINDS[a.kind])}</span>`}<a class="chg" data-chg style="font-size:12.5px;color:var(--outline);cursor:pointer;text-decoration:underline">change</a><span class="mins"><input type="text" inputmode="numeric" placeholder="10" data-af="min" value="${esc(a.min)}">min</span><button class="tbtn" data-close>✕</button>`;
@@ -1995,6 +2018,12 @@ function openAfter(){
   const foot=`${last?`<button class="tbtn" data-golast>◀ Activity ${state.during.length}</button>`:""}<span style="flex:1"></span><span class="small" data-prog></span><button class="primary" data-close>Done</button>`;
   const M=showModal(head,body,foot,()=>afterProgress(state.after),openAfter); M.dataset.reopen="after"; M.querySelector(".box").classList.remove("wide");
   M.querySelector("[data-chg]").onclick=pickArtifact;
+  if(a.kind==="gallery"){ const keep=()=>{ if(!state.after.board) state.after.board=boardOf(state.after); return state.after.board; };
+    const progNow=()=>{ const el=M.querySelector("[data-prog]"); if(el){ const [d,t]=afterProgress(state.after); el.textContent=d===t?`✓ all ${t===5?"five":"four"} written`:`${d} of ${t} written`; } };
+    M.querySelectorAll("[data-bcol]").forEach(t=>t.addEventListener("input",()=>{ keep().cols[+t.dataset.bcol]=t.value; save(); progNow(); }));
+    const q=M.querySelector("[data-bq]"); if(q) q.addEventListener("input",()=>{ keep().q=q.value; save(); progNow(); });
+    const add=M.querySelector("[data-badd]"); if(add) add.onclick=()=>{ keep().cols.push(""); save(); openAfter(); };
+    M.querySelectorAll("[data-bdel]").forEach(x=>x.onclick=()=>{ const k=+x.dataset.bdel, b=keep(); if((b.cols[k]||"").trim()&&!confirm(`Remove the ${BOARD_ORD[k]} frame? What you wrote in it goes too.`)) return; b.cols.splice(k,1); save(); openAfter(); }); }
   M.querySelectorAll("details.exitq").forEach(d=>d.querySelectorAll("textarea").forEach(t=>t.addEventListener("input",()=>{
     const r=state.after.prompts[+d.dataset.q]||["",""]; d.querySelector(".qprev").textContent=exitPreview(r); d.querySelector(".qok").textContent=exitDone(r)?"✓":""; })));
   const g=M.querySelector("[data-golast]"); if(g) g.onclick=()=>{ renderPlan(); openActivity(last.id); };
@@ -2030,7 +2059,7 @@ function assemblePlan(){
   const slides=b.useSlides?(b.slides||[]):[];
   const cardsNote=slides.length?`${slides.length} slide${slides.length===1?"":"s"} (my own deck${b.slidesLink?": "+b.slidesLink:""}) — see the slide pages`:b.pack&&b.pack.thumbs&&b.pack.thumbs.length?`${b.pack.thumbs.length} card${b.pack.thumbs.length===1?"":"s"} (${b.pack.pack.name||"nVoke"}) — see the handout pages`:(b.cards||[]).map(cardPlain).filter(nz).length?"Cards: "+(b.cards||[]).map(cardPlain).filter(nz).map(t=>t.replace(/\n/g," / ")).join(" · "):"";
   const durings=(state.during||[]).map((a,i)=>{ const A=ACTIVITIES[a.type]; if(!A) return null; const own=a.type==="script"?lines([a.four.collab&&"Collaborate: "+a.four.collab,a.four.ask&&"Ask: "+a.four.ask,a.four.share&&"Share: "+a.four.share,a.four.think&&"Think first: "+a.four.think]):(A.extra&&nz(a.extra)?A.extra.label+": "+a.extra:""); return {i:i+1,A,a,own}; }).filter(Boolean);
-  const artifact=af.kind==="exit"?(af.prompts||[]).filter(r=>nz(r[0])).map((r,i)=>`Student Question ${i+1}: ${r[0]}${nz(r[1])?`\nHow it helps answer my research question: ${r[1]}`:""}`).join("\n\n"):af.kind==="gallery"?nz(af.order):nz(af.questions);
+  const artifact=af.kind==="exit"?(af.prompts||[]).filter(r=>nz(r[0])).map((r,i)=>`Student Question ${i+1}: ${r[0]}${nz(r[1])?`\nHow it helps answer my research question: ${r[1]}`:""}`).join("\n\n"):af.kind==="gallery"?galleryText(af):nz(af.questions);
   return {
     title:planTitle(), grade:nz(g.grade), names:nz(g.names), section:g.section==="oxford"?"Oxford":g.section==="hamilton"?"Hamilton":"",
     focus:lines([g.question, g.concept&&"The concept: "+g.concept]),
