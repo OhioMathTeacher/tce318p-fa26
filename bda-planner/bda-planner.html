@@ -783,7 +783,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 100</div>
+<div id="build">Build 101</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1075,7 +1075,8 @@ async function diagSnapshot(){
   o["In-app browser"]=WEBVIEW?"YES: a page inside another app (Canvas, email…). It cannot print or save, and its storage is separate.":"no";
   o["Profile filled"]=`concept ${g.concept?"yes":"no"} · question ${g.question?"yes":"no"} · standards ${(g.standards||[]).length} · students ${sr} · work samples ${sa} (${ph} with a picture)`;
   const dur=(state.during||[]).filter(a=>a&&a.type).length;
-  o["Plan filled"]=`before ${(state.before||{}).kind?"chosen":"empty"} · during ${dur} card(s) · after ${(state.after||{}).kind?"chosen":"empty"}`;
+  // The Before has no .kind: it's chosen once it has a routine name or is in slide mode.
+  o["Plan filled"]=`before ${(state.before||{}).name||(state.before||{}).useSlides?"chosen":"empty"} · during ${dur} card(s) · after ${(state.after||{}).kind?"chosen":"empty"}`;
 
   o["Passcode on this browser"]=(()=>{ try{ return localStorage.getItem("bda-passcode")?"yes":"no"; }catch(e){ return "?"; } })();
   o["Browser"]=navigator.userAgent;
@@ -2134,7 +2135,7 @@ function assemblePlan(){
     materials:lines([...new Set(durings.map(d=>nz(d.a.materials)).filter(Boolean)), cardsNote&&"Before: "+cardsNote, afterKindName(af)&&"After: "+afterKindName(af)]),
     objectives:lines([nz(b.objective)&&"Before — "+b.objective, ...durings.map(d=>nz(d.a.objective)&&`Activity ${d.i} (${d.A.name}) — ${d.a.objective}`), nz(af.objective)&&"After — "+af.objective]),
     standards:lines([...(g.standards||[]).map(c=>`${c}  ${stdText(c)}`), ...(g.practices||[]).map(c=>{ const p=OM.practices.find(x=>x[0]===c); return p?`${c}  ${p[1]}`:c; })]),
-    before:lines([(nz(b.name)||slides.length)&&`${nz(b.name)||"Untitled"}${nz(b.min)?` · ${b.min} min`:""}`, nz(b.prompt)&&"What I say: "+b.prompt, cardsNote, nz(b.students)&&"Students: "+b.students, nz(b.teacher)&&"Teacher: "+b.teacher, nz(b.withhold)&&"Not given away: "+b.withhold, nz(b.thread)&&"→ "+b.thread]),
+    before:lines([(nz(b.name)||slides.length)&&`${nz(b.name)||"Untitled"}${nz(b.min)?` · ${b.min} min`:""}`, nz(b.prompt)&&"What I say: "+b.prompt, cardsNote, nz(b.students)&&"Students: "+b.students, nz(b.teacher)&&"Teacher: "+b.teacher, nz(b.withhold)&&"Not given away: "+b.withhold, nz(b.entry)&&"Entry thinking it surfaces: "+b.entry, nz(b.guard)&&"Over-scaffold check: "+b.guard, nz(b.thread)&&"→ "+b.thread]),
     during:durings.map(d=>lines([`${d.i} · ${d.A.name}${nz(d.a.title)?" — "+d.a.title:""}${nz(d.a.min)?` · ${d.a.min} min`:""}`, d.own, nz(d.a.students)&&"Students: "+d.a.students, nz(d.a.teacher)&&"Teacher: "+d.a.teacher, nz(d.a.questions)&&"Key questions: "+d.a.questions, nz(d.a.anticipate)&&"Anticipated: "+d.a.anticipate, deckNote(d.a), nz(d.a.thread)&&"→ "+d.a.thread])).join("\n\n"),
     after:lines([afterKindName(af)&&`${afterKindName(af)}${nz(af.min)?` · ${af.min} min`:""}`, af.kind==="other"&&nz(af.source)&&"From: "+af.source, artifact, deckNote(af), nz(af.students)&&"Students: "+af.students, nz(af.teacher)&&"Teacher: "+af.teacher]),
     assessment:lines([nz(af.captures)&&"What it will show me: "+af.captures, nz(af.answers)&&afterLabel("answers")+" "+af.answers, ...durings.map(d=>nz(d.a.anticipate)&&`During ${d.i}, anticipated: ${d.a.anticipate}`)]),
@@ -2159,7 +2160,13 @@ function wCell(w,inner,shade){ return `<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="d
 /* one placemat row: the prompt (bold title + grey hint) on the left, the content on the right; empty stays visibly empty */
 function placemat(rows){ const W=[3000,7080]; return `<w:tbl><w:tblPr><w:tblW w:w="10080" w:type="dxa"/>${TBL_BORDERS}<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="${W[0]}"/><w:gridCol w:w="${W[1]}"/></w:tblGrid>`
   +rows.map(r=>`<w:tr><w:trPr><w:cantSplit/></w:trPr>${wCell(W[0],wPara(r.label,{bold:true,size:22,after:20})+(r.hint?wPara(r.hint,{size:17,color:"52606D",after:0}):""),"EEF3FA")}${wCell(W[1],(r.text&&r.text.trim())?wPara(r.text,{size:21,after:0}):wPara("",{after:0}))}</w:tc></w:tr>`.replace("</w:tc></w:tr>","</w:tr>")).join("")+"</w:tbl>"+wPara("",{after:120}); }
-async function svgToPng(svg,px){ return new Promise(res=>{ const im=new Image(); im.onload=()=>{ const c=document.createElement("canvas"); c.width=px; c.height=px; const x=c.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,px,px); x.drawImage(im,0,0,px,px); res(c.toDataURL("image/png")); }; im.onerror=()=>res(null); im.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg); }); }
+/* An SVG drawn inline in the page needs no namespace, but the same markup loaded as an image
+   (a data: URL in <img>, or drawn to a canvas) is a standalone document and won't render
+   without one. The nVoke card thumbnails are made inline, so add it on the way out
+   (Lexi M., 10/22: her Before cards were broken-image boxes in the PDF). */
+function svgDoc(svg){ svg=String(svg||""); return /^<svg\b[^>]*\sxmlns=/.test(svg)?svg:svg.replace(/^<svg\b/,'<svg xmlns="http://www.w3.org/2000/svg"'); }
+function svgSrc(svg){ return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svgDoc(svg)); }
+async function svgToPng(svg,px){ return new Promise(res=>{ const im=new Image(); im.onload=()=>{ const c=document.createElement("canvas"); c.width=px; c.height=px; const x=c.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,px,px); x.drawImage(im,0,0,px,px); res(c.toDataURL("image/png")); }; im.onerror=()=>res(null); im.src=svgSrc(svg); }); }
 function dataURLtoBytes(u){ const bin=atob(u.slice(u.indexOf(",")+1)); const b=new Uint8Array(bin.length); for(let j=0;j<bin.length;j++) b[j]=bin.charCodeAt(j); return b; }
 function imageXml(pngDataUrl,px,media,drels,caption,o){ const seq=media.length+1, rId="rIdImg"+seq, fname="image"+seq+(/^data:image\/jpe?g/.test(pngDataUrl)?".jpeg":".png"); media.push({name:"word/media/"+fname,bytes:dataURLtoBytes(pngDataUrl)}); drels.push(`<Relationship Id="${rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/${fname}"/>`); const cx=Math.round(((o&&o.w)||2.6)*914400), cy=Math.round(cx*((o&&o.aspect)||1));
   return (caption?wPara(caption,{size:18,italic:true,color:"52606D",after:20}):"")+`<w:p><w:pPr>${o&&o.keepNext?"<w:keepNext/>":""}<w:spacing w:before="40" w:after="${o&&o.keepNext?20:160}"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><wp:extent cx="${cx}" cy="${cy}"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="${seq}" name="Card ${seq}"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="${seq}" name="Card ${seq}"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="${rId}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`; }
@@ -2301,7 +2308,7 @@ function printPlan(){
     ${A.textCards.length?`<div class="hand"><h2>Handout — the Before's cards</h2><p><i>${esc(state.before.prompt||"")}</i></p><div class="pcards">${A.textCards.map(c=>`<div class="pcard">${cardHTML(c)}</div>`).join("")}</div></div>`:""}
     ${A.slides.length?`<div class="hand"><h2>The Before — my slides</h2><p><i>${esc(state.before.prompt||"")}</i></p>${A.slides.map(x=>`<img src="${x.img}" style="width:100%;height:auto;margin:0 0 12px;border:1px solid #ccc">`).join("")}</div>`:""}
     ${A.decks.map(d=>`<div class="hand"><h2>${esc(d.title)}</h2>${d.slides.map(x=>`<img src="${x.img}" style="width:100%;height:auto;margin:0 0 12px;border:1px solid #ccc">`).join("")}</div>`).join("")}
-    ${A.thumbs.length?`<div class="hand"><h2>Handout — the Before's cards</h2><p><i>${esc(state.before.prompt||"")}</i></p>${A.thumbs.map(t=>`<img src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(t)}">`).join("")}</div>`:""}
+    ${A.thumbs.length?`<div class="hand"><h2>Handout — the Before's cards</h2><p><i>${esc(state.before.prompt||"")}</i></p>${A.thumbs.map(t=>`<img src="${svgSrc(t)}">`).join("")}</div>`:""}
     ${A.exit.length?`<div class="hand"><h2 class="xs">Exit Slip</h2><p class="xn"><span>Name:</span><span class="ln"></span><span>Date:</span><span class="ln dt"></span></p>${A.exit.map((r,i)=>`<div class="xq" style="min-height:${Math.min(2.6,Math.max(1.2,(6.6-A.exit.length*0.15)/A.exit.length)).toFixed(2)}in"><b>${i+1}.</b>&nbsp; ${esc(r[0])}</div>`).join("")}</div>`:""}
     ${(()=>{ const L=readsLogHTML(); return L?`<div class="hand"><h2>Appendix — the genAI planning partner's reads</h2><p class="note">What the partner asked, and what I kept or set aside. It asks; it never writes the plan.</p>${L}</div>`:""; })()}`;
   logEvent("export","Investigation Plan → PDF");
@@ -2594,9 +2601,9 @@ setInterval(checkUpdate,10*60*1000); setTimeout(checkUpdate,5000);
 /* ---------- What's new: the build number opens a short list of changes, written for candidates. A dot shows
    until they've opened it once since the newest entry. "Seen" is kept apart from the plan (bda-news-seen). ---------- */
 const NEWS=[   // the last three builds students would notice; older ones live in the GitHub history (NEWS_LOG)
+  [101,["Your Before cards print in your Investigation Plan now. If you made your cards with the card builder, they showed as empty boxes in the PDF. Make your PDF again to get them.","Your Before's \"entry thinking\" and \"over-scaffold check\" now print in the plan, too."]],
   [99,["You can change how the planning partner sounds: gentler or more direct, one point at a time, shorter replies. Find it under ⚙ → How your planning partner sounds."]],
-  [97,["The Update available button shows up as soon as you come back to the Planner from another app, so you don't have to reload to get a new build."]],
-  [96,["Every During activity and the After can have your own slides now. Open one and look for 📊 Upload my slides. Slides print in your Investigation Plan.","Click the build number in the corner (like you just did) to see what's changed in the Planner."]]];
+  [97,["The Update available button shows up as soon as you come back to the Planner from another app, so you don't have to reload to get a new build."]]];
 const NEWS_LOG="https://github.com/OhioMathTeacher/tce318p-fa26/commits/main/bda-planner/bda-planner.html";
 function newsSeen(){ try{ return +localStorage.getItem("bda-news-seen")||0; }catch(e){ return 0; } }
 function newsMark(){ const B=document.getElementById("build"); if(B) B.classList.toggle("fresh",newsSeen()<NEWS[0][0]); }
