@@ -783,7 +783,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 101</div>
+<div id="build">Build 102</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -1766,7 +1766,7 @@ async function secondRead(mode,tab,btn){
   const j=await askWorker({mode,tab,content,attempt:mode==="options"?flat:undefined,history:R.history.slice(-8)});
   btn.classList.remove("busy"); btn.textContent=old; btn.disabled=false;
   if(!j) return;
-  R.history.push({role:"user",content:`[${mode}] `+flat.slice(0,1500)}); R.history.push({role:"assistant",content:JSON.stringify(j.data).slice(0,1500)}); R.history=R.history.slice(-8);
+  R.history.push({role:"user",content:`[${mode}] `+(flat.length>1500?flat.slice(0,1500).replace(/\s+\S*$/,"")+" [shortened here by the planner, not the candidate]":flat)}); R.history.push({role:"assistant",content:JSON.stringify(j.data).slice(0,1500)}); R.history=R.history.slice(-8);
   R.last={mode,data:j.data,when:new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}),aside:[]};
   R.log=R.log||[]; R.log.push({mode,ts:Date.now(),data:j.data,aside:R.last.aside,by:(state.bg||{}).names||"",snap:tab==="after"?assemblePlan().after:undefined});
   save(); rerenderFor(tab);
@@ -2601,9 +2601,9 @@ setInterval(checkUpdate,10*60*1000); setTimeout(checkUpdate,5000);
 /* ---------- What's new: the build number opens a short list of changes, written for candidates. A dot shows
    until they've opened it once since the newest entry. "Seen" is kept apart from the plan (bda-news-seen). ---------- */
 const NEWS=[   // the last three builds students would notice; older ones live in the GitHub history (NEWS_LOG)
+  [102,["Check this and Ask me read your whole During activity now. A long activity was being cut off partway, so the planning partner said your sentences were unfinished and missed what came after. Press Check this again to get a read of all of it."]],
   [101,["Your Before cards print in your Investigation Plan now. If you made your cards with the card builder, they showed as empty boxes in the PDF. Make your PDF again to get them.","Your Before's \"entry thinking\" and \"over-scaffold check\" now print in the plan, too."]],
-  [99,["You can change how the planning partner sounds: gentler or more direct, one point at a time, shorter replies. Find it under ⚙ → How your planning partner sounds."]],
-  [97,["The Update available button shows up as soon as you come back to the Planner from another app, so you don't have to reload to get a new build."]]];
+  [99,["You can change how the planning partner sounds: gentler or more direct, one point at a time, shorter replies. Find it under ⚙ → How your planning partner sounds."]]];
 const NEWS_LOG="https://github.com/OhioMathTeacher/tce318p-fa26/commits/main/bda-planner/bda-planner.html";
 function newsSeen(){ try{ return +localStorage.getItem("bda-news-seen")||0; }catch(e){ return 0; } }
 function newsMark(){ const B=document.getElementById("build"); if(B) B.classList.toggle("fresh",newsSeen()<NEWS[0][0]); }
