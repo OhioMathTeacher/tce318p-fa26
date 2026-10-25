@@ -103,8 +103,7 @@ week's graded assignment) and a **Reading Homework** sheet naming the week's art
 
 **Act III — Field and report (Weeks 11–15).**
 
-- **[`week-11-field-consultation/`](week-11-field-consultation/)** — *Field Consultation.*
-  Weeks 11–12 are in the field, so no day-outlines.
+- Weeks 11–12 are in the field, so no day-outlines.
 - **[`week-13-final-report/`](week-13-final-report/)** — the *Final Report*, *Writing Up Your
   Data*, and *Your Rough Draft* (a recommended, not-collected writing task over the break).
 - **[`week-15-review-and-share/`](week-15-review-and-share/)** — *Review &amp; Reflection.*
