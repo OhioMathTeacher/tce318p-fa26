@@ -784,7 +784,7 @@
 </div></div>
 <div id="profilePrint"></div>
 <div id="toast"></div>
-<div id="build">Build 105</div>
+<div id="build">Build 106</div>
 
 <script src="standards/ohio-math-k5.js"></script>
 <script>
@@ -2379,7 +2379,7 @@ function renderShare(){
   const g=state.bg||{}; state.share=state.share||{}; const sh=state.share; const A=assemblePlan(); const names=teamNames();
   const have=k=>A[k]&&A[k].trim()?"✓":"·";
   const wrap=document.getElementById("shareTiles");
-  const rows=[["Your research question and the concept","Profile · 2a, 2c",A.focus],["Materials needed","Plan · every part",A.materials],["Learning objectives — one per part","Plan · Before, During, After",A.objectives],["Standards alignment, full text","Profile · 2a",A.standards],["Lesson flow — Before (baseline)","Plan · Before",A.before],["Lesson flow — During (primary instrument)","Plan · During",A.during],["Lesson flow — After (the capture)","Plan · After",A.after],["Assessment — name your read","Plan · After",A.assessment],["How the feedback shaped my After","Share · above",A.feedback],["Handout — the Before's cards","Plan · Before",A.thumbs.length?"x":""],["Handout — the exit slip","Plan · After",A.exit.length?"x":""],["Appendix — the genAI planning partner's reads","Plan · Check this, Ask me",readsLogHTML()?"x":""]];
+  const rows=[["Your research question and the concept","Profile · 2a, 2c",A.focus],["Materials needed","Plan · every part",A.materials],["Learning objectives — one per part","Plan · Before, During, After",A.objectives],["Standards alignment, full text","Profile · 2a",A.standards],["Lesson flow — Before (baseline)","Plan · Before",A.before],["Lesson flow — During (primary instrument)","Plan · During",A.during],["Lesson flow — After (the capture)","Plan · After",A.after],["Assessment — name your read","Plan · After",A.assessment],["How the feedback shaped my After","Share · above",A.feedback],["Handout — the Before's cards","Plan · Before",A.thumbs.length||A.slides.length||A.textCards.length?"x":""],["Handout — the exit slip","Plan · After",A.exit.length?"x":""],["Appendix — the genAI planning partner's reads","Plan · Check this, Ask me",readsLogHTML()?"x":""]];
   const first=((((state.reads||{}).after||{}).log)||[]).find(e=>e.snap);
   wrap.innerHTML=`<div class="tile"><h2><span class="n">1</span>Your reflection on the feedback${I("Your After was read twice before you teach it: by your group and by the genAI planning partner. This paragraph says what those reads were worth to you, with specifics. It prints in your Investigation Plan.")}</h2>
       <label>How the feedback shaped my After <span class="hint">— one paragraph</span></label>
@@ -2643,9 +2643,9 @@ setInterval(checkUpdate,10*60*1000); setTimeout(checkUpdate,5000);
 /* ---------- What's new: the build number opens a short list of changes, written for candidates. A dot shows
    until they've opened it once since the newest entry. "Seen" is kept apart from the plan (bda-news-seen). ---------- */
 const NEWS=[   // the last three builds students would notice; older ones live in the GitHub history (NEWS_LOG)
+  [106,["On the Share tab, \"What goes into your plan\" now checks off your Before's cards when you made them as slides or typed cards. They were always printing in your Investigation Plan. Only the check mark was missing."]],
   [103,["A third example under ⚙ → See a finished example: Grade 3, break apart arrays. It is long and it has gaps left in on purpose. Open it, press Check this and Ask me on each part, and see what the planning partner finds. Then compare with your own plan."]],
-  [102,["Check this and Ask me read your whole During activity now. A long activity was being cut off partway, so the planning partner said your sentences were unfinished and missed what came after. Press Check this again to get a read of all of it."]],
-  [101,["Your Before cards print in your Investigation Plan now. If you made your cards with the card builder, they showed as empty boxes in the PDF. Make your PDF again to get them.","Your Before's \"entry thinking\" and \"over-scaffold check\" now print in the plan, too."]]];
+  [102,["Check this and Ask me read your whole During activity now. A long activity was being cut off partway, so the planning partner said your sentences were unfinished and missed what came after. Press Check this again to get a read of all of it."]]];
 const NEWS_LOG="https://github.com/OhioMathTeacher/tce318p-fa26/commits/main/bda-planner/bda-planner.html";
 function newsSeen(){ try{ return +localStorage.getItem("bda-news-seen")||0; }catch(e){ return 0; } }
 function newsMark(){ const B=document.getElementById("build"); if(B) B.classList.toggle("fresh",newsSeen()<NEWS[0][0]); }
