@@ -21,50 +21,51 @@
  a{color:#2563eb;}
  .home{display:inline-block;margin:0 0 10px;font-size:12px;color:#6b7280;text-decoration:none;}
  .home:hover{color:#2563eb;text-decoration:underline;}
+ .block>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:8px;}
+ .block>summary::-webkit-details-marker{display:none;}
+ .block>summary::before{content:"\25B8";font-size:12px;color:#6b7280;}
+ .block[open]>summary::before{content:"\25BE";}
+ .block>summary h2{margin:0;}
+ .block[open]>summary{margin-bottom:8px;}
 </style>
 </head>
 <body>
 <main>
-<a class="home" href="../index.html">← Course home</a>
-<h1>Week 15 · Second session — Potluck, Share &amp; Debrief</h1>
-<div class="sub">Act III · the last class · <em>share what you're proud of, then talk shop about the paper</em></div>
+<a class="home" href="../index.html">&larr; Course home</a>
+<h1>Week 15 &middot; Second session: Potluck &amp; presentations</h1>
+<div class="sub">Act III &middot; the last class &middot; <em>What did you seek to learn, and what did you learn?</em></div>
 
-<div class="goals"><strong>Today's goals:</strong> The last class. Bring something to share. Each of us shares one piece of our writing we're proud of, then we talk through where drafts stand and how <strong>Todd-in-a-Can</strong> worked as a reviewer — which feeds your <a href="week-15-review-reflection.docx">Review &amp; Reflection</a>.</div>
+<div class="goals"><strong>Today's goals:</strong> Our last class. We eat, and each field pair presents a piece of their writing they're proud of.</div>
 
-<div class="block b-set">
- <h2>1 · Potluck &amp; welcome <span class="time">(~10 min)</span></h2>
+<details class="block b-share" name="wk15d2" open>
+ <summary><h2>1 &middot; Potluck <span class="time">(~20 min)</span></h2></summary>
  <ul>
-  <li>Settle in and share food. One semester ago you met a concept and a student's thinking about it; today we close the loop together.</li>
+  <li>Get food and settle in.</li>
  </ul>
- <p class="purpose">Purpose: this work has been close and personal. We finish it as a community of teachers.</p>
-</div>
+</details>
 
-<div class="block b-share">
- <h2>2 · Share a piece you're proud of <span class="time">(~40 min)</span></h2>
+<details class="block b-work" name="wk15d2">
+ <summary><h2>2 &middot; Presentations <span class="time">(~60 min)</span></h2></summary>
  <ul>
-  <li>Share <strong>one piece of your draft</strong> you're genuinely proud of — a paragraph, a figure and your reading of it, a turn in your analysis — and say <em>why</em> it's the piece you'd point to.</li>
-  <li>As audience: notice what makes a piece land. You'll carry those moves back into your own draft.</li>
+  <li>Each field pair has 4 minutes, in the order of the sign-up. Show the piece you uploaded and say why it's the one you'd point to.</li>
+  <li>Keep eating.</li>
  </ul>
- <p class="purpose">Purpose: naming your own best work — and hearing others' — is how you learn what strong evidence-based writing sounds like.</p>
-</div>
-
-<div class="block b-work">
- <h2>3 · Drafts &amp; Todd-in-a-Can <span class="time">(~25 min)</span></h2>
- <ul>
-  <li>Where do drafts stand? Bring your open questions about the paper and we'll work them out together.</li>
-  <li>Debrief the AI reviewer: what did <strong>Todd-in-a-Can</strong> catch, what did it miss, what did you change because of it — and what did you reject, and why? <em>How well did it actually work?</em></li>
- </ul>
- <p class="purpose">Purpose: an honest read of the AI reviewer is part of the inquiry — you're learning when a machine read helps your thinking and when it doesn't.</p>
-</div>
+</details>
 
 <div class="wrap">
  <strong>Wrap-up:</strong>
  <ul>
-  <li>Finish strong: your <strong>Final Report</strong> and your <a href="week-15-review-reflection.docx">Review &amp; Reflection</a> are both due Dec&nbsp;9 (two separate submissions). Thank you for a semester of looking closely.</li>
+  <li>The <a href="week-15-review-reflection.docx">Review &amp; Reflection</a> is due Sun Dec&nbsp;6. The <a href="../week-13-final-report/week-13-final-report.docx">Final Report</a> is due Wed Dec&nbsp;9.</li>
+  <li>Thank you for a semester of looking closely.</li>
  </ul>
 </div>
 
-<p class="canvas-note">Assignment links, the submission dropbox, and due dates are in <strong>Canvas</strong>, below the link to this outline. This page is the lesson outline only — no names, no grades.</p>
+<p class="canvas-note">Assignment links, the submission dropbox, and due dates are in <strong>Canvas</strong>, below the link to this outline. This page is the lesson outline only. No names, no grades.</p>
 </main>
+<script>
+  const blocks = [...document.querySelectorAll("details.block")];
+  addEventListener("beforeprint", () => blocks.forEach(d => { d.removeAttribute("name"); d.open = true; }));
+  addEventListener("afterprint",  () => blocks.forEach(d => d.setAttribute("name", "wk15d2")));
+</script>
 </body>
 </html>
