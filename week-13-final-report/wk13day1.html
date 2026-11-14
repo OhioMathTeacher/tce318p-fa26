@@ -23,64 +23,71 @@
  a{color:#2563eb;}
  .home{display:inline-block;margin:0 0 10px;font-size:12px;color:#6b7280;text-decoration:none;}
  .home:hover{color:#2563eb;text-decoration:underline;}
+ .block>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:8px;}
+ .block>summary::-webkit-details-marker{display:none;}
+ .block>summary::before{content:"\25B8";font-size:12px;color:#6b7280;}
+ .block[open]>summary::before{content:"\25BE";}
+ .block>summary h2{margin:0;}
+ .block[open]>summary{margin-bottom:8px;}
+ .cal-wrap{overflow-x:auto;margin:8px 0;}
+ .cal{border-collapse:collapse;width:100%;background:#fff;font-size:14px;}
+ .cal th,.cal td{border:1px solid #d1d5db;padding:6px 8px;text-align:left;vertical-align:top;}
+ .cal th{background:#f3f4f6;}
+ .cal td.d,.cal td.w{white-space:nowrap;}
+ .cal tr.now td{background:#fff3cd;}
 </style>
 </head>
 <body>
 <main>
-<a class="home" href="../index.html">← Course home</a>
-<h1>Week 13 · First session — Share-out</h1>
-<div class="sub">Act III · the week back · <em>what did you seek to learn, and what did you come back with?</em></div>
+<a class="home" href="../index.html">&larr; Course home</a>
+<h1>Week 13 &middot; First session: Welcome back</h1>
+<div class="sub">Act III &middot; the week back &middot; <em>What did you seek to learn, and what did you learn?</em></div>
 
-<div class="goals"><strong>Today's goals:</strong> You're back from the field with student work in hand. Debrief, share your <strong>guiding question</strong> and one telling piece of evidence, and we walk the <strong>Final Report</strong> together. You leave with the game plan for finishing the paper.</div>
+<div class="goals"><strong>Today's goals:</strong> You taught your lesson in the field and came back with student work. Tell us what you taught and what you collected. Then we go over the two assignments left, the Final Report and the Review &amp; Reflection, and the plan from here to December&nbsp;9.</div>
 
-<div class="roadmap">
- <strong>Act III — the plan from here:</strong>
- <ol>
-  <li><strong>Tonight</strong> — start <a href="week-13-writing-up-your-data.docx">writing up your data</a>.</li>
-  <li><strong>Thu Nov 19</strong> — write, section by section.</li>
-  <li><strong>Thanksgiving break</strong> — recommended: push to a <a href="week-13-rough-draft.docx">full rough draft</a> (all five parts down; rough is the goal).</li>
-  <li><strong>Week 15, first session</strong> (Oxford Mon Nov 30 · Hamilton Tue Dec 1) — write, then peer review; run your draft through Todd-in-a-Can.</li>
-  <li><strong>Thu Dec 3</strong> — potluck: share a piece you're proud of, talk through drafts, debrief how Todd-in-a-Can worked.</li>
-  <li><strong>Final Report due Wed Dec 9.</strong></li>
- </ol>
-</div>
-
-<div class="block b-set">
- <h2>1 · Welcome back <span class="time">(~10 min)</span></h2>
+<details class="block b-share" name="wk13d1" open>
+ <summary><h2>1 &middot; Field debrief <span class="time">(~45 min)</span></h2></summary>
  <ul>
-  <li>Two weeks in the field, running your Investigation Plan and collecting work. With a partner, then the room: what <strong>surprised</strong> you? What did you come back with — and what were you <em>not</em> able to get?</li>
+  <li><strong>With a partner (15 min).</strong> What did you teach: the Before, the During, the After? What did you collect, and what were you not able to get? What surprised you?</li>
+  <li><strong>With the room (30 min).</strong> Share your research question and one telling piece of student work or talk. The room tells you what they see in it.</li>
+  <li>Keep notes on what your colleagues say about your piece. You can use them in your Collected Data.</li>
  </ul>
- <p class="purpose">Purpose: the field is a blur until you say it out loud. Naming what you collected — and what you didn't — is where the analysis starts.</p>
-</div>
+</details>
 
-<div class="block b-share">
- <h2>2 · Share-out — your question and one piece <span class="time">(~35 min)</span></h2>
+<details class="block b-set" name="wk13d1">
+ <summary><h2>2 &middot; What's left <span class="time">(~35 min)</span></h2></summary>
  <ul>
-  <li>Share two things: your <strong>guiding question</strong> (what you set out to learn) and <strong>one telling artifact</strong> you collected — plus a first read of what it shows about how your student(s) understood the concept.</li>
-  <li>The room helps you see it: what does this piece let you see? What's another way to read it? Is it evidence for your question, or next to it?</li>
-  <li>Keep notes on what colleagues surface about your piece — it feeds your Collected Data.</li>
+  <li><strong>The Final Report (50 points).</strong> Open the <a href="week-13-final-report.docx">Final Report guidelines</a> together. Ask your questions about the paper now.</li>
+  <li><strong>The Review &amp; Reflection (30 points).</strong> Open the <a href="../week-15-review-and-share/week-15-review-reflection.docx">Review &amp; Reflection guidelines</a>. It is a separate assignment, due the same day.</li>
+  <li><strong>Where we're going for the rest of the semester:</strong>
+   <div class="cal-wrap"><table class="cal">
+    <tr><th>When</th><th>Oxford</th><th>Hamilton</th><th>What</th></tr>
+    <tr class="now"><td class="w">Week 13, first session</td><td class="d">Mon Nov&nbsp;16</td><td class="d">Tue Nov&nbsp;17</td><td>Today: field debrief and what's left.</td></tr>
+    <tr><td class="w">Week 13, second session</td><td class="d">Wed Nov&nbsp;18</td><td class="d">Thu Nov&nbsp;19</td><td>Writing day. Write your Collected Data, then find your research.</td></tr>
+    <tr><td class="w">Week 14</td><td class="d" colspan="2">Nov&nbsp;23&#8211;26</td><td>No class: Thanksgiving. We recommend a <a href="week-13-rough-draft.docx">full rough draft</a> of all five parts. Rough is fine.</td></tr>
+    <tr><td class="w">Week 15, first session</td><td class="d">Mon Nov&nbsp;30</td><td class="d">Tue Dec&nbsp;1</td><td>Bring your draft. Write, then a classmate reads it. Run Todd-in-a-Can on it.</td></tr>
+    <tr><td class="w">Week 15, second session</td><td class="d">Wed Dec&nbsp;2</td><td class="d">Thu Dec&nbsp;3</td><td>Potluck. Share a piece you're proud of, and talk about how Todd-in-a-Can worked.</td></tr>
+    <tr><td class="w">Finals week</td><td class="d" colspan="2">Wed Dec&nbsp;9</td><td>The Final Report and the Review &amp; Reflection are due, as two separate submissions.</td></tr>
+   </table></div>
+  </li>
  </ul>
- <p class="purpose">Purpose: a first human read of your evidence, out loud, before you write it up. "What did you learn?" starts here.</p>
-</div>
-
-<div class="block b-work">
- <h2>3 · Walk the Final Report together <span class="time">(~25 min)</span></h2>
- <ul>
-  <li>We open the <a href="week-13-final-report.docx">Final Report</a> and read it together, section by section — what each section asks for, the format rules, and how it's graded. The spine: <em>what did you seek to learn, and what did you learn?</em>, answered with your own artifacts.</li>
-  <li>It's graded on evidence-based reasoning and honesty about limits — not on whether you "answered" your question. Bring your questions about the assignment now.</li>
- </ul>
- <p class="purpose">Purpose: knowing the shape of the paper before you write keeps our next class about writing, not decoding the assignment.</p>
-</div>
+</details>
 
 <div class="wrap">
- <strong>Wrap-up &amp; tonight's start:</strong>
+ <strong>Wrap-up &amp; tonight:</strong>
  <ul>
-  <li>Pull your <strong>telling pieces</strong> — the artifacts you'll actually show — get them de-identified, and <strong>start <a href="week-13-writing-up-your-data.docx">writing up your data</a> tonight.</strong> Next class you build on it.</li>
-  <li>The full plan for the next three weeks is up top. <strong>Our next class is a section-by-section writing day.</strong></li>
+  <li>Pull your telling pieces. De-identify them, and keep the raw version of each for your appendix.</li>
+  <li>Start <a href="week-13-writing-up-your-data.docx">Writing Up Your Data</a> tonight. It is not collected. It becomes your Collected Data.</li>
+  <li>Next class is a writing day. Bring your artifacts and the guidelines.</li>
  </ul>
 </div>
 
-<p class="canvas-note">Assignment links, the submission dropbox, and due dates are in <strong>Canvas</strong>, below the link to this outline. This page is the lesson outline only — no names, no grades.</p>
+<p class="canvas-note">Assignment links, the submission dropbox, and due dates are in <strong>Canvas</strong>, below the link to this outline. This page is the lesson outline only. No names, no grades.</p>
 </main>
+<script>
+  const blocks = [...document.querySelectorAll("details.block")];
+  addEventListener("beforeprint", () => blocks.forEach(d => { d.removeAttribute("name"); d.open = true; }));
+  addEventListener("afterprint",  () => blocks.forEach(d => d.setAttribute("name", "wk13d1")));
+</script>
 </body>
 </html>

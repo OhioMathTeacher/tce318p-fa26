@@ -21,50 +21,61 @@
  a{color:#2563eb;}
  .home{display:inline-block;margin:0 0 10px;font-size:12px;color:#6b7280;text-decoration:none;}
  .home:hover{color:#2563eb;text-decoration:underline;}
+ .block>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:8px;}
+ .block>summary::-webkit-details-marker{display:none;}
+ .block>summary::before{content:"\25B8";font-size:12px;color:#6b7280;}
+ .block[open]>summary::before{content:"\25BE";}
+ .block>summary h2{margin:0;}
+ .block[open]>summary{margin-bottom:8px;}
 </style>
 </head>
 <body>
 <main>
-<a class="home" href="../index.html">← Course home</a>
-<h1>Week 13 · Second session — Writing Day</h1>
-<div class="sub">Act III · the week back · <em>start the paper — question first, then the evidence</em></div>
+<a class="home" href="../index.html">&larr; Course home</a>
+<h1>Week 13 &middot; Second session: Writing day</h1>
+<div class="sub">Act III &middot; the week back &middot; <em>What did you seek to learn, and what did you learn?</em></div>
 
-<div class="goals"><strong>Today's goals:</strong> A working writing session. Start the <a href="week-13-final-report.docx">Final Report</a> — set your guiding question at the top, then lay in your evidence and write what it shows. Bring your artifacts and the guidelines.</div>
+<div class="goals"><strong>Today's goals:</strong> Write your Collected Data while the field is fresh, and trade a paragraph with a classmate. Then find two or three sources that speak to what you saw.</div>
 
-<div class="block b-set">
- <h2>1 · Set your question at the top <span class="time">(~10 min)</span></h2>
+<details class="block b-work" name="wk13d2" open>
+ <summary><h2>1 &middot; Write your Collected Data <span class="time">(~35 min)</span></h2></summary>
  <ul>
-  <li>Open a document and write, at the very top, your <strong>guiding question</strong> and the two it answers: <em>what did I seek to learn?</em> and <em>what did I learn?</em> Everything in the paper reports to those.</li>
+  <li>Write your research question at the top of your draft.</li>
+  <li>Pick up from <a href="week-13-writing-up-your-data.docx">Writing Up Your Data</a>. Put in your telling pieces as figures, label and caption each one, and write what each shows about how your student understood the concept.</li>
  </ul>
- <p class="purpose">Purpose: the question is the spine. Written where you can see it, it keeps the draft from wandering.</p>
-</div>
+</details>
 
-<div class="block b-work">
- <h2>2 · Write — section by section <span class="time">(~50 min)</span></h2>
+<details class="block b-share" name="wk13d2">
+ <summary><h2>2 &middot; Trade a paragraph <span class="time">(~15 min)</span></h2></summary>
  <ul>
-  <li>Protected writing, in parts. Start with the <strong>heart</strong> — your <strong>Collected Data</strong>: drop in your telling figures and tables, label and caption each, and write what each shows about how your student(s) understood the concept <span class="time">(~30 min)</span>.</li>
-  <li>Then frame it: draft your <strong>Question</strong> and <strong>Methods</strong> around the evidence <span class="time">(~20 min)</span>. Leave <strong>What Does Research Say?</strong> and <strong>Next Steps</strong> for the break — you'll have more to say once the evidence is on the page.</li>
-  <li>The instructor circulates — a quick read of a paragraph, a question about a claim, a check that your figure is doing the work you say it is.</li>
+  <li>Trade one Collected Data paragraph with a neighbor. The reader answers one question: can you see in the figure what the writer says is there?</li>
  </ul>
- <p class="purpose">Purpose: writing one part at a time beats staring at the whole paper. Draft the evidence first, and every other section has something to point at.</p>
-</div>
+</details>
 
-<div class="block b-share">
- <h2>3 · Trade a paragraph <span class="time">(~15 min)</span></h2>
+<details class="block b-work" name="wk13d2">
+ <summary><h2>3 &middot; Find your research <span class="time">(~30 min)</span></h2></summary>
  <ul>
-  <li>Trade one <strong>Collected Data</strong> paragraph with a neighbor. One question for the reader: <em>is the claim tied to the artifact — can you see in the figure what the writer says is there?</em></li>
+  <li>Start with the sources in your Week&nbsp;6 Concept Profile and the course readings.</li>
+  <li>Search <a href="https://www.jstor.org/">JSTOR</a> (log in through Miami's library) for your concept, in NCTM journals such as <em>Teaching Children Mathematics</em>.</li>
+  <li>Leave with two or three sources that speak to what you saw. Save the link or DOI for each one.</li>
  </ul>
- <p class="purpose">Purpose: a claim about thinking is only as good as the piece of work it points to. A second reader catches where the evidence and the claim have drifted apart.</p>
-</div>
+</details>
 
 <div class="wrap">
- <strong>Wrap-up &amp; looking ahead:</strong>
+ <strong>Wrap-up &amp; over the break:</strong>
  <ul>
-  <li>Over the coming week and the break, push toward a <a href="week-13-rough-draft.docx"><strong>full rough draft</strong></a> — all five parts down, rough is fine. Then in <strong>Week 15</strong> we write and peer-review in the first session and share at the potluck in the second, and the <strong>Final Report</strong> is due Dec&nbsp;9.</li>
+  <li>Over Thanksgiving break, we recommend a <a href="week-13-rough-draft.docx">full rough draft</a> of all five parts. Rough is fine.</li>
+  <li>Bring your draft to the first session of Week&nbsp;15 (Oxford Mon Nov&nbsp;30, Hamilton Tue Dec&nbsp;1). A classmate reads it.</li>
+  <li>The <a href="week-13-final-report.docx">Final Report</a> and the <a href="../week-15-review-and-share/week-15-review-reflection.docx">Review &amp; Reflection</a> are due Wed Dec&nbsp;9.</li>
  </ul>
 </div>
 
-<p class="canvas-note">Assignment links, the submission dropbox, and due dates are in <strong>Canvas</strong>, below the link to this outline. This page is the lesson outline only — no names, no grades.</p>
+<p class="canvas-note">Assignment links, the submission dropbox, and due dates are in <strong>Canvas</strong>, below the link to this outline. This page is the lesson outline only. No names, no grades.</p>
 </main>
+<script>
+  const blocks = [...document.querySelectorAll("details.block")];
+  addEventListener("beforeprint", () => blocks.forEach(d => { d.removeAttribute("name"); d.open = true; }));
+  addEventListener("afterprint",  () => blocks.forEach(d => d.setAttribute("name", "wk13d2")));
+</script>
 </body>
 </html>
